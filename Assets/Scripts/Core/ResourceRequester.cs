@@ -12,6 +12,14 @@ public class ResourceRequirement
     [HideInInspector] public int currentAmount = 0;
 }
 
+// Добавляем класс для списка выдачи
+[System.Serializable]
+public class ResourceOutput
+{
+    public GameObject prefab;
+    public int count = 1;
+}
+
 public class ResourceRequester : MonoBehaviour
 {
     public static List<ResourceRequester> AllRequesters = new List<ResourceRequester>();
@@ -20,8 +28,9 @@ public class ResourceRequester : MonoBehaviour
     public List<ResourceRequirement> requirements = new List<ResourceRequirement>();
     public int priority = 1;
 
-    [Header("Выходной ресурс (Результат)")]
-    [SerializeField] private GameObject resultResourcePrefab;
+    [Header("Выходные ресурсы (Результат)")]
+    // ЗАМЕНА: вместо одного префаба теперь список
+    [SerializeField] private List<ResourceOutput> outputResources = new List<ResourceOutput>();
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private float spawnSpread = 0.5f;
 
@@ -32,7 +41,7 @@ public class ResourceRequester : MonoBehaviour
 
     [Header("События")]
     public UnityEvent OnResourceReceived;
-    public UnityEvent OnAllResourcesReceived; // НОВОЕ СОБЫТИЕ
+    public UnityEvent OnAllResourcesReceived;
     public UnityEvent OnActionExecuted;
 
     private int _reservedAmount = 0; 
@@ -90,17 +99,14 @@ public class ResourceRequester : MonoBehaviour
         if (allMet)
         {
             _isProcessing = true;
-            OnAllResourcesReceived?.Invoke(); // ВЫЗОВ СОБЫТИЯ
-            
-            // Если это не стройка, а производство, запускаем выдачу результата
-            // Если это стройка, она сама вызовет FinishProcessing через событие
-            // FinishProcessing(); // Можно закомментировать, если логикой рулит ConstructionSite
+            OnAllResourcesReceived?.Invoke();
         }
     }
 
     public void FinishProcessing()
     {
-        SpawnResult();
+        // ЗАМЕНА: вызываем спаун всех ресурсов из списка
+        SpawnAllResults();
         _isProcessing = false;
         foreach (var req in requirements) req.currentAmount = 0;
         OnActionExecuted?.Invoke();
@@ -125,14 +131,29 @@ public class ResourceRequester : MonoBehaviour
         }
     }
 
-    private void SpawnResult()
+    // НОВЫЙ МЕТОД: Проход по списку выдачи
+    private void SpawnAllResults()
     {
-        if (resultResourcePrefab == null) return;
+        foreach (var output in outputResources)
+        {
+            if (output.prefab == null) continue;
+            for (int i = 0; i < output.count; i++)
+            {
+                CreateResource(output.prefab);
+            }
+        }
+    }
+
+    // НОВЫЙ МЕТОД: Одиночный спаун (взято из твоей логики SpawnResult)
+    private void CreateResource(GameObject prefab)
+    {
         Vector3 randomPos = new Vector3(Random.Range(-spawnSpread, spawnSpread), Random.Range(-spawnSpread, spawnSpread), 0);
-        Vector3 targetPos = (spawnPoint != null ? spawnPoint.position : transform.position) + randomPos;
-        GameObject newResource = Instantiate(resultResourcePrefab, transform.position, Quaternion.identity);
+        Vector3 spawnOrigin = transform.position;
+        Vector3 targetPos = (spawnPoint != null ? spawnPoint.position : spawnOrigin) + randomPos;
+        
+        GameObject newResource = Instantiate(prefab, spawnOrigin, Quaternion.identity);
         newResource.tag = "Resource";
-        StartCoroutine(TossResource(newResource.transform, transform.position, targetPos));
+        StartCoroutine(TossResource(newResource.transform, spawnOrigin, targetPos));
     }
 
     private IEnumerator TossResource(Transform resource, Vector3 start, Vector3 end)
