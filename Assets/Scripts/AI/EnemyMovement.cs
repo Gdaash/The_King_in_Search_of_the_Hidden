@@ -9,8 +9,11 @@ public class EnemyMovement : MonoBehaviour
     [SerializeField] private float obstacleDist = 1.2f; 
     [SerializeField] private LayerMask obstacleLayer;
 
+    [Header("Настройки разворота")]
+    [SerializeField] private float flipThreshold = 0.2f; // Порог: не разворачивать, если движение почти вертикальное
+
     private Rigidbody2D _rb;
-    private EnemyAI _ai;
+    private IEnemyAI _ai; 
     private bool _canMove = false;
     private float _initialScaleX;
     private float _finalSpeed;
@@ -18,30 +21,50 @@ public class EnemyMovement : MonoBehaviour
     void Start()
     {
         _rb = GetComponent<Rigidbody2D>();
-        _ai = GetComponent<EnemyAI>();
+        _ai = GetComponent<IEnemyAI>(); 
+        
         _initialScaleX = Mathf.Abs(transform.localScale.x);
         _finalSpeed = baseSpeed + Random.Range(-speedVariation, speedVariation);
+        
         _rb.gravityScale = 0;
         _rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+
+        if (_ai == null) Debug.LogWarning($"На объекте {name} не найден компонент ИИ!");
     }
 
     public void SetMove(bool state) => _canMove = state;
 
     void FixedUpdate()
     {
-        if (!_canMove || _ai.GetTarget() == null) { _rb.linearVelocity = Vector2.zero; return; }
+        if (!_canMove || _ai == null || _ai.GetTarget() == null) 
+        { 
+            _rb.linearVelocity = Vector2.zero; 
+            return; 
+        }
 
         Vector2 targetPos = _ai.GetTarget().position;
         Vector2 dir = CalculateAvoidance(targetPos);
+        
         _rb.linearVelocity = dir * _finalSpeed;
         
-        if (Mathf.Abs(dir.x) > 0.1f)
-            transform.localScale = new Vector3(dir.x > 0 ? _initialScaleX : -_initialScaleX, transform.localScale.y, 1);
+        // Убираем дерганье: разворот только при уверенном движении влево или вправо
+        if (Mathf.Abs(dir.x) > flipThreshold)
+        {
+            float targetScaleX = dir.x > 0 ? _initialScaleX : -_initialScaleX;
+            
+            // Проверка, чтобы не обновлять scale каждый кадр без нужды
+            if (!Mathf.Approximately(transform.localScale.x, targetScaleX))
+            {
+                transform.localScale = new Vector3(targetScaleX, transform.localScale.y, 1);
+            }
+        }
     }
 
     private Vector2 CalculateAvoidance(Vector2 targetPos)
     {
-        Vector2 desiredDir = (targetPos - (Vector2)transform.position).normalized;
+        Vector2 currentPos = transform.position;
+        Vector2 desiredDir = (targetPos - currentPos).normalized;
+
         if (!HitWall(desiredDir)) return desiredDir;
 
         float[] angles = { 45f, -45f, 90f, -90f };

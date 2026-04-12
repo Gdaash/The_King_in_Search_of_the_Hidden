@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Linq;
 using UnityEngine.Events;
 
-public class EnemyAI : MonoBehaviour
+public class EnemyAI : MonoBehaviour, IEnemyAI
 {
     [Header("Настройки поиска")]
     [SerializeField] private string targetTag = "Player";
@@ -27,40 +27,48 @@ public class EnemyAI : MonoBehaviour
 
     void Update()
     {
-        if (_isAttacking) return;
         FindClosestTarget();
 
-        if (_target == null) { OnStop?.Invoke(); return; }
+        if (_target == null) 
+        { 
+            OnStop?.Invoke(); 
+            return; 
+        }
 
         float distance = Vector2.Distance(transform.position, _target.position);
 
         if (distance <= attackRange)
         {
-            OnStop?.Invoke();
-            if (Time.time >= _nextAttackTime)
+            OnStop?.Invoke(); // Останавливаемся перед ударом
+            if (!_isAttacking && Time.time >= _nextAttackTime)
             {
                 _isAttacking = true;
                 OnAttack?.Invoke();
                 _nextAttackTime = Time.time + _currentCooldown;
             }
         }
-        else if (distance <= detectionRange)
+        else if (distance <= detectionRange && !_isAttacking)
         {
             OnMove?.Invoke();
         }
-        else { OnStop?.Invoke(); }
+        else 
+        { 
+            OnStop?.Invoke(); 
+        }
     }
 
     private void FindClosestTarget()
     {
         var targets = GameObject.FindGameObjectsWithTag(targetTag);
         _target = targets
-            .Where(obj => obj.activeInHierarchy)
-            .OrderBy(obj => Vector2.Distance(transform.position, obj.transform.position))
-            .FirstOrDefault()?.transform;
+            .Select(t => t.transform)
+            .Where(t => t.gameObject.activeInHierarchy)
+            .OrderBy(t => Vector2.SqrMagnitude(t.position - transform.position))
+            .FirstOrDefault();
     }
 
     private void ResetCooldown() => _currentCooldown = baseAttackCooldown + Random.Range(-cooldownVariation, cooldownVariation);
-    public Transform GetTarget() => _target;
+    
+    public Transform GetTarget() => _target; // Реализация интерфейса
     public void FinishAttack() { _isAttacking = false; ResetCooldown(); }
 }
