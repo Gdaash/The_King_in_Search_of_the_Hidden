@@ -12,12 +12,31 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.Region
 
         public void OnPointerEnter(PointerEventData eventData)
         {
+            // Если галочка скрипта снята — ничего не делаем
+            if (!enabled) return;
+
             CurrentDragInfo.CurrentDropRegion = this;
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            CurrentDragInfo.CurrentDropRegion = null;
+            // Аналогично при выходе
+            if (!enabled) return;
+
+            // Сбрасываем регион только если мы сами являемся текущим регионом
+            if (CurrentDragInfo.CurrentDropRegion == this)
+            {
+                CurrentDragInfo.CurrentDropRegion = null;
+            }
+        }
+
+        // На всякий случай сбрасываем регион, если скрипт выключили в процессе работы
+        private void OnDisable()
+        {
+            if (CurrentDragInfo.CurrentDropRegion == this)
+            {
+                CurrentDragInfo.CurrentDropRegion = null;
+            }
         }
     }
 }

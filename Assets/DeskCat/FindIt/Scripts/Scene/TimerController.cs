@@ -10,19 +10,28 @@ public class TimerController : MonoBehaviour
     [SerializeField] private float duration = 5f; 
     [SerializeField] private bool loopInfinitely = false; 
     [SerializeField] private int repeatCount = 1; 
+    [SerializeField] private bool runOnStart = true; // Новая настройка
 
     [Header("Событие")]
     public UnityEvent OnTimerEnd; 
 
     private float _currentTime;
     private int _remainingRepeats;
-    private bool _isActive = true;
+    private bool _isActive = false; // По умолчанию выключен
 
     void Start()
     {
+        // Подготавливаем значения
         _currentTime = duration;
         _remainingRepeats = repeatCount;
+        
         UpdateProgressBar();
+
+        // Запускаем только если стоит галочка
+        if (runOnStart)
+        {
+            _isActive = true;
+        }
     }
 
     void Update()
@@ -44,7 +53,6 @@ public class TimerController : MonoBehaviour
     {
         if (progressBar != null)
         {
-            // Формула для заполнения (от 0 до 1)
             float progress = 1f - (Mathf.Clamp01(_currentTime / duration));
             progressBar.SetProgress(progress);
         }
@@ -68,15 +76,28 @@ public class TimerController : MonoBehaviour
             else
             {
                 _isActive = false;
-                if (progressBar != null) progressBar.SetProgress(1f); // Фиксируем заполнение
+                if (progressBar != null) progressBar.SetProgress(1f);
             }
         }
     }
 
+    // Метод для простого включения таймера без сброса времени
+    public void StartTimer()
+    {
+        _isActive = true;
+    }
+
+    // Метод для полной перезагрузки и включения
     public void ResetTimer()
     {
         _currentTime = duration;
         _remainingRepeats = repeatCount;
         _isActive = true;
+    }
+
+    // Метод для остановки (паузы)
+    public void StopTimer()
+    {
+        _isActive = false;
     }
 }
