@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Linq;
+using System.Collections.Generic;
 using UnityEngine.Events;
 
 public class Porter : MonoBehaviour
@@ -28,10 +29,9 @@ public class Porter : MonoBehaviour
     {
         if (!_hasResourceInHands)
         {
-            // Ищем здание, которому нужен ресурс
+            // 1. Ищем лучшее здание для работы
             ResourceRequester newJob = FindBestRequest();
 
-            // Если здание сменилось или исчезло, снимаем старую бронь
             if (newJob != _currentJob)
             {
                 if (_currentJob != null) _currentJob.UnreserveSpot();
@@ -40,7 +40,14 @@ public class Porter : MonoBehaviour
 
             if (_currentJob != null)
             {
-                ResourceItem groundItem = FindResourceOnGround(_currentJob.neededType);
+                // Получаем список типов ресурсов, которые здание еще ЖДЕТ (current < required)
+                List<ResourceType> missingTypes = _currentJob.requirements
+                    .Where(r => r.currentAmount < r.requiredAmount)
+                    .Select(r => r.resourceType)
+                    .ToList();
+
+                // 2. Ищем эти ресурсы на земле
+                ResourceItem groundItem = FindResourceFromListOnGround(missingTypes);
                 if (groundItem != null)
                 {
                     _target = groundItem.transform;
@@ -48,29 +55,34 @@ public class Porter : MonoBehaviour
                     return;
                 }
 
-                Warehouse w = FindWarehouseWithResource(_currentJob.neededType);
+                // 3. Ищем эти ресурсы на складе
+                Warehouse w = FindWarehouseWithAnyResource(missingTypes, out ResourceType foundType);
                 if (w != null)
                 {
                     _target = w.transform;
-                    MoveToTargetLogic(() => PickUpFromWarehouse(w, _currentJob.neededType), baseSpeed, true);
+                    MoveToTargetLogic(() => PickUpFromWarehouse(w, foundType), baseSpeed, true);
                     return;
                 }
             }
 
+            // 4. Если работы нет, просто подбираем любой ресурс с земли (чтобы отнести на склад)
             FindAnyResourceOnGround();
             if (_target != null) MoveToTargetLogic(() => PickUpFromGround(false), baseSpeed);
             else OnStop?.Invoke();
         }
         else
         {
+            // Если в руках есть ресурс
             if (_currentJob != null)
             {
+                // Несем к зданию
                 _target = _currentJob.transform;
                 float currentSpeed = baseSpeed - (_carriedResourceItem != null ? _carriedResourceItem.weight : 0.2f);
                 MoveToTargetLogic(DeliverToRequester, currentSpeed, true);
             }
             else
             {
+                // Несем на склад
                 Warehouse w = FindNearestWarehouse();
                 if (w != null)
                 {
@@ -85,6 +97,7 @@ public class Porter : MonoBehaviour
 
     private ResourceRequester FindBestRequest()
     {
+        // Выбираем здание, у которого есть хоть один невыполненный пункт требований
         return ResourceRequester.AllRequesters
             .Where(r => r.NeedsResource())
             .OrderByDescending(r => r.priority)
@@ -92,12 +105,12 @@ public class Porter : MonoBehaviour
             .FirstOrDefault();
     }
 
-    private ResourceItem FindResourceOnGround(ResourceType type)
+    private ResourceItem FindResourceFromListOnGround(List<ResourceType> types)
     {
         GameObject[] resources = GameObject.FindGameObjectsWithTag(resourceTag);
         return resources
             .Select(r => r.GetComponent<ResourceItem>())
-            .Where(r => r != null && r.gameObject.activeInHierarchy && r.type == type)
+            .Where(r => r != null && r.gameObject.activeInHierarchy && types.Contains(r.type))
             .OrderBy(r => Vector2.SqrMagnitude(r.transform.position - transform.position))
             .FirstOrDefault();
     }
@@ -112,12 +125,23 @@ public class Porter : MonoBehaviour
             .FirstOrDefault();
     }
 
-    private Warehouse FindWarehouseWithResource(ResourceType type)
+    private Warehouse FindWarehouseWithAnyResource(List<ResourceType> types, out ResourceType foundType)
     {
-        return Warehouse.AllWarehouses
-            .Where(w => w.HasResource(type))
-            .OrderBy(w => Vector2.SqrMagnitude(w.transform.position - transform.position))
-            .FirstOrDefault();
+        foundType = null;
+        foreach (var type in types)
+        {
+            var warehouse = Warehouse.AllWarehouses
+                .Where(w => w.HasResource(type))
+                .OrderBy(w => Vector2.SqrMagnitude(w.transform.position - transform.position))
+                .FirstOrDefault();
+
+            if (warehouse != null)
+            {
+                foundType = type;
+                return warehouse;
+            }
+        }
+        return null;
     }
 
     private Warehouse FindNearestWarehouse()
@@ -146,8 +170,17 @@ public class Porter : MonoBehaviour
             _targetResourceType = item.type;
             if (carrySlotRenderer != null) carrySlotRenderer.sprite = item.carrySprite;
             _hasResourceInHands = true;
-            if (isForJob && _currentJob != null) _currentJob.ReserveSpot();
-            else _currentJob = null; 
+            
+            // Если мы подобрали ресурс для конкретной задачи, бронируем место
+            if (isForJob && _currentJob != null) 
+            {
+                _currentJob.ReserveSpot();
+            }
+            else 
+            {
+                _currentJob = null; 
+            }
+
             item.gameObject.SetActive(false);
             _carriedResourceItem = item;
             _target = null;
@@ -166,6 +199,7 @@ public class Porter : MonoBehaviour
 
     private void DeliverToWarehouse()
     {
+        if (_target == null) return;
         Warehouse w = _target.GetComponent<Warehouse>();
         if (w != null)
         {
@@ -184,7 +218,6 @@ public class Porter : MonoBehaviour
         _carriedResourceItem = null;
     }
 
-    // Если носильщик выключается или умирает, он должен освободить "забронированное" место
     private void OnDisable()
     {
         if (!_hasResourceInHands && _currentJob != null)
@@ -209,7 +242,11 @@ public class Porter : MonoBehaviour
             UpdateSpriteDirection(destination.x - transform.position.x);
             transform.position = Vector2.MoveTowards(transform.position, destination, speed * Time.deltaTime);
         }
-        else { OnStop?.Invoke(); onReached?.Invoke(); }
+        else 
+        { 
+            OnStop?.Invoke(); 
+            onReached?.Invoke(); 
+        }
     }
 
     private void UpdateSpriteDirection(float dirX)
