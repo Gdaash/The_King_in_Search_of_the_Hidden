@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.Events;
-using System.Linq;
 
 public class ConstructionSite : MonoBehaviour
 {
@@ -20,37 +19,55 @@ public class ConstructionSite : MonoBehaviour
 
     private ResourceRequester _requester;
     private float _constructionTimer = 0f;
-    private bool _isBeingBuiltRightNow = false; // Строят ли нас в данный момент?
 
     void Awake() => _requester = GetComponent<ResourceRequester>();
 
-    void OnEnable() { if (isPlaced) SetupLogic(); }
+    void OnEnable() 
+    { 
+        if (isPlaced) SetupLogic(); 
+    }
 
     public void SetupLogic()
     {
-        if (!isPlaced || _requester == null) return;
+        if (_requester == null) _requester = GetComponent<ResourceRequester>();
+        if (_requester == null) return;
+
+        isPlaced = true;
+
         _requester.OnResourceReceived.RemoveListener(HandleResourceReceived);
         _requester.OnAllResourcesReceived.RemoveListener(HandleAllResourcesCollected);
+        
         _requester.OnResourceReceived.AddListener(HandleResourceReceived);
         _requester.OnAllResourcesReceived.AddListener(HandleAllResourcesCollected);
+        
+        // ИСПРАВЛЕНО: Используем NeedsAnyResource вместо NeedsResource
+        if (!_requester.NeedsAnyResource())
+        {
+            HandleAllResourcesCollected();
+        }
     }
 
-    private void HandleResourceReceived() => OnResourceAdded?.Invoke();
+    private void HandleResourceReceived()
+    {
+        OnResourceAdded?.Invoke();
+    }
 
     private void HandleAllResourcesCollected()
     {
         if (isResourcesReady) return;
+        
         isResourcesReady = true;
-        // Мы НЕ запускаем корутину здесь. Просто ждем строителя.
-        Debug.Log("[ConstructionSite] Ресурсы готовы, ждем строителя...");
+        Debug.Log($"[ConstructionSite] {gameObject.name}: Ресурсы собраны, ждем строителя.");
     }
 
-    // Этот метод будет вызывать Строитель каждый кадр, пока он строит
     public void AdvanceConstruction(float amount)
     {
         if (!isResourcesReady || isConstructed) return;
 
-        if (_constructionTimer == 0) OnConstructionStarted?.Invoke();
+        if (_constructionTimer == 0 && amount > 0) 
+        {
+            OnConstructionStarted?.Invoke();
+        }
 
         _constructionTimer += amount;
 
@@ -64,8 +81,16 @@ public class ConstructionSite : MonoBehaviour
     {
         if (isConstructed) return;
         isConstructed = true;
+
         OnConstructionFinished?.Invoke();
-        if (finalBuildingPrefab != null) Instantiate(finalBuildingPrefab, transform.position, Quaternion.identity);
+
+        if (finalBuildingPrefab != null) 
+        {
+            Instantiate(finalBuildingPrefab, transform.position, Quaternion.identity);
+        }
+
+        if (_requester != null) _requester.FinishProcessing();
+
         Destroy(gameObject);
     }
 
