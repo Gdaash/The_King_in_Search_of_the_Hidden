@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Health : MonoBehaviour
 {
@@ -20,10 +21,16 @@ public class Health : MonoBehaviour
     private Color _orig;
     private bool _dead;
 
+    // Ссылка на ИИ дальнего боя для механики отбегания
+    private EnemyAI_Ranged _rangedAI;
+
     void Start() {
         _cur = maxHealth;
         if (!targetSprite) targetSprite = GetComponentInChildren<SpriteRenderer>();
         if (targetSprite) _orig = targetSprite.color;
+
+        // Кэшируем ссылку на ИИ, если он есть на этом объекте
+        _rangedAI = GetComponent<EnemyAI_Ranged>();
     }
 
     public void TakeDamage(float amt, DamageType type) {
@@ -34,17 +41,25 @@ public class Health : MonoBehaviour
         StartCoroutine(Flash(final > 0 ? Color.red : Color.green));
         SpawnText(final, type);
         OnHealthChanged?.Invoke(_cur / maxHealth);
+
+        // --- НОВАЯ ЛОГИКА: ОТБЕГАНИЕ ---
+        // Если урон > 0 и у нас есть скрипт дальнего боя, даем команду отбежать
+        if (final > 0 && _rangedAI != null)
+        {
+            _rangedAI.OnTakeDamage();
+        }
+        // ------------------------------
+
         if (_cur <= 0) Die();
     }
 
     private float GetMult(DamageType t) 
-{
-    // Ищем сопротивление в списке
-    var res = resistances.Find(r => r.type == t);
-    
-    // Если нашли (тип не дефолтный), возвращаем множитель. Если нет — возвращаем 1.0
-    return res.mult != 0 ? res.mult : 1f;
-}
+    {
+        var res = resistances.Find(r => r.type == t);
+        // Исправлено: корректная проверка существования сопротивления
+        // Если тип урона не найден в списке resistances, Find вернет дефолтную структуру с mult = 0
+        return (res.mult != 0 || resistances.Any(r => r.type == t)) ? res.mult : 1f;
+    }
 
     private void SpawnText(float val, DamageType t) {
         if (!damageTextPrefab) return;
@@ -53,6 +68,7 @@ public class Health : MonoBehaviour
     }
 
     private IEnumerator Flash(Color c) {
+        if (!targetSprite) yield break;
         targetSprite.color = c;
         yield return new WaitForSeconds(0.2f);
         targetSprite.color = _orig;

@@ -6,7 +6,6 @@ public class EnemyVisuals : MonoBehaviour
     [Header("Ссылки")]
     [SerializeField] private Transform spriteParent; 
     [SerializeField] private EnemyAI ai;
-    [SerializeField] private ParticleSystem dustParticles;
 
     [Header("Прыжки (Движение)")]
     [SerializeField] private float bounceHeight = 0.3f;
@@ -19,7 +18,7 @@ public class EnemyVisuals : MonoBehaviour
     [SerializeField] private DamageType damageType = DamageType.Physical;
 
     private Vector3 _startPos;
-    private bool _isMoving, _wasLow = true;
+    private bool _isMoving;
     private SpriteRenderer _sr;
     private Color _origCol;
 
@@ -36,13 +35,6 @@ public class EnemyVisuals : MonoBehaviour
         {
             float wave = Mathf.Abs(Mathf.Sin(Time.time * bounceSpeed));
             spriteParent.localPosition = _startPos + Vector3.up * (wave * bounceHeight);
-            
-            if (wave < 0.1f && !_wasLow) 
-            { 
-                if (dustParticles != null) dustParticles.Play(); 
-                _wasLow = true; 
-            }
-            else if (wave > 0.5f) _wasLow = false;
         } 
         else 
         {
@@ -65,24 +57,17 @@ public class EnemyVisuals : MonoBehaviour
         if (_sr) _sr.color = Color.red;
         yield return new WaitForSeconds(0.2f);
         
-        // 1. Считаем направление в мировых координатах
         Vector3 worldDir = (target.position - transform.position).normalized;
-        
-        // 2. Переводим в локальные координаты
         Vector3 localDir = transform.InverseTransformDirection(worldDir);
         
-        // 3. КОРРЕКЦИЯ СКЕЙЛА (Scale -1)
-        // Если объект отзеркален через Scale, локальные оси инвертированы.
-        // Мы умножаем направление на знак скейла, чтобы компенсировать это.
         localDir.x *= Mathf.Sign(transform.localScale.x);
         localDir.y *= Mathf.Sign(transform.localScale.y);
 
         Vector3 targetLocalPos = _startPos + localDir * jabDist;
 
         if (target.TryGetComponent<Health>(out var h)) h.TakeDamage(damage, damageType);
-        if (dustParticles != null) dustParticles.Play();
-
-        // Анимация рывка
+        
+        // Рывок вперед
         float p = 0;
         while (p < 1f) 
         { 
@@ -91,6 +76,7 @@ public class EnemyVisuals : MonoBehaviour
             yield return null; 
         }
         
+        // Возврат назад
         p = 0;
         while (p < 1f) 
         { 
