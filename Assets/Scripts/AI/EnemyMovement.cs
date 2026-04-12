@@ -6,11 +6,14 @@ public class EnemyMovement : MonoBehaviour
     [Header("Настройки движения")]
     [SerializeField] private float baseSpeed = 3f;
     [SerializeField] private float speedVariation = 0.7f;
+    
+    [Header("Обход препятствий")]
     [SerializeField] private float obstacleDist = 1.2f; 
+    [SerializeField] private float agentAvoidanceRadius = 0.25f; 
     [SerializeField] private LayerMask obstacleLayer;
 
     [Header("Настройки разворота")]
-    [SerializeField] private float flipThreshold = 0.2f; 
+    [SerializeField] private float flipThreshold = 0.1f; 
 
     private Rigidbody2D _rb;
     private IEnemyAI _ai; 
@@ -22,23 +25,24 @@ public class EnemyMovement : MonoBehaviour
     {
         _rb = GetComponent<Rigidbody2D>();
         _ai = GetComponent<IEnemyAI>(); 
-        
         _initialScaleX = Mathf.Abs(transform.localScale.x);
+        
         _rb.gravityScale = 0;
         _rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+        _rb.interpolation = RigidbodyInterpolation2D.Interpolate;
+        _rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
     }
 
-    void Start()
+    void Start() => _finalSpeed = baseSpeed + Random.Range(-speedVariation, speedVariation);
+
+    public void SetMove(bool state) 
     {
-        _finalSpeed = baseSpeed + Random.Range(-speedVariation, speedVariation);
-        if (_ai == null) Debug.LogWarning($"На объекте {name} не найден компонент ИИ!");
+        _canMove = state;
+        if (!state && _rb != null) _rb.linearVelocity = Vector2.zero;
     }
-
-    public void SetMove(bool state) => _canMove = state;
 
     void FixedUpdate()
     {
-        // Проверка: можно ли двигаться и есть ли цель
         if (!_canMove || _ai == null || _ai.GetTarget() == null) 
         { 
             _rb.linearVelocity = Vector2.zero; 
@@ -47,32 +51,20 @@ public class EnemyMovement : MonoBehaviour
 
         Vector2 targetPos = _ai.GetTarget().position;
         Vector2 currentPos = transform.position;
-        Vector2 moveDir;
 
-        // ПРОВЕРКА НА ОТБЕГАНИЕ (FLEE)
-        // Пытаемся привести интерфейс к типу дальнобойного ИИ, чтобы узнать, убегает ли он
-        if (_ai is EnemyAI_Ranged rangedAI && rangedAI.IsFleeing())
+        if (Vector2.Distance(currentPos, targetPos) < 0.1f)
         {
-            // Направление СТРОГО ОТ цели
-            moveDir = (currentPos - targetPos).normalized;
-        }
-        else
-        {
-            // Обычное движение К цели с обходом препятствий
-            moveDir = CalculateAvoidance(targetPos);
+            _rb.linearVelocity = Vector2.zero;
+            return;
         }
 
+        Vector2 moveDir = CalculateAvoidance(targetPos);
         _rb.linearVelocity = moveDir * _finalSpeed;
         
-        // Логика разворота спрайта (Flip) с порогом
         if (Mathf.Abs(moveDir.x) > flipThreshold)
         {
-            float targetScaleX = moveDir.x > 0 ? _initialScaleX : -_initialScaleX;
-            
-            if (!Mathf.Approximately(transform.localScale.x, targetScaleX))
-            {
-                transform.localScale = new Vector3(targetScaleX, transform.localScale.y, 1);
-            }
+            float newScaleX = moveDir.x > 0 ? _initialScaleX : -_initialScaleX;
+            transform.localScale = new Vector3(newScaleX, transform.localScale.y, transform.localScale.z);
         }
     }
 
@@ -81,22 +73,20 @@ public class EnemyMovement : MonoBehaviour
         Vector2 currentPos = transform.position;
         Vector2 desiredDir = (targetPos - currentPos).normalized;
 
-        // Если путь свободен, идем прямо
-        if (!HitWall(desiredDir)) return desiredDir;
+        if (!IsPathBlocked(desiredDir)) return desiredDir;
 
-        // Если впереди стена, ищем свободный угол
-        float[] angles = { 45f, -45f, 90f, -90f };
+        float[] angles = { 35f, -35f, 75f, -75f };
         foreach (float a in angles)
         {
             Vector2 checkDir = Quaternion.Euler(0, 0, a) * desiredDir;
-            if (!HitWall(checkDir)) return checkDir;
+            if (!IsPathBlocked(checkDir)) return checkDir;
         }
-        
         return desiredDir;
     }
 
-    private bool HitWall(Vector2 dir) 
+    private bool IsPathBlocked(Vector2 dir) 
     {
-        return Physics2D.Raycast(transform.position, dir, obstacleDist, obstacleLayer);
+        RaycastHit2D hit = Physics2D.CircleCast(transform.position, agentAvoidanceRadius, dir, obstacleDist, obstacleLayer);
+        return hit.collider != null && hit.collider.gameObject != gameObject;
     }
 }

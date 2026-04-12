@@ -1,267 +1,127 @@
 using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
-using UnityEngine.Events;
 
-public class Porter : MonoBehaviour
-{
-    [Header("Настройки движения")]
-    [SerializeField] private float baseSpeed = 4f;
+public class Porter : MonoBehaviour, IEnemyAI {
     [SerializeField] private string resourceTag = "Resource";
-    [SerializeField] private float stopDistance = 0.2f;
-
-    [Header("События")]
-    public UnityEvent OnMove;   
-    public UnityEvent OnStop;   
-
-    [Header("Визуал")]
-    [SerializeField] private SpriteRenderer mainBodyRenderer;
+    [SerializeField] private float stopDistance = 0.3f;
     [SerializeField] private SpriteRenderer carrySlotRenderer;
 
-    private Transform _target;
+    private EnemyMovement _movement;
+    private Transform _currentTarget;
+    private Collider2D _targetCollider; 
     private ResourceType _targetResourceType;
     private ResourceItem _carriedResourceItem;
-    
+    private ResourceItem _targetedResourceItem; 
     private bool _hasResourceInHands = false;
     private ResourceRequester _currentJob;
 
-    void Update()
-    {
-        if (!_hasResourceInHands)
-        {
-            // 1. Ищем лучшее здание для работы
-            ResourceRequester newJob = FindBestRequest();
+    public Transform GetTarget() => _currentTarget;
+    void Awake() => _movement = GetComponent<EnemyMovement>();
 
-            if (newJob != _currentJob)
-            {
-                if (_currentJob != null) _currentJob.UnreserveSpot();
-                _currentJob = newJob;
-            }
-
-            if (_currentJob != null)
-            {
-                // Получаем список типов ресурсов, которые здание еще ЖДЕТ (current < required)
-                List<ResourceType> missingTypes = _currentJob.requirements
-                    .Where(r => r.currentAmount < r.requiredAmount)
-                    .Select(r => r.resourceType)
-                    .ToList();
-
-                // 2. Ищем эти ресурсы на земле
-                ResourceItem groundItem = FindResourceFromListOnGround(missingTypes);
-                if (groundItem != null)
-                {
-                    _target = groundItem.transform;
-                    MoveToTargetLogic(() => PickUpFromGround(true), baseSpeed);
-                    return;
-                }
-
-                // 3. Ищем эти ресурсы на складе
-                Warehouse w = FindWarehouseWithAnyResource(missingTypes, out ResourceType foundType);
-                if (w != null)
-                {
-                    _target = w.transform;
-                    MoveToTargetLogic(() => PickUpFromWarehouse(w, foundType), baseSpeed, true);
-                    return;
-                }
-            }
-
-            // 4. Если работы нет, просто подбираем любой ресурс с земли (чтобы отнести на склад)
-            FindAnyResourceOnGround();
-            if (_target != null) MoveToTargetLogic(() => PickUpFromGround(false), baseSpeed);
-            else OnStop?.Invoke();
+    void Update() {
+        if (_currentTarget != null && !_currentTarget.gameObject.activeInHierarchy) ResetTargetAndJob();
+        if (_currentTarget == null) {
+            if (!_hasResourceInHands) HandleJobSeeking();
+            else HandleDelivery();
         }
-        else
-        {
-            // Если в руках есть ресурс
-            if (_currentJob != null)
-            {
-                // Несем к зданию
-                _target = _currentJob.transform;
-                float currentSpeed = baseSpeed - (_carriedResourceItem != null ? _carriedResourceItem.weight : 0.2f);
-                MoveToTargetLogic(DeliverToRequester, currentSpeed, true);
+        if (_movement != null) _movement.SetMove(_currentTarget != null);
+        CheckArrival();
+    }
+
+    private void HandleJobSeeking() {
+        if (_currentJob != null && _currentTarget != null) return;
+        _currentJob = FindBestRequest();
+        if (_currentJob != null) {
+            var missingTypes = _currentJob.requirements.Where(r => r.currentAmount < r.requiredAmount).Select(r => r.resourceType).ToList();
+            ResourceItem groundItem = FindResourceFromListOnGround(missingTypes);
+            if (groundItem != null) {
+                _currentJob.ReserveSpot(); // Предварительная бронь места
+                ReserveResource(groundItem);
+                SetTarget(groundItem.transform);
+                return;
             }
-            else
-            {
-                // Несем на склад
-                Warehouse w = FindNearestWarehouse();
-                if (w != null)
-                {
-                    _target = w.transform;
-                    float currentSpeed = baseSpeed - (_carriedResourceItem != null ? _carriedResourceItem.weight : 0.2f);
-                    MoveToTargetLogic(DeliverToWarehouse, currentSpeed, true);
-                }
-                else OnStop?.Invoke();
+            Warehouse w = FindWarehouseWithAnyResource(missingTypes, out ResourceType foundType);
+            if (w != null) {
+                _currentJob.ReserveSpot(); // Предварительная бронь места
+                SetTarget(w.transform);
+                return;
             }
+            _currentJob = null;
         }
+        FindAnyResourceOnGround();
     }
 
-    private ResourceRequester FindBestRequest()
-    {
-        // Выбираем здание, у которого есть хоть один невыполненный пункт требований
-        return ResourceRequester.AllRequesters
-            .Where(r => r.NeedsResource())
-            .OrderByDescending(r => r.priority)
-            .ThenBy(r => Vector2.SqrMagnitude(r.transform.position - transform.position))
-            .FirstOrDefault();
-    }
-
-    private ResourceItem FindResourceFromListOnGround(List<ResourceType> types)
-    {
-        GameObject[] resources = GameObject.FindGameObjectsWithTag(resourceTag);
-        return resources
-            .Select(r => r.GetComponent<ResourceItem>())
-            .Where(r => r != null && r.gameObject.activeInHierarchy && types.Contains(r.type))
-            .OrderBy(r => Vector2.SqrMagnitude(r.transform.position - transform.position))
-            .FirstOrDefault();
-    }
-
-    private void FindAnyResourceOnGround()
-    {
-        GameObject[] resources = GameObject.FindGameObjectsWithTag(resourceTag);
-        _target = resources
-            .Where(r => r.activeInHierarchy)
-            .OrderBy(r => Vector2.SqrMagnitude(r.transform.position - transform.position))
-            .Select(r => r.transform)
-            .FirstOrDefault();
-    }
-
-    private Warehouse FindWarehouseWithAnyResource(List<ResourceType> types, out ResourceType foundType)
-    {
-        foundType = null;
-        foreach (var type in types)
-        {
-            var warehouse = Warehouse.AllWarehouses
-                .Where(w => w.HasResource(type))
-                .OrderBy(w => Vector2.SqrMagnitude(w.transform.position - transform.position))
-                .FirstOrDefault();
-
-            if (warehouse != null)
-            {
-                foundType = type;
-                return warehouse;
-            }
-        }
-        return null;
-    }
-
-    private Warehouse FindNearestWarehouse()
-    {
-        return Warehouse.AllWarehouses
-            .OrderBy(w => Vector2.SqrMagnitude(w.transform.position - transform.position))
-            .FirstOrDefault();
-    }
-
-    private void PickUpFromWarehouse(Warehouse w, ResourceType type)
-    {
-        if (w.TryTakeResource(type))
-        {
-            _targetResourceType = type;
-            if (_currentJob != null) _currentJob.ReserveSpot();
-            if (carrySlotRenderer != null) carrySlotRenderer.sprite = type.defaultCarrySprite;
-            _hasResourceInHands = true;
-            _target = null;
-        }
-    }
-
-    private void PickUpFromGround(bool isForJob)
-    {
-        if (_target != null && _target.TryGetComponent(out ResourceItem item))
-        {
-            _targetResourceType = item.type;
-            if (carrySlotRenderer != null) carrySlotRenderer.sprite = item.carrySprite;
-            _hasResourceInHands = true;
-            
-            // Если мы подобрали ресурс для конкретной задачи, бронируем место
-            if (isForJob && _currentJob != null) 
-            {
-                _currentJob.ReserveSpot();
-            }
-            else 
-            {
-                _currentJob = null; 
-            }
-
-            item.gameObject.SetActive(false);
-            _carriedResourceItem = item;
-            _target = null;
-        }
-    }
-
-    private void DeliverToRequester()
-    {
-        if (_currentJob != null)
-        {
-            _currentJob.DeliverResource(_targetResourceType);
-            if (_carriedResourceItem != null) Destroy(_carriedResourceItem.gameObject);
-            ClearHands();
-        }
-    }
-
-    private void DeliverToWarehouse()
-    {
-        if (_target == null) return;
-        Warehouse w = _target.GetComponent<Warehouse>();
-        if (w != null)
-        {
-            w.AddResource(_targetResourceType, 1, carrySlotRenderer.sprite);
-            if (_carriedResourceItem != null) Destroy(_carriedResourceItem.gameObject);
-            ClearHands();
-        }
-    }
-
-    private void ClearHands()
-    {
-        _hasResourceInHands = false;
-        if (carrySlotRenderer != null) carrySlotRenderer.sprite = null;
-        _target = null;
-        _currentJob = null;
-        _carriedResourceItem = null;
-    }
-
-    private void OnDisable()
-    {
-        if (!_hasResourceInHands && _currentJob != null)
-        {
+    private void HandleDelivery() {
+        if (_currentJob != null && (!_currentJob.gameObject.activeInHierarchy || !_currentJob.NeedsResource() && !_hasResourceInHands)) {
             _currentJob.UnreserveSpot();
+            _currentJob = null; 
+        }
+        if (_currentJob != null) SetTarget(_currentJob.transform);
+        else {
+            Warehouse w = FindNearestWarehouse();
+            if (w != null) SetTarget(w.transform);
+            else ResetTargetAndJob();
         }
     }
 
-    private void MoveToTargetLogic(System.Action onReached, float speed, bool useColliderEdge = false)
-    {
-        if (_target == null) return;
-        Vector3 destination = _target.position;
-        if (useColliderEdge)
-        {
-            Collider2D col = _target.GetComponent<Collider2D>();
-            if (col != null) destination = col.ClosestPoint(transform.position);
-        }
+    private void PickUpFromGround(ResourceItem item) {
+        _targetResourceType = item.type;
+        _hasResourceInHands = true;
+        _carriedResourceItem = item;
+        if (carrySlotRenderer != null) carrySlotRenderer.sprite = item.carrySprite;
+        
+        // Когда реально взял — сообщаем зданию, чтобы иконка гасла
+        if (_currentJob != null) _currentJob.StartPhysicalDelivery();
 
-        if (Vector2.Distance(transform.position, destination) > stopDistance)
-        {
-            OnMove?.Invoke();
-            UpdateSpriteDirection(destination.x - transform.position.x);
-            transform.position = Vector2.MoveTowards(transform.position, destination, speed * Time.deltaTime);
-        }
-        else 
-        { 
-            OnStop?.Invoke(); 
-            onReached?.Invoke(); 
-        }
+        item.gameObject.SetActive(false);
+        UnreserveResource();
+        _currentTarget = null; 
     }
 
-    private void UpdateSpriteDirection(float dirX)
-    {
-        if (Mathf.Abs(dirX) > 0.01f)
-        {
-            bool shouldFlip = dirX < 0;
-            if (mainBodyRenderer != null) mainBodyRenderer.flipX = shouldFlip;
-            if (carrySlotRenderer != null)
-            {
-                carrySlotRenderer.flipX = shouldFlip;
-                Vector3 pos = carrySlotRenderer.transform.localPosition;
-                pos.x = shouldFlip ? -Mathf.Abs(pos.x) : Mathf.Abs(pos.x);
-                carrySlotRenderer.transform.localPosition = pos;
-            }
+    private void PickUpFromWarehouse(Warehouse w) {
+        if (_currentJob == null) { ResetTargetAndJob(); return; }
+        var req = _currentJob.requirements.FirstOrDefault(r => r.currentAmount < r.requiredAmount && w.HasResource(r.resourceType));
+        if (req != null && w.TryTakeResource(req.resourceType)) {
+            _targetResourceType = req.resourceType;
+            _hasResourceInHands = true;
+            _currentJob.StartPhysicalDelivery(); // Реально несет
+            if (carrySlotRenderer != null) carrySlotRenderer.sprite = _targetResourceType.defaultCarrySprite;
+            _currentTarget = null;
+        } else ResetTargetAndJob();
+    }
+
+    private void SetTarget(Transform target) { _currentTarget = target; if (_currentTarget != null) _targetCollider = _currentTarget.GetComponent<Collider2D>(); }
+    private void ResetTargetAndJob() { UnreserveResource(); if (!_hasResourceInHands && _currentJob != null) _currentJob.UnreserveSpot(); _currentTarget = null; _targetCollider = null; if (!_hasResourceInHands) _currentJob = null; }
+    private void CheckArrival() {
+        if (_currentTarget == null) return;
+        Vector3 dest = _targetCollider != null ? _targetCollider.ClosestPoint(transform.position) : _currentTarget.position;
+        if (Vector2.Distance(transform.position, dest) <= stopDistance) {
+            if (_movement != null) _movement.SetMove(false);
+            ExecuteAction();
         }
     }
+    private void ExecuteAction() {
+        if (!_hasResourceInHands) {
+            if (_currentTarget.TryGetComponent(out ResourceItem item)) PickUpFromGround(item);
+            else if (_currentTarget.TryGetComponent(out Warehouse w)) PickUpFromWarehouse(w);
+            else ResetTargetAndJob();
+        } else {
+            if (_currentTarget.TryGetComponent(out ResourceRequester r)) DeliverToRequester();
+            else if (_currentTarget.TryGetComponent(out Warehouse w)) DeliverToWarehouse();
+            else ResetTargetAndJob();
+        }
+    }
+    private void DeliverToRequester() { if (_currentJob != null) _currentJob.DeliverResource(_targetResourceType); if (_carriedResourceItem != null) Destroy(_carriedResourceItem.gameObject); ClearHands(); }
+    private void DeliverToWarehouse() { Warehouse w = _currentTarget.GetComponent<Warehouse>(); if (w != null) w.AddResource(_targetResourceType, 1, carrySlotRenderer.sprite); if (_carriedResourceItem != null) Destroy(_carriedResourceItem.gameObject); ClearHands(); }
+    private void ClearHands() { _hasResourceInHands = false; if (carrySlotRenderer != null) carrySlotRenderer.sprite = null; _carriedResourceItem = null; _currentJob = null; _currentTarget = null; }
+    private void ReserveResource(ResourceItem item) { UnreserveResource(); _targetedResourceItem = item; if (_targetedResourceItem != null) _targetedResourceItem.isReserved = true; }
+    private void UnreserveResource() { if (_targetedResourceItem != null) _targetedResourceItem.isReserved = false; _targetedResourceItem = null; }
+    private void OnDisable() { UnreserveResource(); if (_currentJob != null) _currentJob.UnreserveSpot(); }
+
+    private ResourceRequester FindBestRequest() => ResourceRequester.AllRequesters.Where(r => r.NeedsResource()).OrderByDescending(r => r.priority).ThenBy(r => Vector2.SqrMagnitude(r.transform.position - transform.position)).FirstOrDefault();
+    private ResourceItem FindResourceFromListOnGround(List<ResourceType> types) => GameObject.FindGameObjectsWithTag(resourceTag).Select(r => r.GetComponent<ResourceItem>()).Where(r => r != null && r.gameObject.activeInHierarchy && !r.isReserved && types.Contains(r.type)).OrderBy(r => Vector2.SqrMagnitude(r.transform.position - transform.position)).FirstOrDefault();
+    private void FindAnyResourceOnGround() { var res = GameObject.FindGameObjectsWithTag(resourceTag).Select(r => r.GetComponent<ResourceItem>()).Where(r => r != null && r.gameObject.activeInHierarchy && !r.isReserved).OrderBy(r => Vector2.SqrMagnitude(r.transform.position - transform.position)).FirstOrDefault(); if (res != null) { SetTarget(res.transform); ReserveResource(res); } }
+    private Warehouse FindWarehouseWithAnyResource(List<ResourceType> types, out ResourceType foundType) { foundType = null; foreach (var type in types) { var w = Warehouse.AllWarehouses.Where(wh => wh.HasResource(type)).OrderBy(wh => Vector2.SqrMagnitude(wh.transform.position - transform.position)).FirstOrDefault(); if (w != null) { foundType = type; return w; } } return null; }
+    private Warehouse FindNearestWarehouse() => Warehouse.AllWarehouses.OrderBy(w => Vector2.SqrMagnitude(w.transform.position - transform.position)).FirstOrDefault();
 }
