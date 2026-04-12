@@ -2,7 +2,7 @@
 using DeskCat.FindIt.Scripts.Core.Main.System;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.EventSystems; // Required for pointer events
+using UnityEngine.EventSystems;
 
 namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
 {
@@ -13,6 +13,9 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
 
     public class DragObj : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler
     {
+        // Статическая переменная, чтобы камера знала, что мышь занята перетаскиванием
+        public static bool IsAnyObjectDragging { get; private set; }
+
         [Header("General Settings")] public string DropRegionName = "";
         public bool HideWhenDropToRegion = true;
         public bool EnableCollisionWhenDrag = false;
@@ -45,117 +48,78 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
 
         private void Start()
         {
-            // Ensure component dependencies and initialize them
             _mainCamera = Camera.main;
             if (_mainCamera == null)
             {
-                Debug.LogError("DragObj: Main Camera not found! Ensure there is a camera tagged 'MainCamera'.");
+                Debug.LogError("DragObj: Main Camera not found!");
                 enabled = false;
                 return;
             }
 
             _hiddenObj = GetComponent<HiddenObj>();
-            if (_hiddenObj == null)
-            {
-                Debug.LogError("DragObj: Missing HiddenObj component on this GameObject.");
-                enabled = false;
-                return;
-            }
-
             _collider = GetComponent<BoxCollider2D>();
-            if (_collider == null)
-            {
-                Debug.LogError("DragObj: Missing BoxCollider2D component on this GameObject.");
-                enabled = false;
-                return;
-            }
-
             _originalPosition = transform.position;
         }
 
         private void OnEnable()
         {
-            // Ensure the collider is enabled when the object becomes active
-            if (_collider != null)
-            {
-                _collider.enabled = true;
-            }
+            if (_collider != null) _collider.enabled = true;
         }
 
-        // Called when the pointer is pressed down
         public void OnPointerDown(PointerEventData eventData)
         {
             if (!_hiddenObj.isAbleToClick || _hiddenObj.IsFound) return;
 
-            // Cache the mouse click offset
             _mOffset = gameObject.transform.position - CalculateWorldPoint();
             _originalPosition = transform.position;
 
-            // Trigger drag start event
             onBeginDrag?.Invoke(this);
 
-            // Disable camera controls
-            CameraView2D.SetEnablePanAndZoom(false);
-            CameraView3D.SetEnableOrbit(false);
-
+            // Теперь мы НЕ выключаем камеру совсем, а просто даем ей знать, что идет перетаскивание
+            IsAnyObjectDragging = true;
             _isDragging = true;
         }
 
-        // Called while dragging (pointer is moving)
         public void OnDrag(PointerEventData eventData)
         {
             if (!_hiddenObj.isAbleToClick || _hiddenObj.IsFound) return;
 
-            // Temporarily disable collider if required
             if (!EnableCollisionWhenDrag && !_colliderWasDisabled)
             {
                 _collider.enabled = false;
-                _colliderWasDisabled = true; // Mark as disabled
+                _colliderWasDisabled = true;
             }
 
-            // Update the object position while dragging
             transform.position = CalculateWorldPoint() + _mOffset;
             FreezePositionOnDrag();
 
-            // Trigger drag event
             onDrag?.Invoke(this);
 
-            // If the object is dragged to a valid drop region
             if (CurrentDragInfo.CurrentDropRegion != null &&
                 CurrentDragInfo.CurrentDropRegion.RegionName == DropRegionName)
             {
                 onDragToRegion?.Invoke(this);
-
-                if (DragToRegionToFound)
-                {
-                    _hiddenObj.DragRegionAction?.Invoke();
-                }
+                if (DragToRegionToFound) _hiddenObj.DragRegionAction?.Invoke();
             }
         }
 
-        // Called when the pointer is released
         public void OnPointerUp(PointerEventData eventData)
         {
             if (!_isDragging) return;
 
-            // Re-enable the collider if it was disabled
             if (_colliderWasDisabled)
             {
                 _collider.enabled = true;
                 _colliderWasDisabled = false;
             }
 
-            // Trigger drag end event
             onEndDrag?.Invoke(this);
 
-            // Re-enable camera controls
-            CameraView2D.SetEnablePanAndZoom(true);
-            CameraView3D.SetEnableOrbit(true);
+            // Сообщаем, что перетаскивание окончено
+            IsAnyObjectDragging = false;
 
-            // Perform drop region checks
             DropRegionCheck();
 
-            // Optionally reset object position
             if (IsReturnToOriginalPosition)
             {
                 transform.position = _originalPosition;
@@ -166,32 +130,12 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
 
         private void DropRegionCheck()
         {
-            if (CurrentDragInfo.CurrentDropRegion == null)
-            {
-                //  Debug.Log("No drop region detected.");
-                return;
-            }
+            if (CurrentDragInfo.CurrentDropRegion == null) return;
+            if (CurrentDragInfo.CurrentDropRegion.RegionName != DropRegionName) return;
 
-            if (CurrentDragInfo.CurrentDropRegion.RegionName != DropRegionName)
-            {
-                //  Debug.Log($"Drop region mismatch. Expected: {DropRegionName}, " +
-                //            $"Found: {CurrentDragInfo.CurrentDropRegion.RegionName}");
-                return;
-            }
+            if (HideWhenDropToRegion) gameObject.SetActive(false);
+            if (IsThisRegionAsTarget) _hiddenObj.DragRegionAction?.Invoke();
 
-            // Hide the object if dropped in the correct region
-            if (HideWhenDropToRegion)
-            {
-                gameObject.SetActive(false);
-            }
-
-            // Trigger target region's actions
-            if (IsThisRegionAsTarget)
-            {
-                _hiddenObj.DragRegionAction?.Invoke();
-            }
-
-            // Invoke drop events
             onDropRegion?.Invoke(this);
             CurrentDragInfo.CurrentDropRegion.DropRegionEvent?.Invoke();
         }
@@ -199,22 +143,17 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
         private Vector3 CalculateWorldPoint()
         {
             _mZCoord = _mainCamera.WorldToScreenPoint(gameObject.transform.position).z;
-
             var mousePoint = Input.mousePosition;
             mousePoint.z = _mZCoord;
-
             return _mainCamera.ScreenToWorldPoint(mousePoint);
         }
 
         private void FreezePositionOnDrag()
         {
             var position = transform.position;
-
-            // Freeze position axes if specified
             if (freezeX) position.x = _originalPosition.x;
             if (freezeY) position.y = _originalPosition.y;
             if (freezeZ) position.z = _originalPosition.z;
-
             transform.position = position;
         }
     }

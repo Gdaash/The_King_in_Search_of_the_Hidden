@@ -1,4 +1,5 @@
 using System;
+using DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj; // Добавили пространство имен
 using UnityEngine;
 
 namespace DeskCat.FindIt.Scripts.Core.Main.System
@@ -17,10 +18,12 @@ namespace DeskCat.FindIt.Scripts.Core.Main.System
         public bool _autoPanBoundary = true;
         public float _panMinX, _panMinY;
         public float _panMaxX, _panMaxY;
+        
+        [Header("---Keyboard---")]
+        [SerializeField] private float keyboardSpeed = 10f;
 
         private Camera _camera;
         private Vector3 _dragOrigin;
-        private Vector3 _touchStart;
         public static CameraView2D instance { get; private set; }
 
         private int _lastScreenWidth;
@@ -31,19 +34,12 @@ namespace DeskCat.FindIt.Scripts.Core.Main.System
 
         private void Awake()
         {
-            if (instance != null && instance != this)
-            {
-                Destroy(gameObject);
-            }
-            else
-            {
-                instance = this;
-            }
+            if (instance != null && instance != this) { Destroy(gameObject); }
+            else { instance = this; }
 
             _camera = Camera.main;
             _lastScreenWidth = Screen.width;
             _lastScreenHeight = Screen.height;
-
             ScaleOverflowCamera();
         }
 
@@ -52,6 +48,7 @@ namespace DeskCat.FindIt.Scripts.Core.Main.System
             if (StopCameraFunc) return;
             
             PanCamera();
+            KeyboardPan(); 
             ZoomCamera();
 
             if (Screen.width != _lastScreenWidth || Screen.height != _lastScreenHeight)
@@ -62,36 +59,38 @@ namespace DeskCat.FindIt.Scripts.Core.Main.System
             }
         }
 
-        public void SetStopCameraFunc(bool stopCameraFunc)
+        private void KeyboardPan()
         {
-            StopCameraFunc = stopCameraFunc;
-        }
+            if (!_enablePan) return;
 
-        public static void SetEnablePanAndZoom(bool value)
-        {
-            if (instance == null) return;
-            instance._enablePan = value;
-            instance._enableZoom = value;
-        }
+            float horizontal = Input.GetAxisRaw("Horizontal");
+            float vertical = Input.GetAxisRaw("Vertical");
 
-        private void ScaleOverflowCamera()
-        {
-            if (_camera == null || backgroundSprite == null)
-                return;
-
-            float spriteWidthInPixels = backgroundSprite.sprite.textureRect.width;
-            float cameraWidthInPixels = _camera.pixelWidth;
-
-            if (cameraWidthInPixels > spriteWidthInPixels)
+            if (Mathf.Abs(horizontal) > 0.1f || Mathf.Abs(vertical) > 0.1f)
             {
-                float aspectOverrun = (_camera.aspect - 1.7f) / 0.4375f;
-                zoomMax = Mathf.Max(zoomMax - aspectOverrun, zoomMin);
+                float speedMultiplier = _camera.orthographicSize / zoomMax;
+                Vector3 move = new Vector3(horizontal, vertical, 0) * (keyboardSpeed * speedMultiplier * Time.deltaTime);
+                Vector3 targetPos = _camera.transform.position + move;
+
+                _camera.transform.position = _infinitePan ? targetPos : ClampCamera(targetPos);
+                IsPanning = true;
+            }
+            else if (!Input.GetMouseButton(0))
+            {
+                IsPanning = false;
             }
         }
 
         private void PanCamera()
         {
             if (!_enablePan) return;
+
+            // БЛОКИРОВКА МЫШИ: Если мы тянем объект, мышиный Pan не работает
+            if (DragObj.IsAnyObjectDragging) 
+            {
+                IsPanning = false;
+                return; 
+            }
 
             if (Input.GetMouseButtonDown(0))
             {
@@ -104,112 +103,79 @@ namespace DeskCat.FindIt.Scripts.Core.Main.System
 
                 if (dragDifference.sqrMagnitude > Mathf.Epsilon) 
                 {
-                    if (_infinitePan)
-                    {
-                        _camera.transform.position += dragDifference;
-                    }
-                    else
-                    {
-                        _camera.transform.position = ClampCamera(_camera.transform.position + dragDifference);
-                    }
-
+                    Vector3 targetPos = _camera.transform.position + dragDifference;
+                    _camera.transform.position = _infinitePan ? targetPos : ClampCamera(targetPos);
                     IsPanning = true; 
                 }
             }
 
             if (Input.GetMouseButtonUp(0))
             {
-                IsPanning = false; 
+                if (Mathf.Abs(Input.GetAxisRaw("Horizontal")) < 0.1f && Mathf.Abs(Input.GetAxisRaw("Vertical")) < 0.1f)
+                {
+                    IsPanning = false; 
+                }
             }
         }
 
         private void ZoomCamera()
         {
             if (!_enableZoom) return;
-
             float zoomDelta = Input.GetAxis("Mouse ScrollWheel");
-            if (Mathf.Abs(zoomDelta) > 0.01f)
-            {
-                Zoom(zoomDelta);
-            }
-
+            if (Mathf.Abs(zoomDelta) > 0.01f) Zoom(zoomDelta);
             MobileTouchZoom();
-
-            if (!_infinitePan)
-            {
-                _camera.transform.position = ClampCamera(_camera.transform.position);
-            }
+            if (!_infinitePan) _camera.transform.position = ClampCamera(_camera.transform.position);
         }
 
         private void MobileTouchZoom()
         {
             if (Input.touchCount != 2) return;
-
             var touch0 = Input.GetTouch(0);
             var touch1 = Input.GetTouch(1);
-
-            var touch0PrevPos = touch0.position - touch0.deltaPosition;
-            var touch1PrevPos = touch1.position - touch1.deltaPosition;
-
-            var prevMagnitude = (touch0PrevPos - touch1PrevPos).magnitude;
+            var prevMagnitude = ((touch0.position - touch0.deltaPosition) - (touch1.position - touch1.deltaPosition)).magnitude;
             var currentMagnitude = (touch0.position - touch1.position).magnitude;
-
-            var touchDifference = currentMagnitude - prevMagnitude;
-
-            if (Mathf.Abs(touchDifference) > 0.01f)
-            {
-                Zoom(touchDifference * 0.01f);
-            }
+            float diff = currentMagnitude - prevMagnitude;
+            if (Mathf.Abs(diff) > 0.01f) Zoom(diff * 0.01f);
         }
 
-        private void Zoom(float increment)
+        private void Zoom(float increment) => _camera.orthographicSize = Mathf.Clamp(_camera.orthographicSize - increment, zoomMin, zoomMax);
+
+        private void ScaleOverflowCamera()
         {
-            _camera.orthographicSize = Mathf.Clamp(_camera.orthographicSize - increment, zoomMin, zoomMax);
+            if (_camera == null || backgroundSprite == null) return;
+            float spriteWidth = backgroundSprite.sprite.textureRect.width;
+            if (_camera.pixelWidth > spriteWidth)
+            {
+                float aspectOverrun = (_camera.aspect - 1.7f) / 0.4375f;
+                zoomMax = Mathf.Max(zoomMax - aspectOverrun, zoomMin);
+            }
         }
 
         private Vector3 ClampCamera(Vector3 targetPosition)
         {
             var orthographicSize = _camera.orthographicSize;
             var camWidth = orthographicSize * _camera.aspect;
+            var pos = backgroundSprite.transform.position;
+            var bounds = backgroundSprite.bounds;
+
+            float minX, minY, maxX, maxY;
 
             if (_camera.orthographicSize < zoomMax + zoomPan && _autoPanBoundary)
             {
-                var position = backgroundSprite.transform.position;
-                var bounds = backgroundSprite.bounds;
-
-                _panMinX = position.x - bounds.size.x / 2f;
-                _panMinY = position.y - bounds.size.y / 2f;
-                _panMaxX = position.x + bounds.size.x / 2f;
-                _panMaxY = position.y + bounds.size.y / 2f;
-
-                var minX = _panMinX + camWidth;
-                var minY = _panMinY + orthographicSize;
-                var maxX = _panMaxX - camWidth;
-                var maxY = _panMaxY - orthographicSize;
-
-                var clampX = Mathf.Clamp(targetPosition.x, minX, maxX);
-                var clampY = Mathf.Clamp(targetPosition.y, minY, maxY);
-                return new Vector3(clampX, clampY, targetPosition.z);
+                minX = pos.x - bounds.size.x / 2f + camWidth;
+                minY = pos.y - bounds.size.y / 2f + orthographicSize;
+                maxX = pos.x + bounds.size.x / 2f - camWidth;
+                maxY = pos.y + bounds.size.y / 2f - orthographicSize;
             }
             else
             {
-                if (_autoPanBoundary)
-                {
-                    _panMinX = 0f;
-                    _panMinY = -0.5f;
-                    _panMaxX = 0;
-                    _panMaxY = -0.5f;
-                }
-
-                var minX = _panMinX;
-                var minY = _panMinY;
-                var maxX = _panMaxX;
-                var maxY = _panMaxY;
-
-                var clampX = Mathf.Clamp(targetPosition.x, minX, maxX);
-                var clampY = Mathf.Clamp(targetPosition.y, minY, maxY);
-                return new Vector3(clampX, clampY, targetPosition.z);
+                minX = _panMinX; minY = _panMinY; maxX = _panMaxX; maxY = _panMaxY;
             }
+
+            return new Vector3(Mathf.Clamp(targetPosition.x, minX, maxX), Mathf.Clamp(targetPosition.y, minY, maxY), targetPosition.z);
         }
+
+        public void SetStopCameraFunc(bool stopCameraFunc) => StopCameraFunc = stopCameraFunc;
+        public static void SetEnablePanAndZoom(bool value) { if (instance) { instance._enablePan = value; instance._enableZoom = value; } }
     }
 }
