@@ -27297,6 +27297,37 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &1658309852
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1658309853}
+  m_Layer: 0
+  m_Name: hammerPivot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1658309853
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1658309852}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7113673498532492964}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1658561871
 GameObject:
   m_ObjectHideFlags: 0
@@ -37103,11 +37134,12 @@ Transform:
   m_GameObject: {fileID: 5220272689412765925}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 11.37, y: -0.31, z: 0}
+  m_LocalPosition: {x: 13.38, y: -1.72, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1440500978703813448}
+  - {fileID: 1658309853}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7113673498532492965
@@ -37124,6 +37156,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 1
   stopDistance: 0.5
+  bodyRenderer: {fileID: 7425729495180718726}
+  normalSprite: {fileID: 21300000, guid: 7f0c0ba5a4c002f4c81adbc7f9be998f, type: 3}
+  buildingSprite: {fileID: -1988919835, guid: 2f6c00c4a35416c43abb4913310bad7e, type: 3}
+  hammerPivot: {fileID: 1658309853}
+  hammerSpeed: 10
+  hammerAngle: 30
 --- !u!4 &7329545036294023710 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1308556227111075879, guid: 67cb3dc6d26a7484dab8ddbdcdb0410b, type: 3}

@@ -8,65 +8,56 @@ public class Builder : MonoBehaviour
     public float speed = 3f;
     public float stopDistance = 0.5f;
 
+    [Header("Визуал")]
+    [SerializeField] private SpriteRenderer bodyRenderer;
+    [SerializeField] private Sprite normalSprite;
+    [SerializeField] private Sprite buildingSprite;
+    [SerializeField] private Transform hammerPivot;
+
+    [Header("Молоток")]
+    public float hammerSpeed = 10f;
+    public float hammerAngle = 30f;
+
     private ConstructionSite _targetSite;
     private bool _isBuilding = false;
+
+    void Awake()
+    {
+        if (bodyRenderer == null) bodyRenderer = GetComponent<SpriteRenderer>();
+        if (hammerPivot != null) hammerPivot.gameObject.SetActive(false);
+    }
 
     void Update()
     {
         if (_isBuilding) return;
 
-        // Ищем работу только если её сейчас нет
-        if (_targetSite == null)
-        {
-            FindWork();
-        }
-        else
-        {
-            MoveAndBuild();
-        }
+        if (_targetSite == null) FindWork();
+        else MoveAndBuild();
     }
 
     private void FindWork()
     {
-        // Ищем чертежи, где ресурсы уже собраны (isResourcesReady)
         var sites = Object.FindObjectsByType<ConstructionSite>(FindObjectsSortMode.None)
             .Where(s => s.isResourcesReady && !s.isConstructed && s.enabled)
             .OrderBy(s => Vector2.Distance(transform.position, s.transform.position))
             .ToList();
 
-        if (sites.Count > 0)
-        {
-            _targetSite = sites[0];
-        }
+        if (sites.Count > 0) _targetSite = sites[0];
     }
 
     private void MoveAndBuild()
     {
-        if (_targetSite == null || _targetSite.isConstructed)
-        {
-            _targetSite = null;
-            return;
-        }
+        if (_targetSite == null || _targetSite.isConstructed) { _targetSite = null; return; }
 
-        // Идем к ближайшей точке коллайдера чертежа
         Vector3 destination = _targetSite.transform.position;
         Collider2D col = _targetSite.GetComponent<Collider2D>();
-        if (col != null)
-        {
-            destination = col.ClosestPoint(transform.position);
-        }
+        if (col != null) destination = col.ClosestPoint(transform.position);
 
-        float dist = Vector2.Distance(transform.position, destination);
-
-        if (dist > stopDistance)
+        if (Vector2.Distance(transform.position, destination) > stopDistance)
         {
             transform.position = Vector2.MoveTowards(transform.position, destination, speed * Time.deltaTime);
-            
-            // Поворот спрайта (если есть SpriteRenderer на этом же объекте)
-            if (TryGetComponent(out SpriteRenderer sr))
-            {
-                sr.flipX = (destination.x - transform.position.x) < 0;
-            }
+            UpdateFacing(destination.x);
+            if (bodyRenderer.sprite != normalSprite) bodyRenderer.sprite = normalSprite;
         }
         else
         {
@@ -78,23 +69,45 @@ public class Builder : MonoBehaviour
     {
         _isBuilding = true;
         
-        // На всякий случай еще раз проверяем цель
         if (_targetSite != null)
         {
-            Debug.Log($"Рабочий начал строить {_targetSite.gameObject.name}...");
-            
-            // Вызываем событие начала стройки на самом чертеже
-            _targetSite.OnConstructionStarted?.Invoke();
+            UpdateFacing(_targetSite.transform.position.x);
+            if (bodyRenderer != null) bodyRenderer.sprite = buildingSprite;
+            if (hammerPivot != null) hammerPivot.gameObject.SetActive(true);
 
-            yield return new WaitForSeconds(_targetSite.buildTime);
-
-            if (_targetSite != null)
+            // Пока здание не достроено и оно существует
+            while (_targetSite != null && !_targetSite.isConstructed)
             {
-                _targetSite.FinishBuilding();
+                // Двигаем таймер стройки в самом здании!
+                _targetSite.AdvanceConstruction(Time.deltaTime);
+
+                // Машем молотком
+                if (hammerPivot != null)
+                {
+                    float rotation = Mathf.Sin(Time.time * hammerSpeed) * hammerAngle;
+                    hammerPivot.localRotation = Quaternion.Euler(0, 0, rotation);
+                }
+                yield return null;
             }
+
+            if (hammerPivot != null) hammerPivot.gameObject.SetActive(false);
+            if (bodyRenderer != null) bodyRenderer.sprite = normalSprite;
         }
         
         _isBuilding = false;
-        _targetSite = null; // После стройки ищем новую работу
+        _targetSite = null;
+    }
+
+    private void UpdateFacing(float targetX)
+    {
+        if (bodyRenderer == null) return;
+        bool lookLeft = targetX < transform.position.x;
+        bodyRenderer.flipX = lookLeft;
+        if (hammerPivot != null)
+        {
+            Vector3 scale = hammerPivot.localScale;
+            scale.x = lookLeft ? -Mathf.Abs(scale.x) : Mathf.Abs(scale.x);
+            hammerPivot.localScale = scale;
+        }
     }
 }

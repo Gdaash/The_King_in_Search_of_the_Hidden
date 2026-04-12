@@ -1,13 +1,11 @@
 using UnityEngine;
 using UnityEngine.Events;
-using System.Collections;
 using System.Linq;
 
 public class ConstructionSite : MonoBehaviour
 {
     [Header("Настройки строительства")]
     public GameObject finalBuildingPrefab;
-    [Tooltip("Время в секундах, которое требуется на постройку после сбора всех ресурсов")]
     public float buildTime = 3f;
 
     [Header("Состояние")]
@@ -22,84 +20,55 @@ public class ConstructionSite : MonoBehaviour
 
     private ResourceRequester _requester;
     private float _constructionTimer = 0f;
-    private bool _isBuilding = false;
+    private bool _isBeingBuiltRightNow = false; // Строят ли нас в данный момент?
 
-    void Awake() 
-    {
-        _requester = GetComponent<ResourceRequester>();
-    }
+    void Awake() => _requester = GetComponent<ResourceRequester>();
 
-    void OnEnable()
-    {
-        if (isPlaced) SetupLogic();
-    }
+    void OnEnable() { if (isPlaced) SetupLogic(); }
 
     public void SetupLogic()
     {
         if (!isPlaced || _requester == null) return;
-
-        // Очищаем старые подписки, чтобы не было дубликатов
         _requester.OnResourceReceived.RemoveListener(HandleResourceReceived);
         _requester.OnAllResourcesReceived.RemoveListener(HandleAllResourcesCollected);
-
-        // Подписываемся на события реквестера
         _requester.OnResourceReceived.AddListener(HandleResourceReceived);
         _requester.OnAllResourcesReceived.AddListener(HandleAllResourcesCollected);
-        
-        Debug.Log($"[ConstructionSite] {gameObject.name}: Логика стройки подключена.");
     }
 
-    private void HandleResourceReceived()
-    {
-        // Просто пробрасываем событие дальше (например, для звука или UI шкалы)
-        OnResourceAdded?.Invoke();
-    }
+    private void HandleResourceReceived() => OnResourceAdded?.Invoke();
 
     private void HandleAllResourcesCollected()
     {
         if (isResourcesReady) return;
-
         isResourcesReady = true;
-        _isBuilding = true;
-        
-        OnConstructionStarted?.Invoke();
-        Debug.Log("[ConstructionSite] Все ресурсы собраны, начало строительства...");
-        
-        // Запускаем процесс стройки
-        StartCoroutine(ConstructionProcess());
+        // Мы НЕ запускаем корутину здесь. Просто ждем строителя.
+        Debug.Log("[ConstructionSite] Ресурсы готовы, ждем строителя...");
     }
 
-    private IEnumerator ConstructionProcess()
+    // Этот метод будет вызывать Строитель каждый кадр, пока он строит
+    public void AdvanceConstruction(float amount)
     {
-        _constructionTimer = 0f;
+        if (!isResourcesReady || isConstructed) return;
 
-        while (_constructionTimer < buildTime)
+        if (_constructionTimer == 0) OnConstructionStarted?.Invoke();
+
+        _constructionTimer += amount;
+
+        if (_constructionTimer >= buildTime)
         {
-            _constructionTimer += Time.deltaTime;
-            // Здесь можно обновлять визуальную шкалу прогресса (fillAmount)
-            yield return null;
+            FinishBuilding();
         }
-
-        FinishBuilding();
     }
 
     public void FinishBuilding()
     {
         if (isConstructed) return;
         isConstructed = true;
-
         OnConstructionFinished?.Invoke();
-
-        if (finalBuildingPrefab != null) 
-        {
-            Instantiate(finalBuildingPrefab, transform.position, Quaternion.identity);
-        }
-
-        // Удаляем площадку, так как здание создано
+        if (finalBuildingPrefab != null) Instantiate(finalBuildingPrefab, transform.position, Quaternion.identity);
         Destroy(gameObject);
     }
 
-    // Вспомогательный метод для получения текущего прогресса (от 0 до 1)
     public float GetBuildProgress()
     {
         if (buildTime <= 0) return 1f;
