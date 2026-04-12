@@ -1,121 +1,128 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.IO;
 
 public class Warehouse : MonoBehaviour
 {
-    // Список всех складов в сцене для поиска носильщиками
+    // Статический список всех складов для быстрого поиска монитором и носильщиками
     public static List<Warehouse> AllWarehouses = new List<Warehouse>();
 
     [System.Serializable]
     public class ResourceEntry
     {
-        public string typeName;
-        public int amount;
+        public ResourceType type; // Ссылка на ScriptableObject ресурса
+        public int amount;        // Количество
     }
 
     [System.Serializable]
-    public class StorageData
-    {
-        public List<ResourceEntry> resources = new List<ResourceEntry>();
+    public struct ResourceEntryDebug 
+    { 
+        public string typeName; 
+        public int amount; 
     }
 
-    [Header("Настройки визуала")]
+    [Header("Настройки всплывающих иконок")]
     [SerializeField] private GameObject floatingIconPrefab;
     [SerializeField] private Vector3 spawnOffset = new Vector3(0, 2f, 0);
+    [SerializeField] private float spawnRandomX = 0.5f;
+    [Range(0.1f, 5f)] [SerializeField] private float iconMoveSpeed = 1.5f;
+    [Range(0.5f, 5f)] [SerializeField] private float iconDuration = 1.2f;
+    [SerializeField] private int iconSortingOrder = 50;
 
-    private Dictionary<string, int> _inventory = new Dictionary<string, int>();
-    private string _savePath;
+    [Header("Начальные ресурсы (Заполняется в инспекторе)")]
+    [SerializeField] private List<ResourceEntry> initialResources = new List<ResourceEntry>();
 
-    void OnEnable() => AllWarehouses.Add(this);
-    void OnDisable() => AllWarehouses.Remove(this);
+    [Header("Содержимое склада (Только для чтения в Play Mode)")]
+    [SerializeField] private List<ResourceEntryDebug> debugInventoryDisplay = new List<ResourceEntryDebug>();
 
-    void Awake()
+    // Основной инвентарь склада (Ключ - объект ResourceType)
+    private Dictionary<ResourceType, int> _inventory = new Dictionary<ResourceType, int>();
+
+    private void OnEnable() => AllWarehouses.Add(this);
+    private void OnDisable() => AllWarehouses.Remove(this);
+
+    private void Awake()
     {
-        // У каждого склада свой файл сохранения на основе его имени в иерархии
-        _savePath = Path.Combine(Application.persistentDataPath, name + "_inventory.json");
-        LoadResources();
+        // Заполняем склад из списка начальных ресурсов
+        foreach (var entry in initialResources)
+        {
+            if (entry.type != null && entry.amount > 0)
+            {
+                if (_inventory.ContainsKey(entry.type))
+                    _inventory[entry.type] += entry.amount;
+                else
+                    _inventory.Add(entry.type, entry.amount);
+            }
+        }
+        SyncDebugList();
     }
 
-    // --- ЛОГИКА ДЛЯ НОСИЛЬЩИКА ---
+    // --- МЕТОДЫ ДЛЯ МОНИТОРА ---
 
-    // 1. Проверка: есть ли ресурс (вызывается носильщиком при поиске склада)
+    // Позволяет скрипту ResourceGlobalMonitor получить копию инвентаря
+    public Dictionary<ResourceType, int> GetInventoryData()
+    {
+        return new Dictionary<ResourceType, int>(_inventory);
+    }
+
+    // --- МЕТОДЫ ВЗАИМОДЕЙСТВИЯ ---
+
     public bool HasResource(ResourceType type)
     {
-        if (type == null) return false;
-        return _inventory.ContainsKey(type.resourceName) && _inventory[type.resourceName] > 0;
+        return type != null && _inventory.ContainsKey(type) && _inventory[type] > 0;
     }
 
-    // 2. Изъятие ресурса (вызывается носильщиком, когда он дошел до склада)
     public bool TryTakeResource(ResourceType type)
     {
         if (HasResource(type))
         {
-            _inventory[type.resourceName]--;
-            SaveResources();
-            Debug.Log($"{name}: Ресурс {type.resourceName} забран. Осталось: {_inventory[type.resourceName]}");
+            _inventory[type]--;
+            SyncDebugList();
             return true;
         }
         return false;
     }
 
-    // 3. Прием ресурса (вызывается носильщиком при разгрузке)
     public void AddResource(ResourceType type, int amount, Sprite resourceSprite)
     {
         if (type == null) return;
 
-        if (_inventory.ContainsKey(type.resourceName))
-            _inventory[type.resourceName] += amount;
+        if (_inventory.ContainsKey(type))
+            _inventory[type] += amount;
         else
-            _inventory.Add(type.resourceName, amount);
+            _inventory.Add(type, amount);
 
         SpawnFloatingIcon(resourceSprite);
-        SaveResources();
-
-        Debug.Log($"{name}: Принято {type.resourceName}. Всего: {_inventory[type.resourceName]}");
+        SyncDebugList();
     }
 
-    // --- ВИЗУАЛ И СОХРАНЕНИЕ ---
+    // --- ВИЗУАЛ И СЛУЖЕБНЫЕ МЕТОДЫ ---
 
     private void SpawnFloatingIcon(Sprite iconSprite)
     {
         if (floatingIconPrefab == null || iconSprite == null) return;
 
-        GameObject iconObj = Instantiate(floatingIconPrefab, transform.position + spawnOffset, Quaternion.identity);
+        float randomX = Random.Range(-spawnRandomX, spawnRandomX);
+        Vector3 finalPos = transform.position + spawnOffset + new Vector3(randomX, 0, 0);
+
+        GameObject iconObj = Instantiate(floatingIconPrefab, finalPos, Quaternion.identity);
+        
         if (iconObj.TryGetComponent(out SpriteRenderer sr))
-        {
-            sr.sprite = iconSprite;
-        }
+            sr.sortingOrder = iconSortingOrder;
+
+        if (iconObj.TryGetComponent(out FloatingIcon iconScript))
+            iconScript.Init(iconSprite, iconMoveSpeed, iconDuration);
     }
 
-    private void SaveResources()
+    private void SyncDebugList()
     {
-        StorageData saveData = new StorageData();
+        debugInventoryDisplay.Clear();
         foreach (var pair in _inventory)
         {
-            saveData.resources.Add(new ResourceEntry { typeName = pair.Key, amount = pair.Value });
-        }
-        string json = JsonUtility.ToJson(saveData, true);
-        File.WriteAllText(_savePath, json);
-    }
-
-    private void LoadResources()
-    {
-        if (!File.Exists(_savePath)) return;
-
-        try
-        {
-            string json = File.ReadAllText(_savePath);
-            StorageData loadData = JsonUtility.FromJson<StorageData>(json);
-            _inventory.Clear();
-            foreach (var entry in loadData.resources)
-            {
-                _inventory.Add(entry.typeName, entry.amount);
-            }
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogError($"Ошибка загрузки склада {name}: {e.Message}");
+            debugInventoryDisplay.Add(new ResourceEntryDebug 
+            { 
+                typeName = pair.Key.resourceName, 
+                amount = pair.Value 
+            });
         }
     }
 }

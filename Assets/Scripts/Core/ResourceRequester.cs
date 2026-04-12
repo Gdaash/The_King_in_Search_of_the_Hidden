@@ -35,8 +35,14 @@ public class ResourceRequester : MonoBehaviour
     private bool _isProcessing = false;
     private Vector3 _originalIconPos;
 
-    // Важно: OnDisable срабатывает и при Destroy, и при SetActive(false)
-    void OnEnable() => AllRequesters.Add(this);
+    // Вызывается при активации объекта (включая самый старт)
+    void OnEnable()
+    {
+        AllRequesters.Add(this);
+        // Принудительно обновляем иконку при включении здания
+        UpdateIndicator();
+    }
+
     void OnDisable() => AllRequesters.Remove(this);
 
     void Start()
@@ -44,13 +50,20 @@ public class ResourceRequester : MonoBehaviour
         if (requestSpriteDisplay != null)
         {
             _originalIconPos = requestSpriteDisplay.transform.localPosition;
-            if (neededType != null) requestSpriteDisplay.sprite = neededType.defaultCarrySprite;
+            // Устанавливаем спрайт ресурса, который здание будет просить
+            if (neededType != null) 
+            {
+                requestSpriteDisplay.sprite = neededType.defaultCarrySprite;
+            }
         }
+        
+        // Повторный вызов после инициализации позиций
         UpdateIndicator();
     }
 
     void Update()
     {
+        // Анимация покачивания иконки (только если она активна)
         if (requestSpriteDisplay != null && requestSpriteDisplay.gameObject.activeSelf)
         {
             float newY = _originalIconPos.y + Mathf.Sin(Time.time * bobbingSpeed) * bobbingAmount;
@@ -66,7 +79,6 @@ public class ResourceRequester : MonoBehaviour
         UpdateIndicator();
     }
 
-    // Новый метод: отмена брони, если носильщик погиб или передумал
     public void UnreserveSpot()
     {
         _reservedAmount = Mathf.Max(0, _reservedAmount - 1);
@@ -136,7 +148,16 @@ public class ResourceRequester : MonoBehaviour
     private void UpdateIndicator()
     {
         if (requestSpriteDisplay == null) return;
+
+        // Логика показа иконки: 
+        // 1. Здание не занято переработкой (_isProcessing)
+        // 2. Место еще не заполнено полностью (_currentAmount < capacity)
+        // 3. К зданию еще не идет ни один носильщик (_reservedAmount == 0)
         bool shouldShow = !_isProcessing && _currentAmount < capacity && _reservedAmount == 0;
-        requestSpriteDisplay.gameObject.SetActive(shouldShow);
+        
+        if (requestSpriteDisplay.gameObject.activeSelf != shouldShow)
+        {
+            requestSpriteDisplay.gameObject.SetActive(shouldShow);
+        }
     }
 }
