@@ -8,7 +8,7 @@ public class EnemyMovement : MonoBehaviour
     [SerializeField] private float speedVariation = 0.7f;
     
     [Header("Обход препятствий")]
-    [SerializeField] private float obstacleDist = 1.5f; // Увеличили, чтобы замечал раньше
+    [SerializeField] private float obstacleDist = 1.5f; // Чуть больше, чтобы заранее огибать
     [SerializeField] private float agentAvoidanceRadius = 0.3f; 
     [SerializeField] private LayerMask obstacleLayer;
 
@@ -21,8 +21,7 @@ public class EnemyMovement : MonoBehaviour
     private float _initialScaleX;
     private float _finalSpeed;
     
-    // Переменная для сглаживания обхода
-    private Vector2 _lastMoveDir;
+    private Vector2 _avoidanceOffset; // Плавное смещение для обхода
 
     void Awake()
     {
@@ -33,7 +32,6 @@ public class EnemyMovement : MonoBehaviour
         _rb.gravityScale = 0;
         _rb.constraints = RigidbodyConstraints2D.FreezeRotation;
         _rb.interpolation = RigidbodyInterpolation2D.Interpolate;
-        _rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
     }
 
     void Start() => _finalSpeed = baseSpeed + Random.Range(-speedVariation, speedVariation);
@@ -41,7 +39,10 @@ public class EnemyMovement : MonoBehaviour
     public void SetMove(bool state) 
     {
         _canMove = state;
-        if (!state && _rb != null) _rb.linearVelocity = Vector2.zero;
+        if (!state) {
+            _rb.linearVelocity = Vector2.zero;
+            _avoidanceOffset = Vector2.zero;
+        }
     }
 
     void FixedUpdate()
@@ -49,7 +50,6 @@ public class EnemyMovement : MonoBehaviour
         if (!_canMove || _ai == null || _ai.GetTarget() == null) 
         { 
             _rb.linearVelocity = Vector2.zero; 
-            _lastMoveDir = Vector2.zero;
             return; 
         }
 
@@ -62,40 +62,36 @@ public class EnemyMovement : MonoBehaviour
             return;
         }
 
-        Vector2 moveDir = CalculateAvoidance(targetPos);
+        // Основное направление к цели
+        Vector2 desiredDir = (targetPos - currentPos).normalized;
         
-        // Сглаживаем направление, чтобы ИИ не дребезжал на углах
-        _lastMoveDir = Vector2.Lerp(_lastMoveDir, moveDir, Time.fixedDeltaTime * 5f);
+        // Вычисляем обход
+        Vector2 avoidanceDir = CalculateAvoidance(desiredDir);
         
-        _rb.linearVelocity = _lastMoveDir.normalized * _finalSpeed;
+        // Плавно смешиваем текущий обход с предыдущим, чтобы не было дрожи
+        _avoidanceOffset = Vector2.Lerp(_avoidanceOffset, avoidanceDir, Time.fixedDeltaTime * 8f);
+
+        _rb.linearVelocity = _avoidanceOffset * _finalSpeed;
         
-        if (Mathf.Abs(_lastMoveDir.x) > flipThreshold)
+        // Разворот через Scale
+        if (Mathf.Abs(_rb.linearVelocity.x) > flipThreshold)
         {
-            float newScaleX = _lastMoveDir.x > 0 ? _initialScaleX : -_initialScaleX;
+            float newScaleX = _rb.linearVelocity.x > 0 ? _initialScaleX : -_initialScaleX;
             transform.localScale = new Vector3(newScaleX, transform.localScale.y, transform.localScale.z);
         }
     }
 
-    private Vector2 CalculateAvoidance(Vector2 targetPos)
+    private Vector2 CalculateAvoidance(Vector2 desiredDir)
     {
-        Vector2 currentPos = _rb.position;
-        Vector2 desiredDir = (targetPos - currentPos).normalized;
-
         // Если путь свободен — идем прямо
         if (!IsPathBlocked(desiredDir)) return desiredDir;
 
-        // Если путь закрыт, проверяем веер лучей (от узких к широким)
-        // Добавили больше углов для более плавного обхода
-        float[] angles = { 30f, -30f, 60f, -60f, 90f, -90f, 130f, -130f };
-        
+        // Веер лучей для поиска свободного прохода
+        float[] angles = { 30f, -30f, 60f, -60f, 90f, -90f };
         foreach (float a in angles)
         {
             Vector2 checkDir = Quaternion.Euler(0, 0, a) * desiredDir;
-            if (!IsPathBlocked(checkDir))
-            {
-                // Чтобы обход был более уверенным, подталкиваем его чуть сильнее в сторону
-                return checkDir;
-            }
+            if (!IsPathBlocked(checkDir)) return checkDir;
         }
         
         return desiredDir;
@@ -103,14 +99,7 @@ public class EnemyMovement : MonoBehaviour
 
     private bool IsPathBlocked(Vector2 dir) 
     {
-        // CircleCast имитирует ширину моба
         RaycastHit2D hit = Physics2D.CircleCast(_rb.position, agentAvoidanceRadius, dir, obstacleDist, obstacleLayer);
-        
-        // Проверяем, что попали не в себя и не в триггер (если здания — триггеры)
-        if (hit.collider != null && hit.collider.gameObject != gameObject && !hit.collider.isTrigger)
-        {
-            return true;
-        }
-        return false;
+        return hit.collider != null && hit.collider.gameObject != gameObject && !hit.collider.isTrigger;
     }
 }
