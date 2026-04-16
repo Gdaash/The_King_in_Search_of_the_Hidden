@@ -26,37 +26,37 @@ public class ResourceRequester : MonoBehaviour {
     public int priority = 1;
 
     [Header("Выходные ресурсы")]
-    [SerializeField] private List<ResourceOutput> outputResources = new List<ResourceOutput>();
-    [SerializeField] private Transform spawnPoint;
-    [SerializeField] private float spawnSpread = 0.5f;
+    [SerializeField] protected List<ResourceOutput> outputResources = new List<ResourceOutput>();
+    [SerializeField] protected Transform spawnPoint;
+    [SerializeField] protected float spawnSpread = 0.5f;
 
     [Header("Визуал иконок")]
-    [SerializeField] private GameObject iconPrefab; // Префаб с SpriteRenderer
-    [SerializeField] private Transform iconsContainer; // Пустой объект-родитель для иконок
-    [SerializeField] private float iconSpacing = 0.4f; // Расстояние между иконками
-    [SerializeField] private float bobbingAmount = 0.1f;
-    [SerializeField] private float bobbingSpeed = 2f;
+    [SerializeField] protected GameObject iconPrefab; 
+    [SerializeField] protected Transform iconsContainer; 
+    [SerializeField] protected float iconSpacing = 0.4f; 
+    [SerializeField] protected float bobbingAmount = 0.1f;
+    [SerializeField] protected float bobbingSpeed = 2f;
 
     [Header("События")]
     public UnityEvent OnResourceReceived;
     public UnityEvent OnAllResourcesReceived;
     public UnityEvent OnActionExecuted;
 
-    private List<GameObject> _activeIcons = new List<GameObject>();
-    private int _carryingToUs = 0; 
-    private bool _isProcessing = false;
-    private Vector3 _containerBasePos;
+    // Изменено на protected, чтобы ClickRequester имел доступ
+    protected List<GameObject> _activeIcons = new List<GameObject>();
+    protected int _carryingToUs = 0; 
+    protected bool _isProcessing = false;
+    protected Vector3 _containerBasePos;
 
-    void OnEnable() { 
+    protected virtual void OnEnable() { 
         AllRequesters.Add(this); 
         if (iconsContainer != null) _containerBasePos = iconsContainer.localPosition;
         UpdateIndicator(); 
     }
     
-    void OnDisable() => AllRequesters.Remove(this);
+    protected virtual void OnDisable() => AllRequesters.Remove(this);
 
-    void Update() {
-        // Анимация покачивания всего контейнера сразу
+    protected virtual void Update() {
         if (iconsContainer != null && iconsContainer.gameObject.activeSelf) {
             float newY = _containerBasePos.y + Mathf.Sin(Time.time * bobbingSpeed) * bobbingAmount;
             iconsContainer.localPosition = new Vector3(_containerBasePos.x, newY, _containerBasePos.z);
@@ -109,7 +109,7 @@ public class ResourceRequester : MonoBehaviour {
         }
     }
 
-    private void CheckCompletion() {
+    protected void CheckCompletion() {
         if (requirements.All(r => r.currentAmount >= r.requiredAmount)) {
             _isProcessing = true;
             OnAllResourcesReceived?.Invoke();
@@ -128,10 +128,10 @@ public class ResourceRequester : MonoBehaviour {
         UpdateIndicator();
     }
 
-    public void UpdateIndicator() {
+    // Сделан virtual, чтобы ClickRequester мог его переписать под иконку мыши
+    public virtual void UpdateIndicator() {
         if (iconsContainer == null || iconPrefab == null) return;
 
-        // Очищаем старые иконки
         foreach (var icon in _activeIcons) Destroy(icon);
         _activeIcons.Clear();
 
@@ -140,8 +140,6 @@ public class ResourceRequester : MonoBehaviour {
             return;
         }
 
-        // Собираем список всех ресурсов, которые ЕЩЕ НЕ несут физически
-        // (То есть те, что нужны минус те, что уже в руках у носильщиков)
         List<ResourceType> displayTypes = new List<ResourceType>();
         int tempCarrying = _carryingToUs;
 
@@ -149,7 +147,7 @@ public class ResourceRequester : MonoBehaviour {
             int neededPhysically = req.requiredAmount - req.currentAmount;
             for (int i = 0; i < neededPhysically; i++) {
                 if (tempCarrying > 0) {
-                    tempCarrying--; // Пропускаем иконку, если ресурс уже "в пути" (в руках)
+                    tempCarrying--; 
                 } else {
                     displayTypes.Add(req.resourceType);
                 }
@@ -163,7 +161,6 @@ public class ResourceRequester : MonoBehaviour {
 
         iconsContainer.gameObject.SetActive(true);
 
-        // Создаем новые иконки и центрируем их
         float totalWidth = (displayTypes.Count - 1) * iconSpacing;
         float startX = -totalWidth / 2f;
 

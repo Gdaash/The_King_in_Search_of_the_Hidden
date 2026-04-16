@@ -3,6 +3,7 @@ using DeskCat.FindIt.Scripts.Core.Main.System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using DeskCat.FindIt.Scripts.Core.Main.Utility.Region; // Убедитесь, что этот namespace подключен
 
 namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
 {
@@ -13,7 +14,6 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
 
     public class DragObj : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler
     {
-        // Статическая переменная, чтобы камера знала, что мышь занята перетаскиванием
         public static bool IsAnyObjectDragging { get; private set; }
 
         [Header("General Settings")] public string DropRegionName = "";
@@ -75,7 +75,6 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
 
             onBeginDrag?.Invoke(this);
 
-            // Теперь мы НЕ выключаем камеру совсем, а просто даем ей знать, что идет перетаскивание
             IsAnyObjectDragging = true;
             _isDragging = true;
         }
@@ -95,11 +94,17 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
 
             onDrag?.Invoke(this);
 
-            if (CurrentDragInfo.CurrentDropRegion != null &&
-                CurrentDragInfo.CurrentDropRegion.RegionName == DropRegionName)
+            // ИСПРАВЛЕНО: Проверка через метод наличия нужного региона в списке
+            if (CurrentDragInfo.CurrentDropRegion != null)
             {
-                onDragToRegion?.Invoke(this);
-                if (DragToRegionToFound) _hiddenObj.DragRegionAction?.Invoke();
+                // Проверяем, есть ли в текущем регионе активная зона с нашим DropRegionName
+                bool isOverTarget = CurrentDragInfo.CurrentDropRegion.regions.Exists(r => r.isActive && r.regionName == DropRegionName);
+                
+                if (isOverTarget)
+                {
+                    onDragToRegion?.Invoke(this);
+                    if (DragToRegionToFound) _hiddenObj.DragRegionAction?.Invoke();
+                }
             }
         }
 
@@ -114,8 +119,6 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
             }
 
             onEndDrag?.Invoke(this);
-
-            // Сообщаем, что перетаскивание окончено
             IsAnyObjectDragging = false;
 
             DropRegionCheck();
@@ -131,13 +134,19 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
         private void DropRegionCheck()
         {
             if (CurrentDragInfo.CurrentDropRegion == null) return;
-            if (CurrentDragInfo.CurrentDropRegion.RegionName != DropRegionName) return;
+
+            // ИСПРАВЛЕНО: Проверяем наличие региона в списке
+            bool hasValidRegion = CurrentDragInfo.CurrentDropRegion.regions.Exists(r => r.isActive && r.regionName == DropRegionName);
+            
+            if (!hasValidRegion) return;
 
             if (HideWhenDropToRegion) gameObject.SetActive(false);
             if (IsThisRegionAsTarget) _hiddenObj.DragRegionAction?.Invoke();
 
             onDropRegion?.Invoke(this);
-            CurrentDragInfo.CurrentDropRegion.DropRegionEvent?.Invoke();
+            
+            // ИСПРАВЛЕНО: Вызываем метод выполнения событий из списка
+            CurrentDragInfo.CurrentDropRegion.ExecuteRegionEvent(DropRegionName);
         }
 
         private Vector3 CalculateWorldPoint()

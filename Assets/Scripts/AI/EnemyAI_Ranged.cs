@@ -15,76 +15,129 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
     [SerializeField] private float baseAttackCooldown = 2f;
     [SerializeField] private float cooldownVariation = 0.5f; 
 
-    [Header("Настройки отбегания (Flee)")]
-    [SerializeField] private float fleeDuration = 1.5f;     
-    [SerializeField] private float fleeCooldown = 4f;       
-    
+    [Header("Настройки защиты (Home)")]
+    [SerializeField] private GameObject homeBase;
+    [SerializeField] private float homeStoppingDistance = 0.5f;
+    [SerializeField] private float positionVariation = 2f;
+
     [Header("События состояний")]
     public UnityEvent OnMove;   
     public UnityEvent OnStop;   
     public UnityEvent OnAttack; 
 
     private Transform _target;
+    private Collider2D _targetCollider;
+    private Collider2D _homeCollider;
+    
     private bool _isAttacking = false;
-    private bool _isFleeing = false;
     private float _nextAttackTime;
-    private float _nextFleeAllowedTime;
     private float _currentCooldown;
+    private Vector2 _personalOffset;
+
+    void Awake()
+    {
+        if (homeBase != null) _homeCollider = homeBase.GetComponent<Collider2D>();
+        
+        // Генерируем случайный сдвиг для защиты базы
+        _personalOffset = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized * Random.Range(0, positionVariation);
+    }
 
     void Start() => ResetCooldown();
 
     void Update()
     {
         FindClosestTarget();
-        if (_target == null) { OnStop?.Invoke(); return; }
-        if (_isFleeing) return;
 
-        float distance = Vector2.Distance(transform.position, _target.position);
+        if (_target != null)
+        {
+            HandleCombat();
+        }
+        else
+        {
+            ReturnToHome();
+        }
+    }
 
-        if (!_isAttacking && distance <= attackRange && Time.time >= _nextAttackTime)
+    private void HandleCombat()
+    {
+        Vector2 closestPoint = _targetCollider.ClosestPoint(transform.position);
+        float distanceToEdge = Vector2.Distance(transform.position, closestPoint);
+
+        // Логика атаки
+        if (!_isAttacking && distanceToEdge <= attackRange && Time.time >= _nextAttackTime)
         {
             _isAttacking = true;
             OnAttack?.Invoke();
             _nextAttackTime = Time.time + _currentCooldown;
         }
 
+        // Логика перемещения во время боя
         if (!_isAttacking)
         {
-            if (distance > stopRange && distance <= detectionRange) OnMove?.Invoke();
-            else OnStop?.Invoke();
+            if (distanceToEdge > stopRange && distanceToEdge <= detectionRange) 
+                OnMove?.Invoke();
+            else 
+                OnStop?.Invoke();
         }
     }
 
-    public void OnTakeDamage()
+    private void ReturnToHome()
     {
-        if (Time.time >= _nextFleeAllowedTime && !_isFleeing) StartCoroutine(FleeRoutine());
-    }
+        if (_homeCollider == null) 
+        { 
+            OnStop?.Invoke(); 
+            return; 
+        }
 
-    private IEnumerator FleeRoutine()
-    {
-        _isFleeing = true;
-        _isAttacking = false; 
-        _nextFleeAllowedTime = Time.time + fleeCooldown;
-        OnMove?.Invoke(); 
-        yield return new WaitForSeconds(fleeDuration);
-        _isFleeing = false;
-        ResetCooldown();
-    }
+        Vector2 pointOnEdge = _homeCollider.ClosestPoint(transform.position);
+        Vector2 targetPosition = pointOnEdge + _personalOffset;
+        float distanceToTarget = Vector2.Distance(transform.position, targetPosition);
 
-    public bool IsFleeing() => _isFleeing;
-    public Transform GetTarget() => _target;
-    public string GetTargetTag() => targetTag;
-    public void FinishAttack() { _isAttacking = false; ResetCooldown(); }
+        if (distanceToTarget > homeStoppingDistance)
+        {
+            OnMove?.Invoke();
+        }
+        else
+        {
+            OnStop?.Invoke();
+        }
+    }
 
     private void FindClosestTarget()
     {
         var targets = GameObject.FindGameObjectsWithTag(targetTag);
-        _target = targets
-            .Select(t => t.transform)
-            .Where(t => t.gameObject.activeInHierarchy)
-            .OrderBy(t => Vector2.SqrMagnitude(t.position - transform.position))
+        var closest = targets
+            .Select(t => t.GetComponent<Collider2D>())
+            .Where(c => c != null && c.gameObject.activeInHierarchy)
+            .OrderBy(c => Vector2.SqrMagnitude(c.transform.position - transform.position))
             .FirstOrDefault();
+
+        if (closest != null)
+        {
+            _target = closest.transform;
+            _targetCollider = closest;
+        }
+        else
+        {
+            _target = null;
+            _targetCollider = null;
+        }
     }
 
     private void ResetCooldown() => _currentCooldown = baseAttackCooldown + Random.Range(-cooldownVariation, cooldownVariation);
+    
+    // --- Методы интерфейса и взаимодействия со сторонними скриптами ---
+
+    public Transform GetTarget() 
+    {
+        if (_target != null) return _target;
+        if (homeBase != null) return homeBase.transform;
+        return null;
+    }
+
+    public string GetTargetTag() => targetTag; // Возвращаем тег (нужен для визуалов)
+
+    public void FinishAttack() { _isAttacking = false; ResetCooldown(); }
+
+    public void OnTakeDamage() { /* Механика отбегания удалена */ }
 }
