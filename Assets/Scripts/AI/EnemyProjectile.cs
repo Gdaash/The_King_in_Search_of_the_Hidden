@@ -10,18 +10,17 @@ public class EnemyProjectile : MonoBehaviour
     [SerializeField] private int damage = 10;
     [SerializeField] private DamageType damageType = DamageType.Physical;
 
-    private Vector3 _direction;
-    private string _targetTag = "Player"; // Тэг, по которому будет наноситься урон
+    [Header("Слои препятствий")]
+    [SerializeField] private LayerMask obstacleLayers; // В инспекторе выберите Buildings и Obstacles
 
-    /// <summary>
-    /// Инициализация снаряда. Теперь принимает и направление, и тэг цели.
-    /// </summary>
+    private Vector3 _direction;
+    private string _targetTag = "Player";
+
     public void Setup(Vector3 dir, string targetTag) 
     {
         _direction = dir;
         _targetTag = targetTag;
 
-        // Поворачиваем снаряд по направлению полета
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0, 0, angle);
 
@@ -33,20 +32,33 @@ public class EnemyProjectile : MonoBehaviour
         transform.position += _direction * speed * Time.deltaTime;
     }
 
-    private void OnTriggerEnter2D(Collider2D collision) 
+    // Этот метод сработает, если коллайдеры — Триггеры
+    private void OnTriggerEnter2D(Collider2D collision) => ProcessHit(collision.gameObject);
+
+    // Этот метод сработает, если коллайдеры — Твердые (не триггеры)
+    private void OnCollisionEnter2D(Collision2D collision) => ProcessHit(collision.gameObject);
+
+    private void ProcessHit(GameObject target)
     {
-        // 1. Проверяем, совпадает ли тэг объекта с целью (например, "Player")
-        if (collision.CompareTag(_targetTag)) 
+        // 1. Проверка по тегу (здание или юнит)
+        if (target.CompareTag(_targetTag)) 
         {
-            if (collision.TryGetComponent<Health>(out var health)) 
+            if (target.TryGetComponent<Health>(out var health)) 
             {
                 health.TakeDamage(damage, damageType);
-                Destroy(gameObject);
             }
+            else 
+            {
+                // Если Health нет на самом объекте, ищем в родителе (часто для зданий)
+                target.GetComponentInParent<Health>()?.TakeDamage(damage, damageType);
+            }
+            
+            Destroy(gameObject);
+            return;
         }
         
-        // 2. Уничтожение при столкновении с препятствиями
-        if (((1 << collision.gameObject.layer) & LayerMask.GetMask("Obstacles")) != 0) 
+        // 2. Проверка по слою (если попали в стену/здание другого тега)
+        if (((1 << target.layer) & obstacleLayers) != 0) 
         {
             Destroy(gameObject);
         }

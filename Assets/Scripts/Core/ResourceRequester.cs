@@ -42,7 +42,6 @@ public class ResourceRequester : MonoBehaviour {
     public UnityEvent OnAllResourcesReceived;
     public UnityEvent OnActionExecuted;
 
-    // Изменено на protected, чтобы ClickRequester имел доступ
     protected List<GameObject> _activeIcons = new List<GameObject>();
     protected int _carryingToUs = 0; 
     protected bool _isProcessing = false;
@@ -128,7 +127,6 @@ public class ResourceRequester : MonoBehaviour {
         UpdateIndicator();
     }
 
-    // Сделан virtual, чтобы ClickRequester мог его переписать под иконку мыши
     public virtual void UpdateIndicator() {
         if (iconsContainer == null || iconPrefab == null) return;
 
@@ -181,10 +179,17 @@ public class ResourceRequester : MonoBehaviour {
             for (int i = 0; i < output.count; i++) {
                 Vector3 randomPos = new Vector3(Random.Range(-spawnSpread, spawnSpread), Random.Range(-spawnSpread, spawnSpread), 0);
                 Vector3 origin = transform.position;
-                Vector3 targetPos = (spawnPoint != null ? spawnPoint.position : origin) + randomPos;
+                Vector3 spawnTarget = (spawnPoint != null ? spawnPoint.position : origin) + randomPos;
+                
                 GameObject res = Instantiate(output.prefab, origin, Quaternion.identity);
-                res.tag = "Resource";
-                StartCoroutine(TossResource(res.transform, origin, targetPos));
+
+                // ИСПРАВЛЕНИЕ: Если тег объекта не задан (Untagged), назначаем "Resource".
+                // Если в префабе уже стоит "Enemy1" или другой тег, скрипт его не трогает.
+                if (res.CompareTag("Untagged")) {
+                    res.tag = "Resource";
+                }
+
+                StartCoroutine(TossResource(res.transform, origin, spawnTarget));
             }
         }
     }
