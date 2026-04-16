@@ -8,11 +8,12 @@ public class HexBlocker : MonoBehaviour
     [Header("Ссылки на объекты")]
     [SerializeField] private GameObject lockedVisual;   
     [SerializeField] private GameObject unlockedVisual; 
+    [SerializeField] private GameObject[] skullIcons; // Ссылки на 5 объектов черепов
 
     [Header("Настройки сетки и слоев")]
     [SerializeField] private float checkRadius = 1.1f; 
     [SerializeField] private LayerMask hexLayer;       
-    [SerializeField] private LayerMask hiddenLayers; // Убедитесь, что здесь выбраны Building и Resource
+    [SerializeField] private LayerMask hiddenLayers; 
 
     [Header("События")]
     public UnityEvent OnHexUnlocked; 
@@ -20,10 +21,19 @@ public class HexBlocker : MonoBehaviour
     private bool _isRemoved = false;
     private bool _isCurrentlyUnlocked = false; 
     private List<GameObject> _hiddenObjects = new List<GameObject>();
+    private int _totalDanger = 0;
 
-    // Используем Awake, чтобы это произошло раньше Start других скриптов
     private void Awake()
     {
+        // Выключаем черепа при старте
+        if (skullIcons != null)
+        {
+            foreach (var skull in skullIcons)
+            {
+                if (skull != null) skull.SetActive(false);
+            }
+        }
+        
         FindAndHideObjects();
     }
 
@@ -34,19 +44,33 @@ public class HexBlocker : MonoBehaviour
 
     private void FindAndHideObjects()
     {
-        // Увеличиваем радиус поиска до 0.5f (почти весь центр гекса)
-        // Используем OverlapCircleAll для поиска всех объектов под собой
         Collider2D[] overlays = Physics2D.OverlapCircleAll(transform.position, 0.5f, hiddenLayers);
         
         foreach (var col in overlays)
         {
-            if (col.gameObject == this.gameObject) continue;
+            if (col == null || col.gameObject == this.gameObject) continue;
 
-            // Добавляем объект в список и выключаем
             if (!_hiddenObjects.Contains(col.gameObject))
             {
+                // Проверяем наличие скрипта опасности
+                DangerSource danger = col.GetComponent<DangerSource>();
+                if (danger != null)
+                {
+                    _totalDanger += danger.dangerLevel;
+                }
+
                 _hiddenObjects.Add(col.gameObject);
                 col.gameObject.SetActive(false);
+            }
+        }
+
+        // Включаем черепа согласно уровню опасности (макс 5)
+        if (skullIcons != null)
+        {
+            int skullsToShow = Mathf.Min(_totalDanger, skullIcons.Length);
+            for (int i = 0; i < skullsToShow; i++)
+            {
+                if (skullIcons[i] != null) skullIcons[i].SetActive(true);
             }
         }
     }
@@ -64,11 +88,18 @@ public class HexBlocker : MonoBehaviour
             if (obj != null) obj.SetActive(true);
         }
 
+        // Выключаем черепа при уничтожении
+        if (skullIcons != null)
+        {
+            foreach (var skull in skullIcons)
+            {
+                if (skull != null) skull.SetActive(false);
+            }
+        }
+
         NotifyNeighbors();
         StartCoroutine(AnimateAndDestroy());
     }
-
-    // --- Логика анимаций и проверок (без изменений) ---
 
     private IEnumerator AnimateAndDestroy()
     {
@@ -134,6 +165,7 @@ public class HexBlocker : MonoBehaviour
 
     private IEnumerator AnimateUnlock()
     {
+        if (lockedVisual == null) yield break;
         Transform lockedTr = lockedVisual.transform;
         Vector3 initialScale = lockedTr.localScale;
         Vector3 targetScale = initialScale * 1.5f;
@@ -160,7 +192,7 @@ public class HexBlocker : MonoBehaviour
         Collider2D[] neighbors = Physics2D.OverlapCircleAll(transform.position, checkRadius * 1.5f, hexLayer);
         foreach (var col in neighbors)
         {
-            if (col.gameObject == this.gameObject) continue;
+            if (col == null || col.gameObject == this.gameObject) continue;
             HexBlocker hex = col.GetComponent<HexBlocker>();
             if (hex != null) hex.Invoke(nameof(CheckStatus), 0.05f);
         }
@@ -168,9 +200,7 @@ public class HexBlocker : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, checkRadius);
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, 0.5f); // Красный круг — зона поиска зданий
+        Gizmos.color = Color.yellow; Gizmos.DrawWireSphere(transform.position, checkRadius);
+        Gizmos.color = Color.red; Gizmos.DrawWireSphere(transform.position, 0.5f);
     }
 }
