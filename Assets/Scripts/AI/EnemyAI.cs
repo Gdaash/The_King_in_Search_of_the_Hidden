@@ -14,9 +14,8 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
     [SerializeField] private float cooldownVariation = 0.4f; 
 
     [Header("Настройки защиты (Home)")]
-    [SerializeField] private GameObject homeBase;
     [SerializeField] private float homeStoppingDistance = 0.3f;
-    [SerializeField] private float positionVariation = 1.5f; // На сколько юниты могут стоять вразнобой
+    [SerializeField] private float positionVariation = 1.5f;
 
     [Header("События состояний")]
     public UnityEvent OnMove;   
@@ -26,16 +25,15 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
     private Transform _target;
     private Collider2D _targetCollider; 
     private Collider2D _homeCollider; 
+    private Transform _homeTransform;
+
     private bool _isAttacking = false;
     private float _currentCooldown;
     private float _nextAttackTime;
-    
-    private Vector2 _personalOffset; // Персональное смещение юнита
+    private Vector2 _personalOffset;
 
     void Awake()
     {
-        if (homeBase != null) _homeCollider = homeBase.GetComponent<Collider2D>();
-        // Генерируем случайный сдвиг, чтобы не толпились в одной точке
         _personalOffset = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized * Random.Range(0, positionVariation);
     }
 
@@ -45,6 +43,12 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
     {
         FindClosestTarget();
 
+        // Если врагов поблизости нет, ищем ближайшую базу
+        if (_target == null)
+        {
+            ValidateOrFindHome();
+        }
+
         if (_target != null)
         {
             HandleCombat();
@@ -52,6 +56,23 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
         else
         {
             ReturnToHome();
+        }
+    }
+
+    private void ValidateOrFindHome()
+    {
+        if (_homeTransform == null || !_homeTransform.gameObject.activeInHierarchy)
+        {
+            var home = Object.FindObjectsByType<HomeBase>(FindObjectsSortMode.None)
+                .Where(h => h.gameObject.activeInHierarchy)
+                .OrderBy(h => Vector2.SqrMagnitude(h.transform.position - transform.position))
+                .FirstOrDefault();
+
+            if (home != null)
+            {
+                _homeTransform = home.transform;
+                _homeCollider = home.GetComponent<Collider2D>();
+            }
         }
     }
 
@@ -88,7 +109,6 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
             return;
         }
 
-        // Берем точку на краю, но добавляем персональный оффсет
         Vector2 pointOnEdge = _homeCollider.ClosestPoint((Vector2)transform.position);
         Vector2 targetPosition = pointOnEdge + _personalOffset;
         
@@ -125,14 +145,20 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
         }
     }
 
+    // Метод для контратаки (теперь с параметром по умолчанию)
+    public void OnTakeDamage(Transform attacker = null)
+    {
+        if (attacker != null)
+        {
+            _target = attacker;
+            _targetCollider = attacker.GetComponent<Collider2D>();
+            _isAttacking = false;
+        }
+    }
+
     private void ResetCooldown() => _currentCooldown = baseAttackCooldown + Random.Range(-cooldownVariation, cooldownVariation);
     
-    public Transform GetTarget() 
-    {
-        if (_target != null) return _target;
-        if (homeBase != null) return homeBase.transform;
-        return null;
-    }
+    public Transform GetTarget() => _target != null ? _target : _homeTransform;
 
     public void FinishAttack() { _isAttacking = false; ResetCooldown(); }
 }

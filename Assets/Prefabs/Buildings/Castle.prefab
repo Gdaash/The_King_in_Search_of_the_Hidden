@@ -45,6 +45,7 @@ GameObject:
   - component: {fileID: 3578517436769265664}
   - component: {fileID: 4313961518425207317}
   - component: {fileID: 4212190388288541347}
+  - component: {fileID: 2199450406069507087}
   m_Layer: 10
   m_Name: Castle
   m_TagString: Player
@@ -219,7 +220,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   resistances: []
-  targetSprite: {fileID: 0}
+  targetSprite: {fileID: 4087718579659430170}
   damageTextPrefab: {fileID: 0}
   OnHealthChanged:
     m_PersistentCalls:
@@ -257,10 +258,19 @@ MonoBehaviour:
   cooldownVariation: 0.2
   OnAttack:
     m_PersistentCalls:
-      m_Calls: []
-  OnTargetLost:
-    m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 4212190388288541347}
+        m_TargetAssemblyTypeName: TowerVisuals, Assembly-CSharp
+        m_MethodName: StartShoot
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &4212190388288541347
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -274,8 +284,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tower: {fileID: 4313961518425207317}
-  projectilePrefab: {fileID: 2562531662790480983, guid: db33e4781529b4146943e91c5d106394, type: 3}
+  projectilePrefab: {fileID: 2562531662790480983, guid: 65f30c3c3277cee4f9fdcfa705c60588, type: 3}
   shootPoint: {fileID: 303286855982206720}
   spriteTransform: {fileID: 2094656847058042057}
+  targetTag: Enemy1
   kickbackDist: 0
   shootSpeed: 10
+--- !u!114 &2199450406069507087
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2638661897868168699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf39f9717623a4e49b493b3763f72856, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

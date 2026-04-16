@@ -16,7 +16,6 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
     [SerializeField] private float cooldownVariation = 0.5f; 
 
     [Header("Настройки защиты (Home)")]
-    [SerializeField] private GameObject homeBase;
     [SerializeField] private float homeStoppingDistance = 0.5f;
     [SerializeField] private float positionVariation = 2f;
 
@@ -28,6 +27,7 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
     private Transform _target;
     private Collider2D _targetCollider;
     private Collider2D _homeCollider;
+    private Transform _homeTransform; // Теперь ищем автоматически
     
     private bool _isAttacking = false;
     private float _nextAttackTime;
@@ -36,8 +36,6 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
 
     void Awake()
     {
-        if (homeBase != null) _homeCollider = homeBase.GetComponent<Collider2D>();
-        
         // Генерируем случайный сдвиг для защиты базы
         _personalOffset = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized * Random.Range(0, positionVariation);
     }
@@ -46,8 +44,16 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
 
     void Update()
     {
+        // 1. Проверяем наличие целей по тегу
         FindClosestTarget();
 
+        // 2. Если врагов нет, проверяем/ищем базу
+        if (_target == null)
+        {
+            ValidateOrFindHome();
+        }
+
+        // 3. Выбираем поведение
         if (_target != null)
         {
             HandleCombat();
@@ -55,6 +61,24 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
         else
         {
             ReturnToHome();
+        }
+    }
+
+    private void ValidateOrFindHome()
+    {
+        // Если база не назначена или объект базы был уничтожен/выключен
+        if (_homeTransform == null || !_homeTransform.gameObject.activeInHierarchy)
+        {
+            var home = Object.FindObjectsByType<HomeBase>(FindObjectsSortMode.None)
+                .Where(h => h.gameObject.activeInHierarchy)
+                .OrderBy(h => Vector2.SqrMagnitude(h.transform.position - transform.position))
+                .FirstOrDefault();
+
+            if (home != null)
+            {
+                _homeTransform = home.transform;
+                _homeCollider = home.GetComponent<Collider2D>();
+            }
         }
     }
 
@@ -71,7 +95,7 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
             _nextAttackTime = Time.time + _currentCooldown;
         }
 
-        // Логика перемещения во время боя
+        // Логика перемещения во время боя (соблюдение дистанции)
         if (!_isAttacking)
         {
             if (distanceToEdge > stopRange && distanceToEdge <= detectionRange) 
@@ -124,20 +148,22 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
         }
     }
 
-    private void ResetCooldown() => _currentCooldown = baseAttackCooldown + Random.Range(-cooldownVariation, cooldownVariation);
-    
-    // --- Методы интерфейса и взаимодействия со сторонними скриптами ---
-
-    public Transform GetTarget() 
+    // Метод для вызова при получении урона, чтобы юнит прекратил бежать домой и напал
+    public void OnTakeDamage(Transform attacker)
     {
-        if (_target != null) return _target;
-        if (homeBase != null) return homeBase.transform;
-        return null;
+        if (attacker != null)
+        {
+            _target = attacker;
+            _targetCollider = attacker.GetComponent<Collider2D>();
+            _isAttacking = false; // Сбрасываем флаг, чтобы начать атаку по новому игроку
+        }
     }
 
-    public string GetTargetTag() => targetTag; // Возвращаем тег (нужен для визуалов)
+    private void ResetCooldown() => _currentCooldown = baseAttackCooldown + Random.Range(-cooldownVariation, cooldownVariation);
+    
+    public Transform GetTarget() => _target != null ? _target : _homeTransform;
+
+    public string GetTargetTag() => targetTag;
 
     public void FinishAttack() { _isAttacking = false; ResetCooldown(); }
-
-    public void OnTakeDamage() { /* Механика отбегания удалена */ }
 }

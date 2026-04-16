@@ -7,7 +7,7 @@ using System.Linq;
 public class Health : MonoBehaviour
 {
     [System.Serializable]
-    public struct Resistance { public DamageType type; [Range(0,2)] public float mult; }
+    public struct Resistance { public DamageType type; [Range(0, 2)] public float mult; }
 
     [SerializeField] private float maxHealth = 100f;
     [SerializeField] private List<Resistance> resistances;
@@ -21,19 +21,22 @@ public class Health : MonoBehaviour
     private Color _orig;
     private bool _dead;
 
-    // Ссылка на ИИ дальнего боя для механики отбегания
+    // Ссылки на оба типа ИИ
     private EnemyAI_Ranged _rangedAI;
+    private EnemyAI _meleeAI;
 
     void Start() {
         _cur = maxHealth;
         if (!targetSprite) targetSprite = GetComponentInChildren<SpriteRenderer>();
         if (targetSprite) _orig = targetSprite.color;
 
-        // Кэшируем ссылку на ИИ, если он есть на этом объекте
+        // Кэшируем ссылки на компоненты ИИ
         _rangedAI = GetComponent<EnemyAI_Ranged>();
+        _meleeAI = GetComponent<EnemyAI>();
     }
 
-    public void TakeDamage(float amt, DamageType type) {
+    // Добавляем параметр attacker, чтобы знать, кто ударил
+    public void TakeDamage(float amt, DamageType type, Transform attacker = null) {
         if (_dead) return;
         float final = amt * GetMult(type);
         _cur = Mathf.Clamp(_cur - final, 0, maxHealth);
@@ -42,13 +45,16 @@ public class Health : MonoBehaviour
         SpawnText(final, type);
         OnHealthChanged?.Invoke(_cur / maxHealth);
 
-        // --- НОВАЯ ЛОГИКА: ОТБЕГАНИЕ ---
-        // Если урон > 0 и у нас есть скрипт дальнего боя, даем команду отбежать
-        if (final > 0 && _rangedAI != null)
+        // --- ЛОГИКА КОНТРАТАКИ ---
+        if (final > 0)
         {
-            _rangedAI.OnTakeDamage();
+            // Сообщаем ИИ дальнего боя (передаем attacker)
+            if (_rangedAI != null) _rangedAI.OnTakeDamage(attacker);
+            
+            // Сообщаем ИИ ближнего боя (передаем attacker)
+            if (_meleeAI != null) _meleeAI.OnTakeDamage(attacker);
         }
-        // ------------------------------
+        // -------------------------
 
         if (_cur <= 0) Die();
     }
@@ -56,8 +62,6 @@ public class Health : MonoBehaviour
     private float GetMult(DamageType t) 
     {
         var res = resistances.Find(r => r.type == t);
-        // Исправлено: корректная проверка существования сопротивления
-        // Если тип урона не найден в списке resistances, Find вернет дефолтную структуру с mult = 0
         return (res.mult != 0 || resistances.Any(r => r.type == t)) ? res.mult : 1f;
     }
 
