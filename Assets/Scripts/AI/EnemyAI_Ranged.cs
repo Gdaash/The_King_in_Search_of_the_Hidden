@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Linq;
 using UnityEngine.Events;
-using System.Collections;
 
 public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
 {
@@ -17,7 +16,7 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
 
     [Header("Настройки защиты (Home)")]
     [SerializeField] private float homeStoppingDistance = 0.5f;
-    [SerializeField] private float positionVariation = 2f;
+    [SerializeField] private float positionVariation = 3.0f; // Радиус разброса вокруг базы
 
     [Header("События состояний")]
     public UnityEvent OnMove;   
@@ -25,48 +24,51 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
     public UnityEvent OnAttack; 
 
     private Transform _target;
-    private Collider2D _targetCollider;
-    private Collider2D _homeCollider;
-    private Transform _homeTransform; // Теперь ищем автоматически
+    private Transform _homeTransform;
     
     private bool _isAttacking = false;
     private float _nextAttackTime;
     private float _currentCooldown;
+    
     private Vector2 _personalOffset;
+    private GameObject _offsetAnchor; // Невидимая цель для движения домой
 
     void Awake()
     {
-        // Генерируем случайный сдвиг для защиты базы
-        _personalOffset = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized * Random.Range(0, positionVariation);
+        // Генерируем уникальное смещение один раз при спавне
+        _personalOffset = Random.insideUnitCircle * positionVariation;
+        
+        // Создаем невидимый объект, позицию которого будем использовать как цель
+        _offsetAnchor = new GameObject($"RangedAnchor_{gameObject.name}");
     }
 
     void Start() => ResetCooldown();
 
     void Update()
     {
-        // 1. Проверяем наличие целей по тегу
         FindClosestTarget();
 
-        // 2. Если врагов нет, проверяем/ищем базу
         if (_target == null)
         {
             ValidateOrFindHome();
         }
 
-        // 3. Выбираем поведение
         if (_target != null)
         {
             HandleCombat();
         }
-        else
+        else if (_homeTransform != null)
         {
             ReturnToHome();
+        }
+        else
+        {
+            OnStop?.Invoke();
         }
     }
 
     private void ValidateOrFindHome()
     {
-        // Если база не назначена или объект базы был уничтожен/выключен
         if (_homeTransform == null || !_homeTransform.gameObject.activeInHierarchy)
         {
             var home = Object.FindObjectsByType<HomeBase>(FindObjectsSortMode.None)
@@ -74,31 +76,24 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
                 .OrderBy(h => Vector2.SqrMagnitude(h.transform.position - transform.position))
                 .FirstOrDefault();
 
-            if (home != null)
-            {
-                _homeTransform = home.transform;
-                _homeCollider = home.GetComponent<Collider2D>();
-            }
+            if (home != null) _homeTransform = home.transform;
         }
     }
 
     private void HandleCombat()
     {
-        Vector2 closestPoint = _targetCollider.ClosestPoint(transform.position);
-        float distanceToEdge = Vector2.Distance(transform.position, closestPoint);
+        float distanceToTarget = Vector2.Distance(transform.position, _target.position);
 
-        // Логика атаки
-        if (!_isAttacking && distanceToEdge <= attackRange && Time.time >= _nextAttackTime)
+        if (!_isAttacking && distanceToTarget <= attackRange && Time.time >= _nextAttackTime)
         {
             _isAttacking = true;
             OnAttack?.Invoke();
             _nextAttackTime = Time.time + _currentCooldown;
         }
 
-        // Логика перемещения во время боя (соблюдение дистанции)
         if (!_isAttacking)
         {
-            if (distanceToEdge > stopRange && distanceToEdge <= detectionRange) 
+            if (distanceToTarget > stopRange && distanceToTarget <= detectionRange) 
                 OnMove?.Invoke();
             else 
                 OnStop?.Invoke();
@@ -107,17 +102,13 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
 
     private void ReturnToHome()
     {
-        if (_homeCollider == null) 
-        { 
-            OnStop?.Invoke(); 
-            return; 
-        }
+        // Устанавливаем якорь в персональную точку около базы
+        Vector3 targetPoint = _homeTransform.position + (Vector3)_personalOffset;
+        _offsetAnchor.transform.position = targetPoint;
 
-        Vector2 pointOnEdge = _homeCollider.ClosestPoint(transform.position);
-        Vector2 targetPosition = pointOnEdge + _personalOffset;
-        float distanceToTarget = Vector2.Distance(transform.position, targetPosition);
+        float distanceToPoint = Vector2.Distance(transform.position, targetPoint);
 
-        if (distanceToTarget > homeStoppingDistance)
+        if (distanceToPoint > homeStoppingDistance)
         {
             OnMove?.Invoke();
         }
@@ -130,40 +121,39 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
     private void FindClosestTarget()
     {
         var targets = GameObject.FindGameObjectsWithTag(targetTag);
-        var closest = targets
-            .Select(t => t.GetComponent<Collider2D>())
-            .Where(c => c != null && c.gameObject.activeInHierarchy)
-            .OrderBy(c => Vector2.SqrMagnitude(c.transform.position - transform.position))
+        
+        _target = targets
+            .Where(t => t.activeInHierarchy)
+            .OrderBy(t => Vector2.SqrMagnitude(t.transform.position - transform.position))
+            .Select(t => t.transform)
             .FirstOrDefault();
-
-        if (closest != null)
-        {
-            _target = closest.transform;
-            _targetCollider = closest;
-        }
-        else
-        {
-            _target = null;
-            _targetCollider = null;
-        }
     }
 
-    // Метод для вызова при получении урона, чтобы юнит прекратил бежать домой и напал
     public void OnTakeDamage(Transform attacker)
     {
         if (attacker != null)
         {
             _target = attacker;
-            _targetCollider = attacker.GetComponent<Collider2D>();
-            _isAttacking = false; // Сбрасываем флаг, чтобы начать атаку по новому игроку
+            _isAttacking = false;
         }
     }
 
     private void ResetCooldown() => _currentCooldown = baseAttackCooldown + Random.Range(-cooldownVariation, cooldownVariation);
     
-    public Transform GetTarget() => _target != null ? _target : _homeTransform;
+    // EnemyMovement вызывает этот метод, чтобы знать, куда лететь
+    public Transform GetTarget() 
+    {
+        if (_target != null) return _target;
+        if (_homeTransform != null) return _offsetAnchor.transform;
+        return null;
+    }
 
     public string GetTargetTag() => targetTag;
 
     public void FinishAttack() { _isAttacking = false; ResetCooldown(); }
+
+    private void OnDestroy() 
+    { 
+        if (_offsetAnchor != null) Destroy(_offsetAnchor); 
+    }
 }

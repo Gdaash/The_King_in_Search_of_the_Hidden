@@ -5,7 +5,7 @@ public class EnemyVisuals : MonoBehaviour
 {
     [Header("Ссылки")]
     [SerializeField] private Transform spriteParent; 
-    [SerializeField] private EnemyAI ai;
+    private IEnemyAI _ai;
 
     [Header("Прыжки (Движение)")]
     [SerializeField] private float bounceHeight = 0.3f;
@@ -20,17 +20,27 @@ public class EnemyVisuals : MonoBehaviour
     private Vector3 _startPos;
     private bool _isMoving;
     private SpriteRenderer _sr;
-    private Color _origCol;
+    private Rigidbody2D _rb;
+
+    void Awake()
+    {
+        _ai = GetComponent<IEnemyAI>();
+        _rb = GetComponent<Rigidbody2D>();
+    }
 
     void Start() 
     { 
         _startPos = spriteParent.localPosition; 
         _sr = spriteParent.GetComponent<SpriteRenderer>();
-        if (_sr) _origCol = _sr.color;
     }
 
     void Update() 
     {
+        if (_rb != null && _rb.linearVelocity.magnitude < 0.1f)
+        {
+            _isMoving = false;
+        }
+
         if (_isMoving) 
         {
             float wave = Mathf.Abs(Mathf.Sin(Time.time * bounceSpeed));
@@ -38,23 +48,28 @@ public class EnemyVisuals : MonoBehaviour
         } 
         else 
         {
-            spriteParent.localPosition = Vector3.Lerp(spriteParent.localPosition, _startPos, Time.deltaTime * 5f);
+            spriteParent.localPosition = Vector3.Lerp(spriteParent.localPosition, _startPos, Time.deltaTime * 10f);
         }
     }
 
     public void SetMoving(bool state) => _isMoving = state;
-    public void StartJab() => StartCoroutine(JabRoutine());
+
+    public void StartJab() 
+    {
+        _isMoving = false; 
+        StartCoroutine(JabRoutine());
+    }
 
     private IEnumerator JabRoutine() 
     {
-        Transform target = ai.GetTarget();
+        Transform target = _ai.GetTarget();
         if (target == null) 
         { 
-            ai.FinishAttack(); 
+            _ai.FinishAttack(); 
             yield break; 
         }
 
-        if (_sr) _sr.color = Color.red;
+        // Удалена строка изменения цвета на красный/желтый
         yield return new WaitForSeconds(0.2f);
         
         Vector3 worldDir = (target.position - transform.position).normalized;
@@ -67,7 +82,6 @@ public class EnemyVisuals : MonoBehaviour
 
         if (target.TryGetComponent<Health>(out var h)) h.TakeDamage(damage, damageType);
         
-        // Рывок вперед
         float p = 0;
         while (p < 1f) 
         { 
@@ -76,7 +90,6 @@ public class EnemyVisuals : MonoBehaviour
             yield return null; 
         }
         
-        // Возврат назад
         p = 0;
         while (p < 1f) 
         { 
@@ -85,7 +98,7 @@ public class EnemyVisuals : MonoBehaviour
             yield return null; 
         }
         
-        if (_sr) _sr.color = _origCol;
-        ai.FinishAttack();
+        // Удалена строка возврата оригинального цвета
+        _ai.FinishAttack();
     }
 }

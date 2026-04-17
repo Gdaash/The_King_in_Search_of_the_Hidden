@@ -6,11 +6,6 @@ public class EnemyMovement : MonoBehaviour
     [Header("Настройки движения")]
     [SerializeField] private float baseSpeed = 3f;
     [SerializeField] private float speedVariation = 0.7f;
-    
-    [Header("Обход препятствий")]
-    [SerializeField] private float obstacleDist = 1.5f; // Чуть больше, чтобы заранее огибать
-    [SerializeField] private float agentAvoidanceRadius = 0.3f; 
-    [SerializeField] private LayerMask obstacleLayer;
 
     [Header("Настройки разворота")]
     [SerializeField] private float flipThreshold = 0.1f; 
@@ -20,8 +15,6 @@ public class EnemyMovement : MonoBehaviour
     private bool _canMove = false;
     private float _initialScaleX;
     private float _finalSpeed;
-    
-    private Vector2 _avoidanceOffset; // Плавное смещение для обхода
 
     void Awake()
     {
@@ -29,6 +22,7 @@ public class EnemyMovement : MonoBehaviour
         _ai = GetComponent<IEnemyAI>(); 
         _initialScaleX = Mathf.Abs(transform.localScale.x);
         
+        // Настройки физики для плавного прохождения сквозь всё
         _rb.gravityScale = 0;
         _rb.constraints = RigidbodyConstraints2D.FreezeRotation;
         _rb.interpolation = RigidbodyInterpolation2D.Interpolate;
@@ -39,14 +33,15 @@ public class EnemyMovement : MonoBehaviour
     public void SetMove(bool state) 
     {
         _canMove = state;
-        if (!state) {
+        if (!state) 
+        {
             _rb.linearVelocity = Vector2.zero;
-            _avoidanceOffset = Vector2.zero;
         }
     }
 
     void FixedUpdate()
     {
+        // Если движение запрещено или цели нет — стоим
         if (!_canMove || _ai == null || _ai.GetTarget() == null) 
         { 
             _rb.linearVelocity = Vector2.zero; 
@@ -56,50 +51,30 @@ public class EnemyMovement : MonoBehaviour
         Vector2 targetPos = _ai.GetTarget().position;
         Vector2 currentPos = _rb.position;
 
-        if (Vector2.Distance(currentPos, targetPos) < 0.2f)
+        // Рассчитываем вектор направления напрямую к цели
+        Vector2 direction = (targetPos - currentPos);
+        float distance = direction.magnitude;
+
+        // Если мы уже очень близко (погрешность), останавливаемся
+        if (distance < 0.1f)
         {
             _rb.linearVelocity = Vector2.zero;
             return;
         }
 
-        // Основное направление к цели
-        Vector2 desiredDir = (targetPos - currentPos).normalized;
+        // Движение строго по прямой линии
+        _rb.linearVelocity = direction.normalized * _finalSpeed;
         
-        // Вычисляем обход
-        Vector2 avoidanceDir = CalculateAvoidance(desiredDir);
-        
-        // Плавно смешиваем текущий обход с предыдущим, чтобы не было дрожи
-        _avoidanceOffset = Vector2.Lerp(_avoidanceOffset, avoidanceDir, Time.fixedDeltaTime * 8f);
+        // Разворот спрайта (лево/право)
+        HandleFlip();
+    }
 
-        _rb.linearVelocity = _avoidanceOffset * _finalSpeed;
-        
-        // Разворот через Scale
+    private void HandleFlip()
+    {
         if (Mathf.Abs(_rb.linearVelocity.x) > flipThreshold)
         {
             float newScaleX = _rb.linearVelocity.x > 0 ? _initialScaleX : -_initialScaleX;
             transform.localScale = new Vector3(newScaleX, transform.localScale.y, transform.localScale.z);
         }
-    }
-
-    private Vector2 CalculateAvoidance(Vector2 desiredDir)
-    {
-        // Если путь свободен — идем прямо
-        if (!IsPathBlocked(desiredDir)) return desiredDir;
-
-        // Веер лучей для поиска свободного прохода
-        float[] angles = { 30f, -30f, 60f, -60f, 90f, -90f };
-        foreach (float a in angles)
-        {
-            Vector2 checkDir = Quaternion.Euler(0, 0, a) * desiredDir;
-            if (!IsPathBlocked(checkDir)) return checkDir;
-        }
-        
-        return desiredDir;
-    }
-
-    private bool IsPathBlocked(Vector2 dir) 
-    {
-        RaycastHit2D hit = Physics2D.CircleCast(_rb.position, agentAvoidanceRadius, dir, obstacleDist, obstacleLayer);
-        return hit.collider != null && hit.collider.gameObject != gameObject && !hit.collider.isTrigger;
     }
 }

@@ -157,8 +157,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetTag: Player
   detectionRange: 50
-  attackRange: 8
-  stopRange: 6
+  attackRange: 4
+  stopRange: 3.9
   baseAttackCooldown: 2
   cooldownVariation: 0.5
   homeStoppingDistance: 0.5
@@ -169,6 +169,18 @@ MonoBehaviour:
       - m_Target: {fileID: 2916808635794823559}
         m_TargetAssemblyTypeName: EnemyMovement, Assembly-CSharp
         m_MethodName: SetMove
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 4061804297697875211}
+        m_TargetAssemblyTypeName: EnemyVisuals_Ranged, Assembly-CSharp
+        m_MethodName: SetMoving
         m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -193,12 +205,36 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 4061804297697875211}
+        m_TargetAssemblyTypeName: EnemyVisuals_Ranged, Assembly-CSharp
+        m_MethodName: SetMoving
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   OnAttack:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2916808635794823559}
         m_TargetAssemblyTypeName: EnemyMovement, Assembly-CSharp
         m_MethodName: SetMove
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 4061804297697875211}
+        m_TargetAssemblyTypeName: EnemyVisuals_Ranged, Assembly-CSharp
+        m_MethodName: SetMoving
         m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -236,6 +272,8 @@ MonoBehaviour:
   ai: {fileID: 4589732204553928961}
   projectilePrefab: {fileID: 2562531662790480983, guid: db33e4781529b4146943e91c5d106394, type: 3}
   shootPoint: {fileID: 6210683588688745723}
+  bounceHeight: 0.3
+  bounceSpeed: 12
   kickbackDist: 0.3
   shootSpeed: 10
   flipThreshold: 0.1
@@ -253,11 +291,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   baseSpeed: 1
   speedVariation: 0.2
-  obstacleDist: 3
-  agentAvoidanceRadius: 0.3
-  obstacleLayer:
-    serializedVersion: 2
-    m_Bits: 1536
   flipThreshold: 0.2
 --- !u!114 &6712944776575412886
 MonoBehaviour:
@@ -368,7 +401,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 919bab3a51f8d3045812d127d59dbb80, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0

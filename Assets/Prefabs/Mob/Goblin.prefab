@@ -125,7 +125,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetTag: Player
   detectionRange: 50
-  attackRange: 0.35
+  attackRange: 0.4
   baseAttackCooldown: 1.5
   cooldownVariation: 0.4
   homeStoppingDistance: 0.3
@@ -213,11 +213,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   baseSpeed: 1
   speedVariation: 0.2
-  obstacleDist: 3
-  agentAvoidanceRadius: 0.3
-  obstacleLayer:
-    serializedVersion: 2
-    m_Bits: 1536
   flipThreshold: 0.2
 --- !u!114 &8258941339818468702
 MonoBehaviour:
@@ -232,10 +227,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spriteParent: {fileID: 5695169503051743276}
-  ai: {fileID: 7103970830977969325}
   bounceHeight: 0.07
   bounceSpeed: 8
-  jabDist: 0.1
+  jabDist: 0.2
   jabSpeed: 5
   damage: 5
   damageType: 0
@@ -348,7 +342,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: e4a4d378c4fe27042a6e43df66567f44, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0

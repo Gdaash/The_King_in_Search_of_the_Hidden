@@ -7,7 +7,7 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
     [Header("Настройки поиска")]
     [SerializeField] private string targetTag = "Player";
     [SerializeField] private float detectionRange = 10f;
-    [SerializeField] private float attackRange = 0.2f; 
+    [SerializeField] private float attackRange = 0.5f; 
 
     [Header("Настройки атаки")]
     [SerializeField] private float baseAttackCooldown = 1.5f;
@@ -15,7 +15,7 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
 
     [Header("Настройки защиты (Home)")]
     [SerializeField] private float homeStoppingDistance = 0.3f;
-    [SerializeField] private float positionVariation = 1.5f;
+    [SerializeField] private float positionVariation = 3.0f; // Радиус случайного разброса вокруг базы
 
     [Header("События состояний")]
     public UnityEvent OnMove;   
@@ -23,18 +23,24 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
     public UnityEvent OnAttack; 
 
     private Transform _target;
-    private Collider2D _targetCollider; 
-    private Collider2D _homeCollider; 
     private Transform _homeTransform;
 
     private bool _isAttacking = false;
     private float _currentCooldown;
     private float _nextAttackTime;
+    
+    // Персональная точка юнита относительно центра базы
     private Vector2 _personalOffset;
+    // Якорь-пустышка для EnemyMovement
+    private GameObject _offsetAnchor; 
 
     void Awake()
     {
-        _personalOffset = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized * Random.Range(0, positionVariation);
+        // Каждый юнит выбирает случайную точку в круге при рождении
+        _personalOffset = Random.insideUnitCircle * positionVariation;
+        
+        // Создаем невидимую цель для перемещения
+        _offsetAnchor = new GameObject($"Anchor_{gameObject.name}");
     }
 
     void Start() => ResetCooldown();
@@ -43,7 +49,6 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
     {
         FindClosestTarget();
 
-        // Если врагов поблизости нет, ищем ближайшую базу
         if (_target == null)
         {
             ValidateOrFindHome();
@@ -53,9 +58,13 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
         {
             HandleCombat();
         }
-        else
+        else if (_homeTransform != null)
         {
             ReturnToHome();
+        }
+        else
+        {
+            OnStop?.Invoke();
         }
     }
 
@@ -68,20 +77,15 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
                 .OrderBy(h => Vector2.SqrMagnitude(h.transform.position - transform.position))
                 .FirstOrDefault();
 
-            if (home != null)
-            {
-                _homeTransform = home.transform;
-                _homeCollider = home.GetComponent<Collider2D>();
-            }
+            if (home != null) _homeTransform = home.transform;
         }
     }
 
     private void HandleCombat()
     {
-        Vector2 closestPoint = _targetCollider.ClosestPoint(transform.position);
-        float distanceToEdge = Vector2.Distance(transform.position, closestPoint);
+        float distanceToTarget = Vector2.Distance(transform.position, _target.position);
 
-        if (distanceToEdge <= attackRange)
+        if (distanceToTarget <= attackRange)
         {
             OnStop?.Invoke();
             if (!_isAttacking && Time.time >= _nextAttackTime)
@@ -91,7 +95,7 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
                 _nextAttackTime = Time.time + _currentCooldown;
             }
         }
-        else if (distanceToEdge <= detectionRange && !_isAttacking)
+        else if (distanceToTarget <= detectionRange && !_isAttacking)
         {
             OnMove?.Invoke();
         }
@@ -103,18 +107,13 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
 
     private void ReturnToHome()
     {
-        if (_homeCollider == null) 
-        {
-            OnStop?.Invoke();
-            return;
-        }
+        // Целевая точка = Центр базы + Индивидуальный сдвиг
+        Vector3 targetPoint = _homeTransform.position + (Vector3)_personalOffset;
+        _offsetAnchor.transform.position = targetPoint;
 
-        Vector2 pointOnEdge = _homeCollider.ClosestPoint((Vector2)transform.position);
-        Vector2 targetPosition = pointOnEdge + _personalOffset;
-        
-        float distanceToTarget = Vector2.Distance(transform.position, targetPosition);
+        float distanceToPoint = Vector2.Distance(transform.position, targetPoint);
 
-        if (distanceToTarget > homeStoppingDistance)
+        if (distanceToPoint > homeStoppingDistance)
         {
             OnMove?.Invoke();
         }
@@ -127,38 +126,37 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
     private void FindClosestTarget()
     {
         var targets = GameObject.FindGameObjectsWithTag(targetTag);
-        var closest = targets
-            .Select(t => t.GetComponent<Collider2D>())
-            .Where(c => c != null && c.gameObject.activeInHierarchy)
-            .OrderBy(c => Vector2.SqrMagnitude(c.transform.position - transform.position))
+        
+        _target = targets
+            .Where(t => t.activeInHierarchy)
+            .OrderBy(t => Vector2.SqrMagnitude(t.transform.position - transform.position))
+            .Select(t => t.transform)
             .FirstOrDefault();
-
-        if (closest != null)
-        {
-            _target = closest.transform;
-            _targetCollider = closest;
-        }
-        else
-        {
-            _target = null;
-            _targetCollider = null;
-        }
     }
 
-    // Метод для контратаки (теперь с параметром по умолчанию)
     public void OnTakeDamage(Transform attacker = null)
     {
         if (attacker != null)
         {
             _target = attacker;
-            _targetCollider = attacker.GetComponent<Collider2D>();
             _isAttacking = false;
         }
     }
 
     private void ResetCooldown() => _currentCooldown = baseAttackCooldown + Random.Range(-cooldownVariation, cooldownVariation);
     
-    public Transform GetTarget() => _target != null ? _target : _homeTransform;
+    // EnemyMovement берет эту цель. Если врага нет — берет персональную точку у дома
+    public Transform GetTarget() 
+    {
+        if (_target != null) return _target;
+        if (_homeTransform != null) return _offsetAnchor.transform;
+        return null;
+    }
 
     public void FinishAttack() { _isAttacking = false; ResetCooldown(); }
+
+    private void OnDestroy() 
+    { 
+        if (_offsetAnchor != null) Destroy(_offsetAnchor); 
+    }
 }

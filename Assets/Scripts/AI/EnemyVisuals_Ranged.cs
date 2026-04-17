@@ -9,6 +9,10 @@ public class EnemyVisuals_Ranged : MonoBehaviour
     [SerializeField] private GameObject projectilePrefab;
     [SerializeField] private Transform shootPoint;
 
+    [Header("Прыжки (Движение)")]
+    [SerializeField] private float bounceHeight = 0.3f;
+    [SerializeField] private float bounceSpeed = 12f;
+
     [Header("Анимация отдачи")]
     [SerializeField] private float kickbackDist = 0.3f;
     [SerializeField] private float shootSpeed = 10f;
@@ -17,17 +21,44 @@ public class EnemyVisuals_Ranged : MonoBehaviour
     [SerializeField] private float flipThreshold = 0.1f; 
 
     private Vector3 _startPos;
-    private SpriteRenderer _sr;
-    private Color _origCol;
+    private bool _isMoving;
+    private Rigidbody2D _rb;
+
+    void Awake()
+    {
+        _rb = GetComponent<Rigidbody2D>();
+    }
 
     void Start() 
     {
         if (spriteParent != null) _startPos = spriteParent.localPosition;
-        _sr = spriteParent?.GetComponent<SpriteRenderer>();
-        if (_sr) _origCol = _sr.color;
     }
 
-    void Update() => HandleFlip();
+    void Update()
+    {
+        HandleFlip();
+        HandleBounce();
+    }
+
+    private void HandleBounce()
+    {
+        // Если реальная скорость почти нулевая, выключаем анимацию
+        if (_rb != null && _rb.linearVelocity.magnitude < 0.1f)
+        {
+            _isMoving = false;
+        }
+
+        if (_isMoving && spriteParent != null) 
+        {
+            float wave = Mathf.Abs(Mathf.Sin(Time.time * bounceSpeed));
+            spriteParent.localPosition = _startPos + Vector3.up * (wave * bounceHeight);
+        } 
+        else if (spriteParent != null)
+        {
+            // Плавное возвращение в исходную точку при остановке
+            spriteParent.localPosition = Vector3.Lerp(spriteParent.localPosition, _startPos, Time.deltaTime * 10f);
+        }
+    }
 
     private void HandleFlip()
     {
@@ -44,7 +75,14 @@ public class EnemyVisuals_Ranged : MonoBehaviour
         }
     }
 
-    public void StartShoot() => StartCoroutine(ShootRoutine());
+    // Этот метод вызывается из событий OnMove/OnStop в EnemyAI_Ranged
+    public void SetMoving(bool state) => _isMoving = state;
+
+    public void StartShoot() 
+    {
+        _isMoving = false; // Прекращаем прыжки во время стрельбы
+        StartCoroutine(ShootRoutine());
+    }
 
     private IEnumerator ShootRoutine() 
     {
@@ -52,7 +90,6 @@ public class EnemyVisuals_Ranged : MonoBehaviour
         Transform target = ai.GetTarget();
         if (target == null) { ai.FinishAttack(); yield break; }
 
-        if (_sr) _sr.color = Color.yellow; 
         yield return new WaitForSeconds(0.3f);
 
         Vector3 worldDir = (target.position - shootPoint.position).normalized;
@@ -64,7 +101,7 @@ public class EnemyVisuals_Ranged : MonoBehaviour
 
         if (spriteParent)
         {
-            Vector3 kickbackPos = transform.InverseTransformPoint(transform.position - worldDir * kickbackDist);
+            Vector3 kickbackPos = _startPos + transform.InverseTransformDirection(-worldDir * kickbackDist);
             float p = 0;
             while (p < 1f) {
                 p += Time.deltaTime * shootSpeed;
@@ -80,7 +117,6 @@ public class EnemyVisuals_Ranged : MonoBehaviour
             spriteParent.localPosition = _startPos;
         }
 
-        if (_sr) _sr.color = _origCol;
-        ai.FinishAttack(); // Вот этот вызов сообщает скрипту ИИ, что атака окончена
+        ai.FinishAttack(); 
     }
 }

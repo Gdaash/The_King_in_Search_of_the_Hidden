@@ -30,7 +30,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2487240971312361663}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 6.807, y: 2.703, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -125,11 +125,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetTag: Enemy1
   detectionRange: 50
-  attackRange: 0.35
+  attackRange: 0.4
   baseAttackCooldown: 1.5
   cooldownVariation: 0.4
-  homeStoppingDistance: 0.1
-  positionVariation: 0.1
+  homeStoppingDistance: 0.3
+  positionVariation: 0.3
   OnMove:
     m_PersistentCalls:
       m_Calls:
@@ -213,11 +213,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   baseSpeed: 1
   speedVariation: 0.2
-  obstacleDist: 3
-  agentAvoidanceRadius: 0.3
-  obstacleLayer:
-    serializedVersion: 2
-    m_Bits: 1536
   flipThreshold: 0.2
 --- !u!114 &8597052440140464139
 MonoBehaviour:
@@ -232,10 +227,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spriteParent: {fileID: 4409204375294935372}
-  ai: {fileID: 7120321671875500462}
   bounceHeight: 0.07
   bounceSpeed: 8
-  jabDist: 0.1
+  jabDist: 0.2
   jabSpeed: 5
   damage: 10
   damageType: 0
@@ -348,7 +342,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 6d6c7e4788c217f42aa0f63e4edfb0ad, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
