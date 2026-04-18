@@ -17,20 +17,17 @@ public class Porter : MonoBehaviour, IEnemyAI
     private bool _hasResourceInHands = false;
     private ResourceRequester _currentJob;
 
-    // --- Реализация интерфейса IEnemyAI ---
     public Transform GetTarget() => _currentTarget;
-    
-    public void FinishAttack() { } // Носильщик не атакует
-
-    public void OnTakeDamage(Transform attacker) { } // Заглушка для урона
-    // ---------------------------------------
+    public void FinishAttack() { } 
+    public void OnTakeDamage(Transform attacker) { }
+    public bool GetIsAttacking() => false;
 
     void Awake() => _movement = GetComponent<EnemyMovement>();
 
     void Update() 
     {
-        // Если цель исчезла (например, кто-то другой подобрал ресурс)
-        if (_currentTarget != null && !_currentTarget.gameObject.activeInHierarchy) ResetTargetAndJob();
+        // Если цель была уничтожена — сбрасываем путь
+        if (_currentTarget != null && !_currentTarget.gameObject.activeInHierarchy) _currentTarget = null;
         
         if (_currentTarget == null) 
         {
@@ -38,9 +35,7 @@ public class Porter : MonoBehaviour, IEnemyAI
             else HandleDelivery();
         }
 
-        // Прямое движение через исправленный EnemyMovement
         if (_movement != null) _movement.SetMove(_currentTarget != null);
-        
         CheckArrival();
     }
 
@@ -62,38 +57,22 @@ public class Porter : MonoBehaviour, IEnemyAI
                 _targetResourceType = groundItem.type;
                 _currentJob.ReserveResource(_targetResourceType); 
                 ReserveResource(groundItem);
-                SetTarget(groundItem.transform);
-                return;
+                _currentTarget = groundItem.transform;
             }
-
-            Warehouse w = FindWarehouseWithAnyResource(actuallyNeededTypes, out ResourceType foundType);
-            if (w != null) 
-            {
-                _targetResourceType = foundType;
-                _currentJob.ReserveResource(_targetResourceType);
-                SetTarget(w.transform);
-                return;
-            }
-            _currentJob = null;
         }
-        FindAnyResourceOnGround();
     }
 
     private void HandleDelivery() 
     {
-        if (_currentJob != null && (!_currentJob.gameObject.activeInHierarchy || !_currentJob.NeedsSpecificResource(_targetResourceType) && !_hasResourceInHands)) 
+        // Если здание пропало, пока мы несли ресурс
+        if (_currentJob == null || !_currentJob.gameObject.activeInHierarchy) 
         {
-            _currentJob.UnreserveResource(_targetResourceType);
-            _currentJob = null; 
+            ResetTargetAndJob();
+            return;
         }
-
-        if (_currentJob != null) SetTarget(_currentJob.transform);
-        else 
-        {
-            Warehouse w = FindNearestWarehouse();
-            if (w != null) SetTarget(w.transform);
-            else ResetTargetAndJob();
-        }
+        
+        // Идем к зданию
+        _currentTarget = _currentJob.transform;
     }
 
     private void PickUpFromGround(ResourceItem item) 
@@ -101,48 +80,21 @@ public class Porter : MonoBehaviour, IEnemyAI
         _targetResourceType = item.type;
         _hasResourceInHands = true;
         _carriedResourceItem = item;
+        
+        // Отображаем ресурс в руках
         if (carrySlotRenderer != null) carrySlotRenderer.sprite = item.carrySprite;
         
         if (_currentJob != null) _currentJob.StartPhysicalDelivery();
 
+        // Скрываем предмет на земле, но не уничтожаем пока!
         item.gameObject.SetActive(false);
         UnreserveResource();
-        _currentTarget = null; 
-    }
-
-    private void PickUpFromWarehouse(Warehouse w) 
-    {
-        if (_currentJob == null) { ResetTargetAndJob(); return; }
-        
-        if (w.TryTakeResource(_targetResourceType)) 
-        {
-            _hasResourceInHands = true;
-            _currentJob.StartPhysicalDelivery();
-            if (carrySlotRenderer != null) carrySlotRenderer.sprite = _targetResourceType.defaultCarrySprite;
-            _currentTarget = null;
-        } 
-        else 
-        {
-            _currentJob.UnreserveResource(_targetResourceType);
-            ResetTargetAndJob();
-        }
-    }
-
-    private void SetTarget(Transform target) => _currentTarget = target;
-    
-    private void ResetTargetAndJob() 
-    { 
-        UnreserveResource(); 
-        if (!_hasResourceInHands && _currentJob != null) _currentJob.UnreserveResource(_targetResourceType); 
-        _currentTarget = null; 
-        if (!_hasResourceInHands) _currentJob = null; 
+        _currentTarget = null; // Чтобы в Update сработал HandleDelivery
     }
 
     private void CheckArrival() 
     {
         if (_currentTarget == null) return;
-
-        // В Unity 6 и для прямого движения считаем строго до центра
         float distance = Vector2.Distance(transform.position, _currentTarget.position);
 
         if (distance <= stopDistance) 
@@ -156,30 +108,40 @@ public class Porter : MonoBehaviour, IEnemyAI
     {
         if (!_hasResourceInHands) 
         {
-            if (_currentTarget.TryGetComponent(out ResourceItem item)) PickUpFromGround(item);
-            else if (_currentTarget.TryGetComponent(out Warehouse w)) PickUpFromWarehouse(w);
-            else ResetTargetAndJob();
+            if (_currentTarget.TryGetComponent(out ResourceItem item)) 
+                PickUpFromGround(item);
+            else 
+                ResetTargetAndJob();
         } 
         else 
         {
-            if (_currentTarget.TryGetComponent(out ResourceRequester r)) DeliverToRequester();
-            else if (_currentTarget.TryGetComponent(out Warehouse w)) DeliverToWarehouse();
-            else ResetTargetAndJob();
+            if (_currentTarget.TryGetComponent(out ResourceRequester r) && r == _currentJob) 
+                DeliverToRequester();
+            else 
+                ResetTargetAndJob();
         }
     }
 
     private void DeliverToRequester() 
     { 
         if (_currentJob != null) _currentJob.DeliverResource(_targetResourceType); 
+        
+        // Теперь можно уничтожить объект ресурса
         if (_carriedResourceItem != null) Destroy(_carriedResourceItem.gameObject); 
+        
         ClearHands(); 
     }
 
-    private void DeliverToWarehouse() 
+    private void ResetTargetAndJob() 
     { 
-        if (_currentTarget.TryGetComponent(out Warehouse w)) w.AddResource(_targetResourceType, 1, carrySlotRenderer.sprite); 
-        if (_carriedResourceItem != null) Destroy(_carriedResourceItem.gameObject); 
-        ClearHands(); 
+        UnreserveResource(); 
+        if (!_hasResourceInHands && _currentJob != null) _currentJob.UnreserveResource(_targetResourceType); 
+        
+        // Если мы уже что-то несем, а работы нет — просто бросаем/удаляем (так как склада нет)
+        if (_hasResourceInHands) ClearHands();
+        
+        _currentTarget = null; 
+        _currentJob = null;
     }
 
     private void ClearHands() 
@@ -211,7 +173,7 @@ public class Porter : MonoBehaviour, IEnemyAI
     }
 
     private ResourceRequester FindBestRequest() => ResourceRequester.AllRequesters
-        .Where(r => r.NeedsAnyResource())
+        .Where(r => r != null && r.gameObject.activeInHierarchy && r.NeedsAnyResource())
         .OrderByDescending(r => r.priority)
         .ThenBy(r => Vector2.SqrMagnitude(r.transform.position - transform.position))
         .FirstOrDefault();
@@ -221,39 +183,4 @@ public class Porter : MonoBehaviour, IEnemyAI
         .Where(r => r != null && r.gameObject.activeInHierarchy && !r.isReserved && types.Contains(r.type))
         .OrderBy(r => Vector2.SqrMagnitude(r.transform.position - transform.position))
         .FirstOrDefault();
-
-    private void FindAnyResourceOnGround() 
-    { 
-        var res = GameObject.FindGameObjectsWithTag(resourceTag)
-            .Select(r => r.GetComponent<ResourceItem>())
-            .Where(r => r != null && r.gameObject.activeInHierarchy && !r.isReserved)
-            .OrderBy(r => Vector2.SqrMagnitude(r.transform.position - transform.position))
-            .FirstOrDefault(); 
-        
-        if (res != null) { SetTarget(res.transform); ReserveResource(res); _targetResourceType = res.type; } 
-    }
-
-    private Warehouse FindNearestWarehouse() => Object.FindObjectsByType<Warehouse>(FindObjectsSortMode.None)
-        .OrderBy(w => Vector2.SqrMagnitude(w.transform.position - transform.position))
-        .FirstOrDefault();
-
-    // Исправлено: замена лямбда-выражения на циклы для корректной работы с out параметром
-    private Warehouse FindWarehouseWithAnyResource(List<ResourceType> types, out ResourceType foundType) 
-    { 
-        foundType = null; 
-        var warehouses = Object.FindObjectsByType<Warehouse>(FindObjectsSortMode.None);
-
-        foreach (var w in warehouses) 
-        {
-            foreach (var type in types) 
-            {
-                if (w.HasResource(type)) 
-                { 
-                    foundType = type; 
-                    return w; 
-                }
-            }
-        }
-        return null;
-    }
 }
