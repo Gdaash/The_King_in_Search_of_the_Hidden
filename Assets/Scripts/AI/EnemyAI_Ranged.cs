@@ -156,4 +156,5 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
     { 
         if (_offsetAnchor != null) Destroy(_offsetAnchor); 
     }
+    public bool GetIsAttacking() => _isAttacking;
 }

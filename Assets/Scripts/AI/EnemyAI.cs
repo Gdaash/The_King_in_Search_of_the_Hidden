@@ -159,4 +159,5 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
     { 
         if (_offsetAnchor != null) Destroy(_offsetAnchor); 
     }
+    public bool GetIsAttacking() => _isAttacking;
 }
