@@ -9,7 +9,11 @@ public class ResourceRequirement {
     public ResourceType resourceType;
     public int requiredAmount;
     [HideInInspector] public int currentAmount = 0;
-    [HideInInspector] public int reservedAmount = 0; 
+    [HideInInspector] public int reservedAmount = 0;
+
+    [Header("События конкретного ресурса")]
+    public UnityEvent OnOneUnitDelivered;
+    public UnityEvent OnAllUnitsDelivered;
 }
 
 [System.Serializable]
@@ -19,8 +23,6 @@ public class ResourceOutput {
 }
 
 public class ResourceRequester : MonoBehaviour {
-    public static List<ResourceRequester> AllRequesters = new List<ResourceRequester>();
-
     [Header("Настройки рецепта")]
     public List<ResourceRequirement> requirements = new List<ResourceRequirement>();
     public int priority = 1;
@@ -37,7 +39,7 @@ public class ResourceRequester : MonoBehaviour {
     [SerializeField] protected float bobbingAmount = 0.1f;
     [SerializeField] protected float bobbingSpeed = 2f;
 
-    [Header("События")]
+    [Header("Общие события")]
     public UnityEvent OnResourceReceived;
     public UnityEvent OnAllResourcesReceived;
     public UnityEvent OnActionExecuted;
@@ -46,31 +48,58 @@ public class ResourceRequester : MonoBehaviour {
     protected int _carryingToUs = 0; 
     protected bool _isProcessing = false;
     protected Vector3 _containerBasePos;
+    private float _lastValidationTime;
 
-    protected virtual void OnEnable() { 
-        AllRequesters.Add(this); 
+    protected virtual void Awake() { 
         if (iconsContainer != null) _containerBasePos = iconsContainer.localPosition;
-        UpdateIndicator(); 
     }
-    
-    protected virtual void OnDisable() => AllRequesters.Remove(this);
+
+    protected virtual void OnEnable() => UpdateIndicator();
 
     protected virtual void Update() {
         if (iconsContainer != null && iconsContainer.gameObject.activeSelf) {
             float newY = _containerBasePos.y + Mathf.Sin(Time.time * bobbingSpeed) * bobbingAmount;
             iconsContainer.localPosition = new Vector3(_containerBasePos.x, newY, _containerBasePos.z);
         }
+
+        // САМООЧИСТКА: Если кто-то удалил ресурс мышкой, бронь сбросится сама
+        if (Time.time > _lastValidationTime + 2f) {
+            ValidateReservations();
+            _lastValidationTime = Time.time;
+        }
+    }
+
+    private void ValidateReservations() {
+        if (_isProcessing || !gameObject.activeInHierarchy) return;
+
+        // Считаем сколько носильщиков реально выбрали это здание целью
+        int actualCarriers = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
+            .Count(p => p.GetCurrentJob() == this);
+
+        bool needsUpdate = false;
+        foreach (var req in requirements) {
+            // Если забронировано больше, чем реально идет носильщиков
+            if (req.reservedAmount > actualCarriers) {
+                req.reservedAmount = actualCarriers;
+                needsUpdate = true;
+            }
+        }
+
+        if (needsUpdate) {
+            _carryingToUs = actualCarriers;
+            UpdateIndicator();
+        }
     }
 
     public bool NeedsSpecificResource(ResourceType type) {
-        if (_isProcessing) return false;
+        if (!gameObject.activeInHierarchy || _isProcessing) return false;
         var req = requirements.FirstOrDefault(r => r.resourceType == type);
         if (req == null) return false;
         return (req.currentAmount + req.reservedAmount) < req.requiredAmount;
     }
 
     public bool NeedsAnyResource() {
-        if (_isProcessing) return false;
+        if (!gameObject.activeInHierarchy || _isProcessing) return false;
         return requirements.Any(r => (r.currentAmount + r.reservedAmount) < r.requiredAmount);
     }
 
@@ -78,6 +107,15 @@ public class ResourceRequester : MonoBehaviour {
         var req = requirements.FirstOrDefault(r => r.resourceType == type);
         if (req != null) {
             req.reservedAmount++;
+            UpdateIndicator();
+        }
+    }
+
+    public void ForceCancelReservation(ResourceType type) {
+        var req = requirements.FirstOrDefault(r => r.resourceType == type);
+        if (req != null) {
+            req.reservedAmount = Mathf.Max(0, req.reservedAmount - 1);
+            _carryingToUs = Mathf.Max(0, _carryingToUs - 1);
             UpdateIndicator();
         }
     }
@@ -103,6 +141,9 @@ public class ResourceRequester : MonoBehaviour {
             _carryingToUs = Mathf.Max(0, _carryingToUs - 1);
             
             OnResourceReceived?.Invoke();
+            req.OnOneUnitDelivered?.Invoke();
+            if (req.currentAmount >= req.requiredAmount) req.OnAllUnitsDelivered?.Invoke();
+
             CheckCompletion();
             UpdateIndicator();
         }
@@ -129,11 +170,10 @@ public class ResourceRequester : MonoBehaviour {
 
     public virtual void UpdateIndicator() {
         if (iconsContainer == null || iconPrefab == null) return;
-
-        foreach (var icon in _activeIcons) Destroy(icon);
+        foreach (var icon in _activeIcons) if(icon) Destroy(icon);
         _activeIcons.Clear();
 
-        if (_isProcessing) {
+        if (_isProcessing || !gameObject.activeInHierarchy) {
             iconsContainer.gameObject.SetActive(false);
             return;
         }
@@ -144,11 +184,8 @@ public class ResourceRequester : MonoBehaviour {
         foreach (var req in requirements) {
             int neededPhysically = req.requiredAmount - req.currentAmount;
             for (int i = 0; i < neededPhysically; i++) {
-                if (tempCarrying > 0) {
-                    tempCarrying--; 
-                } else {
-                    displayTypes.Add(req.resourceType);
-                }
+                if (tempCarrying > 0) tempCarrying--; 
+                else displayTypes.Add(req.resourceType);
             }
         }
 
@@ -158,17 +195,13 @@ public class ResourceRequester : MonoBehaviour {
         }
 
         iconsContainer.gameObject.SetActive(true);
-
         float totalWidth = (displayTypes.Count - 1) * iconSpacing;
         float startX = -totalWidth / 2f;
 
         for (int i = 0; i < displayTypes.Count; i++) {
             GameObject newIcon = Instantiate(iconPrefab, iconsContainer);
             newIcon.transform.localPosition = new Vector3(startX + (i * iconSpacing), 0, 0);
-            
-            if (newIcon.TryGetComponent(out SpriteRenderer sr)) {
-                sr.sprite = displayTypes[i].defaultCarrySprite;
-            }
+            if (newIcon.TryGetComponent(out SpriteRenderer sr)) sr.sprite = displayTypes[i].defaultCarrySprite;
             _activeIcons.Add(newIcon);
         }
     }
@@ -177,18 +210,10 @@ public class ResourceRequester : MonoBehaviour {
         foreach (var output in outputResources) {
             if (output.prefab == null) continue;
             for (int i = 0; i < output.count; i++) {
-                Vector3 randomPos = new Vector3(Random.Range(-spawnSpread, spawnSpread), Random.Range(-spawnSpread, spawnSpread), 0);
                 Vector3 origin = transform.position;
-                Vector3 spawnTarget = (spawnPoint != null ? spawnPoint.position : origin) + randomPos;
-                
+                Vector3 spawnTarget = (spawnPoint != null ? spawnPoint.position : origin) + new Vector3(Random.Range(-spawnSpread, spawnSpread), Random.Range(-spawnSpread, spawnSpread), 0);
                 GameObject res = Instantiate(output.prefab, origin, Quaternion.identity);
-
-                // ИСПРАВЛЕНИЕ: Если тег объекта не задан (Untagged), назначаем "Resource".
-                // Если в префабе уже стоит "Enemy1" или другой тег, скрипт его не трогает.
-                if (res.CompareTag("Untagged")) {
-                    res.tag = "Resource";
-                }
-
+                if (res.CompareTag("Untagged")) res.tag = "Resource";
                 StartCoroutine(TossResource(res.transform, origin, spawnTarget));
             }
         }

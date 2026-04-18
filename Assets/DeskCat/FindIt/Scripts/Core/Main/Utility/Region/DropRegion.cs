@@ -43,9 +43,6 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.Region
             }
         }
 
-        /// <summary>
-        /// Вызывается из DragObj.
-        /// </summary>
         public void ExecuteRegionEvent(string draggedItemName)
         {
             if (!enabled) return;
@@ -60,18 +57,13 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.Region
             }
         }
 
-        // --- МЕТОДЫ УПРАВЛЕНИЯ ---
-
         public void EnableRegionByID(int id) => SetRegionActiveByID(id, true);
         public void DisableRegionByID(int id) => SetRegionActiveByID(id, false);
 
         public void SetRegionActiveByID(int id, bool state)
         {
             var region = regions.FirstOrDefault(r => r.regionID == id);
-            if (region != null) 
-            {
-                region.isActive = state;
-            }
+            if (region != null) region.isActive = state;
         }
 
         public void SetRegionActiveByName(string name, bool state)

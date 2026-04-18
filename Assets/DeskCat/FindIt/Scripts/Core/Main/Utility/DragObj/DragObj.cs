@@ -3,7 +3,7 @@ using DeskCat.FindIt.Scripts.Core.Main.System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using DeskCat.FindIt.Scripts.Core.Main.Utility.Region; // Убедитесь, что этот namespace подключен
+using DeskCat.FindIt.Scripts.Core.Main.Utility.Region;
 
 namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
 {
@@ -94,10 +94,8 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
 
             onDrag?.Invoke(this);
 
-            // ИСПРАВЛЕНО: Проверка через метод наличия нужного региона в списке
             if (CurrentDragInfo.CurrentDropRegion != null)
             {
-                // Проверяем, есть ли в текущем регионе активная зона с нашим DropRegionName
                 bool isOverTarget = CurrentDragInfo.CurrentDropRegion.regions.Exists(r => r.isActive && r.regionName == DropRegionName);
                 
                 if (isOverTarget)
@@ -123,7 +121,8 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
 
             DropRegionCheck();
 
-            if (IsReturnToOriginalPosition)
+            // Если объект был уничтожен в DropRegionCheck, этот код дальше не выполнится или не вызовет ошибок
+            if (this != null && IsReturnToOriginalPosition)
             {
                 transform.position = _originalPosition;
             }
@@ -135,18 +134,20 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
         {
             if (CurrentDragInfo.CurrentDropRegion == null) return;
 
-            // ИСПРАВЛЕНО: Проверяем наличие региона в списке
             bool hasValidRegion = CurrentDragInfo.CurrentDropRegion.regions.Exists(r => r.isActive && r.regionName == DropRegionName);
             
             if (!hasValidRegion) return;
 
-            if (HideWhenDropToRegion) gameObject.SetActive(false);
+            // Сначала вызываем все события
             if (IsThisRegionAsTarget) _hiddenObj.DragRegionAction?.Invoke();
-
             onDropRegion?.Invoke(this);
-            
-            // ИСПРАВЛЕНО: Вызываем метод выполнения событий из списка
             CurrentDragInfo.CurrentDropRegion.ExecuteRegionEvent(DropRegionName);
+
+            // ПРАВКА: Вместо SetActive(false) используем Destroy
+            if (HideWhenDropToRegion) 
+            {
+                Destroy(gameObject);
+            }
         }
 
         private Vector3 CalculateWorldPoint()

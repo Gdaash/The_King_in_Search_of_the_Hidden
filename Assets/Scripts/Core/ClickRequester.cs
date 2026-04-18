@@ -4,38 +4,34 @@ using System.Linq;
 public class ClickRequester : ResourceRequester
 {
     [Header("Настройки клика")]
-    [SerializeField] private Sprite mouseSprite; // Сюда перетащите спрайт мышки в инспекторе
+    [SerializeField] private Sprite mouseSprite; 
 
-    // Полностью заменяем метод включения скрипта
     protected override void OnEnable()
     {
-        // Не добавляем в список AllRequesters, чтобы боты-носильщики не пытались сюда прийти
-        if (iconsContainer != null) _containerBasePos = iconsContainer.localPosition;
-        UpdateIndicator();
+        // Базовый метод теперь не работает со списками, поэтому вызываем его смело
+        base.OnEnable();
     }
 
-    protected override void OnDisable()
+    // Удалено 'override', так как в родителе метода больше нет
+    private void OnDisable()
     {
-        // Базовый метод не вызываем
+        // Оставляем пустым или удаляем совсем
     }
 
-    // Переписываем индикатор: теперь он рисует только мышки
     public override void UpdateIndicator()
     {
         if (iconsContainer == null || iconPrefab == null) return;
 
-        // Очистка старых иконок
-        foreach (var icon in _activeIcons) Destroy(icon);
+        // Очистка старых иконок (с проверкой на null для Unity 6)
+        foreach (var icon in _activeIcons) if(icon) Destroy(icon);
         _activeIcons.Clear();
 
-        // Если производство запущено — скрываем всё
-        if (_isProcessing)
+        if (_isProcessing || !gameObject.activeInHierarchy)
         {
             iconsContainer.gameObject.SetActive(false);
             return;
         }
 
-        // Считаем сколько кликов осталось (сумма всех RequiredAmount в списке рецепта)
         int totalClicksNeeded = 0;
         foreach (var req in requirements)
         {
@@ -50,7 +46,6 @@ public class ClickRequester : ResourceRequester
 
         iconsContainer.gameObject.SetActive(true);
 
-        // Создаем иконки мыши
         float totalWidth = (totalClicksNeeded - 1) * iconSpacing;
         float startX = -totalWidth / 2f;
 
@@ -59,7 +54,6 @@ public class ClickRequester : ResourceRequester
             GameObject newIcon = Instantiate(iconPrefab, iconsContainer);
             newIcon.transform.localPosition = new Vector3(startX + (i * iconSpacing), 0, 0);
             
-            // Устанавливаем спрайт мыши вместо ресурса
             if (newIcon.TryGetComponent(out SpriteRenderer sr))
             {
                 sr.sprite = mouseSprite;
@@ -68,22 +62,26 @@ public class ClickRequester : ResourceRequester
         }
     }
 
-    // Логика клика
     private void OnMouseDown()
     {
         if (_isProcessing) return;
 
-        // Ищем любое требование, которое еще не заполнено
         var req = requirements.FirstOrDefault(r => r.currentAmount < r.requiredAmount);
         
         if (req != null)
         {
             req.currentAmount++;
-            OnResourceReceived?.Invoke();
             
-            // Проверяем, не пора ли запускать производство
+            // Вызываем события получения ресурсов
+            OnResourceReceived?.Invoke();
+            req.OnOneUnitDelivered?.Invoke();
+
+            if (req.currentAmount >= req.requiredAmount)
+            {
+                req.OnAllUnitsDelivered?.Invoke();
+            }
+            
             CheckCompletion();
-            // Обновляем количество мышек над головой
             UpdateIndicator();
         }
     }
