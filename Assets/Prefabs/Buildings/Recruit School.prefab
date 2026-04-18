@@ -37,7 +37,6 @@ Transform:
   - {fileID: 3462095980723231256}
   - {fileID: 7720892420246852331}
   - {fileID: 2160858794014094913}
-  - {fileID: 3023982417999059974}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7870655736932425444
@@ -153,15 +152,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24cd3062633c6d54984e08858c579024, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pauseButtonRenderer: {fileID: 0}
+  pauseSprite: {fileID: 0}
+  playSprite: {fileID: 0}
+  _isPaused: 0
+  ignoreFlag: 0
   requirements:
   - resourceType: {fileID: 11400000, guid: 7474f45569abeb24fa1ea329b13c7782, type: 2}
     requiredAmount: 1
     currentAmount: 0
     reservedAmount: 0
+    OnOneUnitDelivered:
+      m_PersistentCalls:
+        m_Calls: []
+    OnAllUnitsDelivered:
+      m_PersistentCalls:
+        m_Calls: []
   - resourceType: {fileID: 11400000, guid: 07868ec9cbda2e44a81ed7cdb689956f, type: 2}
     requiredAmount: 1
     currentAmount: 0
     reservedAmount: 0
+    OnOneUnitDelivered:
+      m_PersistentCalls:
+        m_Calls: []
+    OnAllUnitsDelivered:
+      m_PersistentCalls:
+        m_Calls: []
   priority: 10
   outputResources:
   - prefab: {fileID: 8096966841897249351, guid: cbb5ea9b5ad31dc4d93b59ca2e94f153, type: 3}
@@ -704,94 +720,3 @@ Transform:
   m_Children: []
   m_Father: {fileID: 5098041046712869040}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &9071081371806092643
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3023982417999059974}
-  - component: {fileID: 3276194916149719155}
-  - component: {fileID: 274874856020495657}
-  m_Layer: 10
-  m_Name: Defense point
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &3023982417999059974
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9071081371806092643}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.847, y: -0.152, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 5098041046712869040}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!61 &3276194916149719155
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9071081371806092643}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.09}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.3, y: 0.36}
-  m_EdgeRadius: 0
---- !u!114 &274874856020495657
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9071081371806092643}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cf39f9717623a4e49b493b3763f72856, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

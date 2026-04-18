@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-// КЛАССЫ-ПОМОЩНИКИ (обязательно должны быть здесь)
 [System.Serializable]
 public class ResourceRequirement {
     public ResourceType resourceType;
@@ -29,6 +28,9 @@ public class ResourceRequester : MonoBehaviour {
     [SerializeField] private Sprite pauseSprite;
     [SerializeField] private Sprite playSprite;
     [SerializeField] private bool _isPaused = false;
+
+    [Header("Настройки флажка")]
+    [SerializeField] private bool ignoreFlag = false; // Если true (например для базы), флаг не нужен
 
     [Header("Настройки рецепта")]
     public List<ResourceRequirement> requirements = new List<ResourceRequirement>();
@@ -56,9 +58,11 @@ public class ResourceRequester : MonoBehaviour {
     protected bool _isProcessing = false;
     protected Vector3 _containerBasePos;
     private float _lastValidationTime;
+    private BoxCollider2D _myCollider;
 
     protected virtual void Awake() { 
         if (iconsContainer != null) _containerBasePos = iconsContainer.localPosition;
+        _myCollider = GetComponent<BoxCollider2D>();
     }
 
     protected virtual void OnEnable() {
@@ -72,25 +76,36 @@ public class ResourceRequester : MonoBehaviour {
             iconsContainer.localPosition = new Vector3(_containerBasePos.x, newY, _containerBasePos.z);
         }
 
-        // Самоочистка броней раз в 2 секунды
+        // Авто-очистка броней каждые 2 секунды
         if (Time.time > _lastValidationTime + 2f) {
             ValidateReservations();
             _lastValidationTime = Time.time;
         }
     }
 
+    // --- ЛОГИКА ФЛАЖКА (ИСПРАВЛЕННАЯ) ---
+    public bool HasLogisticFlag() {
+        if (ignoreFlag) return true;
+        if (_myCollider == null) return false;
+
+        // Рассчитываем размер зоны поиска с учетом масштаба здания
+        Vector2 searchSize = Vector2.Scale(_myCollider.size, transform.localScale);
+
+        // Ищем флаг в зоне коллайдера здания (через наличие скрипта LogisticFlag)
+        Collider2D[] hitColliders = Physics2D.OverlapBoxAll(transform.position, searchSize, 0);
+        foreach (var hit in hitColliders) {
+            // Ищем компонент-метку вместо тега, чтобы избежать ошибок
+            if (hit.GetComponent<LogisticFlag>() != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void TogglePause() {
         _isPaused = !_isPaused;
         UpdatePauseVisual();
-        UpdateIndicator();
-
-        if (_isPaused) {
-            // При паузе сбрасываем брони, чтобы носильщики сразу переключились на другие цели
-            foreach (var req in requirements) {
-                req.reservedAmount = 0;
-            }
-            _carryingToUs = 0;
-        }
+        // Иконки НЕ скрываем, чтобы игрок видел прогресс даже на паузе
     }
 
     private void UpdatePauseVisual() {
@@ -100,19 +115,23 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     public bool NeedsSpecificResource(ResourceType type) {
-        if (!gameObject.activeInHierarchy || _isProcessing || _isPaused) return false;
+        // Здание просит ресурс только если НЕ на паузе И есть ФЛАГ
+        if (!gameObject.activeInHierarchy || _isProcessing || _isPaused || !HasLogisticFlag()) return false;
+        
         var req = requirements.FirstOrDefault(r => r.resourceType == type);
         if (req == null) return false;
         return (req.currentAmount + req.reservedAmount) < req.requiredAmount;
     }
 
     public bool NeedsAnyResource() {
-        if (!gameObject.activeInHierarchy || _isProcessing || _isPaused) return false;
+        if (!gameObject.activeInHierarchy || _isProcessing || _isPaused || !HasLogisticFlag()) return false;
         return requirements.Any(r => (r.currentAmount + r.reservedAmount) < r.requiredAmount);
     }
 
     public void ReserveResource(ResourceType type) {
-        if (_isPaused) return;
+        // Если флаг убрали или нажата пауза, новые брони не создаются
+        if (_isPaused || !HasLogisticFlag()) return;
+
         var req = requirements.FirstOrDefault(r => r.resourceType == type);
         if (req != null) {
             req.reservedAmount++;
@@ -138,7 +157,7 @@ public class ResourceRequester : MonoBehaviour {
     }
     
     public void StartPhysicalDelivery() { 
-        if (_isPaused) return;
+        if (_isPaused || !HasLogisticFlag()) return;
         _carryingToUs++; 
         UpdateIndicator(); 
     }
@@ -183,7 +202,8 @@ public class ResourceRequester : MonoBehaviour {
         foreach (var icon in _activeIcons) if(icon) Destroy(icon);
         _activeIcons.Clear();
 
-        if (_isProcessing || !gameObject.activeInHierarchy || _isPaused) {
+        // Иконки скрываются только если здание УЖЕ производит
+        if (_isProcessing || !gameObject.activeInHierarchy) {
             iconsContainer.gameObject.SetActive(false);
             return;
         }
@@ -217,7 +237,17 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     private void ValidateReservations() {
-        if (_isProcessing || !gameObject.activeInHierarchy || _isPaused) return;
+        if (_isProcessing || !gameObject.activeInHierarchy) return;
+
+        // Если здание потеряло флаг — сбрасываем брони немедленно (чтобы носильщики пошли к другим целям)
+        if (!HasLogisticFlag() || _isPaused) {
+            bool changed = false;
+            foreach(var req in requirements) {
+                if(req.reservedAmount > 0) { req.reservedAmount = 0; changed = true; }
+            }
+            if(changed) { _carryingToUs = 0; UpdateIndicator(); }
+            return;
+        }
 
         // Поиск Porter через FindObjectsByType (Unity 6 стиль)
         int actualCarriers = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
