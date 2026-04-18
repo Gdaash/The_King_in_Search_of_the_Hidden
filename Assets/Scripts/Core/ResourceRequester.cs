@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
+// КЛАССЫ-ПОМОЩНИКИ (обязательно должны быть здесь)
 [System.Serializable]
 public class ResourceRequirement {
     public ResourceType resourceType;
@@ -23,6 +24,12 @@ public class ResourceOutput {
 }
 
 public class ResourceRequester : MonoBehaviour {
+    [Header("Настройки паузы")]
+    [SerializeField] private SpriteRenderer pauseButtonRenderer;
+    [SerializeField] private Sprite pauseSprite;
+    [SerializeField] private Sprite playSprite;
+    [SerializeField] private bool _isPaused = false;
+
     [Header("Настройки рецепта")]
     public List<ResourceRequirement> requirements = new List<ResourceRequirement>();
     public int priority = 1;
@@ -54,7 +61,10 @@ public class ResourceRequester : MonoBehaviour {
         if (iconsContainer != null) _containerBasePos = iconsContainer.localPosition;
     }
 
-    protected virtual void OnEnable() => UpdateIndicator();
+    protected virtual void OnEnable() {
+        UpdateIndicator();
+        UpdatePauseVisual();
+    }
 
     protected virtual void Update() {
         if (iconsContainer != null && iconsContainer.gameObject.activeSelf) {
@@ -62,48 +72,47 @@ public class ResourceRequester : MonoBehaviour {
             iconsContainer.localPosition = new Vector3(_containerBasePos.x, newY, _containerBasePos.z);
         }
 
-        // САМООЧИСТКА: Если кто-то удалил ресурс мышкой, бронь сбросится сама
+        // Самоочистка броней раз в 2 секунды
         if (Time.time > _lastValidationTime + 2f) {
             ValidateReservations();
             _lastValidationTime = Time.time;
         }
     }
 
-    private void ValidateReservations() {
-        if (_isProcessing || !gameObject.activeInHierarchy) return;
+    public void TogglePause() {
+        _isPaused = !_isPaused;
+        UpdatePauseVisual();
+        UpdateIndicator();
 
-        // Считаем сколько носильщиков реально выбрали это здание целью
-        int actualCarriers = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
-            .Count(p => p.GetCurrentJob() == this);
-
-        bool needsUpdate = false;
-        foreach (var req in requirements) {
-            // Если забронировано больше, чем реально идет носильщиков
-            if (req.reservedAmount > actualCarriers) {
-                req.reservedAmount = actualCarriers;
-                needsUpdate = true;
+        if (_isPaused) {
+            // При паузе сбрасываем брони, чтобы носильщики сразу переключились на другие цели
+            foreach (var req in requirements) {
+                req.reservedAmount = 0;
             }
+            _carryingToUs = 0;
         }
+    }
 
-        if (needsUpdate) {
-            _carryingToUs = actualCarriers;
-            UpdateIndicator();
+    private void UpdatePauseVisual() {
+        if (pauseButtonRenderer != null) {
+            pauseButtonRenderer.sprite = _isPaused ? playSprite : pauseSprite;
         }
     }
 
     public bool NeedsSpecificResource(ResourceType type) {
-        if (!gameObject.activeInHierarchy || _isProcessing) return false;
+        if (!gameObject.activeInHierarchy || _isProcessing || _isPaused) return false;
         var req = requirements.FirstOrDefault(r => r.resourceType == type);
         if (req == null) return false;
         return (req.currentAmount + req.reservedAmount) < req.requiredAmount;
     }
 
     public bool NeedsAnyResource() {
-        if (!gameObject.activeInHierarchy || _isProcessing) return false;
+        if (!gameObject.activeInHierarchy || _isProcessing || _isPaused) return false;
         return requirements.Any(r => (r.currentAmount + r.reservedAmount) < r.requiredAmount);
     }
 
     public void ReserveResource(ResourceType type) {
+        if (_isPaused) return;
         var req = requirements.FirstOrDefault(r => r.resourceType == type);
         if (req != null) {
             req.reservedAmount++;
@@ -129,6 +138,7 @@ public class ResourceRequester : MonoBehaviour {
     }
     
     public void StartPhysicalDelivery() { 
+        if (_isPaused) return;
         _carryingToUs++; 
         UpdateIndicator(); 
     }
@@ -173,7 +183,7 @@ public class ResourceRequester : MonoBehaviour {
         foreach (var icon in _activeIcons) if(icon) Destroy(icon);
         _activeIcons.Clear();
 
-        if (_isProcessing || !gameObject.activeInHierarchy) {
+        if (_isProcessing || !gameObject.activeInHierarchy || _isPaused) {
             iconsContainer.gameObject.SetActive(false);
             return;
         }
@@ -203,6 +213,27 @@ public class ResourceRequester : MonoBehaviour {
             newIcon.transform.localPosition = new Vector3(startX + (i * iconSpacing), 0, 0);
             if (newIcon.TryGetComponent(out SpriteRenderer sr)) sr.sprite = displayTypes[i].defaultCarrySprite;
             _activeIcons.Add(newIcon);
+        }
+    }
+
+    private void ValidateReservations() {
+        if (_isProcessing || !gameObject.activeInHierarchy || _isPaused) return;
+
+        // Поиск Porter через FindObjectsByType (Unity 6 стиль)
+        int actualCarriers = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
+            .Count(p => p.GetCurrentJob() == this);
+
+        bool needsUpdate = false;
+        foreach (var req in requirements) {
+            if (req.reservedAmount > actualCarriers) {
+                req.reservedAmount = actualCarriers;
+                needsUpdate = true;
+            }
+        }
+
+        if (needsUpdate) {
+            _carryingToUs = actualCarriers;
+            UpdateIndicator();
         }
     }
 
