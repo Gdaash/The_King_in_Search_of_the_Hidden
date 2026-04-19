@@ -20,7 +20,13 @@ public class Porter : MonoBehaviour, IEnemyAI
     private float _nextSearchTime;
 
     public Transform GetTarget() => _currentTarget;
-    public ResourceRequester GetCurrentJob() => _currentJob; // Нужно для валидации в здании
+    public ResourceRequester GetCurrentJob() => _currentJob; 
+    
+    // --- НОВЫЕ МЕТОДЫ ДЛЯ СИНХРОНИЗАЦИИ ИКОНОК ---
+    public ResourceType GetCarriedResourceType() => _targetResourceType;
+    public bool IsCarryingResource() => _hasResourceInHands;
+    // ---------------------------------------------
+
     public void FinishAttack() { } 
     public void OnTakeDamage(Transform attacker) { }
     public bool GetIsAttacking() => false;
@@ -101,8 +107,13 @@ public class Porter : MonoBehaviour, IEnemyAI
         _carriedResourceItem = item;
         if (carrySlotRenderer != null) carrySlotRenderer.sprite = item.carrySprite;
         if (_currentJob != null) _currentJob.StartPhysicalDelivery();
+        
         item.gameObject.SetActive(false);
         _currentTarget = null; 
+        
+        // После подбора ресурса обновляем иконки у здания, 
+        // чтобы оно сразу скрыло иконку нужного типа
+        if (_currentJob != null) _currentJob.UpdateIndicator();
     }
 
     private void CheckArrival() 
