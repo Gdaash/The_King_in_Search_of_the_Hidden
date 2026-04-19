@@ -10,7 +10,6 @@ public class OrderManager : MonoBehaviour
     [SerializeField] private float updateInterval = 0.5f;
     [SerializeField] private float priorityBonusInterval = 10f;
 
-    // Этот класс теперь виден в инспекторе
     [System.Serializable]
     public class OrderStatus
     {
@@ -25,8 +24,11 @@ public class OrderManager : MonoBehaviour
         {
             if (requester == null) return;
             buildingName = requester.gameObject.name;
-            hasFlag = requester.HasLogisticFlag();
+            // Используем физическую проверку флага самого здания
+            hasFlag = requester.HasLogisticFlag(); 
             totalPriority = requester.priority + (int)bonus;
+            
+            // Считаем количество грузчиков, которые уже идут к этому зданию
             inTransit = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
                 .Count(p => p.GetCurrentJob() == requester);
         }
@@ -45,7 +47,7 @@ public class OrderManager : MonoBehaviour
         }
     }
 
-    [Header("Текущая очередь заказов")]
+    [Header("Текущая очередь заказов (Инспектор)")]
     [SerializeField] private List<OrderStatus> ordersQueue = new List<OrderStatus>();
 
     private List<OrderInternal> _internalOrders = new List<OrderInternal>();
@@ -58,6 +60,7 @@ public class OrderManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
+    // Регистрация зданий и грузчиков
     public void RegisterRequester(ResourceRequester r)
     {
         if (!_internalOrders.Any(o => o.requester == r))
@@ -65,13 +68,20 @@ public class OrderManager : MonoBehaviour
     }
 
     public void UnregisterRequester(ResourceRequester r) => _internalOrders.RemoveAll(o => o.requester == r);
-    public void RegisterPorter(Porter p) { if (!_allPorters.Contains(p)) _allPorters.Add(p); }
+    
+    public void RegisterPorter(Porter p) 
+    { 
+        if (!_allPorters.Contains(p)) _allPorters.Add(p); 
+    }
+    
     public void UnregisterPorter(Porter p) => _allPorters.Remove(p);
+
+    // Позволяет мгновенно пересчитать заказы (вызывается из флага при установке)
     public void ForceUpdateOrders() => _nextUpdateTime = 0;
 
     void Update()
     {
-        // Обновляем бонусы и визуальный список для инспектора
+        // Обновляем список для отображения в инспекторе
         SyncInspectorList();
 
         if (Time.time < _nextUpdateTime) return;
@@ -83,7 +93,6 @@ public class OrderManager : MonoBehaviour
 
     private void SyncInspectorList()
     {
-        // Очищаем и заново наполняем список для отображения в инспекторе
         ordersQueue.Clear();
         foreach (var internalOrder in _internalOrders)
         {
@@ -97,8 +106,7 @@ public class OrderManager : MonoBehaviour
             status.UpdateData(internalOrder.bonusPriority);
             ordersQueue.Add(status);
         }
-        
-        // Сортируем список в инспекторе так же, как его видят носильщики
+        // Сортируем список в инспекторе по приоритету для удобства отладки
         ordersQueue = ordersQueue.OrderByDescending(s => s.totalPriority).ToList();
     }
 
@@ -110,9 +118,11 @@ public class OrderManager : MonoBehaviour
 
     private void DistributeOrders()
     {
+        // Берем только свободных грузчиков
         var freePorters = _allPorters.Where(p => !p.IsBusy()).ToList();
         if (freePorters.Count == 0) return;
 
+        // Фильтруем только те здания, на которых ФИЗИЧЕСКИ есть флаг и которым нужны ресурсы
         var activeJobs = _internalOrders
             .Where(o => o.requester.HasLogisticFlag() && o.requester.NeedsAnyResource())
             .OrderByDescending(o => o.requester.priority + o.bonusPriority)
@@ -120,6 +130,7 @@ public class OrderManager : MonoBehaviour
 
         if (activeJobs.Count == 0) return;
 
+        // Собираем все доступные ресурсы на карте
         var allResources = Object.FindObjectsByType<ResourceItem>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)
             .Where(i => !i.isReserved && i.gameObject.activeInHierarchy)
             .ToList();
@@ -131,10 +142,12 @@ public class OrderManager : MonoBehaviour
             {
                 if (porterAssigned) break;
 
+                // Проверяем, какие именно типы ресурсов нужны этому зданию сейчас
                 var neededTypes = order.requester.requirements
                     .Where(req => (req.currentAmount + req.reservedAmount) < req.requiredAmount)
                     .Select(req => req.resourceType).ToList();
 
+                // Ищем ближайший подходящий ресурс для этого грузчика
                 var bestResource = allResources
                     .Where(res => neededTypes.Contains(res.type))
                     .OrderBy(res => Vector2.SqrMagnitude(res.transform.position - porter.transform.position))
@@ -142,8 +155,14 @@ public class OrderManager : MonoBehaviour
 
                 if (bestResource != null)
                 {
+                    // Назначаем задачу грузчику
                     porter.AssignTask(order.requester, bestResource);
+                    
+                    // Бронируем ресурс и здание
                     bestResource.isReserved = true;
+                    order.requester.ReserveResource(bestResource.type);
+                    
+                    // Убираем ресурс из списка доступных для этого цикла распределения
                     allResources.Remove(bestResource);
                     porterAssigned = true;
                 }

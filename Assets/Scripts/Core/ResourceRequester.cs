@@ -51,7 +51,10 @@ public class ResourceRequester : MonoBehaviour {
     protected int _carryingToUs = 0; 
     protected bool _isProcessing = false;
     protected Vector3 _containerBasePos;
+    
     private BoxCollider2D _myCollider;
+    private float _lastValidationTime;
+    private bool _lastFlagState;
 
     protected virtual void Awake() { 
         if (iconsContainer != null) _containerBasePos = iconsContainer.localPosition;
@@ -59,13 +62,12 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     protected virtual void OnEnable() {
-        UpdateIndicator();
-        // Регистрация в OrderManager для централизованного поиска
+        _lastFlagState = HasLogisticFlag();
+        UpdateIndicator(); // Показываем иконки сразу при включении
         if (OrderManager.Instance != null) OrderManager.Instance.RegisterRequester(this);
     }
 
     protected virtual void OnDisable() {
-        // Удаление из очереди при выключении
         if (OrderManager.Instance != null) OrderManager.Instance.UnregisterRequester(this);
     }
 
@@ -74,23 +76,39 @@ public class ResourceRequester : MonoBehaviour {
             float newY = _containerBasePos.y + Mathf.Sin(Time.time * bobbingSpeed) * bobbingAmount;
             iconsContainer.localPosition = new Vector3(_containerBasePos.x, newY, _containerBasePos.z);
         }
+
+        // Проверка флага влияет только на логистику и обновление индикатора (если нужно)
+        bool currentFlag = HasLogisticFlag();
+        if (currentFlag != _lastFlagState) {
+            _lastFlagState = currentFlag;
+            UpdateIndicator(); 
+            if (OrderManager.Instance != null) OrderManager.Instance.ForceUpdateOrders();
+        }
+
+        if (Time.time > _lastValidationTime + 2f) {
+            ValidateReservations();
+            _lastValidationTime = Time.time;
+        }
     }
 
     public bool HasLogisticFlag() {
         if (ignoreFlag) return true;
         if (_myCollider == null) return false;
 
-        Vector2 searchSize = Vector2.Scale(_myCollider.size, transform.localScale);
-        Collider2D[] hitColliders = Physics2D.OverlapBoxAll(transform.position, searchSize, 0);
-        foreach (var hit in hitColliders) {
-            if (hit.GetComponent<LogisticFlag>() != null) return true;
+        ContactFilter2D filter = new ContactFilter2D();
+        filter.useTriggers = true; 
+        List<Collider2D> results = new List<Collider2D>();
+        
+        int count = _myCollider.Overlap(filter, results);
+        for (int i = 0; i < count; i++) {
+            if (results[i] != null && results[i].TryGetComponent<LogisticFlag>(out _)) return true;
         }
         return false;
     }
 
-    // Эти методы теперь используются OrderManager для распределения задач
     public bool NeedsAnyResource() {
-        if (!gameObject.activeInHierarchy || _isProcessing) return false;
+        // Логистика работает только если здание активно, не занято и ЕСТЬ флаг
+        if (!gameObject.activeInHierarchy || _isProcessing || !HasLogisticFlag()) return false;
         return requirements.Any(r => (r.currentAmount + r.reservedAmount) < r.requiredAmount);
     }
 
@@ -153,15 +171,17 @@ public class ResourceRequester : MonoBehaviour {
 
     public virtual void UpdateIndicator() {
         if (iconsContainer == null || iconPrefab == null) return;
+        
         foreach (var icon in _activeIcons) if(icon) Destroy(icon);
         _activeIcons.Clear();
 
+        // Скрываем иконки только если здание уже в процессе работы или выключено
         if (_isProcessing || !gameObject.activeInHierarchy) {
             iconsContainer.gameObject.SetActive(false);
             return;
         }
 
-        // Синхронизация иконок с носильщиками в пути
+        // Грузчики, которые уже несут ресурс
         List<ResourceType> resourcesInTransit = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
                 .Where(p => p.GetCurrentJob() == this && p.IsCarryingResource())
                 .Select(p => p.GetCarriedResourceType())
@@ -169,10 +189,13 @@ public class ResourceRequester : MonoBehaviour {
 
         List<ResourceType> displayTypes = new List<ResourceType>();
         foreach (var req in requirements) {
-            int needed = req.requiredAmount - req.currentAmount;
-            for (int i = 0; i < needed; i++) {
-                if (resourcesInTransit.Contains(req.resourceType)) resourcesInTransit.Remove(req.resourceType);
-                else displayTypes.Add(req.resourceType);
+            int neededTotal = req.requiredAmount - req.currentAmount;
+            for (int i = 0; i < neededTotal; i++) {
+                if (resourcesInTransit.Contains(req.resourceType)) {
+                    resourcesInTransit.Remove(req.resourceType);
+                } else {
+                    displayTypes.Add(req.resourceType);
+                }
             }
         }
 
@@ -191,6 +214,31 @@ public class ResourceRequester : MonoBehaviour {
             if (newIcon.TryGetComponent(out SpriteRenderer sr)) sr.sprite = displayTypes[i].defaultCarrySprite;
             _activeIcons.Add(newIcon);
         }
+    }
+
+    private void ValidateReservations() {
+        if (_isProcessing || !gameObject.activeInHierarchy) return;
+
+        if (!HasLogisticFlag()) {
+            bool changed = false;
+            foreach(var req in requirements) {
+                if(req.reservedAmount > 0) { req.reservedAmount = 0; changed = true; }
+            }
+            if(changed) { _carryingToUs = 0; UpdateIndicator(); }
+            return;
+        }
+
+        int actualCarriers = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
+            .Count(p => p.GetCurrentJob() == this);
+
+        bool needsUpdate = false;
+        foreach (var req in requirements) {
+            if (req.reservedAmount > actualCarriers) {
+                req.reservedAmount = actualCarriers;
+                needsUpdate = true;
+            }
+        }
+        if (needsUpdate) { _carryingToUs = actualCarriers; UpdateIndicator(); }
     }
 
     private void SpawnAllResults() {

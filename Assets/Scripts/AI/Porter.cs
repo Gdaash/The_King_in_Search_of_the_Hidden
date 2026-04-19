@@ -1,7 +1,10 @@
 using UnityEngine;
+using System.Linq;
+using System.Collections.Generic;
 
 public class Porter : MonoBehaviour, IEnemyAI 
 {
+    [Header("Настройки")]
     [SerializeField] private float stopDistance = 0.3f;
     [SerializeField] private SpriteRenderer carrySlotRenderer;
 
@@ -13,6 +16,7 @@ public class Porter : MonoBehaviour, IEnemyAI
     private bool _hasResourceInHands = false;
     private ResourceRequester _currentJob; 
 
+    // Интерфейс и доступ для OrderManager/ResourceRequester
     public bool IsBusy() => _currentTarget != null || _hasResourceInHands;
     public Transform GetTarget() => _currentTarget;
     public ResourceRequester GetCurrentJob() => _currentJob; 
@@ -31,7 +35,19 @@ public class Porter : MonoBehaviour, IEnemyAI
     void OnEnable() => OrderManager.Instance?.RegisterPorter(this);
     void OnDisable() => OrderManager.Instance?.UnregisterPorter(this);
 
-    // Метод, который вызывает OrderManager
+    // --- МЕТОД ОПОВЕЩЕНИЯ (ТОТ САМЫЙ, КОТОРОГО НЕ ХВАТАЛО) ---
+    public static void NotifyAllPorters()
+    {
+        var porters = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None);
+        foreach (var p in porters)
+        {
+            if (p._rb != null) p._rb.WakeUp();
+            // В новой архитектуре носильщики просто ждут команды от OrderManager,
+            // поэтому пробуждения Rigidbody достаточно.
+        }
+    }
+
+    // Метод, который вызывает OrderManager при раздаче задач
     public void AssignTask(ResourceRequester job, ResourceItem resource)
     {
         _currentJob = job;
@@ -44,7 +60,7 @@ public class Porter : MonoBehaviour, IEnemyAI
 
     void Update() 
     {
-        // Если здание уничтожилось, пока мы шли
+        // Если здание уничтожилось или выключилось
         if (_currentJob != null && !_currentJob.gameObject.activeInHierarchy)
         {
             ResetTask();
@@ -58,7 +74,9 @@ public class Porter : MonoBehaviour, IEnemyAI
             return;
         }
 
+        // Управление движением
         if (_movement != null) _movement.SetMove(_currentTarget != null);
+        
         CheckArrival();
     }
 
@@ -79,9 +97,12 @@ public class Porter : MonoBehaviour, IEnemyAI
             _hasResourceInHands = true;
             _carriedResourceItem = item;
             if (carrySlotRenderer != null) carrySlotRenderer.sprite = item.carrySprite;
+            
             _currentJob.StartPhysicalDelivery();
             item.gameObject.SetActive(false);
+            
             _currentTarget = _currentJob.transform; // Переключаемся на здание
+            _currentJob.UpdateIndicator(); // Обновляем иконки в здании
         }
     }
 
@@ -94,7 +115,7 @@ public class Porter : MonoBehaviour, IEnemyAI
 
     private void ResetTask()
     {
-        if (!_hasResourceInHands && _currentJob != null) _currentJob.ForceCancelReservation(_targetResourceType);
+        if (_currentJob != null) _currentJob.ForceCancelReservation(_targetResourceType);
         if (_hasResourceInHands && _carriedResourceItem != null) Destroy(_carriedResourceItem.gameObject);
         ClearAll();
     }
