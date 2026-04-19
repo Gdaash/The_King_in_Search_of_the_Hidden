@@ -22,9 +22,22 @@ public class Porter : MonoBehaviour, IEnemyAI
     public Transform GetTarget() => _currentTarget;
     public ResourceRequester GetCurrentJob() => _currentJob; 
     
-    // --- НОВЫЕ МЕТОДЫ ДЛЯ СИНХРОНИЗАЦИИ ИКОНОК ---
+    // --- МЕТОДЫ ДЛЯ СИНХРОНИЗАЦИИ ---
     public ResourceType GetCarriedResourceType() => _targetResourceType;
     public bool IsCarryingResource() => _hasResourceInHands;
+
+    // СТАТИЧЕСКИЙ МЕТОД: Вызывается флажком для мгновенного пробуждения всех носильщиков
+    public static void NotifyAllPorters()
+    {
+        var porters = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None);
+        foreach (var p in porters)
+        {
+            // Обнуляем таймер, чтобы поиск начался в следующем кадре Update
+            p._nextSearchTime = 0;
+            // Принудительно будим физику
+            if (p._rb != null) p._rb.WakeUp();
+        }
+    }
     // ---------------------------------------------
 
     public void FinishAttack() { } 
@@ -39,6 +52,7 @@ public class Porter : MonoBehaviour, IEnemyAI
 
     void Update() 
     {
+        // Если цель исчезла физически или была выключена
         if (_currentTarget != null && !_currentTarget.gameObject.activeInHierarchy) 
         {
             ResetTargetAndJob();
@@ -48,6 +62,7 @@ public class Porter : MonoBehaviour, IEnemyAI
         {
             if (!_hasResourceInHands) 
             {
+                // Ищем работу по таймеру
                 if (Time.time >= _nextSearchTime) 
                 {
                     FindNewTask();
@@ -111,8 +126,7 @@ public class Porter : MonoBehaviour, IEnemyAI
         item.gameObject.SetActive(false);
         _currentTarget = null; 
         
-        // После подбора ресурса обновляем иконки у здания, 
-        // чтобы оно сразу скрыло иконку нужного типа
+        // Обновляем индикатор здания, чтобы скрыть иконку типа, который мы подобрали
         if (_currentJob != null) _currentJob.UpdateIndicator();
     }
 

@@ -57,7 +57,9 @@ public class ResourceRequester : MonoBehaviour {
     protected int _carryingToUs = 0; 
     protected bool _isProcessing = false;
     protected Vector3 _containerBasePos;
+    
     private float _lastValidationTime;
+    private float _flagActiveTimer = 0f; // Таймер форы для носильщиков
     private BoxCollider2D _myCollider;
 
     protected virtual void Awake() { 
@@ -85,6 +87,7 @@ public class ResourceRequester : MonoBehaviour {
     public bool HasLogisticFlag() {
         if (ignoreFlag) return true;
         if (_myCollider == null) return false;
+
         Vector2 searchSize = Vector2.Scale(_myCollider.size, transform.localScale);
         Collider2D[] hitColliders = Physics2D.OverlapBoxAll(transform.position, searchSize, 0);
         foreach (var hit in hitColliders) {
@@ -96,6 +99,7 @@ public class ResourceRequester : MonoBehaviour {
     public void TogglePause() {
         _isPaused = !_isPaused;
         UpdatePauseVisual();
+        UpdateIndicator();
     }
 
     private void UpdatePauseVisual() {
@@ -193,26 +197,23 @@ public class ResourceRequester : MonoBehaviour {
             return;
         }
 
-        // --- НОВАЯ ЛОГИКА ОТОБРАЖЕНИЯ ---
+        bool hasFlag = HasLogisticFlag();
+        List<ResourceType> resourcesInTransit = new List<ResourceType>();
         
-        // 1. Получаем список типов ресурсов, которые сейчас В РУКАХ у носильщиков, идущих к нам
-        List<ResourceType> resourcesInTransit = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
-            .Where(p => p.GetCurrentJob() == this && p.IsCarryingResource())
-            .Select(p => p.GetCarriedResourceType())
-            .ToList();
+        if (hasFlag && !_isPaused) {
+            resourcesInTransit = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
+                .Where(p => p.GetCurrentJob() == this && p.IsCarryingResource())
+                .Select(p => p.GetCarriedResourceType())
+                .ToList();
+        }
 
         List<ResourceType> displayTypes = new List<ResourceType>();
-
-        // 2. Для каждого требования считаем, сколько иконок нужно показать
         foreach (var req in requirements) {
             int stillNeededCount = req.requiredAmount - req.currentAmount;
-            
             for (int i = 0; i < stillNeededCount; i++) {
-                // Если этот тип ресурса числится в транзите - "поглощаем" один экземпляр из списка транзита и не рисуем иконку
                 if (resourcesInTransit.Contains(req.resourceType)) {
                     resourcesInTransit.Remove(req.resourceType);
                 } else {
-                    // Если в транзите его нет - добавляем в список для отрисовки
                     displayTypes.Add(req.resourceType);
                 }
             }
@@ -238,7 +239,10 @@ public class ResourceRequester : MonoBehaviour {
     private void ValidateReservations() {
         if (_isProcessing || !gameObject.activeInHierarchy) return;
 
-        if (!HasLogisticFlag() || _isPaused) {
+        bool hasFlag = HasLogisticFlag();
+
+        if (!hasFlag || _isPaused) {
+            _flagActiveTimer = 0f; // Сброс таймера форы
             bool changed = false;
             foreach(var req in requirements) {
                 if(req.reservedAmount > 0) { req.reservedAmount = 0; changed = true; }
@@ -246,6 +250,11 @@ public class ResourceRequester : MonoBehaviour {
             if(changed) { _carryingToUs = 0; UpdateIndicator(); }
             return;
         }
+
+        // --- ЛОГИКА ФОРЫ ---
+        // Даем носильщикам 4 секунды (2 тика по 2 сек), чтобы занять здание после установки флага
+        _flagActiveTimer += 2f; 
+        if (_flagActiveTimer < 4f) return; 
 
         int actualCarriers = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
             .Count(p => p.GetCurrentJob() == this);

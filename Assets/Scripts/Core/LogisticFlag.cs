@@ -1,13 +1,14 @@
 using UnityEngine;
+using System.Collections;
 
 public class LogisticFlag : MonoBehaviour
 {
     [Header("Настройки визуала")]
     [SerializeField] private SpriteRenderer flagRenderer;
-    [SerializeField] private Sprite idleSprite;   // Спрайт, когда флаг просто лежит на земле
-    [SerializeField] private Sprite activeSprite; // Спрайт, когда флаг на здании
+    [SerializeField] private Sprite idleSprite;   
+    [SerializeField] private Sprite activeSprite; 
 
-    private int _buildingsUnderFlag = 0; // Счетчик зданий под флажком
+    private int _buildingsUnderFlag = 0;
 
     void Awake()
     {
@@ -15,21 +16,45 @@ public class LogisticFlag : MonoBehaviour
         UpdateVisual();
     }
 
-    // Срабатывает, когда коллайдер флажка входит в коллайдер здания
+    // Вызывается автоматически, если на объекте есть DragObj, либо через OnMouseUp
+    public void OnMouseUp()
+    {
+        StopAllCoroutines();
+        StartCoroutine(NotifyRoutine());
+    }
+
+    private IEnumerator NotifyRoutine()
+    {
+        // Ждем физический кадр для стабилизации позиции
+        yield return new WaitForFixedUpdate();
+
+        // Находим все здания под флагом
+        Collider2D[] hits = Physics2D.OverlapPointAll(transform.position);
+        foreach (var hit in hits)
+        {
+            if (hit.TryGetComponent<ResourceRequester>(out var req))
+            {
+                // Принудительно вызываем обновление иконок
+                req.UpdateIndicator(); 
+            }
+        }
+        
+        // Будим всех носильщиков
+        Porter.NotifyAllPorters();
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // Проверяем, есть ли на объекте скрипт запроса ресурсов
-        if (collision.TryGetComponent<ResourceRequester>(out var requester))
+        if (collision.GetComponent<ResourceRequester>())
         {
             _buildingsUnderFlag++;
             UpdateVisual();
         }
     }
 
-    // Срабатывает, когда коллайдер флажка выходит из коллайдера здания
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.TryGetComponent<ResourceRequester>(out var requester))
+        if (collision.GetComponent<ResourceRequester>())
         {
             _buildingsUnderFlag = Mathf.Max(0, _buildingsUnderFlag - 1);
             UpdateVisual();
@@ -39,8 +64,6 @@ public class LogisticFlag : MonoBehaviour
     private void UpdateVisual()
     {
         if (flagRenderer == null || idleSprite == null || activeSprite == null) return;
-
-        // Если под флагом есть хотя бы одно здание — ставим активный спрайт
         flagRenderer.sprite = (_buildingsUnderFlag > 0) ? activeSprite : idleSprite;
     }
 }
