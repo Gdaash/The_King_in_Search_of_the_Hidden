@@ -167,7 +167,20 @@ MonoBehaviour:
         m_Calls: []
     OnAllUnitsDelivered:
       m_PersistentCalls:
-        m_Calls: []
+        m_Calls:
+        - m_Target: {fileID: 6598004570680927873}
+          m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
+            Assembly-CSharp
+          m_MethodName: DisableRegionByID
+          m_Mode: 3
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
   - resourceType: {fileID: 11400000, guid: 07868ec9cbda2e44a81ed7cdb689956f, type: 2}
     requiredAmount: 1
     currentAmount: 0
@@ -177,7 +190,20 @@ MonoBehaviour:
         m_Calls: []
     OnAllUnitsDelivered:
       m_PersistentCalls:
-        m_Calls: []
+        m_Calls:
+        - m_Target: {fileID: 6598004570680927873}
+          m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
+            Assembly-CSharp
+          m_MethodName: DisableRegionByID
+          m_Mode: 3
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 1
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
   priority: 10
   outputResources:
   - prefab: {fileID: 8096966841897249351, guid: cbb5ea9b5ad31dc4d93b59ca2e94f153, type: 3}
@@ -241,21 +267,8 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-        - m_Target: {fileID: 6598004570680927873}
-          m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
-            Assembly-CSharp
-          m_MethodName: DisableRegionByID
-          m_Mode: 3
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
   - regionName: Peasant
-    regionID: 0
+    regionID: 1
     isActive: 1
     dropRegionEvent:
       m_PersistentCalls:
@@ -268,19 +281,6 @@ MonoBehaviour:
             m_ObjectArgument: {fileID: 11400000, guid: 07868ec9cbda2e44a81ed7cdb689956f, type: 2}
             m_ObjectArgumentAssemblyTypeName: ResourceType, Assembly-CSharp
             m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-        - m_Target: {fileID: 6598004570680927873}
-          m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
-            Assembly-CSharp
-          m_MethodName: DisableRegionByID
-          m_Mode: 3
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 1
             m_FloatArgument: 0
             m_StringArgument: 
             m_BoolArgument: 0
@@ -399,7 +399,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0.7160001, y: 1.1119999}
+  m_AnchoredPosition: {x: 0.616, y: 0.848}
   m_SizeDelta: {x: 0.5, y: 0.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &3256800094737040683
@@ -518,7 +518,7 @@ Transform:
   m_GameObject: {fileID: 5917698403675198488}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.716, y: 1.096, z: 0}
+  m_LocalPosition: {x: 0.6159999, y: 0.8320001, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -714,7 +714,7 @@ Transform:
   m_GameObject: {fileID: 7583601579541781073}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.474, y: -0.946, z: 0}
+  m_LocalPosition: {x: 0.63, y: -0.854, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

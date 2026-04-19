@@ -5,24 +5,78 @@ public class ClickRequester : ResourceRequester
 {
     [Header("Настройки клика")]
     [SerializeField] private Sprite mouseSprite; 
+    
+    [Header("Авто-клик (Рабочий)")]
+    [SerializeField] private float autoClickInterval = 1.0f; // Раз в сколько секунд кликает рабочий
+    private float _nextAutoClickTime;
 
     protected override void OnEnable()
     {
-        // Базовый метод теперь не работает со списками, поэтому вызываем его смело
         base.OnEnable();
     }
 
-    // Удалено 'override', так как в родителе метода больше нет
-    private void OnDisable()
+    protected override void Update()
     {
-        // Оставляем пустым или удаляем совсем
+        base.Update(); // Сохраняем логику регенерации и прочего из родителя
+
+        // Если здание активно, не в процессе производства и пришло время клика
+        if (gameObject.activeInHierarchy && !_isProcessing && Time.time >= _nextAutoClickTime)
+        {
+            if (HasAutoClickWorker())
+            {
+                DoClick();
+                _nextAutoClickTime = Time.time + autoClickInterval;
+            }
+        }
+    }
+
+    // Проверка наличия рабочего в зоне коллайдера
+    private bool HasAutoClickWorker()
+    {
+        if (GetComponent<BoxCollider2D>() == null) return false;
+
+        Vector2 searchSize = Vector2.Scale(GetComponent<BoxCollider2D>().size, transform.localScale);
+        Collider2D[] hits = Physics2D.OverlapBoxAll(transform.position, searchSize, 0);
+        
+        foreach (var hit in hits)
+        {
+            if (hit.GetComponent<AutoClickWorker>() != null) return true;
+        }
+        return false;
+    }
+
+    private void OnMouseDown()
+    {
+        if (_isProcessing) return;
+        DoClick();
+    }
+
+    // Вынесли логику клика в отдельный метод, чтобы вызывали и мышь, и рабочий
+    private void DoClick()
+    {
+        var req = requirements.FirstOrDefault(r => r.currentAmount < r.requiredAmount);
+        
+        if (req != null)
+        {
+            req.currentAmount++;
+            
+            OnResourceReceived?.Invoke();
+            req.OnOneUnitDelivered?.Invoke();
+
+            if (req.currentAmount >= req.requiredAmount)
+            {
+                req.OnAllUnitsDelivered?.Invoke();
+            }
+            
+            CheckCompletion();
+            UpdateIndicator();
+        }
     }
 
     public override void UpdateIndicator()
     {
         if (iconsContainer == null || iconPrefab == null) return;
 
-        // Очистка старых иконок (с проверкой на null для Unity 6)
         foreach (var icon in _activeIcons) if(icon) Destroy(icon);
         _activeIcons.Clear();
 
@@ -59,30 +113,6 @@ public class ClickRequester : ResourceRequester
                 sr.sprite = mouseSprite;
             }
             _activeIcons.Add(newIcon);
-        }
-    }
-
-    private void OnMouseDown()
-    {
-        if (_isProcessing) return;
-
-        var req = requirements.FirstOrDefault(r => r.currentAmount < r.requiredAmount);
-        
-        if (req != null)
-        {
-            req.currentAmount++;
-            
-            // Вызываем события получения ресурсов
-            OnResourceReceived?.Invoke();
-            req.OnOneUnitDelivered?.Invoke();
-
-            if (req.currentAmount >= req.requiredAmount)
-            {
-                req.OnAllUnitsDelivered?.Invoke();
-            }
-            
-            CheckCompletion();
-            UpdateIndicator();
         }
     }
 }
