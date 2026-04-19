@@ -23,18 +23,12 @@ public class ResourceOutput {
 }
 
 public class ResourceRequester : MonoBehaviour {
-    [Header("Настройки паузы")]
-    [SerializeField] private SpriteRenderer pauseButtonRenderer;
-    [SerializeField] private Sprite pauseSprite;
-    [SerializeField] private Sprite playSprite;
-    [SerializeField] private bool _isPaused = false;
-
     [Header("Настройки флажка")]
     [SerializeField] private bool ignoreFlag = false; 
 
     [Header("Настройки рецепта")]
-    public List<ResourceRequirement> requirements = new List<ResourceRequirement>();
     public int priority = 1;
+    public List<ResourceRequirement> requirements = new List<ResourceRequirement>();
 
     [Header("Выходные ресурсы")]
     [SerializeField] protected List<ResourceOutput> outputResources = new List<ResourceOutput>();
@@ -57,9 +51,6 @@ public class ResourceRequester : MonoBehaviour {
     protected int _carryingToUs = 0; 
     protected bool _isProcessing = false;
     protected Vector3 _containerBasePos;
-    
-    private float _lastValidationTime;
-    private float _flagActiveTimer = 0f; // Таймер форы для носильщиков
     private BoxCollider2D _myCollider;
 
     protected virtual void Awake() { 
@@ -69,18 +60,19 @@ public class ResourceRequester : MonoBehaviour {
 
     protected virtual void OnEnable() {
         UpdateIndicator();
-        UpdatePauseVisual();
+        // Регистрация в OrderManager для централизованного поиска
+        if (OrderManager.Instance != null) OrderManager.Instance.RegisterRequester(this);
+    }
+
+    protected virtual void OnDisable() {
+        // Удаление из очереди при выключении
+        if (OrderManager.Instance != null) OrderManager.Instance.UnregisterRequester(this);
     }
 
     protected virtual void Update() {
         if (iconsContainer != null && iconsContainer.gameObject.activeSelf) {
             float newY = _containerBasePos.y + Mathf.Sin(Time.time * bobbingSpeed) * bobbingAmount;
             iconsContainer.localPosition = new Vector3(_containerBasePos.x, newY, _containerBasePos.z);
-        }
-
-        if (Time.time > _lastValidationTime + 2f) {
-            ValidateReservations();
-            _lastValidationTime = Time.time;
         }
     }
 
@@ -96,32 +88,13 @@ public class ResourceRequester : MonoBehaviour {
         return false;
     }
 
-    public void TogglePause() {
-        _isPaused = !_isPaused;
-        UpdatePauseVisual();
-        UpdateIndicator();
-    }
-
-    private void UpdatePauseVisual() {
-        if (pauseButtonRenderer != null) {
-            pauseButtonRenderer.sprite = _isPaused ? playSprite : pauseSprite;
-        }
-    }
-
-    public bool NeedsSpecificResource(ResourceType type) {
-        if (!gameObject.activeInHierarchy || _isProcessing || _isPaused || !HasLogisticFlag()) return false;
-        var req = requirements.FirstOrDefault(r => r.resourceType == type);
-        if (req == null) return false;
-        return (req.currentAmount + req.reservedAmount) < req.requiredAmount;
-    }
-
+    // Эти методы теперь используются OrderManager для распределения задач
     public bool NeedsAnyResource() {
-        if (!gameObject.activeInHierarchy || _isProcessing || _isPaused || !HasLogisticFlag()) return false;
+        if (!gameObject.activeInHierarchy || _isProcessing) return false;
         return requirements.Any(r => (r.currentAmount + r.reservedAmount) < r.requiredAmount);
     }
 
     public void ReserveResource(ResourceType type) {
-        if (_isPaused || !HasLogisticFlag()) return;
         var req = requirements.FirstOrDefault(r => r.resourceType == type);
         if (req != null) {
             req.reservedAmount++;
@@ -138,16 +111,7 @@ public class ResourceRequester : MonoBehaviour {
         }
     }
 
-    public void UnreserveResource(ResourceType type) {
-        var req = requirements.FirstOrDefault(r => r.resourceType == type);
-        if (req != null) {
-            req.reservedAmount = Mathf.Max(0, req.reservedAmount - 1);
-            UpdateIndicator();
-        }
-    }
-    
     public void StartPhysicalDelivery() { 
-        if (_isPaused || !HasLogisticFlag()) return;
         _carryingToUs++; 
         UpdateIndicator(); 
     }
@@ -197,25 +161,18 @@ public class ResourceRequester : MonoBehaviour {
             return;
         }
 
-        bool hasFlag = HasLogisticFlag();
-        List<ResourceType> resourcesInTransit = new List<ResourceType>();
-        
-        if (hasFlag && !_isPaused) {
-            resourcesInTransit = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
+        // Синхронизация иконок с носильщиками в пути
+        List<ResourceType> resourcesInTransit = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
                 .Where(p => p.GetCurrentJob() == this && p.IsCarryingResource())
                 .Select(p => p.GetCarriedResourceType())
                 .ToList();
-        }
 
         List<ResourceType> displayTypes = new List<ResourceType>();
         foreach (var req in requirements) {
-            int stillNeededCount = req.requiredAmount - req.currentAmount;
-            for (int i = 0; i < stillNeededCount; i++) {
-                if (resourcesInTransit.Contains(req.resourceType)) {
-                    resourcesInTransit.Remove(req.resourceType);
-                } else {
-                    displayTypes.Add(req.resourceType);
-                }
+            int needed = req.requiredAmount - req.currentAmount;
+            for (int i = 0; i < needed; i++) {
+                if (resourcesInTransit.Contains(req.resourceType)) resourcesInTransit.Remove(req.resourceType);
+                else displayTypes.Add(req.resourceType);
             }
         }
 
@@ -233,43 +190,6 @@ public class ResourceRequester : MonoBehaviour {
             newIcon.transform.localPosition = new Vector3(startX + (i * iconSpacing), 0, 0);
             if (newIcon.TryGetComponent(out SpriteRenderer sr)) sr.sprite = displayTypes[i].defaultCarrySprite;
             _activeIcons.Add(newIcon);
-        }
-    }
-
-    private void ValidateReservations() {
-        if (_isProcessing || !gameObject.activeInHierarchy) return;
-
-        bool hasFlag = HasLogisticFlag();
-
-        if (!hasFlag || _isPaused) {
-            _flagActiveTimer = 0f; // Сброс таймера форы
-            bool changed = false;
-            foreach(var req in requirements) {
-                if(req.reservedAmount > 0) { req.reservedAmount = 0; changed = true; }
-            }
-            if(changed) { _carryingToUs = 0; UpdateIndicator(); }
-            return;
-        }
-
-        // --- ЛОГИКА ФОРЫ ---
-        // Даем носильщикам 4 секунды (2 тика по 2 сек), чтобы занять здание после установки флага
-        _flagActiveTimer += 2f; 
-        if (_flagActiveTimer < 4f) return; 
-
-        int actualCarriers = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
-            .Count(p => p.GetCurrentJob() == this);
-
-        bool needsUpdate = false;
-        foreach (var req in requirements) {
-            if (req.reservedAmount > actualCarriers) {
-                req.reservedAmount = actualCarriers;
-                needsUpdate = true;
-            }
-        }
-
-        if (needsUpdate) {
-            _carryingToUs = actualCarriers;
-            UpdateIndicator();
         }
     }
 

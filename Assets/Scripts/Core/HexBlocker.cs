@@ -5,6 +5,9 @@ using System.Collections.Generic;
 
 public class HexBlocker : MonoBehaviour
 {
+    [Header("Настройки группы")]
+    public int groupID; // ID для работы с HexManager
+
     [Header("Ссылки на объекты")]
     [SerializeField] private GameObject lockedVisual;   
     [SerializeField] private GameObject unlockedVisual; 
@@ -12,7 +15,7 @@ public class HexBlocker : MonoBehaviour
 
     [Header("Настройки сетки и слоев")]
     [SerializeField] private float checkRadius = 1.1f; 
-    [SerializeField] private float hiddenCheckRadius = 0.8f; // НОВОЕ: Радиус поиска скрытых объектов
+    [SerializeField] private float hiddenCheckRadius = 0.8f; 
     [SerializeField] private LayerMask hexLayer;       
     [SerializeField] private LayerMask hiddenLayers; 
 
@@ -26,6 +29,7 @@ public class HexBlocker : MonoBehaviour
 
     private void Awake()
     {
+        // Выключаем черепа при старте
         if (skullIcons != null)
         {
             foreach (var skull in skullIcons)
@@ -34,7 +38,8 @@ public class HexBlocker : MonoBehaviour
             }
         }
         
-        FindAndHideObjects();
+        // Логику поиска объектов (FindAndHideObjects) здесь НЕ вызываем, 
+        // её вызовет HexManager после спавна контента.
     }
 
     private void Start()
@@ -42,9 +47,20 @@ public class HexBlocker : MonoBehaviour
         CheckStatus(true);
     }
 
+    /// <summary>
+    /// Метод инициализации контента. Вызывается менеджером гексов.
+    /// </summary>
+    public void InitializeHexContent()
+    {
+        FindAndHideObjects();
+    }
+
     private void FindAndHideObjects()
     {
-        // ИСПОЛЬЗУЕМ: hiddenCheckRadius вместо фиксированного 0.5f
+        // Очищаем список на случай повторного вызова
+        _hiddenObjects.Clear();
+        _totalDanger = 0;
+
         Collider2D[] overlays = Physics2D.OverlapCircleAll(transform.position, hiddenCheckRadius, hiddenLayers);
         
         foreach (var col in overlays)
@@ -53,6 +69,7 @@ public class HexBlocker : MonoBehaviour
 
             if (!_hiddenObjects.Contains(col.gameObject))
             {
+                // Проверяем наличие скрипта опасности
                 DangerSource danger = col.GetComponent<DangerSource>();
                 if (danger != null)
                 {
@@ -64,6 +81,7 @@ public class HexBlocker : MonoBehaviour
             }
         }
 
+        // Включаем черепа согласно уровню опасности
         if (skullIcons != null)
         {
             int skullsToShow = Mathf.Min(_totalDanger, skullIcons.Length);
@@ -81,11 +99,13 @@ public class HexBlocker : MonoBehaviour
 
         if (TryGetComponent(out Collider2D col)) col.enabled = false;
         
+        // Включаем скрытые объекты
         foreach (var obj in _hiddenObjects)
         {
             if (obj != null) obj.SetActive(true);
         }
 
+        // Выключаем черепа при уничтожении
         if (skullIcons != null)
         {
             foreach (var skull in skullIcons)
@@ -198,7 +218,6 @@ public class HexBlocker : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow; Gizmos.DrawWireSphere(transform.position, checkRadius);
-        // Рисуем красный радиус согласно новой переменной
         Gizmos.color = Color.red; Gizmos.DrawWireSphere(transform.position, hiddenCheckRadius);
     }
 }

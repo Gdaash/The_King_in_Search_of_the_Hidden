@@ -1,14 +1,9 @@
 using UnityEngine;
-using System.Linq;
-using System.Collections.Generic;
 
 public class Porter : MonoBehaviour, IEnemyAI 
 {
-    [Header("Настройки")]
-    [SerializeField] private string resourceTag = "Resource";
     [SerializeField] private float stopDistance = 0.3f;
     [SerializeField] private SpriteRenderer carrySlotRenderer;
-    [SerializeField] private float searchInterval = 0.5f;
 
     private EnemyMovement _movement;
     private Rigidbody2D _rb;
@@ -17,32 +12,15 @@ public class Porter : MonoBehaviour, IEnemyAI
     private ResourceItem _carriedResourceItem; 
     private bool _hasResourceInHands = false;
     private ResourceRequester _currentJob; 
-    private float _nextSearchTime;
 
+    public bool IsBusy() => _currentTarget != null || _hasResourceInHands;
     public Transform GetTarget() => _currentTarget;
     public ResourceRequester GetCurrentJob() => _currentJob; 
-    
-    // --- МЕТОДЫ ДЛЯ СИНХРОНИЗАЦИИ ---
     public ResourceType GetCarriedResourceType() => _targetResourceType;
     public bool IsCarryingResource() => _hasResourceInHands;
-
-    // СТАТИЧЕСКИЙ МЕТОД: Вызывается флажком для мгновенного пробуждения всех носильщиков
-    public static void NotifyAllPorters()
-    {
-        var porters = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None);
-        foreach (var p in porters)
-        {
-            // Обнуляем таймер, чтобы поиск начался в следующем кадре Update
-            p._nextSearchTime = 0;
-            // Принудительно будим физику
-            if (p._rb != null) p._rb.WakeUp();
-        }
-    }
-    // ---------------------------------------------
-
+    public bool GetIsAttacking() => false;
     public void FinishAttack() { } 
     public void OnTakeDamage(Transform attacker) { }
-    public bool GetIsAttacking() => false;
 
     void Awake() 
     {
@@ -50,84 +28,38 @@ public class Porter : MonoBehaviour, IEnemyAI
         _rb = GetComponent<Rigidbody2D>();
     }
 
+    void OnEnable() => OrderManager.Instance?.RegisterPorter(this);
+    void OnDisable() => OrderManager.Instance?.UnregisterPorter(this);
+
+    // Метод, который вызывает OrderManager
+    public void AssignTask(ResourceRequester job, ResourceItem resource)
+    {
+        _currentJob = job;
+        _targetResourceType = resource.type;
+        _currentTarget = resource.transform;
+        
+        _currentJob.ReserveResource(_targetResourceType);
+        if (_rb != null) _rb.WakeUp();
+    }
+
     void Update() 
     {
-        // Если цель исчезла физически или была выключена
-        if (_currentTarget != null && !_currentTarget.gameObject.activeInHierarchy) 
+        // Если здание уничтожилось, пока мы шли
+        if (_currentJob != null && !_currentJob.gameObject.activeInHierarchy)
         {
-            ResetTargetAndJob();
+            ResetTask();
+            return;
         }
-        
-        if (_currentTarget == null) 
+
+        // Если флаг убрали ДО того как мы подняли ресурс — бросаем задачу
+        if (!_hasResourceInHands && _currentJob != null && !_currentJob.HasLogisticFlag())
         {
-            if (!_hasResourceInHands) 
-            {
-                // Ищем работу по таймеру
-                if (Time.time >= _nextSearchTime) 
-                {
-                    FindNewTask();
-                    _nextSearchTime = Time.time + searchInterval;
-                }
-            }
-            else HandleDelivery();
+            ResetTask();
+            return;
         }
 
         if (_movement != null) _movement.SetMove(_currentTarget != null);
         CheckArrival();
-    }
-
-    private void FindNewTask() 
-    {
-        var allRequesters = Object.FindObjectsByType<ResourceRequester>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        var validJobs = allRequesters
-            .Where(r => r.NeedsAnyResource())
-            .OrderByDescending(r => r.priority)
-            .ThenBy(r => Vector2.SqrMagnitude(r.transform.position - transform.position))
-            .ToList();
-
-        foreach (var job in validJobs)
-        {
-            var neededTypes = job.requirements
-                .Where(req => (req.currentAmount + req.reservedAmount) < req.requiredAmount)
-                .Select(req => req.resourceType).ToList();
-
-            ResourceItem groundItem = FindBestResourceOnGround(neededTypes);
-            if (groundItem != null) 
-            {
-                _currentJob = job;
-                _targetResourceType = groundItem.type;
-                _currentJob.ReserveResource(_targetResourceType); 
-                groundItem.isReserved = true;
-                _currentTarget = groundItem.transform;
-                if (_rb != null) _rb.WakeUp();
-                return;
-            }
-        }
-    }
-
-    private void HandleDelivery() 
-    {
-        if (_currentJob == null || !_currentJob.gameObject.activeInHierarchy) 
-        {
-            ResetTargetAndJob();
-            return;
-        }
-        _currentTarget = _currentJob.transform;
-    }
-
-    private void PickUpFromGround(ResourceItem item) 
-    {
-        _targetResourceType = item.type;
-        _hasResourceInHands = true;
-        _carriedResourceItem = item;
-        if (carrySlotRenderer != null) carrySlotRenderer.sprite = item.carrySprite;
-        if (_currentJob != null) _currentJob.StartPhysicalDelivery();
-        
-        item.gameObject.SetActive(false);
-        _currentTarget = null; 
-        
-        // Обновляем индикатор здания, чтобы скрыть иконку типа, который мы подобрали
-        if (_currentJob != null) _currentJob.UpdateIndicator();
     }
 
     private void CheckArrival() 
@@ -135,58 +67,45 @@ public class Porter : MonoBehaviour, IEnemyAI
         if (_currentTarget == null) return;
         if (Vector2.Distance(transform.position, _currentTarget.position) <= stopDistance) 
         {
-            ExecuteAction();
+            if (!_hasResourceInHands) PickUp();
+            else Deliver();
         }
     }
 
-    private void ExecuteAction() 
+    private void PickUp() 
     {
-        if (!_hasResourceInHands) 
+        if (_currentTarget.TryGetComponent(out ResourceItem item))
         {
-            if (_currentTarget.TryGetComponent(out ResourceItem item)) PickUpFromGround(item);
-            else ResetTargetAndJob();
-        } 
-        else 
-        {
-            if (_currentTarget.TryGetComponent(out ResourceRequester r) && r == _currentJob) 
-            {
-                r.DeliverResource(_targetResourceType);
-                if (_carriedResourceItem != null) Destroy(_carriedResourceItem.gameObject);
-                ClearHands();
-            }
-            else ResetTargetAndJob();
+            _hasResourceInHands = true;
+            _carriedResourceItem = item;
+            if (carrySlotRenderer != null) carrySlotRenderer.sprite = item.carrySprite;
+            _currentJob.StartPhysicalDelivery();
+            item.gameObject.SetActive(false);
+            _currentTarget = _currentJob.transform; // Переключаемся на здание
         }
     }
 
-    private void ResetTargetAndJob() 
-    { 
-        if (_currentJob != null) 
-        {
-            _currentJob.ForceCancelReservation(_targetResourceType); 
-        }
+    private void Deliver() 
+    {
+        _currentJob.DeliverResource(_targetResourceType);
+        if (_carriedResourceItem != null) Destroy(_carriedResourceItem.gameObject);
+        ClearAll();
+    }
 
+    private void ResetTask()
+    {
+        if (!_hasResourceInHands && _currentJob != null) _currentJob.ForceCancelReservation(_targetResourceType);
         if (_hasResourceInHands && _carriedResourceItem != null) Destroy(_carriedResourceItem.gameObject);
-        ClearHands();
+        ClearAll();
     }
 
-    private void ClearHands() 
-    { 
-        _hasResourceInHands = false; 
-        if (carrySlotRenderer != null) carrySlotRenderer.sprite = null; 
-        _carriedResourceItem = null; 
-        _currentJob = null; 
-        _currentTarget = null; 
-        if (_movement != null) _movement.SetMove(false);
-        if (_rb != null) _rb.WakeUp();
-        _nextSearchTime = 0; 
-    }
-
-    private ResourceItem FindBestResourceOnGround(List<ResourceType> types)
+    private void ClearAll()
     {
-        var allItems = Object.FindObjectsByType<ResourceItem>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        return allItems
-            .Where(i => i.gameObject.activeInHierarchy && !i.isReserved && types.Contains(i.type))
-            .OrderBy(i => Vector2.SqrMagnitude(i.transform.position - transform.position))
-            .FirstOrDefault();
+        _hasResourceInHands = false;
+        _currentTarget = null;
+        _currentJob = null;
+        _carriedResourceItem = null;
+        if (carrySlotRenderer != null) carrySlotRenderer.sprite = null;
+        if (_movement != null) _movement.SetMove(false);
     }
 }

@@ -16,7 +16,7 @@ public class LogisticFlag : MonoBehaviour
         UpdateVisual();
     }
 
-    // Вызывается автоматически, если на объекте есть DragObj, либо через OnMouseUp
+    // Вызывается через DragObj (событие OnEndDrag) или OnMouseUp
     public void OnMouseUp()
     {
         StopAllCoroutines();
@@ -25,7 +25,7 @@ public class LogisticFlag : MonoBehaviour
 
     private IEnumerator NotifyRoutine()
     {
-        // Ждем физический кадр для стабилизации позиции
+        // Ждем физический кадр, чтобы позиция флага зафиксировалась
         yield return new WaitForFixedUpdate();
 
         // Находим все здания под флагом
@@ -34,13 +34,17 @@ public class LogisticFlag : MonoBehaviour
         {
             if (hit.TryGetComponent<ResourceRequester>(out var req))
             {
-                // Принудительно вызываем обновление иконок
+                // Принудительно обновляем индикаторы здания
                 req.UpdateIndicator(); 
             }
         }
         
-        // Будим всех носильщиков
-        Porter.NotifyAllPorters();
+        // ИСПРАВЛЕНО: Вместо Porter.NotifyAllPorters() вызываем обновление в Менеджере
+        if (OrderManager.Instance != null)
+        {
+            // Мы просто заставляем менеджер выполнить проверку немедленно
+            OrderManager.Instance.ForceUpdateOrders();
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
