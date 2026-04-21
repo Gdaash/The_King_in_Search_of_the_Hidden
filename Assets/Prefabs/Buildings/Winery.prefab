@@ -411,7 +411,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.57, y: 0.37}
+  m_Offset: {x: 0.4, y: 0.3}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -421,7 +421,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 0.96}
+  m_Size: {x: 1.15, y: 0.77}
   m_EdgeRadius: 0
 --- !u!114 &904879040147841571
 MonoBehaviour:
@@ -435,12 +435,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24cd3062633c6d54984e08858c579024, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ignoreFlag: 0
+  priority: 10
   requirements:
   - resourceType: {fileID: 11400000, guid: b43284e0d25d90a488f46f181730438d, type: 2}
     requiredAmount: 1
     currentAmount: 0
     reservedAmount: 0
-  priority: 10
+    OnOneUnitDelivered:
+      m_PersistentCalls:
+        m_Calls: []
+    OnAllUnitsDelivered:
+      m_PersistentCalls:
+        m_Calls: []
   outputResources:
   - prefab: {fileID: 1033317783231035356, guid: 73de2ce4cb9d62047830b231e58aa640, type: 3}
     count: 1
@@ -461,6 +468,19 @@ MonoBehaviour:
         m_TargetAssemblyTypeName: TimerController, Assembly-CSharp
         m_MethodName: ResetTimer
         m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 8921133881801500340}
+        m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
+          Assembly-CSharp
+        m_MethodName: DisableRegionByID
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -498,19 +518,6 @@ MonoBehaviour:
           m_Arguments:
             m_ObjectArgument: {fileID: 11400000, guid: b43284e0d25d90a488f46f181730438d, type: 2}
             m_ObjectArgumentAssemblyTypeName: ResourceType, Assembly-CSharp
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-        - m_Target: {fileID: 8921133881801500340}
-          m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
-            Assembly-CSharp
-          m_MethodName: DisableRegionByID
-          m_Mode: 3
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
             m_IntArgument: 0
             m_FloatArgument: 0
             m_StringArgument: 
@@ -572,7 +579,7 @@ Transform:
   m_GameObject: {fileID: 8134423208375212432}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.03, y: -0.35, z: 0}
+  m_LocalPosition: {x: -0.75, y: -0.541, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -28,7 +28,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3727238460459887576}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.2, y: -5.78, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -152,12 +152,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24cd3062633c6d54984e08858c579024, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ignoreFlag: 0
+  priority: 10
   requirements:
   - resourceType: {fileID: 11400000, guid: 681b3f1baf559a64a893495ffad29479, type: 2}
     requiredAmount: 1
     currentAmount: 0
     reservedAmount: 0
-  priority: 10
+    OnOneUnitDelivered:
+      m_PersistentCalls:
+        m_Calls: []
+    OnAllUnitsDelivered:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 4975656384887860699}
+          m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
+            Assembly-CSharp
+          m_MethodName: DisableRegionByID
+          m_Mode: 3
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
   outputResources:
   - prefab: {fileID: 8096966841897249351, guid: 93b20a70e7b17e74fabe6e25e30c74c6, type: 3}
     count: 1
@@ -220,19 +240,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-        - m_Target: {fileID: 4975656384887860699}
-          m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
-            Assembly-CSharp
-          m_MethodName: DisableRegionByID
-          m_Mode: 3
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
 --- !u!1 &3785935131254992704
 GameObject:
   m_ObjectHideFlags: 0
@@ -278,7 +285,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   progressBarObject: {fileID: 4496661210960446300}
-  duration: 5
+  duration: 3
   loopInfinitely: 0
   repeatCount: 1
   runOnStart: 0
@@ -306,6 +313,19 @@ MonoBehaviour:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 4975656384887860699}
+        m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
+          Assembly-CSharp
+        m_MethodName: EnableRegionByID
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0

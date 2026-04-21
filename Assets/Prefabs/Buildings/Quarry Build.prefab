@@ -228,12 +228,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24cd3062633c6d54984e08858c579024, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ignoreFlag: 0
+  priority: 10
   requirements:
   - resourceType: {fileID: 11400000, guid: 45c32916e7e552e44b4498d5417db2bc, type: 2}
     requiredAmount: 3
     currentAmount: 0
     reservedAmount: 0
-  priority: 10
+    OnOneUnitDelivered:
+      m_PersistentCalls:
+        m_Calls: []
+    OnAllUnitsDelivered:
+      m_PersistentCalls:
+        m_Calls: []
   outputResources: []
   spawnPoint: {fileID: 8858801514244351541}
   spawnSpread: 0.1
@@ -252,6 +259,19 @@ MonoBehaviour:
         m_TargetAssemblyTypeName: TimerController, Assembly-CSharp
         m_MethodName: ResetTimer
         m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 3543819747626890001}
+        m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
+          Assembly-CSharp
+        m_MethodName: DisableRegionByID
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -290,107 +310,6 @@ MonoBehaviour:
             m_ObjectArgument: {fileID: 11400000, guid: 45c32916e7e552e44b4498d5417db2bc, type: 2}
             m_ObjectArgumentAssemblyTypeName: ResourceType, Assembly-CSharp
             m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-        - m_Target: {fileID: 3543819747626890001}
-          m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
-            Assembly-CSharp
-          m_MethodName: DisableRegionByID
-          m_Mode: 3
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-        - m_Target: {fileID: 3543819747626890001}
-          m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
-            Assembly-CSharp
-          m_MethodName: EnableRegionByID
-          m_Mode: 3
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 1
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-  - regionName: Wood
-    regionID: 1
-    isActive: 0
-    dropRegionEvent:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 3647368841824571083}
-          m_TargetAssemblyTypeName: ResourceRequester, Assembly-CSharp
-          m_MethodName: DeliverResource
-          m_Mode: 2
-          m_Arguments:
-            m_ObjectArgument: {fileID: 11400000, guid: 45c32916e7e552e44b4498d5417db2bc, type: 2}
-            m_ObjectArgumentAssemblyTypeName: ResourceType, Assembly-CSharp
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-        - m_Target: {fileID: 3543819747626890001}
-          m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
-            Assembly-CSharp
-          m_MethodName: DisableRegionByID
-          m_Mode: 3
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 1
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-        - m_Target: {fileID: 3543819747626890001}
-          m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
-            Assembly-CSharp
-          m_MethodName: EnableRegionByID
-          m_Mode: 3
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 2
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-  - regionName: Wood
-    regionID: 2
-    isActive: 0
-    dropRegionEvent:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 3647368841824571083}
-          m_TargetAssemblyTypeName: ResourceRequester, Assembly-CSharp
-          m_MethodName: DeliverResource
-          m_Mode: 2
-          m_Arguments:
-            m_ObjectArgument: {fileID: 11400000, guid: 45c32916e7e552e44b4498d5417db2bc, type: 2}
-            m_ObjectArgumentAssemblyTypeName: ResourceType, Assembly-CSharp
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-        - m_Target: {fileID: 3543819747626890001}
-          m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
-            Assembly-CSharp
-          m_MethodName: DisableRegionByID
-          m_Mode: 3
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 2
             m_FloatArgument: 0
             m_StringArgument: 
             m_BoolArgument: 0
@@ -1588,12 +1507,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24cd3062633c6d54984e08858c579024, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ignoreFlag: 0
+  priority: 10
   requirements:
   - resourceType: {fileID: 11400000, guid: 07868ec9cbda2e44a81ed7cdb689956f, type: 2}
     requiredAmount: 1
     currentAmount: 0
     reservedAmount: 0
-  priority: 10
+    OnOneUnitDelivered:
+      m_PersistentCalls:
+        m_Calls: []
+    OnAllUnitsDelivered:
+      m_PersistentCalls:
+        m_Calls: []
   outputResources: []
   spawnPoint: {fileID: 8521993084316968687}
   spawnSpread: 0.1
@@ -1612,6 +1538,19 @@ MonoBehaviour:
         m_TargetAssemblyTypeName: TimerController, Assembly-CSharp
         m_MethodName: ResetTimer
         m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1038270534511848094}
+        m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
+          Assembly-CSharp
+        m_MethodName: DisableRegionByID
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -1649,19 +1588,6 @@ MonoBehaviour:
           m_Arguments:
             m_ObjectArgument: {fileID: 11400000, guid: 07868ec9cbda2e44a81ed7cdb689956f, type: 2}
             m_ObjectArgumentAssemblyTypeName: ResourceType, Assembly-CSharp
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-        - m_Target: {fileID: 1038270534511848094}
-          m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
-            Assembly-CSharp
-          m_MethodName: DisableRegionByID
-          m_Mode: 3
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
             m_IntArgument: 0
             m_FloatArgument: 0
             m_StringArgument: 
@@ -1819,12 +1745,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24cd3062633c6d54984e08858c579024, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ignoreFlag: 0
+  priority: 10
   requirements:
   - resourceType: {fileID: 11400000, guid: e1d6c57c419940944ae0a9e345159fc6, type: 2}
     requiredAmount: 1
     currentAmount: 0
     reservedAmount: 0
-  priority: 10
+    OnOneUnitDelivered:
+      m_PersistentCalls:
+        m_Calls: []
+    OnAllUnitsDelivered:
+      m_PersistentCalls:
+        m_Calls: []
   outputResources:
   - prefab: {fileID: 3301480682788727120, guid: 5f6383890c08b064cbb36a83b7bea92c, type: 3}
     count: 1
@@ -1845,6 +1778,19 @@ MonoBehaviour:
         m_TargetAssemblyTypeName: TimerController, Assembly-CSharp
         m_MethodName: ResetTimer
         m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 3934132972238645845}
+        m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
+          Assembly-CSharp
+        m_MethodName: DisableRegionByID
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -1882,19 +1828,6 @@ MonoBehaviour:
           m_Arguments:
             m_ObjectArgument: {fileID: 11400000, guid: e1d6c57c419940944ae0a9e345159fc6, type: 2}
             m_ObjectArgumentAssemblyTypeName: ResourceType, Assembly-CSharp
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-        - m_Target: {fileID: 3934132972238645845}
-          m_TargetAssemblyTypeName: DeskCat.FindIt.Scripts.Core.Main.Utility.Region.DropRegion,
-            Assembly-CSharp
-          m_MethodName: DisableRegionByID
-          m_Mode: 3
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
             m_IntArgument: 0
             m_FloatArgument: 0
             m_StringArgument: 

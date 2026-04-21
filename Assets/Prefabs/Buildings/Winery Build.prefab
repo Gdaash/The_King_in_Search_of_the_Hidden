@@ -279,7 +279,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.57, y: 0.37}
+  m_Offset: {x: 0.4, y: 0.3}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -289,7 +289,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 0.96}
+  m_Size: {x: 1.15, y: 0.77}
   m_EdgeRadius: 0
 --- !u!114 &2222402102999533938
 MonoBehaviour:
@@ -303,12 +303,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24cd3062633c6d54984e08858c579024, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ignoreFlag: 0
+  priority: 10
   requirements:
   - resourceType: {fileID: 11400000, guid: 07868ec9cbda2e44a81ed7cdb689956f, type: 2}
     requiredAmount: 3
     currentAmount: 0
     reservedAmount: 0
-  priority: 10
+    OnOneUnitDelivered:
+      m_PersistentCalls:
+        m_Calls: []
+    OnAllUnitsDelivered:
+      m_PersistentCalls:
+        m_Calls: []
   outputResources: []
   spawnPoint: {fileID: 7190005551405248351}
   spawnSpread: 0.1
@@ -614,7 +621,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7441483951753692766}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 9, y: -0.06, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0

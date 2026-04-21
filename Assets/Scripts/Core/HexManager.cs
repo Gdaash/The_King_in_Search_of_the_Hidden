@@ -8,7 +8,8 @@ public class HexManager : MonoBehaviour
     public class HexPrefabData
     {
         public GameObject prefab;
-        public bool isMandatory; // Обязательный префаб (будет заспавнен точно)
+        public bool isMandatory; // Обязательный префаб
+        public bool autoUnlockHex; // НОВОЕ: Если стоит, гекс откроется сразу после спавна
     }
 
     [System.Serializable]
@@ -28,8 +29,11 @@ public class HexManager : MonoBehaviour
 
     private void GenerateHexContents()
     {
-        // 1. Находим ВООБЩЕ ВСЕ гексы на сцене (даже если у них нет настроек в менеджере)
+        // 1. Находим ВООБЩЕ ВСЕ гексы на сцене
         HexBlocker[] allHexes = Object.FindObjectsByType<HexBlocker>(FindObjectsSortMode.None);
+
+        // Список для хранения гексов, которые нужно будет открыть в конце
+        List<HexBlocker> hexesToAutoUnlock = new List<HexBlocker>();
 
         // 2. Группируем гексы по их ID для распределения спавна
         var groupedHexes = allHexes.GroupBy(h => h.groupID);
@@ -39,50 +43,59 @@ public class HexManager : MonoBehaviour
             int currentID = group.Key;
             List<HexBlocker> hexesInGroup = group.ToList();
             
-            // Ищем настройки префабов именно для этого ID
             HexGroupSettings settings = groups.Find(g => g.groupID == currentID);
             
-            // Если для этой группы есть список префабов — выполняем спавн
             if (settings != null && settings.prefabsForGroup.Count > 0)
             {
-                // Формируем пул (обязательные + случайные необязательные)
-                List<GameObject> spawnPool = PrepareSpawnPool(settings.prefabsForGroup, hexesInGroup.Count);
+                // Формируем пул (теперь храним HexPrefabData целиком, чтобы знать про галочку autoUnlock)
+                List<HexPrefabData> spawnPool = PrepareSpawnPool(settings.prefabsForGroup, hexesInGroup.Count);
                 
-                // Перемешиваем список гексов этой группы для случайного распределения
                 ShuffleList(hexesInGroup);
 
                 for (int i = 0; i < hexesInGroup.Count; i++)
                 {
                     if (i >= spawnPool.Count) break;
 
-                    // Создаем объект строго в координатах гекса
-                    Instantiate(spawnPool[i], hexesInGroup[i].transform.position, Quaternion.identity);
+                    // Спавним префаб
+                    Instantiate(spawnPool[i].prefab, hexesInGroup[i].transform.position, Quaternion.identity);
+
+                    // Если у этого префаба стоит галочка авто-разблокировки, запоминаем гекс
+                    if (spawnPool[i].autoUnlockHex)
+                    {
+                        hexesToAutoUnlock.Add(hexesInGroup[i]);
+                    }
                 }
             }
         }
 
-        // 3. ФИНАЛЬНЫЙ ШАГ: Просим КАЖДЫЙ гекс на сцене выполнить логику скрытия.
-        // Это скроет и те объекты, что мы только что заспавнили, 
-        // и те, что стояли на сцене изначально (ручная расстановка).
+        // 3. Скрываем объекты под всеми гексами
         foreach (var hex in allHexes)
         {
             hex.InitializeHexContent();
         }
+
+        // 4. НОВОЕ: Открываем гексы, под которыми заспавнились "особые" префабы
+        // Делаем это в самом конце, чтобы не мешать инициализации соседей
+        foreach (var hex in hexesToAutoUnlock)
+        {
+            hex.RemoveHex();
+        }
     }
 
-    private List<GameObject> PrepareSpawnPool(List<HexPrefabData> dataList, int hexCount)
+    // Изменил возвращаемый тип на List<HexPrefabData>, чтобы сохранить информацию о галочке
+    private List<HexPrefabData> PrepareSpawnPool(List<HexPrefabData> dataList, int hexCount)
     {
-        List<GameObject> pool = new List<GameObject>();
+        List<HexPrefabData> pool = new List<HexPrefabData>();
 
-        // Сначала берем все обязательные префабы
-        var mandatory = dataList.Where(d => d.isMandatory).Select(d => d.prefab).ToList();
+        // Сначала берем все обязательные
+        var mandatory = dataList.Where(d => d.isMandatory).ToList();
         pool.AddRange(mandatory);
 
-        // Получаем список необязательных префабов
-        var optional = dataList.Where(d => !d.isMandatory).Select(d => d.prefab).ToList();
+        // Получаем список необязательных
+        var optional = dataList.Where(d => !d.isMandatory).ToList();
         ShuffleList(optional);
 
-        // Дополняем оставшиеся слоты случайными необязательными префабами без повторов
+        // Заполняем оставшиеся слоты случайными необязательными без повторов
         int remainingSlots = hexCount - pool.Count;
         for (int i = 0; i < remainingSlots && i < optional.Count; i++)
         {
@@ -92,7 +105,6 @@ public class HexManager : MonoBehaviour
         return pool;
     }
 
-    // Утилита для перемешивания списка (Fisher-Yates shuffle)
     private void ShuffleList<T>(List<T> list)
     {
         for (int i = list.Count - 1; i > 0; i--)
