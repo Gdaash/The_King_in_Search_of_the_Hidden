@@ -4,6 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
+// --- КЛАССЫ-ПОМОЩНИКИ (Должны быть здесь, чтобы ошибки исчезли) ---
+
 [System.Serializable]
 public class ResourceRequirement {
     public ResourceType resourceType;
@@ -22,7 +24,13 @@ public class ResourceOutput {
     public int count = 1;
 }
 
+// --- ОСНОВНОЙ КЛАСС ---
+
 public class ResourceRequester : MonoBehaviour {
+    [Header("Настройки ограничений")]
+    [SerializeField] private int maxProductionPool = 3;  
+    [SerializeField] private GameObject storageFullVisual; 
+
     [Header("Настройки флажка")]
     [SerializeField] private bool ignoreFlag = false; 
 
@@ -55,15 +63,20 @@ public class ResourceRequester : MonoBehaviour {
     private BoxCollider2D _myCollider;
     private float _lastValidationTime;
     private bool _lastFlagState;
+    
+    private List<GameObject> _spawnedResources = new List<GameObject>();
+    private bool _wasFull; 
 
     protected virtual void Awake() { 
         if (iconsContainer != null) _containerBasePos = iconsContainer.localPosition;
         _myCollider = GetComponent<BoxCollider2D>();
+        if (storageFullVisual != null) storageFullVisual.SetActive(false);
     }
 
     protected virtual void OnEnable() {
         _lastFlagState = HasLogisticFlag();
-        UpdateIndicator(); // Показываем иконки сразу при включении
+        _wasFull = IsStorageFull(); 
+        UpdateIndicator(); 
         if (OrderManager.Instance != null) OrderManager.Instance.RegisterRequester(this);
     }
 
@@ -77,7 +90,8 @@ public class ResourceRequester : MonoBehaviour {
             iconsContainer.localPosition = new Vector3(_containerBasePos.x, newY, _containerBasePos.z);
         }
 
-        // Проверка флага влияет только на логистику и обновление индикатора (если нужно)
+        UpdateStorageStatus();
+
         bool currentFlag = HasLogisticFlag();
         if (currentFlag != _lastFlagState) {
             _lastFlagState = currentFlag;
@@ -88,6 +102,28 @@ public class ResourceRequester : MonoBehaviour {
         if (Time.time > _lastValidationTime + 2f) {
             ValidateReservations();
             _lastValidationTime = Time.time;
+        }
+    }
+
+    public bool IsStorageFull() {
+        _spawnedResources.RemoveAll(item => item == null);
+        int activeCount = _spawnedResources.Count(obj => obj.activeInHierarchy);
+        return activeCount >= maxProductionPool;
+    }
+
+    private void UpdateStorageStatus() {
+        bool currentlyFull = IsStorageFull();
+
+        if (_wasFull && !currentlyFull) {
+            _wasFull = false;
+            if (storageFullVisual != null) storageFullVisual.SetActive(false);
+            UpdateIndicator(); 
+            if (OrderManager.Instance != null) OrderManager.Instance.ForceUpdateOrders();
+        } 
+        else if (!_wasFull && currentlyFull) {
+            _wasFull = true;
+            if (storageFullVisual != null) storageFullVisual.SetActive(true);
+            UpdateIndicator(); 
         }
     }
 
@@ -107,12 +143,12 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     public bool NeedsAnyResource() {
-        // Логистика работает только если здание активно, не занято и ЕСТЬ флаг
-        if (!gameObject.activeInHierarchy || _isProcessing || !HasLogisticFlag()) return false;
+        if (!gameObject.activeInHierarchy || _isProcessing || !HasLogisticFlag() || IsStorageFull()) return false;
         return requirements.Any(r => (r.currentAmount + r.reservedAmount) < r.requiredAmount);
     }
 
     public void ReserveResource(ResourceType type) {
+        if (IsStorageFull()) return;
         var req = requirements.FirstOrDefault(r => r.resourceType == type);
         if (req != null) {
             req.reservedAmount++;
@@ -130,6 +166,7 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     public void StartPhysicalDelivery() { 
+        if (IsStorageFull()) return;
         _carryingToUs++; 
         UpdateIndicator(); 
     }
@@ -171,17 +208,14 @@ public class ResourceRequester : MonoBehaviour {
 
     public virtual void UpdateIndicator() {
         if (iconsContainer == null || iconPrefab == null) return;
-        
         foreach (var icon in _activeIcons) if(icon) Destroy(icon);
         _activeIcons.Clear();
 
-        // Скрываем иконки только если здание уже в процессе работы или выключено
-        if (_isProcessing || !gameObject.activeInHierarchy) {
+        if (_isProcessing || !gameObject.activeInHierarchy || IsStorageFull()) {
             iconsContainer.gameObject.SetActive(false);
             return;
         }
 
-        // Грузчики, которые уже несут ресурс
         List<ResourceType> resourcesInTransit = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
                 .Where(p => p.GetCurrentJob() == this && p.IsCarryingResource())
                 .Select(p => p.GetCarriedResourceType())
@@ -189,13 +223,10 @@ public class ResourceRequester : MonoBehaviour {
 
         List<ResourceType> displayTypes = new List<ResourceType>();
         foreach (var req in requirements) {
-            int neededTotal = req.requiredAmount - req.currentAmount;
-            for (int i = 0; i < neededTotal; i++) {
-                if (resourcesInTransit.Contains(req.resourceType)) {
-                    resourcesInTransit.Remove(req.resourceType);
-                } else {
-                    displayTypes.Add(req.resourceType);
-                }
+            int needed = req.requiredAmount - req.currentAmount;
+            for (int i = 0; i < needed; i++) {
+                if (resourcesInTransit.Contains(req.resourceType)) resourcesInTransit.Remove(req.resourceType);
+                else displayTypes.Add(req.resourceType);
             }
         }
 
@@ -217,7 +248,7 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     private void ValidateReservations() {
-        if (_isProcessing || !gameObject.activeInHierarchy) return;
+        if (_isProcessing || !gameObject.activeInHierarchy || IsStorageFull()) return;
 
         if (!HasLogisticFlag()) {
             bool changed = false;
@@ -249,6 +280,7 @@ public class ResourceRequester : MonoBehaviour {
                 Vector3 spawnTarget = (spawnPoint != null ? spawnPoint.position : origin) + new Vector3(Random.Range(-spawnSpread, spawnSpread), Random.Range(-spawnSpread, spawnSpread), 0);
                 GameObject res = Instantiate(output.prefab, origin, Quaternion.identity);
                 if (res.CompareTag("Untagged")) res.tag = "Resource";
+                _spawnedResources.Add(res);
                 StartCoroutine(TossResource(res.transform, origin, spawnTarget));
             }
         }

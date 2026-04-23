@@ -17,10 +17,10 @@ public class ClickRequester : ResourceRequester
 
     protected override void Update()
     {
-        base.Update(); // Сохраняем логику регенерации и прочего из родителя
+        base.Update(); 
 
-        // Если здание активно, не в процессе производства и пришло время клика
-        if (gameObject.activeInHierarchy && !_isProcessing && Time.time >= _nextAutoClickTime)
+        // Если здание активно, не в процессе производства, НЕ ПЕРЕПОЛНЕНО и пришло время клика
+        if (gameObject.activeInHierarchy && !_isProcessing && !IsStorageFull() && Time.time >= _nextAutoClickTime)
         {
             if (HasAutoClickWorker())
             {
@@ -47,13 +47,17 @@ public class ClickRequester : ResourceRequester
 
     private void OnMouseDown()
     {
-        if (_isProcessing) return;
+        // Блокируем клик игрока, если здание производит или склад полон
+        if (_isProcessing || IsStorageFull()) return;
         DoClick();
     }
 
-    // Вынесли логику клика в отдельный метод, чтобы вызывали и мышь, и рабочий
+    // Логика клика
     private void DoClick()
     {
+        // Дополнительная проверка внутри метода
+        if (IsStorageFull()) return;
+
         var req = requirements.FirstOrDefault(r => r.currentAmount < r.requiredAmount);
         
         if (req != null)
@@ -80,7 +84,8 @@ public class ClickRequester : ResourceRequester
         foreach (var icon in _activeIcons) if(icon) Destroy(icon);
         _activeIcons.Clear();
 
-        if (_isProcessing || !gameObject.activeInHierarchy)
+        // Иконки мышек исчезают, если здание занято, выключено или СКЛАД ПОЛЕН
+        if (_isProcessing || !gameObject.activeInHierarchy || IsStorageFull())
         {
             iconsContainer.gameObject.SetActive(false);
             return;

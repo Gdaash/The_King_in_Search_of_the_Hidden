@@ -154,8 +154,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24cd3062633c6d54984e08858c579024, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  requirements: []
+  maxProductionPool: 999
+  storageFullVisual: {fileID: 0}
+  ignoreFlag: 0
   priority: 10
+  requirements: []
   outputResources:
   - prefab: {fileID: 3082682973624649699, guid: e816844cf4bd9534ca329252266e5d08, type: 3}
     count: 1
@@ -216,6 +219,9 @@ MonoBehaviour:
   resistances: []
   targetSprite: {fileID: 8993673450615912958}
   damageTextPrefab: {fileID: 0}
+  _cur: 0
+  regenAmount: 5
+  regenDelay: 5
   OnHealthChanged:
     m_PersistentCalls:
       m_Calls: []
