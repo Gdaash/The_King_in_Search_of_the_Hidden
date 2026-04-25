@@ -3,6 +3,9 @@ using System.Collections;
 
 public class EnemyVisuals : MonoBehaviour
 {
+    [Header("Глобальные настройки")]
+    [SerializeField] private GlobalStats stats; 
+
     [Header("Ссылки")]
     [SerializeField] private Transform spriteParent; 
     private IEnemyAI _ai;
@@ -14,8 +17,6 @@ public class EnemyVisuals : MonoBehaviour
     [Header("Настройки Атаки")]
     [SerializeField] private float jabDist = 0.7f;
     [SerializeField] private float jabSpeed = 15f;
-    [SerializeField] private int damage = 10;
-    [SerializeField] private DamageType damageType = DamageType.Physical;
 
     private Vector3 _startPos;
     private bool _isMoving;
@@ -36,10 +37,7 @@ public class EnemyVisuals : MonoBehaviour
 
     void Update() 
     {
-        if (_rb != null && _rb.linearVelocity.magnitude < 0.1f)
-        {
-            _isMoving = false;
-        }
+        if (_rb != null && _rb.linearVelocity.magnitude < 0.1f) _isMoving = false;
 
         if (_isMoving) 
         {
@@ -63,25 +61,27 @@ public class EnemyVisuals : MonoBehaviour
     private IEnumerator JabRoutine() 
     {
         Transform target = _ai.GetTarget();
-        if (target == null) 
-        { 
-            _ai.FinishAttack(); 
-            yield break; 
-        }
+        if (target == null) { _ai.FinishAttack(); yield break; }
 
-        // Удалена строка изменения цвета на красный/желтый
         yield return new WaitForSeconds(0.2f);
         
         Vector3 worldDir = (target.position - transform.position).normalized;
         Vector3 localDir = transform.InverseTransformDirection(worldDir);
-        
         localDir.x *= Mathf.Sign(transform.localScale.x);
         localDir.y *= Mathf.Sign(transform.localScale.y);
 
         Vector3 targetLocalPos = _startPos + localDir * jabDist;
 
-        if (target.TryGetComponent<Health>(out var h)) h.TakeDamage(damage, damageType);
+        // ПРИМЕНЕНИЕ УРОНА (ИЗ СПИСКА)
+        if (target.TryGetComponent<Health>(out var h) && stats != null) 
+        {
+            foreach (var dmgInfo in stats.damageSettings)
+            {
+                h.TakeDamage(dmgInfo.TotalDamage, dmgInfo.type, transform);
+            }
+        }
         
+        // Анимация выпада
         float p = 0;
         while (p < 1f) 
         { 
@@ -89,7 +89,6 @@ public class EnemyVisuals : MonoBehaviour
             spriteParent.localPosition = Vector3.Lerp(_startPos, targetLocalPos, p); 
             yield return null; 
         }
-        
         p = 0;
         while (p < 1f) 
         { 
@@ -98,7 +97,6 @@ public class EnemyVisuals : MonoBehaviour
             yield return null; 
         }
         
-        // Удалена строка возврата оригинального цвета
         _ai.FinishAttack();
     }
 }

@@ -42,7 +42,7 @@ public class EnemyVisuals_Ranged : MonoBehaviour
 
     private void HandleBounce()
     {
-        // Если реальная скорость почти нулевая, выключаем анимацию
+        // Если реальная скорость почти нулевая, выключаем анимацию прыжков
         if (_rb != null && _rb.linearVelocity.magnitude < 0.1f)
         {
             _isMoving = false;
@@ -93,12 +93,28 @@ public class EnemyVisuals_Ranged : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
 
         Vector3 worldDir = (target.position - shootPoint.position).normalized;
+        
+        // --- СПАВН ПУЛИ С ГЛОБАЛЬНЫМ УРОНОМ ---
         if (projectilePrefab)
         {
             GameObject proj = Instantiate(projectilePrefab, shootPoint.position, Quaternion.identity);
-            if (proj.TryGetComponent<EnemyProjectile>(out var p)) p.Setup(worldDir, ai.GetTargetTag()); 
+            if (proj.TryGetComponent<EnemyProjectile>(out var p)) 
+            {
+                // Получаем GlobalStats через AI и передаем список урона в Setup пули
+                var stats = ai.GetStats();
+                if (stats != null)
+                {
+                    p.Setup(worldDir, ai.GetTargetTag(), stats.damageSettings);
+                }
+                else
+                {
+                    // Если статы не назначены, передаем пустой список во избежание ошибок
+                    p.Setup(worldDir, ai.GetTargetTag(), new System.Collections.Generic.List<GlobalStats.DamageInfo>());
+                }
+            }
         }
 
+        // --- АНИМАЦИЯ ОТДАЧИ ---
         if (spriteParent)
         {
             Vector3 kickbackPos = _startPos + transform.InverseTransformDirection(-worldDir * kickbackDist);

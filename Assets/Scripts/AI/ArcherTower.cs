@@ -4,12 +4,15 @@ using UnityEngine.Events;
 
 public class ArcherTower : MonoBehaviour
 {
+    [Header("Глобальные настройки")]
+    [SerializeField] private GlobalStats stats; // Ссылка на ScriptableObject башни
+
     [Header("Настройки поиска")]
     [SerializeField] private string targetTag = "Enemy1"; 
-    [SerializeField] private float attackRange = 10f;
+    // Если stats не назначен, будет использоваться это значение
+    [SerializeField] private float defaultAttackRange = 10f;
 
     [Header("Настройки атаки")]
-    [SerializeField] private float baseAttackCooldown = 1.5f;
     [SerializeField] private float cooldownVariation = 0.2f;
 
     [Header("События")]
@@ -21,14 +24,16 @@ public class ArcherTower : MonoBehaviour
     private float _nextAttackTime;
     private float _currentCooldown;
 
+    // Свойства для получения данных из GlobalStats
+    public float CurrentRange => stats != null ? stats.TotalAttackRange : defaultAttackRange;
+    public float CurrentCooldownBase => stats != null ? stats.TotalCooldown : 1.5f;
+
     void Start() => ResetCooldown();
 
     void Update()
     {
-        // Всегда ищем самого близкого врага
         FindClosestTarget();
 
-        // Если цель есть и мы готовы к атаке
         if (_target != null && !_isAttacking && Time.time >= _nextAttackTime)
         {
             _isAttacking = true;
@@ -42,7 +47,7 @@ public class ArcherTower : MonoBehaviour
         var targets = GameObject.FindGameObjectsWithTag(targetTag);
         
         Collider2D closest = null;
-        float minDistance = attackRange;
+        float minDistance = CurrentRange; // Используем динамическую дальность
 
         foreach (var t in targets)
         {
@@ -70,7 +75,13 @@ public class ArcherTower : MonoBehaviour
         }
     }
 
-    private void ResetCooldown() => _currentCooldown = baseAttackCooldown + Random.Range(-cooldownVariation, cooldownVariation);
+    // Добавляем метод для визуального скрипта TowerVisuals
+    public GlobalStats GetStats() => stats;
+
+    private void ResetCooldown() 
+    {
+        _currentCooldown = CurrentCooldownBase + Random.Range(-cooldownVariation, cooldownVariation);
+    }
 
     public void FinishAttack() 
     { 
@@ -83,6 +94,6 @@ public class ArcherTower : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.DrawWireSphere(transform.position, CurrentRange);
     }
 }

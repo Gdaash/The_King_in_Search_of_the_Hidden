@@ -9,13 +9,15 @@ public class Health : MonoBehaviour
     [System.Serializable]
     public struct Resistance { public DamageType type; [Range(0, 2)] public float mult; }
 
-    [Header("Базовые настройки")]
-    [SerializeField] private float maxHealth = 100f;
+    [Header("Глобальные настройки")]
+    [SerializeField] private GlobalStats stats; 
+
+    [Header("Настройки")]
     [SerializeField] private List<Resistance> resistances;
     [SerializeField] private SpriteRenderer targetSprite;
     [SerializeField] private GameObject damageTextPrefab;
 
-    [Header("Состояние (Инспектор)")]
+    [Header("Состояние")]
     [SerializeField] private float _cur; 
 
     [Header("Настройки регенерации")]
@@ -30,10 +32,16 @@ public class Health : MonoBehaviour
     private float _lastDamageTime;
     private IEnemyAI _ai; 
     private Coroutine _regenCoroutine;
-    private Coroutine _flashCoroutine; // Ссылка для управления вспышками цвета
+    private Coroutine _flashCoroutine;
+
+    // Свойство для получения актуального HP из глобального файла
+    public float MaxHealth => stats != null ? stats.TotalMaxHealth : 100f;
+
+    void Awake() {
+        if (stats != null) _cur = MaxHealth;
+    }
 
     void Start() {
-        _cur = maxHealth;
         if (!targetSprite) targetSprite = GetComponentInChildren<SpriteRenderer>();
         if (targetSprite) _orig = targetSprite.color;
 
@@ -41,19 +49,37 @@ public class Health : MonoBehaviour
         _regenCoroutine = StartCoroutine(RegenTickRoutine());
     }
 
+    private void OnEnable() {
+        // Подписка на глобальное обновление (например, при покупке улучшения)
+        if (stats != null) stats.OnStatsUpdated += HandleStatsUpgrade;
+    }
+
+    private void OnDisable() {
+        if (stats != null) stats.OnStatsUpdated -= HandleStatsUpgrade;
+    }
+
+    private void HandleStatsUpgrade() {
+        if (_dead) return;
+        
+        // При покупке улучшения просто лечим юнита на 10 (или можно полностью вылечить)
+        _cur += 10f; 
+        if (_cur > MaxHealth) _cur = MaxHealth;
+
+        TriggerFlash(Color.blue); 
+        OnHealthChanged?.Invoke(_cur / MaxHealth);
+    }
+
     private IEnumerator RegenTickRoutine() {
         while (!_dead) {
             yield return new WaitForSeconds(1f); 
 
-            if (_cur < maxHealth && Time.time >= _lastDamageTime + regenDelay) {
+            if (_cur < MaxHealth && Time.time >= _lastDamageTime + regenDelay) {
                 if (IsAIAttacking()) continue;
 
-                _cur = Mathf.Min(_cur + regenAmount, maxHealth);
-                OnHealthChanged?.Invoke(_cur / maxHealth);
+                _cur = Mathf.Min(_cur + regenAmount, MaxHealth);
+                OnHealthChanged?.Invoke(_cur / MaxHealth);
                 
-                // ЗЕЛЕНАЯ ВСПЫШКА при лечении
                 TriggerFlash(Color.green);
-                // Можно также спавнить текст лечения (отрицательное значение в SpawnText сделает его зеленым)
                 SpawnText(-regenAmount, DamageType.Physical); 
             }
         }
@@ -61,7 +87,7 @@ public class Health : MonoBehaviour
 
     private void TriggerFlash(Color color) {
         if (_flashCoroutine != null) StopCoroutine(_flashCoroutine);
-        _flashCoroutine = StartCoroutine(Flash(color));
+        if (gameObject.activeInHierarchy) _flashCoroutine = StartCoroutine(Flash(color));
     }
 
     private IEnumerator Flash(Color c) {
@@ -76,13 +102,12 @@ public class Health : MonoBehaviour
         float final = amt * GetMult(type);
         
         if (final > 0) {
-            _cur = Mathf.Clamp(_cur - final, 0, maxHealth);
+            _cur = Mathf.Clamp(_cur - final, 0, MaxHealth);
             _lastDamageTime = Time.time; 
             
-            // КРАСНАЯ ВСПЫШКА при уроне
             TriggerFlash(Color.red);
             SpawnText(final, type);
-            OnHealthChanged?.Invoke(_cur / maxHealth);
+            OnHealthChanged?.Invoke(_cur / MaxHealth);
 
             var rangedAI = GetComponent<EnemyAI_Ranged>();
             var meleeAI = GetComponent<EnemyAI>();
@@ -106,7 +131,7 @@ public class Health : MonoBehaviour
     }
 
     private void SpawnText(float val, DamageType t) {
-        if (!damageTextPrefab) return;
+        if (!damageTextPrefab || !gameObject.activeInHierarchy) return;
         var go = Instantiate(damageTextPrefab, transform.position + Vector3.up, Quaternion.identity);
         go.GetComponent<DamageText>()?.Setup(Mathf.Abs(val).ToString("F0"), val > 0 ? Color.red : Color.green);
     }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic; // Добавлено для работы со списками
 
 public class TowerVisuals : MonoBehaviour
 {
@@ -35,10 +36,8 @@ public class TowerVisuals : MonoBehaviour
         Transform target = tower.GetTarget();
         if (target == null) { tower.FinishAttack(); yield break; }
 
-        // Пауза перед выстрелом (подготовка)
         yield return new WaitForSeconds(0.2f);
 
-        // Повторная проверка цели после паузы
         target = tower.GetTarget();
         if (target == null) { tower.FinishAttack(); yield break; }
 
@@ -48,7 +47,21 @@ public class TowerVisuals : MonoBehaviour
         {
             GameObject proj = Instantiate(projectilePrefab, shootPoint.position, Quaternion.identity);
             if (proj.TryGetComponent<EnemyProjectile>(out var p)) 
-                p.Setup(worldDir, targetTag);
+            {
+                // ПОЛУЧАЕМ СПИСОК УРОНА
+                // Вариант А: Если в ArcherTower есть метод GetStats() (как у лучника)
+                var stats = tower.GetStats(); 
+                
+                if (stats != null)
+                {
+                    p.Setup(worldDir, targetTag, stats.damageSettings);
+                }
+                else
+                {
+                    // Если статы не назначены, передаем пустой список, чтобы не было ошибки
+                    p.Setup(worldDir, targetTag, new List<GlobalStats.DamageInfo>());
+                }
+            }
         }
 
         // Анимация отдачи

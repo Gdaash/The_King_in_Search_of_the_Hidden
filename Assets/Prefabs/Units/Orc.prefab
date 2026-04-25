@@ -15,9 +15,9 @@ GameObject:
   - component: {fileID: 3080557083798875138}
   - component: {fileID: 8258941339818468702}
   - component: {fileID: 2626091186242170293}
-  - component: {fileID: -6584438953421743866}
+  - component: {fileID: -7726016161049588570}
   m_Layer: 9
-  m_Name: Goblin
+  m_Name: Orc
   m_TagString: Enemy1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -232,7 +232,7 @@ MonoBehaviour:
   bounceSpeed: 8
   jabDist: 0.2
   jabSpeed: 5
-  damage: 5
+  damage: 20
   damageType: 0
 --- !u!114 &2626091186242170293
 MonoBehaviour:
@@ -246,7 +246,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0c8b4964dd3a5645ace6add3d5391cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 50
+  stats: {fileID: 11400000, guid: 8df75f902ce8f734d8e0b42a89bc72bc, type: 2}
   resistances: []
   targetSprite: {fileID: 1821364848114453156}
   damageTextPrefab: {fileID: 0}
@@ -271,7 +271,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &-6584438953421743866
+--- !u!114 &-7726016161049588570
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -283,7 +283,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69d8a458a199c29479cb59f7d33899b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dangerLevel: 1
+  dangerLevel: 2
 --- !u!1 &3496633489129917242
 GameObject:
   m_ObjectHideFlags: 0
@@ -360,7 +360,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 40
-  m_Sprite: {fileID: 21300000, guid: e4a4d378c4fe27042a6e43df66567f44, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 74daa20d8de1dd7448eda557dfb23567, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
