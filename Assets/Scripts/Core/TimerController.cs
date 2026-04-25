@@ -3,10 +3,13 @@ using UnityEngine.Events;
 
 public class TimerController : MonoBehaviour
 {
-    [Header("Ссылки")]
-    [SerializeField] private GameObject progressBarObject; 
+    [Header("Глобальные настройки (Опционально)")]
+    [SerializeField] private GlobalStats stats; 
 
-    [Header("Настройки времени")]
+    [Header("Ссылки")]
+    [SerializeField] private GameObject progressBarObject; // Вернул эту переменную
+
+    [Header("Настройки времени (Если нет GlobalStats)")]
     [SerializeField] private float duration = 5f; 
     [SerializeField] private bool loopInfinitely = false; 
     [SerializeField] private int repeatCount = 1; 
@@ -19,12 +22,30 @@ public class TimerController : MonoBehaviour
     private int _remainingRepeats;
     private bool _isActive = false;
 
+    // Логика: берем время из статов или из локальной переменной
+    private float CurrentDuration => stats != null ? stats.TotalProductionTime : duration;
+
     void Start()
     {
-        _currentTime = duration;
+        _currentTime = CurrentDuration;
         _remainingRepeats = repeatCount;
         
         if (runOnStart) StartTimer();
+    }
+
+    private void OnEnable()
+    {
+        if (stats != null) stats.OnStatsUpdated += SyncWithGlobalStats;
+    }
+
+    private void OnDisable()
+    {
+        if (stats != null) stats.OnStatsUpdated -= SyncWithGlobalStats;
+    }
+
+    private void SyncWithGlobalStats()
+    {
+        // При обновлении глобальных данных таймер подхватит новое время в следующем цикле
     }
 
     void Update()
@@ -42,7 +63,6 @@ public class TimerController : MonoBehaviour
         }
     }
 
-    // Метод настройки извне
     public void SetDurationAndStart(float newDuration)
     {
         duration = newDuration;
@@ -57,7 +77,8 @@ public class TimerController : MonoBehaviour
     private void SendProgressToBar()
     {
         if (progressBarObject == null) return;
-        float progress = 1f - (Mathf.Clamp01(_currentTime / duration));
+        
+        float progress = 1f - (Mathf.Clamp01(_currentTime / CurrentDuration));
         progressBarObject.SendMessage("SetProgress", progress, SendMessageOptions.DontRequireReceiver);
         
         if (progress > 0.001f && progress < 0.999f)
@@ -70,20 +91,23 @@ public class TimerController : MonoBehaviour
 
         if (loopInfinitely)
         {
-            _currentTime = duration;
+            _currentTime = CurrentDuration;
         }
         else
         {
             _remainingRepeats--;
             if (_remainingRepeats > 0)
             {
-                _currentTime = duration;
+                _currentTime = CurrentDuration;
             }
             else
             {
                 _isActive = false;
-                progressBarObject.SendMessage("SetProgress", 1f, SendMessageOptions.DontRequireReceiver);
-                progressBarObject.SendMessage("Hide", SendMessageOptions.DontRequireReceiver);
+                if (progressBarObject != null)
+                {
+                    progressBarObject.SendMessage("SetProgress", 1f, SendMessageOptions.DontRequireReceiver);
+                    progressBarObject.SendMessage("Hide", SendMessageOptions.DontRequireReceiver);
+                }
             }
         }
     }
@@ -91,12 +115,13 @@ public class TimerController : MonoBehaviour
     public void StartTimer() 
     {
         _isActive = true;
-        if (progressBarObject != null) progressBarObject.SendMessage("Show", SendMessageOptions.DontRequireReceiver);
+        if (progressBarObject != null) 
+            progressBarObject.SendMessage("Show", SendMessageOptions.DontRequireReceiver);
     }
 
     public void ResetTimer()
     {
-        _currentTime = duration;
+        _currentTime = CurrentDuration;
         _remainingRepeats = repeatCount;
         StartTimer();
     }
