@@ -156,11 +156,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d97b88e840d698643a38689d072ee22a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stats: {fileID: 11400000, guid: a4690da2b24d5e443b7ed0162ecfe594, type: 2}
   targetTag: Player
   detectionRange: 50
-  attackRange: 4
-  stopRange: 3.9
-  baseAttackCooldown: 2
+  defaultAttackRange: 8
+  defaultStopRange: 6
   cooldownVariation: 0.5
   homeStoppingDistance: 0.5
   positionVariation: 2
@@ -290,7 +290,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb9219bd93beb7749b5c5a330ab557db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  baseSpeed: 1
+  stats: {fileID: 11400000, guid: a4690da2b24d5e443b7ed0162ecfe594, type: 2}
   speedVariation: 0.2
   flipThreshold: 0.2
 --- !u!114 &6712944776575412886
@@ -305,8 +305,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0c8b4964dd3a5645ace6add3d5391cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stats: {fileID: 11400000, guid: 8df75f902ce8f734d8e0b42a89bc72bc, type: 2}
-  resistances: []
+  stats: {fileID: 11400000, guid: a4690da2b24d5e443b7ed0162ecfe594, type: 2}
   targetSprite: {fileID: 2938870694235569273}
   damageTextPrefab: {fileID: 0}
   _cur: 0

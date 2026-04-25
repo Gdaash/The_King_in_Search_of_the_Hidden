@@ -17,10 +17,22 @@ public class GlobalStats : ScriptableObject
         public float TotalDamage => baseDamage + bonusDamage;
     }
 
+    [System.Serializable]
+    public class ResistanceInfo
+    {
+        public DamageType type;
+        [Range(0, 2)] public float baseMult = 1f; 
+        public float bonusResist = 0f; 
+        public float CurrentMult => Mathf.Clamp(baseMult - bonusResist, 0, 2);
+    }
+
     [Header("Здоровье")]
     public float baseMaxHealth = 100f;
     public float bonusHealth = 0f;
     public float TotalMaxHealth => baseMaxHealth + bonusHealth;
+
+    [Header("Сопротивления (Резисты)")]
+    public List<ResistanceInfo> resistances = new List<ResistanceInfo>();
 
     [Header("Передвижение")]
     public float baseSpeed = 3f;
@@ -44,6 +56,7 @@ public class GlobalStats : ScriptableObject
     public void LoadStats()
     {
         if (string.IsNullOrEmpty(unitTypeKey)) return;
+
         bonusHealth = PlayerPrefs.GetFloat(unitTypeKey + "_BonusHP", 0f);
         bonusSpeed = PlayerPrefs.GetFloat(unitTypeKey + "_BonusSpeed", 0f);
         bonusAttackSpeed = PlayerPrefs.GetFloat(unitTypeKey + "_BonusAtkSpeed", 0f);
@@ -51,6 +64,9 @@ public class GlobalStats : ScriptableObject
 
         foreach (var d in damageSettings)
             d.bonusDamage = PlayerPrefs.GetFloat(unitTypeKey + "_BonusDmg_" + d.type.ToString(), 0f);
+
+        foreach (var r in resistances)
+            r.bonusResist = PlayerPrefs.GetFloat(unitTypeKey + "_BonusRes_" + r.type.ToString(), 0f);
         
         OnStatsUpdated?.Invoke();
     }
@@ -71,6 +87,17 @@ public class GlobalStats : ScriptableObject
         }
     }
 
+    public void AddResistUpgrade(DamageType type, float amount)
+    {
+        var r = resistances.FirstOrDefault(x => x.type == type);
+        if (r != null) {
+            r.bonusResist += amount;
+            PlayerPrefs.SetFloat(unitTypeKey + "_BonusRes_" + type.ToString(), r.bonusResist);
+            PlayerPrefs.Save();
+            OnStatsUpdated?.Invoke();
+        }
+    }
+
     private void SaveValue(ref float field, string subKey, float amount)
     {
         field += amount;
@@ -84,15 +111,31 @@ public class GlobalStats : ScriptableObject
     [ContextMenu("Reset Progress")]
     public void ResetProgress()
     {
-        bonusHealth = 0; bonusSpeed = 0; bonusAttackSpeed = 0; bonusAttackRange = 0;
-        PlayerPrefs.DeleteKey(unitTypeKey + "_BonusHP");
-        PlayerPrefs.DeleteKey(unitTypeKey + "_BonusSpeed");
-        PlayerPrefs.DeleteKey(unitTypeKey + "_BonusAtkSpeed");
-        PlayerPrefs.DeleteKey(unitTypeKey + "_BonusRange");
-        foreach (var d in damageSettings) {
-            d.bonusDamage = 0;
-            PlayerPrefs.DeleteKey(unitTypeKey + "_BonusDmg_" + d.type.ToString());
+        bonusHealth = 0;
+        bonusSpeed = 0;
+        bonusAttackSpeed = 0;
+        bonusAttackRange = 0;
+
+        if (!string.IsNullOrEmpty(unitTypeKey))
+        {
+            PlayerPrefs.DeleteKey(unitTypeKey + "_BonusHP");
+            PlayerPrefs.DeleteKey(unitTypeKey + "_BonusSpeed");
+            PlayerPrefs.DeleteKey(unitTypeKey + "_BonusAtkSpeed");
+            PlayerPrefs.DeleteKey(unitTypeKey + "_BonusRange");
+
+            foreach (var d in damageSettings)
+            {
+                d.bonusDamage = 0;
+                PlayerPrefs.DeleteKey(unitTypeKey + "_BonusDmg_" + d.type.ToString());
+            }
+
+            foreach (var r in resistances)
+            {
+                r.bonusResist = 0;
+                PlayerPrefs.DeleteKey(unitTypeKey + "_BonusRes_" + r.type.ToString());
+            }
         }
+
         PlayerPrefs.Save();
         OnStatsUpdated?.Invoke();
     }
