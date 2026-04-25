@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 3453350828928812815}
   - component: {fileID: 6857905004447981620}
   - component: {fileID: 358497241914851064}
+  - component: {fileID: 7310182620116097392}
   m_Layer: 10
   m_Name: Cave
   m_TagString: Enemy1
@@ -226,7 +227,31 @@ MonoBehaviour:
       m_Calls: []
   OnDeath:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 7310182620116097392}
+        m_TargetAssemblyTypeName: ObjectSpawner, Assembly-CSharp
+        m_MethodName: SpawnObject
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 7310182620116097392}
+        m_TargetAssemblyTypeName: ObjectSpawner, Assembly-CSharp
+        m_MethodName: SpawnObject
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &358497241914851064
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -240,6 +265,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dangerLevel: 5
+--- !u!114 &7310182620116097392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 73795540153150681}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0aff9a675b989524dba37247e81e9094, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefabToSpawn: {fileID: 1033317783231035356, guid: 00a8d050ddf60344185eafd1cfc2b86d, type: 3}
+  spawnPoint: {fileID: 3384540661970410618}
+  parentToSpawner: 0
 --- !u!1 &2557197021763134998
 GameObject:
   m_ObjectHideFlags: 0

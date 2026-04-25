@@ -260,6 +260,7 @@ GameObject:
   - component: {fileID: 7661365225138656909}
   - component: {fileID: 1606223322815168232}
   - component: {fileID: 1200917573613736442}
+  - component: {fileID: 7443613201124399443}
   m_Layer: 10
   m_Name: GoblinCave
   m_TagString: Enemy1
@@ -471,7 +472,19 @@ MonoBehaviour:
       m_Calls: []
   OnDeath:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 7443613201124399443}
+        m_TargetAssemblyTypeName: ObjectSpawner, Assembly-CSharp
+        m_MethodName: SpawnObject
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1200917573613736442
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -485,6 +498,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dangerLevel: 3
+--- !u!114 &7443613201124399443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5010493116618510878}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0aff9a675b989524dba37247e81e9094, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefabToSpawn: {fileID: 1033317783231035356, guid: 00a8d050ddf60344185eafd1cfc2b86d, type: 3}
+  spawnPoint: {fileID: 2796031935952199008}
+  parentToSpawner: 0
 --- !u!1 &5654141207630421539
 GameObject:
   m_ObjectHideFlags: 0
