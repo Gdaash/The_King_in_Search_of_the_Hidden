@@ -4,7 +4,6 @@ using UnityEngine.Events;
 public class TimerController : MonoBehaviour
 {
     [Header("Ссылки")]
-    [Tooltip("Просто перетащите сюда объект, где висит ЛЮБОЙ скрипт прогрессбара")]
     [SerializeField] private GameObject progressBarObject; 
 
     [Header("Настройки времени")]
@@ -43,16 +42,24 @@ public class TimerController : MonoBehaviour
         }
     }
 
+    // Метод настройки извне
+    public void SetDurationAndStart(float newDuration)
+    {
+        duration = newDuration;
+        _currentTime = duration;
+        _remainingRepeats = repeatCount;
+        _isActive = true;
+        
+        if (progressBarObject != null) 
+            progressBarObject.SendMessage("Show", SendMessageOptions.DontRequireReceiver);
+    }
+
     private void SendProgressToBar()
     {
         if (progressBarObject == null) return;
-
         float progress = 1f - (Mathf.Clamp01(_currentTime / duration));
-
-        // Отправляем команду объекту. Если на нем есть скрипт с методом SetProgress, он сработает.
         progressBarObject.SendMessage("SetProgress", progress, SendMessageOptions.DontRequireReceiver);
         
-        // Также посылаем команду показать бар
         if (progress > 0.001f && progress < 0.999f)
             progressBarObject.SendMessage("Show", SendMessageOptions.DontRequireReceiver);
     }
@@ -75,7 +82,6 @@ public class TimerController : MonoBehaviour
             else
             {
                 _isActive = false;
-                // Скрываем в конце
                 progressBarObject.SendMessage("SetProgress", 1f, SendMessageOptions.DontRequireReceiver);
                 progressBarObject.SendMessage("Hide", SendMessageOptions.DontRequireReceiver);
             }

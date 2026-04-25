@@ -1,17 +1,23 @@
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI; // Если используете обычный Text
+using TMPro;           // Если используете TextMeshPro
 using System.Collections;
 using System.Collections.Generic;
 
 public class HexBlocker : MonoBehaviour
 {
     [Header("Настройки группы")]
-    public int groupID; // ID для работы с HexManager
+    public int groupID; 
 
     [Header("Ссылки на объекты")]
     [SerializeField] private GameObject lockedVisual;   
     [SerializeField] private GameObject unlockedVisual; 
-    [SerializeField] private GameObject[] skullIcons; 
+    
+    [Header("Настройки опасности")]
+    [SerializeField] private GameObject skullIcon; // Ссылка на один единственный череп
+    [SerializeField] private TextMeshPro dangerText; // Ссылка на текстовое поле
+    [SerializeField] private string dangerPrefix = "LVL "; // Префикс перед числом
 
     [Header("Настройки сетки и слоев")]
     [SerializeField] private float checkRadius = 1.1f; 
@@ -29,17 +35,9 @@ public class HexBlocker : MonoBehaviour
 
     private void Awake()
     {
-        // Выключаем черепа при старте
-        if (skullIcons != null)
-        {
-            foreach (var skull in skullIcons)
-            {
-                if (skull != null) skull.SetActive(false);
-            }
-        }
-        
-        // Логику поиска объектов (FindAndHideObjects) здесь НЕ вызываем, 
-        // её вызовет HexManager после спавна контента.
+        // Прячем визуал опасности при старте
+        if (skullIcon != null) skullIcon.SetActive(false);
+        if (dangerText != null) dangerText.gameObject.SetActive(false);
     }
 
     private void Start()
@@ -47,9 +45,6 @@ public class HexBlocker : MonoBehaviour
         CheckStatus(true);
     }
 
-    /// <summary>
-    /// Метод инициализации контента. Вызывается менеджером гексов.
-    /// </summary>
     public void InitializeHexContent()
     {
         FindAndHideObjects();
@@ -57,7 +52,6 @@ public class HexBlocker : MonoBehaviour
 
     private void FindAndHideObjects()
     {
-        // Очищаем список на случай повторного вызова
         _hiddenObjects.Clear();
         _totalDanger = 0;
 
@@ -69,26 +63,51 @@ public class HexBlocker : MonoBehaviour
 
             if (!_hiddenObjects.Contains(col.gameObject))
             {
-                // Проверяем наличие скрипта опасности
                 DangerSource danger = col.GetComponent<DangerSource>();
-                if (danger != null)
-                {
-                    _totalDanger += danger.dangerLevel;
-                }
+                if (danger != null) _totalDanger += danger.dangerLevel;
 
                 _hiddenObjects.Add(col.gameObject);
                 col.gameObject.SetActive(false);
             }
         }
 
-        // Включаем черепа согласно уровню опасности
-        if (skullIcons != null)
+        UpdateDangerVisuals();
+
+        if (_totalDanger > 0)
         {
-            int skullsToShow = Mathf.Min(_totalDanger, skullIcons.Length);
-            for (int i = 0; i < skullsToShow; i++)
+            ForceUnlockAndStartTimer();
+        }
+    }
+
+    private void UpdateDangerVisuals()
+    {
+        bool hasDanger = _totalDanger > 0;
+
+        if (skullIcon != null) 
+            skullIcon.SetActive(hasDanger);
+
+        if (dangerText != null)
+        {
+            dangerText.gameObject.SetActive(hasDanger);
+            if (hasDanger)
             {
-                if (skullIcons[i] != null) skullIcons[i].SetActive(true);
+                dangerText.text = dangerPrefix + _totalDanger.ToString();
             }
+        }
+    }
+
+    private void ForceUnlockAndStartTimer()
+    {
+        _isCurrentlyUnlocked = true;
+        if (lockedVisual != null) lockedVisual.SetActive(false);
+        if (unlockedVisual != null) unlockedVisual.SetActive(true);
+        OnHexUnlocked?.Invoke();
+
+        TimerController timer = GetComponentInChildren<TimerController>();
+        if (timer != null)
+        {
+            float calculatedTime = _totalDanger * GlobalSettings.DifficultyTimerMultiplier;
+            timer.SetDurationAndStart(calculatedTime);
         }
     }
 
@@ -98,21 +117,11 @@ public class HexBlocker : MonoBehaviour
         _isRemoved = true;
 
         if (TryGetComponent(out Collider2D col)) col.enabled = false;
+        foreach (var obj in _hiddenObjects) if (obj != null) obj.SetActive(true);
         
-        // Включаем скрытые объекты
-        foreach (var obj in _hiddenObjects)
-        {
-            if (obj != null) obj.SetActive(true);
-        }
-
-        // Выключаем черепа при уничтожении
-        if (skullIcons != null)
-        {
-            foreach (var skull in skullIcons)
-            {
-                if (skull != null) skull.SetActive(false);
-            }
-        }
+        // Прячем опасность
+        if (skullIcon != null) skullIcon.SetActive(false);
+        if (dangerText != null) dangerText.gameObject.SetActive(false);
 
         NotifyNeighbors();
         StartCoroutine(AnimateAndDestroy());
@@ -147,7 +156,7 @@ public class HexBlocker : MonoBehaviour
 
     public void CheckStatus(bool silent)
     {
-        if (_isRemoved || !gameObject.activeInHierarchy) return;
+        if (_isRemoved || !gameObject.activeInHierarchy || _isCurrentlyUnlocked) return;
 
         int neighborCount = 0;
         for (int i = 0; i < 6; i++)
