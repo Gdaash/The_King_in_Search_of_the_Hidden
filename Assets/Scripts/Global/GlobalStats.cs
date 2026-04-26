@@ -6,7 +6,7 @@ using System.Linq;
 [CreateAssetMenu(fileName = "NewGlobalStats", menuName = "Game/Global Stats")]
 public class GlobalStats : ScriptableObject
 {
-    public string unitTypeKey; // Уникальный ID для сохранения (напр. "Archer", "Barracks")
+    public string unitTypeKey; 
 
     [System.Serializable]
     public class DamageInfo
@@ -56,22 +56,35 @@ public class GlobalStats : ScriptableObject
     [Header("Урон (Список)")]
     public List<DamageInfo> damageSettings = new List<DamageInfo>();
 
+    [Header("Гексы (Контент)")]
+    public List<string> unlockedHexContentIDs = new List<string>();
+
     public event Action OnStatsUpdated;
 
-    // --- МЕТОДЫ ДЛЯ UNITY EVENTS (КНОПОК) ---
-    // Вспомогательные методы с одним аргументом для инспектора
-
+    // --- МЕТОДЫ ДЛЯ UNITY EVENTS ---
     public void AddPhysicalDamage(float amt) => AddDamageUpgrade(DamageType.Physical, amt);
     public void AddFireDamage(float amt) => AddDamageUpgrade(DamageType.Fire, amt);
     public void AddMagicDamage(float amt) => AddDamageUpgrade(DamageType.Magic, amt);
-
     public void AddPhysicalResist(float amt) => AddResistUpgrade(DamageType.Physical, amt);
     public void AddFireResist(float amt) => AddResistUpgrade(DamageType.Fire, amt);
     public void AddMagicResist(float amt) => AddResistUpgrade(DamageType.Magic, amt);
-    
 
-    // --- ОСНОВНАЯ ЛОГИКА ЗАГРУЗКИ И СОХРАНЕНИЯ ---
+    // --- ЛОГИКА ГЕКСОВ ---
+    public void UnlockHexContent(string contentID)
+    {
+        if (string.IsNullOrEmpty(contentID)) return;
+        
+        if (!unlockedHexContentIDs.Contains(contentID))
+        {
+            unlockedHexContentIDs.Add(contentID);
+            string dataToSave = string.Join(",", unlockedHexContentIDs);
+            PlayerPrefs.SetString(unitTypeKey + "_UnlockedHex", dataToSave);
+            PlayerPrefs.Save();
+            OnStatsUpdated?.Invoke();
+        }
+    }
 
+    // --- ЗАГРУЗКА И СОХРАНЕНИЕ ---
     public void LoadStats()
     {
         if (string.IsNullOrEmpty(unitTypeKey)) return;
@@ -87,6 +100,17 @@ public class GlobalStats : ScriptableObject
 
         foreach (var r in resistances)
             r.bonusResist = PlayerPrefs.GetFloat(unitTypeKey + "_BonusRes_" + r.type.ToString(), 0f);
+
+        // Загрузка гексов
+        string savedHex = PlayerPrefs.GetString(unitTypeKey + "_UnlockedHex", "");
+        if (!string.IsNullOrEmpty(savedHex))
+        {
+            unlockedHexContentIDs = savedHex.Split(',').ToList();
+        }
+        else
+        {
+            unlockedHexContentIDs.Clear();
+        }
         
         OnStatsUpdated?.Invoke();
     }
@@ -132,11 +156,10 @@ public class GlobalStats : ScriptableObject
     [ContextMenu("Reset Progress")]
     public void ResetProgress()
     {
-        bonusHealth = 0;
-        bonusSpeed = 0;
-        bonusAttackSpeed = 0;
-        bonusAttackRange = 0;
-        bonusProductionSpeed = 0;
+        bonusHealth = 0; bonusSpeed = 0; bonusAttackSpeed = 0; bonusAttackRange = 0; bonusProductionSpeed = 0;
+        
+        // Очищаем список в памяти
+        unlockedHexContentIDs.Clear();
 
         if (!string.IsNullOrEmpty(unitTypeKey))
         {
@@ -145,14 +168,14 @@ public class GlobalStats : ScriptableObject
             PlayerPrefs.DeleteKey(unitTypeKey + "_BonusAtkSpeed");
             PlayerPrefs.DeleteKey(unitTypeKey + "_BonusRange");
             PlayerPrefs.DeleteKey(unitTypeKey + "_BonusProdSpeed");
+            PlayerPrefs.DeleteKey(unitTypeKey + "_UnlockedHex");
 
-            foreach (var d in damageSettings)
+            foreach (var d in damageSettings) 
             {
                 d.bonusDamage = 0;
                 PlayerPrefs.DeleteKey(unitTypeKey + "_BonusDmg_" + d.type.ToString());
             }
-
-            foreach (var r in resistances)
+            foreach (var r in resistances) 
             {
                 r.bonusResist = 0;
                 PlayerPrefs.DeleteKey(unitTypeKey + "_BonusRes_" + r.type.ToString());

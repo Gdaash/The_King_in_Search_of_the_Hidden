@@ -7,9 +7,11 @@ public class HexManager : MonoBehaviour
     [System.Serializable]
     public class HexPrefabData
     {
+        public string contentID; // ID для GlobalStats
         public GameObject prefab;
         public bool isMandatory; // Обязательный префаб
-        public bool autoUnlockHex; // НОВОЕ: Если стоит, гекс откроется сразу после спавна
+        public bool autoUnlockHex; // Гекс откроется сразу после спавна
+        public bool startLocked; // Обязательно ли улучшение для появления
     }
 
     [System.Serializable]
@@ -19,47 +21,48 @@ public class HexManager : MonoBehaviour
         public List<HexPrefabData> prefabsForGroup;
     }
 
+    [Header("Глобальные настройки")]
+    [SerializeField] private GlobalStats globalHexStats;
+
     [Header("Настройки групп префабов")]
     [SerializeField] private List<HexGroupSettings> groups;
 
     private void Start()
     {
+        // Перед генерацией убеждаемся, что данные загружены
+        if (globalHexStats != null) 
+        {
+            globalHexStats.LoadStats();
+            // Лог для проверки, что менеджер видит купленные ID на этой сцене
+            Debug.Log($"<color=yellow>[HexManager]</color> Загрузка завершена. Доступные ID: {string.Join(", ", globalHexStats.unlockedHexContentIDs)}");
+        }
+        
         GenerateHexContents();
     }
 
     private void GenerateHexContents()
     {
-        // 1. Находим ВООБЩЕ ВСЕ гексы на сцене
         HexBlocker[] allHexes = Object.FindObjectsByType<HexBlocker>(FindObjectsSortMode.None);
-
-        // Список для хранения гексов, которые нужно будет открыть в конце
         List<HexBlocker> hexesToAutoUnlock = new List<HexBlocker>();
-
-        // 2. Группируем гексы по их ID для распределения спавна
         var groupedHexes = allHexes.GroupBy(h => h.groupID);
 
         foreach (var group in groupedHexes)
         {
             int currentID = group.Key;
             List<HexBlocker> hexesInGroup = group.ToList();
-            
             HexGroupSettings settings = groups.Find(g => g.groupID == currentID);
             
             if (settings != null && settings.prefabsForGroup.Count > 0)
             {
-                // Формируем пул (теперь храним HexPrefabData целиком, чтобы знать про галочку autoUnlock)
                 List<HexPrefabData> spawnPool = PrepareSpawnPool(settings.prefabsForGroup, hexesInGroup.Count);
-                
                 ShuffleList(hexesInGroup);
 
                 for (int i = 0; i < hexesInGroup.Count; i++)
                 {
                     if (i >= spawnPool.Count) break;
 
-                    // Спавним префаб
                     Instantiate(spawnPool[i].prefab, hexesInGroup[i].transform.position, Quaternion.identity);
 
-                    // Если у этого префаба стоит галочка авто-разблокировки, запоминаем гекс
                     if (spawnPool[i].autoUnlockHex)
                     {
                         hexesToAutoUnlock.Add(hexesInGroup[i]);
@@ -68,34 +71,34 @@ public class HexManager : MonoBehaviour
             }
         }
 
-        // 3. Скрываем объекты под всеми гексами
-        foreach (var hex in allHexes)
-        {
-            hex.InitializeHexContent();
-        }
-
-        // 4. НОВОЕ: Открываем гексы, под которыми заспавнились "особые" префабы
-        // Делаем это в самом конце, чтобы не мешать инициализации соседей
-        foreach (var hex in hexesToAutoUnlock)
-        {
-            hex.RemoveHex();
-        }
+        foreach (var hex in allHexes) hex.InitializeHexContent();
+        foreach (var hex in hexesToAutoUnlock) hex.RemoveHex();
     }
 
-    // Изменил возвращаемый тип на List<HexPrefabData>, чтобы сохранить информацию о галочке
     private List<HexPrefabData> PrepareSpawnPool(List<HexPrefabData> dataList, int hexCount)
     {
         List<HexPrefabData> pool = new List<HexPrefabData>();
 
-        // Сначала берем все обязательные
-        var mandatory = dataList.Where(d => d.isMandatory).ToList();
+        // 1. Фильтруем список: оставляем ТОЛЬКО те префабы, которые разрешены
+        // (либо не заперты изначально, либо уже куплены в GlobalStats)
+        var allowedData = dataList.Where(d => 
+        {
+            if (d.startLocked)
+            {
+                return globalHexStats != null && globalHexStats.unlockedHexContentIDs.Contains(d.contentID);
+            }
+            return true;
+        }).ToList();
+
+        // 2. Из разрешенных сначала берем все обязательные
+        var mandatory = allowedData.Where(d => d.isMandatory).ToList();
         pool.AddRange(mandatory);
 
-        // Получаем список необязательных
-        var optional = dataList.Where(d => !d.isMandatory).ToList();
+        // 3. Из разрешенных берем необязательные для заполнения оставшихся мест
+        var optional = allowedData.Where(d => !d.isMandatory).ToList();
         ShuffleList(optional);
 
-        // Заполняем оставшиеся слоты случайными необязательными без повторов
+        // 4. Заполняем свободные слоты гексов
         int remainingSlots = hexCount - pool.Count;
         for (int i = 0; i < remainingSlots && i < optional.Count; i++)
         {
