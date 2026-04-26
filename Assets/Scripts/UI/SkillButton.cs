@@ -8,7 +8,7 @@ using System.Collections;
 public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
 {
     [Header("Настройки сохранения")]
-    public string skillID; 
+    public string skillID; // Уникальный ID кнопки
 
     [Header("Настройки покупки")]
     public int cost = 50;
@@ -16,14 +16,13 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public bool isUnlocked = false; 
 
     [Header("Описание")]
-    [TextArea(3, 5)] public string description; // Текст описания для этой кнопки
+    [TextArea(3, 5)] public string description;
 
     [Header("Ссылки на UI компоненты")]
     public Button uiButton;
-    public Image iconImage;
-    public Text costText; 
+    public Text costText; // Стандартный UI Text
 
-    [Header("Визуальные эффекты")]
+    [Header("Визуальные эффекты (Бамп)")]
     [SerializeField] private float hoverScale = 1.05f;
     [SerializeField] private float clickScale = 0.9f;
     [SerializeField] private float animationSpeed = 15f;
@@ -47,46 +46,16 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         _baseScale = transform.localScale;
         _targetScale = _baseScale;
+
         if (!string.IsNullOrEmpty(skillID))
+        {
             isPurchased = PlayerPrefs.GetInt(skillID + "_Purchased", 0) == 1;
-    }
-
-    private void Update()
-    {
-        transform.localScale = Vector3.Lerp(transform.localScale, _targetScale, Time.deltaTime * animationSpeed);
-    }
-
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        if (isUnlocked && !isPurchased) _targetScale = _baseScale * hoverScale;
-        
-        // ПОКАЗЫВАЕМ ОПИСАНИЕ
-        if (TooltipManager.Instance != null && isUnlocked)
-            TooltipManager.Instance.Show(description);
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        _targetScale = _baseScale;
-        
-        // СКРЫВАЕМ ОПИСАНИЕ
-        if (TooltipManager.Instance != null)
-            TooltipManager.Instance.Hide();
-    }
-
-    public void OnPointerDown(PointerEventData eventData)
-    {
-        if (isUnlocked && !isPurchased) _targetScale = _baseScale * clickScale;
-    }
-
-    public void OnPointerUp(PointerEventData eventData)
-    {
-        if (isUnlocked && !isPurchased) _targetScale = _baseScale * hoverScale;
+        }
     }
 
     private void OnEnable()
     {
-        CrownManager.OnCrownsChanged += RefreshCostDisplay;
+         CrownManager.OnCrownsChanged += RefreshCostDisplay;
     }
 
     private void OnDisable()
@@ -99,6 +68,36 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         RefreshStatus();
     }
 
+    private void Update()
+    {
+        // Плавный бамп
+        transform.localScale = Vector3.Lerp(transform.localScale, _targetScale, Time.deltaTime * animationSpeed);
+    }
+
+    // --- ЛОГИКА МЫШИ (Бамп и Тултип) ---
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (isUnlocked && !isPurchased) _targetScale = _baseScale * hoverScale;
+        if (TooltipManager.Instance != null && isUnlocked) TooltipManager.Instance.Show(description);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        _targetScale = _baseScale;
+        if (TooltipManager.Instance != null) TooltipManager.Instance.Hide();
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        if (isUnlocked && !isPurchased) _targetScale = _baseScale * clickScale;
+    }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        if (isUnlocked && !isPurchased) _targetScale = _baseScale * hoverScale;
+    }
+
+    // --- СИСТЕМА ДЕРЕВА И СОХРАНЕНИЙ ---
     public void RefreshStatus()
     {
         if (isPurchased)
@@ -113,6 +112,7 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 }
             }
         }
+
         UpdateUIState();
         if (CrownManager.Instance != null) RefreshCostDisplay(CrownManager.Instance.CurrentCrowns);
     }
@@ -120,15 +120,22 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public void TryPurchase()
     {
         if (isPurchased || !isUnlocked) return;
-        if (CrownManager.Instance.TrySpendCrowns(cost)) CompletePurchase();
-        else OnPurchaseFailed?.Invoke();
+
+        if (CrownManager.Instance.TrySpendCrowns(cost))
+        {
+            CompletePurchase();
+        }
+        else
+        {
+            OnPurchaseFailed?.Invoke();
+        }
     }
 
     private void CompletePurchase()
     {
         isPurchased = true;
         _targetScale = _baseScale;
-        if (TooltipManager.Instance != null) TooltipManager.Instance.Hide(); // Скрываем при покупке
+        if (TooltipManager.Instance != null) TooltipManager.Instance.Hide();
 
         if (!string.IsNullOrEmpty(skillID))
         {
@@ -137,7 +144,12 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
 
         OnSkillPurchased?.Invoke();
-        foreach (var skill in nextSkills) if (skill != null) skill.SetUnlocked(true);
+        
+        foreach (var skill in nextSkills)
+        {
+            if (skill != null) skill.SetUnlocked(true);
+        }
+        
         UpdateUIState();
         if (CrownManager.Instance != null) RefreshCostDisplay(CrownManager.Instance.CurrentCrowns);
     }
@@ -153,9 +165,16 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     private void RefreshCostDisplay(int currentBalance)
     {
         if (costText == null) return;
-        if (isPurchased) { costText.gameObject.SetActive(false); return; }
+
+        if (isPurchased)
+        {
+            costText.gameObject.SetActive(false);
+            return;
+        }
+
         costText.gameObject.SetActive(true);
         costText.text = cost + " / " + currentBalance;
+
         if (!isUnlocked) costText.color = lockedColor;
         else costText.color = (currentBalance >= cost) ? canAffordColor : cantAffordColor;
     }
@@ -163,12 +182,19 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     private void UpdateUIState()
     {
         if (uiButton == null) return;
+
         uiButton.interactable = isUnlocked && !isPurchased;
-        if (iconImage != null)
+        
+        // Красим ВСЕ дочерние картинки (иконки, рамки и т.д.)
+        Image[] allImages = GetComponentsInChildren<Image>(true);
+        foreach (Image img in allImages)
         {
-            if (isPurchased) iconImage.color = Color.gray; 
-            else if (!isUnlocked) iconImage.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
-            else iconImage.color = Color.white;
+            if (isPurchased) 
+                img.color = Color.gray; 
+            else if (!isUnlocked) 
+                img.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
+            else 
+                img.color = Color.white;
         }
     }
 }

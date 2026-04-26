@@ -41,7 +41,7 @@ public class GlobalStats : ScriptableObject
 
     [Header("Атака")]
     public float baseAttackCooldown = 1.5f;
-    public float bonusAttackSpeed = 0f; // Вычитается из КД
+    public float bonusAttackSpeed = 0f; 
     public float TotalCooldown => Mathf.Max(0.1f, baseAttackCooldown - bonusAttackSpeed);
 
     public float baseAttackRange = 10f;
@@ -50,7 +50,7 @@ public class GlobalStats : ScriptableObject
 
     [Header("Производство (Таймеры)")]
     public float baseProductionTime = 5f;
-    public float bonusProductionSpeed = 0f; // Сокращение времени (сек)
+    public float bonusProductionSpeed = 0f; 
     public float TotalProductionTime => Mathf.Max(0.2f, baseProductionTime - bonusProductionSpeed);
 
     [Header("Урон (Список)")]
@@ -58,7 +58,20 @@ public class GlobalStats : ScriptableObject
 
     public event Action OnStatsUpdated;
 
-    // ЗАГРУЗКА
+    // --- МЕТОДЫ ДЛЯ UNITY EVENTS (КНОПОК) ---
+    // Вспомогательные методы с одним аргументом для инспектора
+
+    public void AddPhysicalDamage(float amt) => AddDamageUpgrade(DamageType.Physical, amt);
+    public void AddFireDamage(float amt) => AddDamageUpgrade(DamageType.Fire, amt);
+    public void AddMagicDamage(float amt) => AddDamageUpgrade(DamageType.Magic, amt);
+
+    public void AddPhysicalResist(float amt) => AddResistUpgrade(DamageType.Physical, amt);
+    public void AddFireResist(float amt) => AddResistUpgrade(DamageType.Fire, amt);
+    public void AddMagicResist(float amt) => AddResistUpgrade(DamageType.Magic, amt);
+    
+
+    // --- ОСНОВНАЯ ЛОГИКА ЗАГРУЗКИ И СОХРАНЕНИЯ ---
+
     public void LoadStats()
     {
         if (string.IsNullOrEmpty(unitTypeKey)) return;
@@ -78,7 +91,6 @@ public class GlobalStats : ScriptableObject
         OnStatsUpdated?.Invoke();
     }
 
-    // МЕТОДЫ УЛУЧШЕНИЙ
     public void AddHealthUpgrade(float amount) => SaveValue(ref bonusHealth, "_BonusHP", amount);
     public void AddSpeedUpgrade(float amount) => SaveValue(ref bonusSpeed, "_BonusSpeed", amount);
     public void AddAttackSpeedUpgrade(float amount) => SaveValue(ref bonusAttackSpeed, "_BonusAtkSpeed", amount);
@@ -101,7 +113,7 @@ public class GlobalStats : ScriptableObject
         var r = resistances.FirstOrDefault(x => x.type == type);
         if (r != null) {
             r.bonusResist += amount;
-            PlayerPrefs.SetFloat(unitTypeKey + "_BonusRes_" + type.ToString(), r.bonusResist);
+            PlayerPrefs.SetFloat(unitTypeKey + "_BonusRes_" + r.type.ToString(), r.bonusResist);
             PlayerPrefs.Save();
             OnStatsUpdated?.Invoke();
         }
@@ -117,7 +129,6 @@ public class GlobalStats : ScriptableObject
         }
     }
 
-    // СБРОС
     [ContextMenu("Reset Progress")]
     public void ResetProgress()
     {
