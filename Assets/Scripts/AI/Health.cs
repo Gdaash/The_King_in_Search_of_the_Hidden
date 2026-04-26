@@ -26,7 +26,7 @@ public class Health : MonoBehaviour
     public UnityEvent<float> OnHealthChanged;
     public UnityEvent OnDeath;
 
-    private Color _orig;
+    private Color _orig = Color.white; // По умолчанию белый
     private bool _dead;
     private float _lastDamageTime;
     private IEnemyAI _ai; 
@@ -38,14 +38,21 @@ public class Health : MonoBehaviour
     void Awake() 
     {
         if (stats != null) _cur = MaxHealth;
+        
+        // Пытаемся найти спрайт сразу в Awake
+        if (!targetSprite) targetSprite = GetComponentInChildren<SpriteRenderer>();
+        
+        // Важно: запоминаем цвет ДО того, как HexManager или другие скрипты его спрячут
+        if (targetSprite) 
+        {
+            _orig = targetSprite.color;
+            // Если вдруг в префабе уже стоит 0 альфа, принудительно ставим 1 для памяти
+            if (_orig.a < 0.1f) _orig.a = 1f;
+        }
     }
 
     void Start() 
     {
-        if (!targetSprite) targetSprite = GetComponentInChildren<SpriteRenderer>();
-        // Запоминаем оригинальный цвет один раз при старте
-        if (targetSprite) _orig = targetSprite.color;
-
         _ai = GetComponent<IEnemyAI>();
         _regenCoroutine = StartCoroutine(RegenTickRoutine());
     }
@@ -58,17 +65,14 @@ public class Health : MonoBehaviour
     private void OnDisable() 
     {
         if (stats != null) stats.OnStatsUpdated -= HandleStatsUpgrade;
-        // На случай деактивации во время вспышки — сбрасываем цвет
+        // Сброс цвета к базовому (непрозрачному) при выключении
         if (targetSprite) targetSprite.color = _orig;
     }
 
     private void HandleStatsUpgrade() 
     {
         if (_dead) return;
-        
         if (_cur > MaxHealth) _cur = MaxHealth;
-
-        // СИНЯЯ ВСПЫШКА УДАЛЕНА
         OnHealthChanged?.Invoke(_cur / MaxHealth);
     }
 
@@ -84,7 +88,7 @@ public class Health : MonoBehaviour
             _cur = Mathf.Clamp(_cur - final, 0, MaxHealth);
             _lastDamageTime = Time.time; 
             
-            TriggerFlash(Color.red); // Красная вспышка на урон остается
+            TriggerFlash(Color.red); 
             SpawnText(final, type);
             OnHealthChanged?.Invoke(_cur / MaxHealth);
 
@@ -109,15 +113,12 @@ public class Health : MonoBehaviour
         while (!_dead) 
         {
             yield return new WaitForSeconds(1f); 
-
             if (_cur < MaxHealth && Time.time >= _lastDamageTime + regenDelay) 
             {
                 if (IsAIAttacking()) continue;
-
                 _cur = Mathf.Min(_cur + regenAmount, MaxHealth);
                 OnHealthChanged?.Invoke(_cur / MaxHealth);
-                
-                TriggerFlash(Color.green); // Зеленая вспышка на лечение остается
+                TriggerFlash(Color.green);
                 SpawnText(-regenAmount, DamageType.Physical); 
             }
         }
@@ -125,7 +126,9 @@ public class Health : MonoBehaviour
 
     private void TriggerFlash(Color color) 
     {
+        // Если объект скрыт (альфа 0), вспышка не должна его "проявлять" раньше времени
         if (_dead || !gameObject.activeInHierarchy) return;
+        
         if (_flashCoroutine != null) StopCoroutine(_flashCoroutine);
         _flashCoroutine = StartCoroutine(Flash(color));
     }
@@ -133,9 +136,19 @@ public class Health : MonoBehaviour
     private IEnumerator Flash(Color c) 
     {
         if (!targetSprite) yield break;
-        targetSprite.color = c;
+        
+        // Сохраняем ТЕКУЩУЮ альфу, чтобы вспышка не делала скрытый гексом объект видимым
+        float currentAlpha = targetSprite.color.a;
+        Color flashColor = c;
+        flashColor.a = currentAlpha;
+        
+        targetSprite.color = flashColor;
         yield return new WaitForSeconds(0.2f);
-        targetSprite.color = _orig; // Всегда возвращаем к оригинальному цвету
+        
+        // Возвращаем оригинальный цвет, но сохраняем текущую альфу (чтобы не ломать логику HexBlocker)
+        Color resetColor = _orig;
+        resetColor.a = currentAlpha;
+        targetSprite.color = resetColor;
     }
 
     private bool IsAIAttacking() 
@@ -158,7 +171,7 @@ public class Health : MonoBehaviour
         if (_dead) return;
         _dead = true; 
         if (_regenCoroutine != null) StopCoroutine(_regenCoroutine);
-        if (targetSprite) targetSprite.color = _orig; // Сброс цвета при смерти
+        if (targetSprite) targetSprite.color = _orig; 
         OnDeath?.Invoke(); 
         gameObject.SetActive(false); 
     }

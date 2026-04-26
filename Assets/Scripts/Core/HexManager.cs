@@ -7,11 +7,11 @@ public class HexManager : MonoBehaviour
     [System.Serializable]
     public class HexPrefabData
     {
-        public string contentID; // ID для GlobalStats
+        public string contentID; 
         public GameObject prefab;
-        public bool isMandatory; // Обязательный префаб
-        public bool autoUnlockHex; // Гекс откроется сразу после спавна
-        public bool startLocked; // Обязательно ли улучшение для появления
+        public bool isMandatory; 
+        public bool autoUnlockHex; 
+        public bool startLocked; 
     }
 
     [System.Serializable]
@@ -27,16 +27,17 @@ public class HexManager : MonoBehaviour
     [Header("Настройки групп префабов")]
     [SerializeField] private List<HexGroupSettings> groups;
 
-    private void Start()
+    private void Awake()
     {
-        // Перед генерацией убеждаемся, что данные загружены
+        // Переносим загрузку в Awake, чтобы данные были готовы ПЕРЕД Start всех остальных скриптов
         if (globalHexStats != null) 
         {
             globalHexStats.LoadStats();
-            // Лог для проверки, что менеджер видит купленные ID на этой сцене
-            Debug.Log($"<color=yellow>[HexManager]</color> Загрузка завершена. Доступные ID: {string.Join(", ", globalHexStats.unlockedHexContentIDs)}");
         }
-        
+    }
+
+    private void Start()
+    {
         GenerateHexContents();
     }
 
@@ -61,7 +62,17 @@ public class HexManager : MonoBehaviour
                 {
                     if (i >= spawnPool.Count) break;
 
-                    Instantiate(spawnPool[i].prefab, hexesInGroup[i].transform.position, Quaternion.identity);
+                    // Спавним объект
+                    GameObject instance = Instantiate(spawnPool[i].prefab, hexesInGroup[i].transform.position, Quaternion.identity);
+                    
+                    // ГАРАНТИЯ ВИДИМОСТИ: принудительно проверяем, чтобы альфа была 1 при спавне
+                    // (на случай, если в префабе случайно сохранили 0)
+                    var renderers = instance.GetComponentsInChildren<SpriteRenderer>();
+                    foreach(var r in renderers) {
+                        Color c = r.color;
+                        c.a = 1f;
+                        r.color = c;
+                    }
 
                     if (spawnPool[i].autoUnlockHex)
                     {
@@ -79,8 +90,6 @@ public class HexManager : MonoBehaviour
     {
         List<HexPrefabData> pool = new List<HexPrefabData>();
 
-        // 1. Фильтруем список: оставляем ТОЛЬКО те префабы, которые разрешены
-        // (либо не заперты изначально, либо уже куплены в GlobalStats)
         var allowedData = dataList.Where(d => 
         {
             if (d.startLocked)
@@ -90,15 +99,12 @@ public class HexManager : MonoBehaviour
             return true;
         }).ToList();
 
-        // 2. Из разрешенных сначала берем все обязательные
         var mandatory = allowedData.Where(d => d.isMandatory).ToList();
         pool.AddRange(mandatory);
 
-        // 3. Из разрешенных берем необязательные для заполнения оставшихся мест
         var optional = allowedData.Where(d => !d.isMandatory).ToList();
         ShuffleList(optional);
 
-        // 4. Заполняем свободные слоты гексов
         int remainingSlots = hexCount - pool.Count;
         for (int i = 0; i < remainingSlots && i < optional.Count; i++)
         {
