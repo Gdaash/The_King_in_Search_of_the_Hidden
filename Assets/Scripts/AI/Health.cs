@@ -33,7 +33,6 @@ public class Health : MonoBehaviour
     private Coroutine _regenCoroutine;
     private Coroutine _flashCoroutine;
 
-    // Максимальное здоровье теперь всегда из глобального файла
     public float MaxHealth => stats != null ? stats.TotalMaxHealth : 100f;
 
     void Awake() 
@@ -44,6 +43,7 @@ public class Health : MonoBehaviour
     void Start() 
     {
         if (!targetSprite) targetSprite = GetComponentInChildren<SpriteRenderer>();
+        // Запоминаем оригинальный цвет один раз при старте
         if (targetSprite) _orig = targetSprite.color;
 
         _ai = GetComponent<IEnemyAI>();
@@ -58,17 +58,17 @@ public class Health : MonoBehaviour
     private void OnDisable() 
     {
         if (stats != null) stats.OnStatsUpdated -= HandleStatsUpgrade;
+        // На случай деактивации во время вспышки — сбрасываем цвет
+        if (targetSprite) targetSprite.color = _orig;
     }
 
-    // Срабатывает, когда в GlobalStats что-то изменили (HP, Резисты и т.д.)
     private void HandleStatsUpgrade() 
     {
         if (_dead) return;
         
-        // Если подняли MaxHP, немного подлечиваем текущее (опционально)
         if (_cur > MaxHealth) _cur = MaxHealth;
 
-        TriggerFlash(Color.blue); 
+        // СИНЯЯ ВСПЫШКА УДАЛЕНА
         OnHealthChanged?.Invoke(_cur / MaxHealth);
     }
 
@@ -76,7 +76,6 @@ public class Health : MonoBehaviour
     {
         if (_dead) return;
 
-        // Множитель урона теперь берется из GlobalStats
         float multiplier = GetGlobalMultiplier(type);
         float final = amt * multiplier;
         
@@ -85,11 +84,10 @@ public class Health : MonoBehaviour
             _cur = Mathf.Clamp(_cur - final, 0, MaxHealth);
             _lastDamageTime = Time.time; 
             
-            TriggerFlash(Color.red);
+            TriggerFlash(Color.red); // Красная вспышка на урон остается
             SpawnText(final, type);
             OnHealthChanged?.Invoke(_cur / MaxHealth);
 
-            // Оповещаем ИИ об атаке
             var rangedAI = GetComponent<EnemyAI_Ranged>();
             var meleeAI = GetComponent<EnemyAI>();
             if (rangedAI != null) rangedAI.OnTakeDamage(attacker);
@@ -99,15 +97,10 @@ public class Health : MonoBehaviour
         if (_cur <= 0) Die();
     }
 
-    // Новая логика получения резиста из глобального файла
     private float GetGlobalMultiplier(DamageType t)
     {
         if (stats == null) return 1f;
-
-        // Ищем резист нужного типа в GlobalStats
         var res = stats.resistances.Find(r => r.type == t);
-        
-        // Если в списке GlobalStats нет такого типа урона, возвращаем 1 (полный урон)
         return res != null ? res.CurrentMult : 1f;
     }
 
@@ -124,7 +117,7 @@ public class Health : MonoBehaviour
                 _cur = Mathf.Min(_cur + regenAmount, MaxHealth);
                 OnHealthChanged?.Invoke(_cur / MaxHealth);
                 
-                TriggerFlash(Color.green);
+                TriggerFlash(Color.green); // Зеленая вспышка на лечение остается
                 SpawnText(-regenAmount, DamageType.Physical); 
             }
         }
@@ -132,8 +125,9 @@ public class Health : MonoBehaviour
 
     private void TriggerFlash(Color color) 
     {
+        if (_dead || !gameObject.activeInHierarchy) return;
         if (_flashCoroutine != null) StopCoroutine(_flashCoroutine);
-        if (gameObject.activeInHierarchy) _flashCoroutine = StartCoroutine(Flash(color));
+        _flashCoroutine = StartCoroutine(Flash(color));
     }
 
     private IEnumerator Flash(Color c) 
@@ -141,7 +135,7 @@ public class Health : MonoBehaviour
         if (!targetSprite) yield break;
         targetSprite.color = c;
         yield return new WaitForSeconds(0.2f);
-        targetSprite.color = _orig;
+        targetSprite.color = _orig; // Всегда возвращаем к оригинальному цвету
     }
 
     private bool IsAIAttacking() 
@@ -164,6 +158,7 @@ public class Health : MonoBehaviour
         if (_dead) return;
         _dead = true; 
         if (_regenCoroutine != null) StopCoroutine(_regenCoroutine);
+        if (targetSprite) targetSprite.color = _orig; // Сброс цвета при смерти
         OnDeath?.Invoke(); 
         gameObject.SetActive(false); 
     }
