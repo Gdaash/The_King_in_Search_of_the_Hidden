@@ -26,10 +26,18 @@ public class GlobalStats : ScriptableObject
         public float CurrentMult => Mathf.Clamp(baseMult - bonusResist, 0, 2);
     }
 
-    [Header("Здоровье")]
+    [Header("Здоровье и Регенерация")]
     public float baseMaxHealth = 100f;
     public float bonusHealth = 0f;
     public float TotalMaxHealth => baseMaxHealth + bonusHealth;
+
+    public float baseRegenAmount = 5f;
+    public float bonusRegenAmount = 0f;
+    public float TotalRegenAmount => baseRegenAmount + bonusRegenAmount;
+
+    public float baseRegenDelay = 5f;
+    public float bonusRegenDelayReduction = 0f; 
+    public float TotalRegenDelay => Mathf.Max(0.5f, baseRegenDelay - bonusRegenDelayReduction);
 
     [Header("Сопротивления (Резисты)")]
     public List<ResistanceInfo> resistances = new List<ResistanceInfo>();
@@ -53,6 +61,11 @@ public class GlobalStats : ScriptableObject
     public float bonusProductionSpeed = 0f; 
     public float TotalProductionTime => Mathf.Max(0.2f, baseProductionTime - bonusProductionSpeed);
 
+    [Header("Мировые настройки (Difficulty)")]
+    public float baseDifficultyMultiplier = 120f;
+    public float bonusDifficultyReduction = 0f;
+    public float TotalDifficultyMultiplier => baseDifficultyMultiplier + bonusDifficultyReduction;
+
     [Header("Урон (Список)")]
     public List<DamageInfo> damageSettings = new List<DamageInfo>();
 
@@ -61,6 +74,7 @@ public class GlobalStats : ScriptableObject
 
     public event Action OnStatsUpdated;
 
+    // --- МЕТОДЫ ДЛЯ UNITY EVENTS (КНОПОК) ---
     public void AddPhysicalDamage(float amt) => AddDamageUpgrade(DamageType.Physical, amt);
     public void AddFireDamage(float amt) => AddDamageUpgrade(DamageType.Fire, amt);
     public void AddMagicDamage(float amt) => AddDamageUpgrade(DamageType.Magic, amt);
@@ -68,27 +82,78 @@ public class GlobalStats : ScriptableObject
     public void AddFireResist(float amt) => AddResistUpgrade(DamageType.Fire, amt);
     public void AddMagicResist(float amt) => AddResistUpgrade(DamageType.Magic, amt);
 
+    // --- ЛОГИКА УЛУЧШЕНИЙ ---
+    public void AddHealthUpgrade(float amount) => SaveValue(ref bonusHealth, "_BonusHP", amount);
+    public void AddRegenAmountUpgrade(float amount) => SaveValue(ref bonusRegenAmount, "_BonusRegenAmt", amount);
+    public void AddRegenDelayUpgrade(float amount) => SaveValue(ref bonusRegenDelayReduction, "_BonusRegenDelay", amount);
+    public void AddSpeedUpgrade(float amount) => SaveValue(ref bonusSpeed, "_BonusSpeed", amount);
+    public void AddAttackSpeedUpgrade(float amount) => SaveValue(ref bonusAttackSpeed, "_BonusAtkSpeed", amount);
+    public void AddRangeUpgrade(float amount) => SaveValue(ref bonusAttackRange, "_BonusRange", amount);
+    public void AddProductionSpeedUpgrade(float amount) => SaveValue(ref bonusProductionSpeed, "_BonusProdSpeed", amount);
+
+    public void AddDifficultyMultiplierUpgrade(float amount)
+    {
+        bonusDifficultyReduction += amount;
+        if (!string.IsNullOrEmpty(unitTypeKey))
+        {
+            PlayerPrefs.SetFloat(unitTypeKey + "_DifficultyBonus", bonusDifficultyReduction);
+            PlayerPrefs.Save();
+        }
+        SyncDifficulty();
+        OnStatsUpdated?.Invoke();
+    }
+
+    private void SyncDifficulty()
+    {
+        GlobalSettings.DifficultyTimerMultiplier = TotalDifficultyMultiplier;
+    }
+
+    // --- ЛОГИКА ГЕКСОВ ---
     public void UnlockHexContent(string contentID)
     {
         if (string.IsNullOrEmpty(contentID)) return;
         if (!unlockedHexContentIDs.Contains(contentID))
         {
             unlockedHexContentIDs.Add(contentID);
-            PlayerPrefs.SetString(unitTypeKey + "_UnlockedHex", string.Join(",", unlockedHexContentIDs));
-            PlayerPrefs.Save();
-            OnStatsUpdated?.Invoke();
+            SaveHexList();
         }
     }
 
+    public void LockHexContent(string contentID)
+    {
+        if (string.IsNullOrEmpty(contentID)) return;
+        if (unlockedHexContentIDs.Contains(contentID))
+        {
+            unlockedHexContentIDs.Remove(contentID);
+            SaveHexList();
+        }
+    }
+
+    private void SaveHexList()
+    {
+        if (string.IsNullOrEmpty(unitTypeKey)) return;
+        if (unlockedHexContentIDs.Count > 0)
+            PlayerPrefs.SetString(unitTypeKey + "_UnlockedHex", string.Join(",", unlockedHexContentIDs));
+        else
+            PlayerPrefs.DeleteKey(unitTypeKey + "_UnlockedHex");
+
+        PlayerPrefs.Save();
+        OnStatsUpdated?.Invoke();
+    }
+
+    // --- ЗАГРУЗКА И СОХРАНЕНИЕ ---
     public void LoadStats()
     {
         if (string.IsNullOrEmpty(unitTypeKey)) return;
 
         bonusHealth = PlayerPrefs.GetFloat(unitTypeKey + "_BonusHP", 0f);
+        bonusRegenAmount = PlayerPrefs.GetFloat(unitTypeKey + "_BonusRegenAmt", 0f);
+        bonusRegenDelayReduction = PlayerPrefs.GetFloat(unitTypeKey + "_BonusRegenDelay", 0f);
         bonusSpeed = PlayerPrefs.GetFloat(unitTypeKey + "_BonusSpeed", 0f);
         bonusAttackSpeed = PlayerPrefs.GetFloat(unitTypeKey + "_BonusAtkSpeed", 0f);
         bonusAttackRange = PlayerPrefs.GetFloat(unitTypeKey + "_BonusRange", 0f);
         bonusProductionSpeed = PlayerPrefs.GetFloat(unitTypeKey + "_BonusProdSpeed", 0f);
+        bonusDifficultyReduction = PlayerPrefs.GetFloat(unitTypeKey + "_DifficultyBonus", 0f);
 
         foreach (var d in damageSettings)
             d.bonusDamage = PlayerPrefs.GetFloat(unitTypeKey + "_BonusDmg_" + d.type.ToString(), 0f);
@@ -102,14 +167,9 @@ public class GlobalStats : ScriptableObject
         else
             unlockedHexContentIDs.Clear();
         
+        SyncDifficulty();
         OnStatsUpdated?.Invoke();
     }
-
-    public void AddHealthUpgrade(float amount) => SaveValue(ref bonusHealth, "_BonusHP", amount);
-    public void AddSpeedUpgrade(float amount) => SaveValue(ref bonusSpeed, "_BonusSpeed", amount);
-    public void AddAttackSpeedUpgrade(float amount) => SaveValue(ref bonusAttackSpeed, "_BonusAtkSpeed", amount);
-    public void AddRangeUpgrade(float amount) => SaveValue(ref bonusAttackRange, "_BonusRange", amount);
-    public void AddProductionSpeedUpgrade(float amount) => SaveValue(ref bonusProductionSpeed, "_BonusProdSpeed", amount);
 
     public void AddDamageUpgrade(DamageType type, float amount)
     {
@@ -133,6 +193,16 @@ public class GlobalStats : ScriptableObject
         }
     }
 
+    public void DeleteDataByID(string keyToDelete)
+    {
+        if (PlayerPrefs.HasKey(keyToDelete))
+        {
+            PlayerPrefs.DeleteKey(keyToDelete);
+            PlayerPrefs.Save();
+            LoadStats(); 
+        }
+    }
+
     private void SaveValue(ref float field, string subKey, float amount)
     {
         field += amount;
@@ -146,16 +216,21 @@ public class GlobalStats : ScriptableObject
     [ContextMenu("Reset Progress")]
     public void ResetProgress()
     {
-        bonusHealth = 0; bonusSpeed = 0; bonusAttackSpeed = 0; bonusAttackRange = 0; bonusProductionSpeed = 0;
+        bonusHealth = 0; bonusRegenAmount = 0; bonusRegenDelayReduction = 0;
+        bonusSpeed = 0; bonusAttackSpeed = 0; bonusAttackRange = 0; 
+        bonusProductionSpeed = 0; bonusDifficultyReduction = 0;
         unlockedHexContentIDs.Clear();
 
         if (!string.IsNullOrEmpty(unitTypeKey))
         {
             PlayerPrefs.DeleteKey(unitTypeKey + "_BonusHP");
+            PlayerPrefs.DeleteKey(unitTypeKey + "_BonusRegenAmt");
+            PlayerPrefs.DeleteKey(unitTypeKey + "_BonusRegenDelay");
             PlayerPrefs.DeleteKey(unitTypeKey + "_BonusSpeed");
             PlayerPrefs.DeleteKey(unitTypeKey + "_BonusAtkSpeed");
             PlayerPrefs.DeleteKey(unitTypeKey + "_BonusRange");
             PlayerPrefs.DeleteKey(unitTypeKey + "_BonusProdSpeed");
+            PlayerPrefs.DeleteKey(unitTypeKey + "_DifficultyBonus");
             PlayerPrefs.DeleteKey(unitTypeKey + "_UnlockedHex");
 
             foreach (var d in damageSettings) PlayerPrefs.DeleteKey(unitTypeKey + "_BonusDmg_" + d.type.ToString());
@@ -163,6 +238,7 @@ public class GlobalStats : ScriptableObject
         }
 
         PlayerPrefs.Save();
+        SyncDifficulty();
         OnStatsUpdated?.Invoke();
     }
 }

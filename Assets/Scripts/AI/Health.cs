@@ -19,14 +19,14 @@ public class Health : MonoBehaviour
     [Header("Состояние")]
     [SerializeField] private float _cur; 
 
-    [Header("Настройки регенерации")]
-    [SerializeField] private float regenAmount = 5f;      
-    [SerializeField] private float regenDelay = 5f;       
+    // Свойства берут данные из GlobalStats
+    private float CurrentRegenAmount => stats != null ? stats.TotalRegenAmount : 0f;
+    private float CurrentRegenDelay => stats != null ? stats.TotalRegenDelay : 0f;
 
     public UnityEvent<float> OnHealthChanged;
     public UnityEvent OnDeath;
 
-    private Color _orig = Color.white; // По умолчанию белый
+    private Color _orig = Color.white; 
     private bool _dead;
     private float _lastDamageTime;
     private IEnemyAI _ai; 
@@ -38,15 +38,10 @@ public class Health : MonoBehaviour
     void Awake() 
     {
         if (stats != null) _cur = MaxHealth;
-        
-        // Пытаемся найти спрайт сразу в Awake
         if (!targetSprite) targetSprite = GetComponentInChildren<SpriteRenderer>();
-        
-        // Важно: запоминаем цвет ДО того, как HexManager или другие скрипты его спрячут
         if (targetSprite) 
         {
             _orig = targetSprite.color;
-            // Если вдруг в префабе уже стоит 0 альфа, принудительно ставим 1 для памяти
             if (_orig.a < 0.1f) _orig.a = 1f;
         }
     }
@@ -65,7 +60,6 @@ public class Health : MonoBehaviour
     private void OnDisable() 
     {
         if (stats != null) stats.OnStatsUpdated -= HandleStatsUpgrade;
-        // Сброс цвета к базовому (непрозрачному) при выключении
         if (targetSprite) targetSprite.color = _orig;
     }
 
@@ -79,7 +73,6 @@ public class Health : MonoBehaviour
     public void TakeDamage(float amt, DamageType type, Transform attacker = null) 
     {
         if (_dead) return;
-
         float multiplier = GetGlobalMultiplier(type);
         float final = amt * multiplier;
         
@@ -87,7 +80,6 @@ public class Health : MonoBehaviour
         {
             _cur = Mathf.Clamp(_cur - final, 0, MaxHealth);
             _lastDamageTime = Time.time; 
-            
             TriggerFlash(Color.red); 
             SpawnText(final, type);
             OnHealthChanged?.Invoke(_cur / MaxHealth);
@@ -97,7 +89,6 @@ public class Health : MonoBehaviour
             if (rangedAI != null) rangedAI.OnTakeDamage(attacker);
             if (meleeAI != null) meleeAI.OnTakeDamage(attacker);
         }
-
         if (_cur <= 0) Die();
     }
 
@@ -113,22 +104,27 @@ public class Health : MonoBehaviour
         while (!_dead) 
         {
             yield return new WaitForSeconds(1f); 
-            if (_cur < MaxHealth && Time.time >= _lastDamageTime + regenDelay) 
+
+            // ПРОВЕРКА: Если лечение 0 или задержка 0 — пропускаем цикл
+            if (CurrentRegenAmount <= 0 || CurrentRegenDelay <= 0) continue;
+
+            if (_cur < MaxHealth && Time.time >= _lastDamageTime + CurrentRegenDelay) 
             {
                 if (IsAIAttacking()) continue;
-                _cur = Mathf.Min(_cur + regenAmount, MaxHealth);
+                
+                _cur = Mathf.Min(_cur + CurrentRegenAmount, MaxHealth);
                 OnHealthChanged?.Invoke(_cur / MaxHealth);
+                
+                // Включаем визуал лечения только если реально что-то восстановили
                 TriggerFlash(Color.green);
-                SpawnText(-regenAmount, DamageType.Physical); 
+                SpawnText(-CurrentRegenAmount, DamageType.Physical); 
             }
         }
     }
 
     private void TriggerFlash(Color color) 
     {
-        // Если объект скрыт (альфа 0), вспышка не должна его "проявлять" раньше времени
         if (_dead || !gameObject.activeInHierarchy) return;
-        
         if (_flashCoroutine != null) StopCoroutine(_flashCoroutine);
         _flashCoroutine = StartCoroutine(Flash(color));
     }
@@ -136,16 +132,11 @@ public class Health : MonoBehaviour
     private IEnumerator Flash(Color c) 
     {
         if (!targetSprite) yield break;
-        
-        // Сохраняем ТЕКУЩУЮ альфу, чтобы вспышка не делала скрытый гексом объект видимым
         float currentAlpha = targetSprite.color.a;
         Color flashColor = c;
         flashColor.a = currentAlpha;
-        
         targetSprite.color = flashColor;
         yield return new WaitForSeconds(0.2f);
-        
-        // Возвращаем оригинальный цвет, но сохраняем текущую альфу (чтобы не ломать логику HexBlocker)
         Color resetColor = _orig;
         resetColor.a = currentAlpha;
         targetSprite.color = resetColor;
