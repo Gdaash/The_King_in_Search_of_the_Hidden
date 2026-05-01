@@ -3,24 +3,30 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using System;
-using System.Collections;
 
 public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
 {
     [Header("Настройки сохранения")]
-    public string skillID; // Уникальный ID кнопки
+    public string skillID;
 
     [Header("Настройки покупки")]
     public int cost = 50;
     public bool isPurchased = false;
-    public bool isUnlocked = false; 
+    public bool isUnlocked = false;
+
+    [Header("Спрайты состояний")]
+    public Sprite lockedSprite;
+    public Sprite canAffordSprite;
+    public Sprite cantAffordSprite;
+    public Sprite purchasedSprite;
 
     [Header("Описание")]
     [TextArea(3, 5)] public string description;
 
     [Header("Ссылки на UI компоненты")]
     public Button uiButton;
-    public Text costText; // Стандартный UI Text
+    public Image targetImage; // Изображение, которое будет менять спрайт (обычно фон кнопки)
+    public Text costText;
 
     [Header("Визуальные эффекты (Бамп)")]
     [SerializeField] private float hoverScale = 1.05f;
@@ -33,19 +39,21 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public Color cantAffordColor = Color.red;
 
     [Header("Связи дерева")]
-    public SkillButton[] nextSkills; 
+    public SkillButton[] nextSkills;
 
     [Header("События")]
-    public UnityEvent OnSkillPurchased; 
+    public UnityEvent OnSkillPurchased;
     public static event Action OnPurchaseFailed;
 
     private Vector3 _baseScale;
     private Vector3 _targetScale;
+    private RectTransform _rectTransform;
 
     private void Awake()
     {
         _baseScale = transform.localScale;
         _targetScale = _baseScale;
+        _rectTransform = GetComponent<RectTransform>();
 
         if (!string.IsNullOrEmpty(skillID))
         {
@@ -53,15 +61,8 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
     }
 
-    private void OnEnable()
-    {
-         CrownManager.OnCrownsChanged += RefreshCostDisplay;
-    }
-
-    private void OnDisable()
-    {
-        CrownManager.OnCrownsChanged -= RefreshCostDisplay;
-    }
+    private void OnEnable() => CrownManager.OnCrownsChanged += RefreshCostDisplay;
+    private void OnDisable() => CrownManager.OnCrownsChanged -= RefreshCostDisplay;
 
     private void Start()
     {
@@ -70,15 +71,13 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private void Update()
     {
-        // Плавный бамп
         transform.localScale = Vector3.Lerp(transform.localScale, _targetScale, Time.deltaTime * animationSpeed);
     }
 
-    // --- ЛОГИКА МЫШИ (Бамп и Тултип) ---
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (isUnlocked && !isPurchased) _targetScale = _baseScale * hoverScale;
-        if (TooltipManager.Instance != null && isUnlocked) TooltipManager.Instance.Show(description);
+        if (TooltipManager.Instance != null && isUnlocked) TooltipManager.Instance.Show(description, _rectTransform);
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -97,7 +96,6 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (isUnlocked && !isPurchased) _targetScale = _baseScale * hoverScale;
     }
 
-    // --- СИСТЕМА ДЕРЕВА И СОХРАНЕНИЙ ---
     public void RefreshStatus()
     {
         if (isPurchased)
@@ -120,15 +118,8 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public void TryPurchase()
     {
         if (isPurchased || !isUnlocked) return;
-
-        if (CrownManager.Instance.TrySpendCrowns(cost))
-        {
-            CompletePurchase();
-        }
-        else
-        {
-            OnPurchaseFailed?.Invoke();
-        }
+        if (CrownManager.Instance.TrySpendCrowns(cost)) CompletePurchase();
+        else OnPurchaseFailed?.Invoke();
     }
 
     private void CompletePurchase()
@@ -144,11 +135,7 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
 
         OnSkillPurchased?.Invoke();
-        
-        foreach (var skill in nextSkills)
-        {
-            if (skill != null) skill.SetUnlocked(true);
-        }
+        foreach (var skill in nextSkills) if (skill != null) skill.SetUnlocked(true);
         
         UpdateUIState();
         if (CrownManager.Instance != null) RefreshCostDisplay(CrownManager.Instance.CurrentCrowns);
@@ -177,24 +164,32 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
         if (!isUnlocked) costText.color = lockedColor;
         else costText.color = (currentBalance >= cost) ? canAffordColor : cantAffordColor;
+        
+        // Перепроверяем спрайт при изменении баланса
+        UpdateUIState();
     }
 
     private void UpdateUIState()
     {
-        if (uiButton == null) return;
+        if (uiButton != null) uiButton.interactable = isUnlocked && !isPurchased;
+        if (targetImage == null) return;
 
-        uiButton.interactable = isUnlocked && !isPurchased;
-        
-        // Красим ВСЕ дочерние картинки (иконки, рамки и т.д.)
-        Image[] allImages = GetComponentsInChildren<Image>(true);
-        foreach (Image img in allImages)
+        // ЛОГИКА СМЕНЫ СПРАЙТОВ
+        if (isPurchased)
         {
-            if (isPurchased) 
-                img.color = Color.gray; 
-            else if (!isUnlocked) 
-                img.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
-            else 
-                img.color = Color.white;
+            targetImage.sprite = purchasedSprite;
+        }
+        else if (!isUnlocked)
+        {
+            targetImage.sprite = lockedSprite;
+        }
+        else
+        {
+            // Разблокировано, но не куплено — проверяем баланс
+            if (CrownManager.Instance != null && CrownManager.Instance.CurrentCrowns >= cost)
+                targetImage.sprite = canAffordSprite;
+            else
+                targetImage.sprite = cantAffordSprite;
         }
     }
 }

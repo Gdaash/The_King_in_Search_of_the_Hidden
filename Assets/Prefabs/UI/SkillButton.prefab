@@ -103,7 +103,7 @@ RectTransform:
   m_GameObject: {fileID: 6114539583055569922}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.1, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 821291758673605217}
@@ -111,7 +111,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 16.1, y: -20.6}
-  m_SizeDelta: {x: 41.9532, y: 21.8913}
+  m_SizeDelta: {x: 410.9532, y: 210.8913}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3600042129910034102
 CanvasRenderer:
@@ -143,11 +143,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 98aa4fd6233ab5f4eaf3ed5f413d101c, type: 3}
-    m_FontSize: 16
+    m_FontSize: 200
     m_FontStyle: 0
     m_BestFit: 1
     m_MinSize: 0
-    m_MaxSize: 25
+    m_MaxSize: 200
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -253,7 +253,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 917fd507449fd39418f1ab3f743b2d8d, type: 3}
+  m_Sprite: {fileID: 21300000, guid: e27ab735a53048248b5d86101624d979, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -279,9 +279,14 @@ MonoBehaviour:
   cost: 1
   isPurchased: 0
   isUnlocked: 1
+  lockedSprite: {fileID: 21300000, guid: 917fd507449fd39418f1ab3f743b2d8d, type: 3}
+  canAffordSprite: {fileID: 21300000, guid: 304091c1ad8a85243a08ebdd1c9d3ef2, type: 3}
+  cantAffordSprite: {fileID: 21300000, guid: 39443b320551a7a40bb96ba4aadb48e0, type: 3}
+  purchasedSprite: {fileID: 21300000, guid: e27ab735a53048248b5d86101624d979, type: 3}
   description: "\u0412\u0434\u0432\u043E\u0435 \u0443\u043C\u0435\u043D\u044C\u0448\u0430\u0435\u0442
     \u0432\u0440\u0435\u043C\u044F \u0434\u043E\u0431\u044B\u0447\u0438 \u0434\u0440\u0435\u0432\u0438\u0441\u0438\u043D\u044B"
   uiButton: {fileID: 3802373669191234235}
+  targetImage: {fileID: 4958568272982989907}
   costText: {fileID: 7485362092873081918}
   hoverScale: 1.05
   clickScale: 0.9
