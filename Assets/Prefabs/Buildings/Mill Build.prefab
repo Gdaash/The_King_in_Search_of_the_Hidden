@@ -966,6 +966,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 234f14723d9da124d9b7345cc2cba8ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stats: {fileID: 0}
   progressBarObject: {fileID: 3343834180209807696}
   duration: 10
   loopInfinitely: 0
@@ -1007,6 +1008,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5342366415263607473}
+  - component: {fileID: 1313713651320299409}
   m_Layer: 10
   m_Name: Mill Build
   m_TagString: Untagged
@@ -1032,6 +1034,22 @@ Transform:
   - {fileID: 1898735299124878488}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1313713651320299409
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7610446386244892980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2fe5f41405bc394885a27bf6e048583, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stats: {fileID: 11400000, guid: e25cda812f9d7054ebfe0ca7f3592049, type: 2}
+  stateID: MillBuild
+  defaultObject: {fileID: 2107471111081244357}
+  upgradedObject: {fileID: 9102873483618897004}
 --- !u!1 &7759042600274764762
 GameObject:
   m_ObjectHideFlags: 0
@@ -1315,6 +1333,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 234f14723d9da124d9b7345cc2cba8ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stats: {fileID: 0}
   progressBarObject: {fileID: 7759042600274764762}
   duration: 1
   loopInfinitely: 0
