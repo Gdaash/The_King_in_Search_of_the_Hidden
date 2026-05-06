@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Events; // Добавлено для работы с эвентами
 
 public class LogisticFlag : MonoBehaviour
 {
@@ -8,8 +9,12 @@ public class LogisticFlag : MonoBehaviour
     [SerializeField] private Sprite idleSprite;   
     [SerializeField] private Sprite activeSprite; 
 
+    [Header("События")]
+    [SerializeField] private UnityEvent onActivated; // Сработает при смене на activeSprite
+
     private int _buildingsUnderFlag = 0;
     private BoxCollider2D _myCollider;
+    private bool _isActive = false; // Флаг для контроля смены состояния
 
     void Awake() {
         _myCollider = GetComponent<BoxCollider2D>();
@@ -47,26 +52,40 @@ public class LogisticFlag : MonoBehaviour
                 req.UpdateIndicator(); 
             }
         }
-        UpdateVisual();
+        UpdateState(); // Заменяем UpdateVisual на проверку состояния
         if (OrderManager.Instance != null) OrderManager.Instance.ForceUpdateOrders();
     }
 
     private void OnTriggerEnter2D(Collider2D collision) {
         if (collision.GetComponent<ResourceRequester>()) {
             _buildingsUnderFlag++;
-            UpdateVisual();
+            UpdateState();
         }
     }
 
     private void OnTriggerExit2D(Collider2D collision) {
         if (collision.GetComponent<ResourceRequester>()) {
             _buildingsUnderFlag = Mathf.Max(0, _buildingsUnderFlag - 1);
-            UpdateVisual();
+            UpdateState();
         }
+    }
+
+    // Новый метод для контроля логики активации
+    private void UpdateState() {
+        bool shouldBeActive = _buildingsUnderFlag > 0;
+
+        if (shouldBeActive && !_isActive) {
+            _isActive = true;
+            onActivated?.Invoke(); // Вызываем событие только в момент "включения"
+        } else if (!shouldBeActive) {
+            _isActive = false;
+        }
+
+        UpdateVisual();
     }
 
     private void UpdateVisual() {
         if (flagRenderer && idleSprite && activeSprite)
-            flagRenderer.sprite = (_buildingsUnderFlag > 0) ? activeSprite : idleSprite;
+            flagRenderer.sprite = _isActive ? activeSprite : idleSprite;
     }
 }

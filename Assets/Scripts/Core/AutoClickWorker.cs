@@ -1,13 +1,18 @@
 using UnityEngine;
+using UnityEngine.Events; // Не забудь добавить этот namespace
 
 public class AutoClickWorker : MonoBehaviour 
 {
     [Header("Настройки визуала")]
     [SerializeField] private SpriteRenderer workerRenderer;
-    [SerializeField] private Sprite idleSprite;   // Просто стоит
-    [SerializeField] private Sprite workingSprite; // В процессе "клика"
+    [SerializeField] private Sprite idleSprite;   
+    [SerializeField] private Sprite workingSprite; 
+
+    [Header("События")]
+    [SerializeField] private UnityEvent onStartedWorking; // Событие при начале работы
 
     private int _requestersUnderFoot = 0;
+    private bool _isWorking = false; // Флаг текущего состояния
 
     void Awake()
     {
@@ -19,7 +24,7 @@ public class AutoClickWorker : MonoBehaviour
         if (collision.GetComponent<ClickRequester>())
         {
             _requestersUnderFoot++;
-            UpdateVisual();
+            UpdateState();
         }
     }
 
@@ -28,13 +33,31 @@ public class AutoClickWorker : MonoBehaviour
         if (collision.GetComponent<ClickRequester>())
         {
             _requestersUnderFoot = Mathf.Max(0, _requestersUnderFoot - 1);
-            UpdateVisual();
+            UpdateState();
         }
+    }
+
+    private void UpdateState()
+    {
+        bool shouldWork = _requestersUnderFoot > 0;
+
+        // Если состояние изменилось с "покоя" на "работу"
+        if (shouldWork && !_isWorking)
+        {
+            _isWorking = true;
+            onStartedWorking?.Invoke(); // Вызываем эвент
+        }
+        else if (!shouldWork)
+        {
+            _isWorking = false;
+        }
+
+        UpdateVisual();
     }
 
     private void UpdateVisual()
     {
         if (workerRenderer == null || idleSprite == null || workingSprite == null) return;
-        workerRenderer.sprite = (_requestersUnderFoot > 0) ? workingSprite : idleSprite;
+        workerRenderer.sprite = _isWorking ? workingSprite : idleSprite;
     }
 }
