@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-// --- КЛАССЫ-ПОМОЩНИКИ (Должны быть здесь, чтобы ошибки исчезли) ---
+// --- КЛАССЫ-ПОМОЩНИКИ ---
 
 [System.Serializable]
 public class ResourceRequirement {
@@ -54,6 +54,10 @@ public class ResourceRequester : MonoBehaviour {
     public UnityEvent OnResourceReceived;
     public UnityEvent OnAllResourcesReceived;
     public UnityEvent OnActionExecuted;
+    
+    // ДОБАВЛЕНО: Эвент, передающий состояние склада (true = заполнен, false = свободен)
+    [Header("События склада")]
+    public UnityEvent<bool> OnStorageFullChanged; 
 
     protected List<GameObject> _activeIcons = new List<GameObject>();
     protected int _carryingToUs = 0; 
@@ -117,12 +121,20 @@ public class ResourceRequester : MonoBehaviour {
         if (_wasFull && !currentlyFull) {
             _wasFull = false;
             if (storageFullVisual != null) storageFullVisual.SetActive(false);
+            
+            // ИСПРАВЛЕНО: Вызываем событие, склад освободился
+            OnStorageFullChanged?.Invoke(false); 
+            
             UpdateIndicator(); 
             if (OrderManager.Instance != null) OrderManager.Instance.ForceUpdateOrders();
         } 
         else if (!_wasFull && currentlyFull) {
             _wasFull = true;
             if (storageFullVisual != null) storageFullVisual.SetActive(true);
+            
+            // ИСПРАВЛЕНО: Вызываем событие, склад полностью забит
+            OnStorageFullChanged?.Invoke(true); 
+            
             UpdateIndicator(); 
         }
     }
@@ -259,17 +271,27 @@ public class ResourceRequester : MonoBehaviour {
             return;
         }
 
-        int actualCarriers = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
-            .Count(p => p.GetCurrentJob() == this);
+        var validPorters = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
+            .Where(p => p.GetCurrentJob() == this && p.GetTarget() != null)
+            .ToList();
+
+        int actualCarriers = validPorters.Count;
 
         bool needsUpdate = false;
         foreach (var req in requirements) {
-            if (req.reservedAmount > actualCarriers) {
-                req.reservedAmount = actualCarriers;
+            int currentTypeCarriers = validPorters.Count(p => p.GetCarriedResourceType() == req.resourceType);
+
+            if (req.reservedAmount > currentTypeCarriers) {
+                req.reservedAmount = currentTypeCarriers;
                 needsUpdate = true;
             }
         }
-        if (needsUpdate) { _carryingToUs = actualCarriers; UpdateIndicator(); }
+        
+        if (needsUpdate) { 
+            _carryingToUs = actualCarriers; 
+            UpdateIndicator(); 
+            if (OrderManager.Instance != null) OrderManager.Instance.ForceUpdateOrders();
+        }
     }
 
     private void SpawnAllResults() {

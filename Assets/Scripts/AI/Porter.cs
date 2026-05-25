@@ -35,19 +35,15 @@ public class Porter : MonoBehaviour, IEnemyAI
     void OnEnable() => OrderManager.Instance?.RegisterPorter(this);
     void OnDisable() => OrderManager.Instance?.UnregisterPorter(this);
 
-    // --- МЕТОД ОПОВЕЩЕНИЯ (ТОТ САМЫЙ, КОТОРОГО НЕ ХВАТАЛО) ---
     public static void NotifyAllPorters()
     {
         var porters = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None);
         foreach (var p in porters)
         {
             if (p._rb != null) p._rb.WakeUp();
-            // В новой архитектуре носильщики просто ждут команды от OrderManager,
-            // поэтому пробуждения Rigidbody достаточно.
         }
     }
 
-    // Метод, который вызывает OrderManager при раздаче задач
     public void AssignTask(ResourceRequester job, ResourceItem resource)
     {
         _currentJob = job;
@@ -60,21 +56,18 @@ public class Porter : MonoBehaviour, IEnemyAI
 
     void Update() 
     {
-        // Если здание уничтожилось или выключилось
         if (_currentJob != null && !_currentJob.gameObject.activeInHierarchy)
         {
             ResetTask();
             return;
         }
 
-        // Если флаг убрали ДО того как мы подняли ресурс — бросаем задачу
         if (!_hasResourceInHands && _currentJob != null && !_currentJob.HasLogisticFlag())
         {
             ResetTask();
             return;
         }
 
-        // Управление движением
         if (_movement != null) _movement.SetMove(_currentTarget != null);
         
         CheckArrival();
@@ -99,10 +92,10 @@ public class Porter : MonoBehaviour, IEnemyAI
             if (carrySlotRenderer != null) carrySlotRenderer.sprite = item.carrySprite;
             
             _currentJob.StartPhysicalDelivery();
-            item.gameObject.SetActive(false);
+            item.gameObject.SetActive(false); // Здесь сработает OnDisable, но ResetTask не вызовется из-за проверки !IsCarryingResource
             
-            _currentTarget = _currentJob.transform; // Переключаемся на здание
-            _currentJob.UpdateIndicator(); // Обновляем иконки в здании
+            _currentTarget = _currentJob.transform; 
+            _currentJob.UpdateIndicator(); 
         }
     }
 
@@ -113,9 +106,13 @@ public class Porter : MonoBehaviour, IEnemyAI
         ClearAll();
     }
 
-    private void ResetTask()
+    public void ResetTask()
     {
-        if (_currentJob != null) _currentJob.ForceCancelReservation(_targetResourceType);
+        if (_currentJob != null) 
+        {
+            _currentJob.ForceCancelReservation(_targetResourceType);
+            _currentJob.UpdateIndicator(); // Мгновенно возвращаем иконку ресурса над зданием
+        }
         if (_hasResourceInHands && _carriedResourceItem != null) Destroy(_carriedResourceItem.gameObject);
         ClearAll();
     }
