@@ -1,9 +1,8 @@
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.UI; // Если используете обычный Text
-using TMPro;           // Если используете TextMeshPro
+using TMPro;
+using DG.Tweening;
 using System.Collections;
-using System.Collections.Generic;
 
 public class HexBlocker : MonoBehaviour
 {
@@ -15,73 +14,70 @@ public class HexBlocker : MonoBehaviour
     [SerializeField] private GameObject unlockedVisual; 
     
     [Header("Настройки опасности")]
-    [SerializeField] private GameObject skullIcon; // Ссылка на один единственный череп
-    [SerializeField] private TextMeshPro dangerText; // Ссылка на текстовое поле
-    [SerializeField] private string dangerPrefix = "LVL "; // Префикс перед числом
+    [SerializeField] private GameObject skullIcon; 
+    [SerializeField] private TextMeshPro dangerText; 
+    [SerializeField] private string dangerPrefix = "LVL "; 
 
-    [Header("Настройки сетки и слоев")]
+    [Header("Настройки сетки")]
     [SerializeField] private float checkRadius = 1.1f; 
-    [SerializeField] private float hiddenCheckRadius = 0.8f; 
     [SerializeField] private LayerMask hexLayer;       
-    [SerializeField] private LayerMask hiddenLayers; 
 
     [Header("События")]
     public UnityEvent OnHexUnlocked; 
 
+    [Header("Настройки анимации исчезновения")]
+    [SerializeField] private float destroyScale = 1.1f;
+    [SerializeField] private float destroyDuration = 0.5f;
+
+    [HideInInspector] public GameObject prefabToSpawn;
+    [HideInInspector] public int assignedDangerLevel;
+    [HideInInspector] public bool shouldAutoUnlock;
+
+    private HexManager _hexManager;
     private bool _isRemoved = false;
     private bool _isCurrentlyUnlocked = false; 
-    private List<GameObject> _hiddenObjects = new List<GameObject>();
-    private int _totalDanger = 0;
 
     private void Awake()
     {
-        // Прячем визуал опасности при старте
-        if (skullIcon != null) skullIcon.SetActive(false);
-        if (dangerText != null) dangerText.gameObject.SetActive(false);
+        _hexManager = Object.FindFirstObjectByType<HexManager>();
+        
+        // УБРАНО: выключение skullIcon и dangerText отсюда
+        // Они будут выключены в Start() после проверки опасности
     }
 
     private void Start()
     {
+        // Сначала гарантированно выключаем визуал опасности
+        if (skullIcon != null) skullIcon.SetActive(false);
+        if (dangerText != null) dangerText.gameObject.SetActive(false);
+        
+        if (shouldAutoUnlock)
+        {
+            RemoveHex(); 
+            return;      
+        }
+
+        // Теперь проверяем опасность и включаем визуал если нужно
+        if (assignedDangerLevel > 0)
+        {
+            UpdateDangerVisuals();  // Включаем череп и текст
+            ForceUnlockAndStartTimer();
+        }
+        
         CheckStatus(true);
     }
 
-    public void InitializeHexContent()
+    public void AssignContent(GameObject prefab, int dangerLevel, bool autoUnlock)
     {
-        FindAndHideObjects();
-    }
-
-    private void FindAndHideObjects()
-    {
-        _hiddenObjects.Clear();
-        _totalDanger = 0;
-
-        Collider2D[] overlays = Physics2D.OverlapCircleAll(transform.position, hiddenCheckRadius, hiddenLayers);
-        
-        foreach (var col in overlays)
-        {
-            if (col == null || col.gameObject == this.gameObject) continue;
-
-            if (!_hiddenObjects.Contains(col.gameObject))
-            {
-                DangerSource danger = col.GetComponent<DangerSource>();
-                if (danger != null) _totalDanger += danger.dangerLevel;
-
-                _hiddenObjects.Add(col.gameObject);
-                col.gameObject.SetActive(false);
-            }
-        }
-
-        UpdateDangerVisuals();
-
-        if (_totalDanger > 0)
-        {
-            ForceUnlockAndStartTimer();
-        }
+        prefabToSpawn = prefab;
+        assignedDangerLevel = dangerLevel;
+        shouldAutoUnlock = autoUnlock;
+        // УБРАНО: UpdateDangerVisuals() отсюда, так как Awake гекса может выполниться позже
     }
 
     private void UpdateDangerVisuals()
     {
-        bool hasDanger = _totalDanger > 0;
+        bool hasDanger = assignedDangerLevel > 0;
 
         if (skullIcon != null) 
             skullIcon.SetActive(hasDanger);
@@ -91,7 +87,7 @@ public class HexBlocker : MonoBehaviour
             dangerText.gameObject.SetActive(hasDanger);
             if (hasDanger)
             {
-                dangerText.text = dangerPrefix + _totalDanger.ToString();
+                dangerText.text = dangerPrefix + assignedDangerLevel.ToString();
             }
         }
     }
@@ -103,11 +99,16 @@ public class HexBlocker : MonoBehaviour
         if (unlockedVisual != null) unlockedVisual.SetActive(true);
         OnHexUnlocked?.Invoke();
 
-        TimerController timer = GetComponentInChildren<TimerController>();
+        // Ищем таймер во всех дочерних объектах (включая вложенные)
+        TimerController timer = GetComponentInChildren<TimerController>(true);
         if (timer != null)
         {
-            float calculatedTime = _totalDanger * GlobalSettings.DifficultyTimerMultiplier;
+            float calculatedTime = assignedDangerLevel * GlobalSettings.DifficultyTimerMultiplier;
             timer.SetDurationAndStart(calculatedTime);
+        }
+        else
+        {
+            Debug.LogWarning($"[HexBlocker] TimerController не найден в детях {gameObject.name}!");
         }
     }
 
@@ -116,40 +117,50 @@ public class HexBlocker : MonoBehaviour
         if (_isRemoved) return;
         _isRemoved = true;
 
+        if (prefabToSpawn != null)
+        {
+            GameObject spawned = Instantiate(prefabToSpawn, transform.position, Quaternion.identity);
+            
+            if (_hexManager != null)
+            {
+                _hexManager.PlayBumpAnimation(spawned);
+            }
+        }
+
         if (TryGetComponent(out Collider2D col)) col.enabled = false;
-        foreach (var obj in _hiddenObjects) if (obj != null) obj.SetActive(true);
         
-        // Прячем опасность
         if (skullIcon != null) skullIcon.SetActive(false);
         if (dangerText != null) dangerText.gameObject.SetActive(false);
 
         NotifyNeighbors();
-        StartCoroutine(AnimateAndDestroy());
+        
+        AnimateAndDestroy();
     }
 
-    private IEnumerator AnimateAndDestroy()
+    private void AnimateAndDestroy()
     {
-        Vector3 initialScale = transform.localScale;
-        Quaternion initialRotation = transform.rotation;
-        float elapsed = 0;
-        Vector3 targetScale = initialScale * 1.1f;
-        while (elapsed < 0.2f)
+        DOTween.Kill(transform);
+        
+        SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>();
+        foreach (var r in renderers) DOTween.Kill(r);
+
+        transform.DOScale(destroyScale, destroyDuration).SetEase(Ease.OutQuad);
+
+        foreach (var r in renderers)
         {
-            elapsed += Time.deltaTime;
-            transform.localScale = Vector3.Lerp(initialScale, targetScale, elapsed / 0.2f);
-            yield return null;
+            r.DOFade(0f, destroyDuration).SetEase(Ease.InQuad);
         }
-        elapsed = 0;
-        Vector3 startScaleArea = transform.localScale;
-        while (elapsed < 0.3f)
+        
+        if (dangerText != null)
         {
-            elapsed += Time.deltaTime;
-            float t = elapsed / 0.3f;
-            transform.localScale = Vector3.Lerp(startScaleArea, Vector3.zero, t);
-            transform.rotation = initialRotation * Quaternion.Euler(0, 0, -t * 360f);
-            yield return null;
+            DOTween.Kill(dangerText.rectTransform);
+            dangerText.DOFade(0f, destroyDuration);
         }
-        gameObject.SetActive(false);
+
+        DOVirtual.DelayedCall(destroyDuration, () => 
+        {
+            gameObject.SetActive(false);
+        }, false);
     }
 
     public void CheckStatus() => CheckStatus(false);
@@ -159,12 +170,14 @@ public class HexBlocker : MonoBehaviour
         if (_isRemoved || !gameObject.activeInHierarchy || _isCurrentlyUnlocked) return;
 
         int neighborCount = 0;
-        for (int i = 0; i < 6; i++)
+        Collider2D[] neighbors = Physics2D.OverlapCircleAll(transform.position, checkRadius, hexLayer);
+        
+        foreach (var col in neighbors)
         {
-            float angle = i * 60f * Mathf.Deg2Rad;
-            Vector3 dir = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0);
-            Collider2D hit = Physics2D.OverlapPoint((Vector2)transform.position + (Vector2)dir * checkRadius, hexLayer);
-            if (hit != null && hit.gameObject != this.gameObject) neighborCount++;
+            if (col != null && col.gameObject != this.gameObject)
+            {
+                neighborCount++;
+            }
         }
 
         bool canUnlock = (neighborCount <= 4);
@@ -196,6 +209,7 @@ public class HexBlocker : MonoBehaviour
         Vector3 initialScale = lockedTr.localScale;
         Vector3 targetScale = initialScale * 1.5f;
         float elapsed = 0;
+        
         while (elapsed < 0.4f)
         {
             elapsed += Time.deltaTime;
@@ -215,10 +229,13 @@ public class HexBlocker : MonoBehaviour
 
     private void NotifyNeighbors()
     {
-        Collider2D[] neighbors = Physics2D.OverlapCircleAll(transform.position, checkRadius * 1.5f, hexLayer);
+        float notifyRadius = checkRadius * 1.2f;
+        Collider2D[] neighbors = Physics2D.OverlapCircleAll(transform.position, notifyRadius, hexLayer);
+        
         foreach (var col in neighbors)
         {
             if (col == null || col.gameObject == this.gameObject) continue;
+            
             HexBlocker hex = col.GetComponent<HexBlocker>();
             if (hex != null) hex.Invoke(nameof(CheckStatus), 0.05f);
         }
@@ -226,7 +243,7 @@ public class HexBlocker : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.yellow; Gizmos.DrawWireSphere(transform.position, checkRadius);
-        Gizmos.color = Color.red; Gizmos.DrawWireSphere(transform.position, hiddenCheckRadius);
+        Gizmos.color = Color.yellow; 
+        Gizmos.DrawWireSphere(transform.position, checkRadius);
     }
 }

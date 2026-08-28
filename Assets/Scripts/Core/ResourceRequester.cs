@@ -55,7 +55,6 @@ public class ResourceRequester : MonoBehaviour {
     public UnityEvent OnAllResourcesReceived;
     public UnityEvent OnActionExecuted;
     
-    // ДОБАВЛЕНО: Эвент, передающий состояние склада (true = заполнен, false = свободен)
     [Header("События склада")]
     public UnityEvent<bool> OnStorageFullChanged; 
 
@@ -71,10 +70,17 @@ public class ResourceRequester : MonoBehaviour {
     private List<GameObject> _spawnedResources = new List<GameObject>();
     private bool _wasFull; 
 
+    // === НОВОЕ: Случайный сдвиг фазы для анимации покачивания ===
+    private float _bobbingOffset;
+
     protected virtual void Awake() { 
         if (iconsContainer != null) _containerBasePos = iconsContainer.localPosition;
         _myCollider = GetComponent<BoxCollider2D>();
         if (storageFullVisual != null) storageFullVisual.SetActive(false);
+        
+        // Генерируем случайный сдвиг от 0 до 2*PI (полный цикл синусоиды)
+        // Это гарантирует, что каждое здание будет качаться в своем ритме с самого начала
+        _bobbingOffset = Random.Range(0f, Mathf.PI * 2f);
     }
 
     protected virtual void OnEnable() {
@@ -89,8 +95,9 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     protected virtual void Update() {
+        // === ИЗМЕНЕНО: Добавлен _bobbingOffset к расчету времени ===
         if (iconsContainer != null && iconsContainer.gameObject.activeSelf) {
-            float newY = _containerBasePos.y + Mathf.Sin(Time.time * bobbingSpeed) * bobbingAmount;
+            float newY = _containerBasePos.y + Mathf.Sin((Time.time * bobbingSpeed) + _bobbingOffset) * bobbingAmount;
             iconsContainer.localPosition = new Vector3(_containerBasePos.x, newY, _containerBasePos.z);
         }
 
@@ -122,7 +129,6 @@ public class ResourceRequester : MonoBehaviour {
             _wasFull = false;
             if (storageFullVisual != null) storageFullVisual.SetActive(false);
             
-            // ИСПРАВЛЕНО: Вызываем событие, склад освободился
             OnStorageFullChanged?.Invoke(false); 
             
             UpdateIndicator(); 
@@ -132,7 +138,6 @@ public class ResourceRequester : MonoBehaviour {
             _wasFull = true;
             if (storageFullVisual != null) storageFullVisual.SetActive(true);
             
-            // ИСПРАВЛЕНО: Вызываем событие, склад полностью забит
             OnStorageFullChanged?.Invoke(true); 
             
             UpdateIndicator(); 

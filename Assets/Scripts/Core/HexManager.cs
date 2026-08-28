@@ -1,7 +1,9 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using DG.Tweening;
 
+[DefaultExecutionOrder(-100)]
 public class HexManager : MonoBehaviour
 {
     [System.Serializable]
@@ -27,24 +29,25 @@ public class HexManager : MonoBehaviour
     [Header("Настройки групп префабов")]
     [SerializeField] private List<HexGroupSettings> groups;
 
+    [Header("Настройки анимации появления (бамп)")]
+    [SerializeField] private float bumpScaleUp = 1.1f;
+    [SerializeField] private float bumpScaleDown = 0.95f;
+    [SerializeField] private float bumpDurationPerPhase = 0.12f;
+
     private void Awake()
     {
-        // Переносим загрузку в Awake, чтобы данные были готовы ПЕРЕД Start всех остальных скриптов
         if (globalHexStats != null) 
         {
             globalHexStats.LoadStats();
         }
+        AssignHexContents();
     }
 
-    private void Start()
-    {
-        GenerateHexContents();
-    }
+    private void Start() { }
 
-    private void GenerateHexContents()
+    private void AssignHexContents()
     {
         HexBlocker[] allHexes = Object.FindObjectsByType<HexBlocker>(FindObjectsSortMode.None);
-        List<HexBlocker> hexesToAutoUnlock = new List<HexBlocker>();
         var groupedHexes = allHexes.GroupBy(h => h.groupID);
 
         foreach (var group in groupedHexes)
@@ -62,28 +65,44 @@ public class HexManager : MonoBehaviour
                 {
                     if (i >= spawnPool.Count) break;
 
-                    // Спавним объект
-                    GameObject instance = Instantiate(spawnPool[i].prefab, hexesInGroup[i].transform.position, Quaternion.identity);
-                    
-                    // ГАРАНТИЯ ВИДИМОСТИ: принудительно проверяем, чтобы альфа была 1 при спавне
-                    // (на случай, если в префабе случайно сохранили 0)
-                    var renderers = instance.GetComponentsInChildren<SpriteRenderer>();
-                    foreach(var r in renderers) {
-                        Color c = r.color;
-                        c.a = 1f;
-                        r.color = c;
+                    HexPrefabData selectedData = spawnPool[i];
+                    GameObject chosenPrefab = selectedData.prefab;
+
+                    int dangerLevel = 0;
+                    if (chosenPrefab != null)
+                    {
+                        DangerSource dangerSourceRoot = chosenPrefab.GetComponent<DangerSource>();
+                        DangerSource dangerSourceChild = chosenPrefab.GetComponentInChildren<DangerSource>(true);
+                        
+                        if (dangerSourceRoot != null)
+                        {
+                            dangerLevel = dangerSourceRoot.dangerLevel;
+                        }
+                        else if (dangerSourceChild != null)
+                        {
+                            dangerLevel = dangerSourceChild.dangerLevel;
+                        }
                     }
 
-                    if (spawnPool[i].autoUnlockHex)
-                    {
-                        hexesToAutoUnlock.Add(hexesInGroup[i]);
-                    }
+                    hexesInGroup[i].AssignContent(chosenPrefab, dangerLevel, selectedData.autoUnlockHex);
                 }
             }
         }
+    }
 
-        foreach (var hex in allHexes) hex.InitializeHexContent();
-        foreach (var hex in hexesToAutoUnlock) hex.RemoveHex();
+    public void PlayBumpAnimation(GameObject spawnedObject)
+    {
+        if (spawnedObject == null) return;
+
+        Transform tr = spawnedObject.transform;
+        DOTween.Kill(tr);
+
+        Vector3 baseScale = tr.localScale;
+        Sequence seq = DOTween.Sequence();
+        
+        seq.Append(tr.DOScale(baseScale * bumpScaleUp, bumpDurationPerPhase).SetEase(Ease.OutQuad));
+        seq.Append(tr.DOScale(baseScale * bumpScaleDown, bumpDurationPerPhase).SetEase(Ease.InOutQuad));
+        seq.Append(tr.DOScale(baseScale, bumpDurationPerPhase).SetEase(Ease.OutQuad));
     }
 
     private List<HexPrefabData> PrepareSpawnPool(List<HexPrefabData> dataList, int hexCount)
