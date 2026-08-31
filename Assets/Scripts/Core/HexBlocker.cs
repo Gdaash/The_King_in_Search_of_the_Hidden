@@ -207,7 +207,7 @@ public class HexBlocker : MonoBehaviour
         if (lockedVisual == null) yield break;
         Transform lockedTr = lockedVisual.transform;
         Vector3 initialScale = lockedTr.localScale;
-        Vector3 targetScale = initialScale * 1.5f;
+        Vector3 targetScale = initialScale * 1.2f;
         float elapsed = 0;
         
         while (elapsed < 0.4f)
