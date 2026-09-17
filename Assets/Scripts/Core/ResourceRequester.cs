@@ -4,8 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-// --- КЛАССЫ-ПОМОЩНИКИ ---
-
 [System.Serializable]
 public class ResourceRequirement {
     public ResourceType resourceType;
@@ -23,8 +21,6 @@ public class ResourceOutput {
     public GameObject prefab;
     public int count = 1;
 }
-
-// --- ОСНОВНОЙ КЛАСС ---
 
 public class ResourceRequester : MonoBehaviour {
     [Header("Настройки ограничений")]
@@ -63,23 +59,23 @@ public class ResourceRequester : MonoBehaviour {
     protected bool _isProcessing = false;
     protected Vector3 _containerBasePos;
     
-    private BoxCollider2D _myCollider;
+    // ИСПРАВЛЕНО: базовый класс Collider2D вместо BoxCollider2D
+    private Collider2D _myCollider;
+    
     private float _lastValidationTime;
     private bool _lastFlagState;
     
     private List<GameObject> _spawnedResources = new List<GameObject>();
     private bool _wasFull; 
-
-    // === НОВОЕ: Случайный сдвиг фазы для анимации покачивания ===
     private float _bobbingOffset;
 
     protected virtual void Awake() { 
         if (iconsContainer != null) _containerBasePos = iconsContainer.localPosition;
-        _myCollider = GetComponent<BoxCollider2D>();
-        if (storageFullVisual != null) storageFullVisual.SetActive(false);
         
-        // Генерируем случайный сдвиг от 0 до 2*PI (полный цикл синусоиды)
-        // Это гарантирует, что каждое здание будет качаться в своем ритме с самого начала
+        // ИСПРАВЛЕНО: получаем любой 2D коллайдер
+        _myCollider = GetComponent<Collider2D>();
+        
+        if (storageFullVisual != null) storageFullVisual.SetActive(false);
         _bobbingOffset = Random.Range(0f, Mathf.PI * 2f);
     }
 
@@ -95,7 +91,6 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     protected virtual void Update() {
-        // === ИЗМЕНЕНО: Добавлен _bobbingOffset к расчету времени ===
         if (iconsContainer != null && iconsContainer.gameObject.activeSelf) {
             float newY = _containerBasePos.y + Mathf.Sin((Time.time * bobbingSpeed) + _bobbingOffset) * bobbingAmount;
             iconsContainer.localPosition = new Vector3(_containerBasePos.x, newY, _containerBasePos.z);
@@ -128,18 +123,14 @@ public class ResourceRequester : MonoBehaviour {
         if (_wasFull && !currentlyFull) {
             _wasFull = false;
             if (storageFullVisual != null) storageFullVisual.SetActive(false);
-            
             OnStorageFullChanged?.Invoke(false); 
-            
             UpdateIndicator(); 
             if (OrderManager.Instance != null) OrderManager.Instance.ForceUpdateOrders();
         } 
         else if (!_wasFull && currentlyFull) {
             _wasFull = true;
             if (storageFullVisual != null) storageFullVisual.SetActive(true);
-            
             OnStorageFullChanged?.Invoke(true); 
-            
             UpdateIndicator(); 
         }
     }

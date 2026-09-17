@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine.Events; // Добавлено для работы с эвентами
+using UnityEngine.Events;
 
 public class LogisticFlag : MonoBehaviour
 {
@@ -10,18 +10,19 @@ public class LogisticFlag : MonoBehaviour
     [SerializeField] private Sprite activeSprite; 
 
     [Header("События")]
-    [SerializeField] private UnityEvent onActivated; // Сработает при смене на activeSprite
+    [SerializeField] private UnityEvent onActivated;
 
     private int _buildingsUnderFlag = 0;
-    private BoxCollider2D _myCollider;
-    private bool _isActive = false; // Флаг для контроля смены состояния
+    private Collider2D _myCollider; // Изменили на базовый Collider2D
+    private bool _isActive = false;
 
     void Awake() {
-        _myCollider = GetComponent<BoxCollider2D>();
+        _myCollider = GetComponent<Collider2D>();
         UpdateVisual();
     }
 
     void OnEnable() => StartCoroutine(ValidationRoutine());
+    void OnDisable() => StopAllCoroutines();
 
     private IEnumerator ValidationRoutine() {
         while (true) {
@@ -39,44 +40,62 @@ public class LogisticFlag : MonoBehaviour
 
     private IEnumerator NotifyRoutine() {
         yield return new WaitForFixedUpdate();
-        ContactFilter2D filter = new ContactFilter2D();
-        filter.useTriggers = true;
-        List<Collider2D> results = new List<Collider2D>();
         
-        int count = _myCollider.Overlap(filter, results);
+        // ИСПРАВЛЕНИЕ: Используем OverlapCircleAll, который игнорирует настройку Is Trigger
+        // и находит ВСЕ коллайдеры в радиусе. Радиус берем из размера коллайдера флага.
+        float checkRadius = _myCollider.bounds.size.x * 0.5f; 
+        Collider2D[] results = Physics2D.OverlapCircleAll(transform.position, checkRadius);
+        
         _buildingsUnderFlag = 0;
         
-        for (int i = 0; i < count; i++) {
-            if (results[i].TryGetComponent<ResourceRequester>(out var req)) {
+        foreach (var col in results) {
+            // Проверяем наличие нужного скрипта, игнорируя сам флаг
+            if (col.gameObject != gameObject && col.TryGetComponent<ResourceRequester>(out var req)) {
                 _buildingsUnderFlag++;
                 req.UpdateIndicator(); 
             }
         }
-        UpdateState(); // Заменяем UpdateVisual на проверку состояния
+        
+        UpdateState();
         if (OrderManager.Instance != null) OrderManager.Instance.ForceUpdateOrders();
     }
 
+    // Оставляем триггеры для мгновенной реакции, но добавляем и коллизии на всякий случай
     private void OnTriggerEnter2D(Collider2D collision) {
-        if (collision.GetComponent<ResourceRequester>()) {
+        if (collision.gameObject != gameObject && collision.GetComponent<ResourceRequester>() != null) {
             _buildingsUnderFlag++;
             UpdateState();
         }
     }
 
     private void OnTriggerExit2D(Collider2D collision) {
-        if (collision.GetComponent<ResourceRequester>()) {
+        if (collision.gameObject != gameObject && collision.GetComponent<ResourceRequester>() != null) {
             _buildingsUnderFlag = Mathf.Max(0, _buildingsUnderFlag - 1);
             UpdateState();
         }
     }
 
-    // Новый метод для контроля логики активации
+    // На случай, если коллайдер здания НЕ является триггером
+    private void OnCollisionEnter2D(Collision2D collision) {
+        if (collision.gameObject != gameObject && collision.collider.GetComponent<ResourceRequester>() != null) {
+            _buildingsUnderFlag++;
+            UpdateState();
+        }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision) {
+        if (collision.gameObject != gameObject && collision.collider.GetComponent<ResourceRequester>() != null) {
+            _buildingsUnderFlag = Mathf.Max(0, _buildingsUnderFlag - 1);
+            UpdateState();
+        }
+    }
+
     private void UpdateState() {
         bool shouldBeActive = _buildingsUnderFlag > 0;
 
         if (shouldBeActive && !_isActive) {
             _isActive = true;
-            onActivated?.Invoke(); // Вызываем событие только в момент "включения"
+            onActivated?.Invoke();
         } else if (!shouldBeActive) {
             _isActive = false;
         }
