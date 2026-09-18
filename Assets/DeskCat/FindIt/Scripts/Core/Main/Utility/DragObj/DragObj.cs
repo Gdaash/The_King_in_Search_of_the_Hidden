@@ -1,5 +1,4 @@
 ﻿using System;
-using DeskCat.FindIt.Scripts.Core.Main.System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -8,43 +7,56 @@ using DeskCat.FindIt.Scripts.Core.Main.Utility.Region;
 namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
 {
     [Serializable]
-    public class DragAndDropEvent3D : UnityEvent<DragObj>
-    {
-    }
+    public class DragAndDropEvent3D : UnityEvent<DragObj> { }
 
     public class DragObj : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler
     {
+        // Глобальный флаг, чтобы камера или другие системы знали, что сейчас что-то тащат
         public static bool IsAnyObjectDragging { get; private set; }
 
-        [Header("General Settings")] public string DropRegionName = "";
-        public bool HideWhenDropToRegion = true;
-        public bool EnableCollisionWhenDrag = false;
+        [Header("General Settings")] 
+        [Tooltip("Имя региона, в который можно бросить этот объект")]
+        public string DropRegionName = "";
+        
+        [Tooltip("Уничтожить объект при успешном сбросе в регион")]
+        public bool DestroyWhenDropToRegion = true;
+        
+        [Tooltip("Отключать коллайдер во время перетаскивания (чтобы не мешал рейкастам)")]
+        public bool DisableColliderWhenDrag = true;
 
-        [Header("Drag Behavior")] public bool IsThisRegionAsTarget = true;
-        public bool DragToRegionToFound = false;
-        public bool IsReturnToOriginalPosition = false;
+        [Header("Drag Behavior")] 
+        [Tooltip("Вызывать событие региона при перетаскивании над ним")]
+        public bool TriggerEventsOnRegion = true;
+        
+        [Tooltip("Вернуть объект на исходную позицию, если он не был сброшен в регион")]
+        public bool ReturnToOriginalPositionOnFail = true;
 
-        [Header("Freeze Drag Axis")] public bool freezeX;
+        [Header("Freeze Drag Axis")] 
+        public bool freezeX;
         public bool freezeY;
         public bool freezeZ;
 
-        [Header("Drag Events")] public DragAndDropEvent3D onBeginDrag;
+        [Header("Drag Events")] 
+        public DragAndDropEvent3D onBeginDrag;
         public DragAndDropEvent3D onDrag;
         public DragAndDropEvent3D onDragToRegion;
         public DragAndDropEvent3D onEndDrag;
 
-        [Header("Drop Events")] public DragAndDropEvent3D onDropRegion;
+        [Header("Drop Events")] 
+        public DragAndDropEvent3D onDropRegion;
 
         private Camera _mainCamera;
         private Vector3 _mOffset;
         private float _mZCoord;
 
         private Vector3 _originalPosition;
-        private HiddenObj _hiddenObj;
-        private BoxCollider2D _collider;
+        private Collider2D _collider; // Теперь поддерживает ЛЮБОЙ 2D коллайдер
 
         private bool _isDragging;
         private bool _colliderWasDisabled;
+        
+        [Tooltip("Можно ли вообще перетаскивать этот объект (можно отключать программно)")]
+        public bool CanDrag = true;
 
         private void Start()
         {
@@ -56,21 +68,22 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
                 return;
             }
 
-            _hiddenObj = GetComponent<HiddenObj>();
-            _collider = GetComponent<BoxCollider2D>();
+            // Пытаемся получить любой 2D коллайдер
+            _collider = GetComponent<Collider2D>();
             _originalPosition = transform.position;
         }
 
         private void OnEnable()
         {
             if (_collider != null) _collider.enabled = true;
+            _colliderWasDisabled = false;
         }
 
         public void OnPointerDown(PointerEventData eventData)
         {
-            if (!_hiddenObj.isAbleToClick || _hiddenObj.IsFound) return;
+            if (!CanDrag) return;
 
-            _mOffset = gameObject.transform.position - CalculateWorldPoint();
+            _mOffset = transform.position - CalculateWorldPoint();
             _originalPosition = transform.position;
 
             onBeginDrag?.Invoke(this);
@@ -81,9 +94,10 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
 
         public void OnDrag(PointerEventData eventData)
         {
-            if (!_hiddenObj.isAbleToClick || _hiddenObj.IsFound) return;
+            if (!CanDrag || !_isDragging) return;
 
-            if (!EnableCollisionWhenDrag && !_colliderWasDisabled)
+            // Отключаем коллайдер во время перетаскивания, если нужно
+            if (DisableColliderWhenDrag && _collider != null && !_colliderWasDisabled)
             {
                 _collider.enabled = false;
                 _colliderWasDisabled = true;
@@ -94,14 +108,13 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
 
             onDrag?.Invoke(this);
 
-            if (CurrentDragInfo.CurrentDropRegion != null)
+            // Проверка нахождения над регионом во время перетаскивания
+            if (TriggerEventsOnRegion && CurrentDragInfo.CurrentDropRegion != null)
             {
                 bool isOverTarget = CurrentDragInfo.CurrentDropRegion.regions.Exists(r => r.isActive && r.regionName == DropRegionName);
-                
                 if (isOverTarget)
                 {
                     onDragToRegion?.Invoke(this);
-                    if (DragToRegionToFound) _hiddenObj.DragRegionAction?.Invoke();
                 }
             }
         }
@@ -110,7 +123,8 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
         {
             if (!_isDragging) return;
 
-            if (_colliderWasDisabled)
+            // Возвращаем коллайдер
+            if (_colliderWasDisabled && _collider != null)
             {
                 _collider.enabled = true;
                 _colliderWasDisabled = false;
@@ -121,8 +135,8 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
 
             DropRegionCheck();
 
-            // Если объект был уничтожен в DropRegionCheck, этот код дальше не выполнится или не вызовет ошибок
-            if (this != null && IsReturnToOriginalPosition)
+            // Если объект не был уничтожен в DropRegionCheck, возвращаем его на место при необходимости
+            if (this != null && ReturnToOriginalPositionOnFail)
             {
                 transform.position = _originalPosition;
             }
@@ -135,16 +149,13 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
             if (CurrentDragInfo.CurrentDropRegion == null) return;
 
             bool hasValidRegion = CurrentDragInfo.CurrentDropRegion.regions.Exists(r => r.isActive && r.regionName == DropRegionName);
-            
             if (!hasValidRegion) return;
 
-            // Сначала вызываем все события
-            if (IsThisRegionAsTarget) _hiddenObj.DragRegionAction?.Invoke();
+            // Успешный сброс в регион
             onDropRegion?.Invoke(this);
             CurrentDragInfo.CurrentDropRegion.ExecuteRegionEvent(DropRegionName);
 
-            // ПРАВКА: Вместо SetActive(false) используем Destroy
-            if (HideWhenDropToRegion) 
+            if (DestroyWhenDropToRegion) 
             {
                 Destroy(gameObject);
             }
@@ -152,7 +163,7 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.DragObj
 
         private Vector3 CalculateWorldPoint()
         {
-            _mZCoord = _mainCamera.WorldToScreenPoint(gameObject.transform.position).z;
+            _mZCoord = _mainCamera.WorldToScreenPoint(transform.position).z;
             var mousePoint = Input.mousePosition;
             mousePoint.z = _mZCoord;
             return _mainCamera.ScreenToWorldPoint(mousePoint);

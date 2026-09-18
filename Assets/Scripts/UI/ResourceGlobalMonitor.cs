@@ -1,17 +1,33 @@
 using UnityEngine;
 using System.Collections.Generic;
-using TMPro;
 
 public class ResourceGlobalMonitor : MonoBehaviour
 {
     [Header("Настройки UI")]
-    [SerializeField] private GameObject rowPrefab;     // Префаб строки (UIResourceRow)
-    [SerializeField] private Transform container;      // Куда складывать строки (Vertical Layout)
+    [SerializeField] private GameObject rowPrefab;
+    [SerializeField] private Transform container;
     [SerializeField] private float updateInterval = 0.5f; 
 
-    // Словарь: Объект типа ресурса -> Скрипт строки в UI
     private Dictionary<ResourceType, UIResourceRow> _uiRows = new Dictionary<ResourceType, UIResourceRow>();
     private float _timer;
+
+    private void OnEnable()
+    {
+        if (GlobalResourceManager.Instance != null)
+        {
+            GlobalResourceManager.OnResourceChanged += OnResourceChangedHandler;
+        }
+        
+        RefreshGlobalResources();
+    }
+
+    private void OnDisable()
+    {
+        if (GlobalResourceManager.Instance != null)
+        {
+            GlobalResourceManager.OnResourceChanged -= OnResourceChangedHandler;
+        }
+    }
 
     void Update()
     {
@@ -19,27 +35,28 @@ public class ResourceGlobalMonitor : MonoBehaviour
         if (_timer >= updateInterval)
         {
             RefreshGlobalResources();
-            _timer = 0;
+            _timer = 0f;
+        }
+    }
+
+    private void OnResourceChangedHandler(ResourceType type, int newAmount)
+    {
+        if (_uiRows.ContainsKey(type))
+        {
+            _uiRows[type].UpdateRow(type.resourceIcon, type.resourceName, newAmount);
+        }
+        else
+        {
+            RefreshGlobalResources();
         }
     }
 
     private void RefreshGlobalResources()
     {
-        // 1. Собираем общие данные со всех складов
-        Dictionary<ResourceType, int> totals = new Dictionary<ResourceType, int>();
+        if (GlobalResourceManager.Instance == null) return;
 
-        foreach (Warehouse w in Warehouse.AllWarehouses)
-        {
-            foreach (var item in w.GetInventoryData())
-            {
-                if (totals.ContainsKey(item.Key))
-                    totals[item.Key] += item.Value;
-                else
-                    totals.Add(item.Key, item.Value);
-            }
-        }
+        Dictionary<ResourceType, int> totals = GlobalResourceManager.Instance.GetAllResourcesData();
 
-        // 2. Синхронизируем данные с UI
         foreach (var pair in totals)
         {
             ResourceType type = pair.Key;
@@ -47,18 +64,15 @@ public class ResourceGlobalMonitor : MonoBehaviour
 
             if (!_uiRows.ContainsKey(type))
             {
-                // Если строки для этого ресурса еще нет — создаем её
                 GameObject newRow = Instantiate(rowPrefab, container);
                 UIResourceRow rowScript = newRow.GetComponent<UIResourceRow>();
                 
-                // Сразу настраиваем иконку и имя из ассета ResourceType
                 rowScript.UpdateRow(type.resourceIcon, type.resourceName, count);
                 
                 _uiRows.Add(type, rowScript);
             }
             else
             {
-                // Если строка уже есть — просто обновляем количество
                 _uiRows[type].UpdateRow(type.resourceIcon, type.resourceName, count);
             }
         }

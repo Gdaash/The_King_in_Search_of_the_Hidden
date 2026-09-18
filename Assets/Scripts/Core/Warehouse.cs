@@ -1,128 +1,119 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Warehouse : MonoBehaviour
 {
-    // Статический список всех складов для быстрого поиска монитором и носильщиками
+    public static Warehouse Instance { get; private set; }
     public static List<Warehouse> AllWarehouses = new List<Warehouse>();
 
-    [System.Serializable]
-    public class ResourceEntry
-    {
-        public ResourceType type; // Ссылка на ScriptableObject ресурса
-        public int amount;        // Количество
-    }
+    [Header("Настройки склада")]
+    [SerializeField] private Transform spawnPoint;
+    public float checkRadius = 2f;
+    [SerializeField] private GameObject humanPrefab;
+    [SerializeField] private ResourceType humanResourceType;
+    
+    [Header("Префаб носильщика")]
+    [Tooltip("Префаб носильщика (Porter), который будет спауниться за 1 человека")]
+    [SerializeField] private GameObject porterPrefab;
 
-    [System.Serializable]
-    public struct ResourceEntryDebug 
-    { 
-        public string typeName; 
-        public int amount; 
-    }
-
-    [Header("Настройки всплывающих иконок")]
-    [SerializeField] private GameObject floatingIconPrefab;
-    [SerializeField] private Vector3 spawnOffset = new Vector3(0, 2f, 0);
-    [SerializeField] private float spawnRandomX = 0.5f;
-    [Range(0.1f, 5f)] [SerializeField] private float iconMoveSpeed = 1.5f;
-    [Range(0.5f, 5f)] [SerializeField] private float iconDuration = 1.2f;
-    [SerializeField] private int iconSortingOrder = 50;
-
-    [Header("Начальные ресурсы (Заполняется в инспекторе)")]
-    [SerializeField] private List<ResourceEntry> initialResources = new List<ResourceEntry>();
-
-    [Header("Содержимое склада (Только для чтения в Play Mode)")]
-    [SerializeField] private List<ResourceEntryDebug> debugInventoryDisplay = new List<ResourceEntryDebug>();
-
-    // Основной инвентарь склада (Ключ - объект ResourceType)
-    private Dictionary<ResourceType, int> _inventory = new Dictionary<ResourceType, int>();
-
-    private void OnEnable() => AllWarehouses.Add(this);
-    private void OnDisable() => AllWarehouses.Remove(this);
+    private Collider2D _myCollider;
+    private List<HumanUnit> _humansInside = new List<HumanUnit>();
 
     private void Awake()
     {
-        // Заполняем склад из списка начальных ресурсов
-        foreach (var entry in initialResources)
-        {
-            if (entry.type != null && entry.amount > 0)
-            {
-                if (_inventory.ContainsKey(entry.type))
-                    _inventory[entry.type] += entry.amount;
-                else
-                    _inventory.Add(entry.type, entry.amount);
-            }
-        }
-        SyncDebugList();
+        if (Instance == null) Instance = this;
+        _myCollider = GetComponent<Collider2D>();
+        if (spawnPoint == null) spawnPoint = transform;
     }
 
-    // --- МЕТОДЫ ДЛЯ МОНИТОРА ---
+    private void OnEnable()
+    {
+        if (!AllWarehouses.Contains(this)) AllWarehouses.Add(this);
+    }
 
-    // Позволяет скрипту ResourceGlobalMonitor получить копию инвентаря
+    private void OnDisable()
+    {
+        AllWarehouses.Remove(this);
+        if (Instance == this) Instance = null;
+    }
+
+    public Vector3 GetSpawnPoint() => spawnPoint != null ? spawnPoint.position : transform.position;
+
+    public HumanUnit SpawnHumanForJob(ResourceRequester job, ResourceType resourceType, bool shouldReserve = true)
+    {
+        if (humanPrefab == null || resourceType == null || GlobalResourceManager.Instance == null) return null;
+        if (GlobalResourceManager.Instance.GetResourceAmount(resourceType) <= 0) return null;
+        if (!GlobalResourceManager.Instance.TrySpendResource(resourceType, 1)) return null;
+
+        Vector3 spawnPos = GetSpawnPoint() + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0);
+        GameObject humanObj = Instantiate(humanPrefab, spawnPos, Quaternion.identity);
+        HumanUnit human = humanObj.GetComponent<HumanUnit>();
+        if (human != null) human.AssignTask(job, shouldReserve);
+        return human;
+    }
+
+    public void ReturnHuman(HumanUnit human)
+    {
+        if (human == null || GlobalResourceManager.Instance == null || humanResourceType == null) return;
+        GlobalResourceManager.Instance.AddResource(humanResourceType, 1);
+    }
+
+    public bool CanSpawnPorter()
+    {
+        if (GlobalResourceManager.Instance == null || humanResourceType == null || porterPrefab == null) return false;
+        return GlobalResourceManager.Instance.GetResourceAmount(humanResourceType) >= 1;
+    }
+
+    public Porter SpawnPorter()
+    {
+        if (!CanSpawnPorter()) return null;
+        
+        if (!GlobalResourceManager.Instance.TrySpendResource(humanResourceType, 1)) return null;
+
+        Vector3 spawnPos = GetSpawnPoint() + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0);
+        GameObject porterObj = Instantiate(porterPrefab, spawnPos, Quaternion.identity);
+        return porterObj.GetComponent<Porter>();
+    }
+
+    /// <summary>
+    /// НОВОЕ: Деспаун носильщика — он превращается обратно в 1 человека
+    /// </summary>
+    public void DespawnPorter(Porter porter)
+    {
+        if (porter == null || humanResourceType == null || GlobalResourceManager.Instance == null) return;
+        
+        // Возвращаем 1 человека в глобальное хранилище
+        GlobalResourceManager.Instance.AddResource(humanResourceType, 1);
+        
+        Debug.Log($"[Warehouse] Носильщик деспаунится и превращается в 1 человека. Всего людей: {GlobalResourceManager.Instance.GetResourceAmount(humanResourceType)}");
+        
+        // Уничтожаем носильщика
+        Destroy(porter.gameObject);
+    }
+
+    public void DepositResource(ResourceType type)
+    {
+        if (GlobalResourceManager.Instance != null && type != null)
+        {
+            GlobalResourceManager.Instance.AddResource(type, 1);
+        }
+    }
+
     public Dictionary<ResourceType, int> GetInventoryData()
     {
-        return new Dictionary<ResourceType, int>(_inventory);
+        return GlobalResourceManager.Instance != null ? GlobalResourceManager.Instance.GetAllResourcesData() : new Dictionary<ResourceType, int>();
     }
 
-    // --- МЕТОДЫ ВЗАИМОДЕЙСТВИЯ ---
-
-    public bool HasResource(ResourceType type)
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        return type != null && _inventory.ContainsKey(type) && _inventory[type] > 0;
+        if (collision.TryGetComponent<HumanUnit>(out var human) && !_humansInside.Contains(human))
+            _humansInside.Add(human);
     }
 
-    public bool TryTakeResource(ResourceType type)
+    private void OnTriggerExit2D(Collider2D collision)
     {
-        if (HasResource(type))
-        {
-            _inventory[type]--;
-            SyncDebugList();
-            return true;
-        }
-        return false;
-    }
-
-    public void AddResource(ResourceType type, int amount, Sprite resourceSprite)
-    {
-        if (type == null) return;
-
-        if (_inventory.ContainsKey(type))
-            _inventory[type] += amount;
-        else
-            _inventory.Add(type, amount);
-
-        SpawnFloatingIcon(resourceSprite);
-        SyncDebugList();
-    }
-
-    // --- ВИЗУАЛ И СЛУЖЕБНЫЕ МЕТОДЫ ---
-
-    private void SpawnFloatingIcon(Sprite iconSprite)
-    {
-        if (floatingIconPrefab == null || iconSprite == null) return;
-
-        float randomX = Random.Range(-spawnRandomX, spawnRandomX);
-        Vector3 finalPos = transform.position + spawnOffset + new Vector3(randomX, 0, 0);
-
-        GameObject iconObj = Instantiate(floatingIconPrefab, finalPos, Quaternion.identity);
-        
-        if (iconObj.TryGetComponent(out SpriteRenderer sr))
-            sr.sortingOrder = iconSortingOrder;
-
-        if (iconObj.TryGetComponent(out FloatingIcon iconScript))
-            iconScript.Init(iconSprite, iconMoveSpeed, iconDuration);
-    }
-
-    private void SyncDebugList()
-    {
-        debugInventoryDisplay.Clear();
-        foreach (var pair in _inventory)
-        {
-            debugInventoryDisplay.Add(new ResourceEntryDebug 
-            { 
-                typeName = pair.Key.resourceName, 
-                amount = pair.Value 
-            });
-        }
+        if (collision.TryGetComponent<HumanUnit>(out var human))
+            _humansInside.Remove(human);
     }
 }

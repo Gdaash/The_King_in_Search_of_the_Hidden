@@ -26,9 +26,11 @@ public class ResourceRequester : MonoBehaviour {
     [Header("Настройки ограничений")]
     [SerializeField] private int maxProductionPool = 3;  
     [SerializeField] private GameObject storageFullVisual; 
+    [Tooltip("Максимальное количество циклов производства (0 = без ограничений)")]
+    [SerializeField] private int maxProductionCycles = 0;
 
     [Header("Настройки флажка")]
-    [SerializeField] private bool ignoreFlag = false; 
+    [SerializeField] protected bool ignoreFlag = false; 
 
     [Header("Настройки рецепта")]
     public int priority = 1;
@@ -40,7 +42,10 @@ public class ResourceRequester : MonoBehaviour {
     [SerializeField] protected float spawnSpread = 0.5f;
 
     [Header("Визуал иконок")]
+    [Tooltip("Обычная иконка ресурса")]
     [SerializeField] protected GameObject iconPrefab; 
+    [Tooltip("Иконка 'в пути'")]
+    [SerializeField] protected GameObject inTransitIconPrefab;
     [SerializeField] protected Transform iconsContainer; 
     [SerializeField] protected float iconSpacing = 0.4f; 
     [SerializeField] protected float bobbingAmount = 0.1f;
@@ -59,22 +64,19 @@ public class ResourceRequester : MonoBehaviour {
     protected bool _isProcessing = false;
     protected Vector3 _containerBasePos;
     
-    // ИСПРАВЛЕНО: базовый класс Collider2D вместо BoxCollider2D
     private Collider2D _myCollider;
-    
     private float _lastValidationTime;
     private bool _lastFlagState;
     
     private List<GameObject> _spawnedResources = new List<GameObject>();
     private bool _wasFull; 
-    private float _bobbingOffset;
+    protected float _bobbingOffset;
+    
+    private int _completedCycles = 0;
 
     protected virtual void Awake() { 
         if (iconsContainer != null) _containerBasePos = iconsContainer.localPosition;
-        
-        // ИСПРАВЛЕНО: получаем любой 2D коллайдер
         _myCollider = GetComponent<Collider2D>();
-        
         if (storageFullVisual != null) storageFullVisual.SetActive(false);
         _bobbingOffset = Random.Range(0f, Mathf.PI * 2f);
     }
@@ -111,7 +113,7 @@ public class ResourceRequester : MonoBehaviour {
         }
     }
 
-    public bool IsStorageFull() {
+    public virtual bool IsStorageFull() {
         _spawnedResources.RemoveAll(item => item == null);
         int activeCount = _spawnedResources.Count(obj => obj.activeInHierarchy);
         return activeCount >= maxProductionPool;
@@ -151,6 +153,10 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     public bool NeedsAnyResource() {
+        if (maxProductionCycles > 0 && _completedCycles >= maxProductionCycles) {
+            return false;
+        }
+        
         if (!gameObject.activeInHierarchy || _isProcessing || !HasLogisticFlag() || IsStorageFull()) return false;
         return requirements.Any(r => (r.currentAmount + r.reservedAmount) < r.requiredAmount);
     }
@@ -195,14 +201,14 @@ public class ResourceRequester : MonoBehaviour {
         }
     }
 
-    protected void CheckCompletion() {
+    protected virtual void CheckCompletion() {
         if (requirements.All(r => r.currentAmount >= r.requiredAmount)) {
             _isProcessing = true;
             OnAllResourcesReceived?.Invoke();
         }
     }
 
-    public void FinishProcessing() {
+    public virtual void FinishProcessing() {
         SpawnAllResults();
         _isProcessing = false;
         _carryingToUs = 0;
@@ -210,12 +216,20 @@ public class ResourceRequester : MonoBehaviour {
             req.currentAmount = 0;
             req.reservedAmount = 0;
         }
+        
+        _completedCycles++;
+        
+        if (maxProductionCycles > 0 && _completedCycles >= maxProductionCycles) {
+            Debug.Log($"[ResourceRequester] Достигнут лимит циклов: {_completedCycles}/{maxProductionCycles}");
+        }
+        
         OnActionExecuted?.Invoke();
         UpdateIndicator();
     }
 
     public virtual void UpdateIndicator() {
-        if (iconsContainer == null || iconPrefab == null) return;
+        if (iconsContainer == null) return;
+        
         foreach (var icon in _activeIcons) if(icon) Destroy(icon);
         _activeIcons.Clear();
 
@@ -224,33 +238,64 @@ public class ResourceRequester : MonoBehaviour {
             return;
         }
 
-        List<ResourceType> resourcesInTransit = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
-                .Where(p => p.GetCurrentJob() == this && p.IsCarryingResource())
-                .Select(p => p.GetCarriedResourceType())
-                .ToList();
+        if (maxProductionCycles > 0 && _completedCycles >= maxProductionCycles) {
+            iconsContainer.gameObject.SetActive(false);
+            return;
+        }
 
-        List<ResourceType> displayTypes = new List<ResourceType>();
-        foreach (var req in requirements) {
-            int needed = req.requiredAmount - req.currentAmount;
-            for (int i = 0; i < needed; i++) {
-                if (resourcesInTransit.Contains(req.resourceType)) resourcesInTransit.Remove(req.resourceType);
-                else displayTypes.Add(req.resourceType);
+        List<ResourceType> resourcesInTransit = new List<ResourceType>();
+        
+        var porters = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None);
+        foreach (var p in porters) {
+            if (p.GetCurrentJob() == this && p.IsCarryingResource()) {
+                resourcesInTransit.Add(p.GetCarriedResourceType());
+            }
+        }
+        
+        if (OrderManager.Instance != null) {
+            var humans = OrderManager.Instance.GetHumanUnitsForRequester(this);
+            foreach (var h in humans) {
+                resourcesInTransit.Add(h.GetCarriedResourceType());
             }
         }
 
-        if (displayTypes.Count == 0) {
+        List<(ResourceType type, bool isInTransit)> displayIcons = new List<(ResourceType, bool)>();
+        
+        foreach (var req in requirements) {
+            int needed = req.requiredAmount - req.currentAmount;
+            for (int i = 0; i < needed; i++) {
+                if (resourcesInTransit.Contains(req.resourceType)) {
+                    displayIcons.Add((req.resourceType, true));
+                    resourcesInTransit.Remove(req.resourceType);
+                } else {
+                    displayIcons.Add((req.resourceType, false));
+                }
+            }
+        }
+
+        if (displayIcons.Count == 0) {
             iconsContainer.gameObject.SetActive(false);
             return;
         }
 
         iconsContainer.gameObject.SetActive(true);
-        float totalWidth = (displayTypes.Count - 1) * iconSpacing;
+        float totalWidth = (displayIcons.Count - 1) * iconSpacing;
         float startX = -totalWidth / 2f;
 
-        for (int i = 0; i < displayTypes.Count; i++) {
-            GameObject newIcon = Instantiate(iconPrefab, iconsContainer);
+        for (int i = 0; i < displayIcons.Count; i++) {
+            var (type, isInTransit) = displayIcons[i];
+            
+            GameObject prefabToUse = isInTransit ? inTransitIconPrefab : iconPrefab;
+            if (prefabToUse == null) prefabToUse = iconPrefab;
+            if (prefabToUse == null) continue;
+            
+            GameObject newIcon = Instantiate(prefabToUse, iconsContainer);
             newIcon.transform.localPosition = new Vector3(startX + (i * iconSpacing), 0, 0);
-            if (newIcon.TryGetComponent(out SpriteRenderer sr)) sr.sprite = displayTypes[i].defaultCarrySprite;
+            
+            if (newIcon.TryGetComponent(out SpriteRenderer sr)) {
+                sr.sprite = type.defaultCarrySprite;
+            }
+            
             _activeIcons.Add(newIcon);
         }
     }
@@ -267,30 +312,50 @@ public class ResourceRequester : MonoBehaviour {
             return;
         }
 
+        // === СЧИТАЕМ PORTER'ОВ ===
         var validPorters = Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
             .Where(p => p.GetCurrentJob() == this && p.GetTarget() != null)
             .ToList();
 
-        int actualCarriers = validPorters.Count;
+        // === СЧИТАЕМ HUMAN UNIT'ОВ ===
+        var validHumans = new List<HumanUnit>();
+        if (OrderManager.Instance != null)
+        {
+            validHumans = OrderManager.Instance.GetHumanUnitsForRequester(this);
+        }
 
         bool needsUpdate = false;
-        foreach (var req in requirements) {
-            int currentTypeCarriers = validPorters.Count(p => p.GetCarriedResourceType() == req.resourceType);
+        
+        foreach (var req in requirements)
+        {
+            int actualCarriers = 0;
+            
+            if (req.resourceType.isHumanResource)
+            {
+                // Для людей считаем HumanUnit'ов
+                actualCarriers = validHumans.Count(h => h.GetCarriedResourceType() == req.resourceType);
+            }
+            else
+            {
+                // Для обычных ресурсов считаем Porter'ов
+                actualCarriers = validPorters.Count(p => p.GetCarriedResourceType() == req.resourceType);
+            }
 
-            if (req.reservedAmount > currentTypeCarriers) {
-                req.reservedAmount = currentTypeCarriers;
+            if (req.reservedAmount > actualCarriers)
+            {
+                req.reservedAmount = actualCarriers;
                 needsUpdate = true;
             }
         }
         
         if (needsUpdate) { 
-            _carryingToUs = actualCarriers; 
+            _carryingToUs = validPorters.Count + validHumans.Count;
             UpdateIndicator(); 
             if (OrderManager.Instance != null) OrderManager.Instance.ForceUpdateOrders();
         }
     }
 
-    private void SpawnAllResults() {
+    protected void SpawnAllResults() {
         foreach (var output in outputResources) {
             if (output.prefab == null) continue;
             for (int i = 0; i < output.count; i++) {
@@ -304,7 +369,7 @@ public class ResourceRequester : MonoBehaviour {
         }
     }
 
-    private IEnumerator TossResource(Transform tr, Vector3 start, Vector3 end) {
+    protected IEnumerator TossResource(Transform tr, Vector3 start, Vector3 end) {
         float elapsed = 0;
         while (elapsed < 0.6f) {
             elapsed += Time.deltaTime;

@@ -10,6 +10,9 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public string skillID;
 
     [Header("Настройки покупки")]
+    [Tooltip("Ресурс, который тратится на покупку этого навыка (например, Короны)")]
+    [SerializeField] private ResourceType purchaseResourceType;
+    
     public int cost = 50;
     public bool isPurchased = false;
     public bool isUnlocked = false;
@@ -61,8 +64,9 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
     }
 
-    private void OnEnable() => CrownManager.OnCrownsChanged += RefreshCostDisplay;
-    private void OnDisable() => CrownManager.OnCrownsChanged -= RefreshCostDisplay;
+    // ИСПРАВЛЕНО: Подписка на новое событие GlobalResourceManager
+    private void OnEnable() => GlobalResourceManager.OnResourceChanged += RefreshCostDisplay;
+    private void OnDisable() => GlobalResourceManager.OnResourceChanged -= RefreshCostDisplay;
 
     private void Start()
     {
@@ -112,14 +116,28 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
 
         UpdateUIState();
-        if (CrownManager.Instance != null) RefreshCostDisplay(CrownManager.Instance.CurrentCrowns);
+        
+        // ИСПРАВЛЕНО: Получение баланса через новый менеджер
+        if (GlobalResourceManager.Instance != null && purchaseResourceType != null) 
+        {
+            int currentBalance = GlobalResourceManager.Instance.GetResourceAmount(purchaseResourceType);
+            RefreshCostDisplay(purchaseResourceType, currentBalance);
+        }
     }
 
     public void TryPurchase()
     {
         if (isPurchased || !isUnlocked) return;
-        if (CrownManager.Instance.TrySpendCrowns(cost)) CompletePurchase();
-        else OnPurchaseFailed?.Invoke();
+        
+        // ИСПРАВЛЕНО: Списание через новый менеджер
+        if (GlobalResourceManager.Instance != null && GlobalResourceManager.Instance.TrySpendResource(purchaseResourceType, cost)) 
+        {
+            CompletePurchase();
+        }
+        else 
+        {
+            OnPurchaseFailed?.Invoke();
+        }
     }
 
     private void CompletePurchase()
@@ -135,10 +153,19 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
 
         OnSkillPurchased?.Invoke();
-        foreach (var skill in nextSkills) if (skill != null) skill.SetUnlocked(true);
+        foreach (var skill in nextSkills) 
+        {
+            if (skill != null) skill.SetUnlocked(true);
+        }
         
         UpdateUIState();
-        if (CrownManager.Instance != null) RefreshCostDisplay(CrownManager.Instance.CurrentCrowns);
+        
+        // ИСПРАВЛЕНО: Обновление UI через новый менеджер
+        if (GlobalResourceManager.Instance != null && purchaseResourceType != null) 
+        {
+            int currentBalance = GlobalResourceManager.Instance.GetResourceAmount(purchaseResourceType);
+            RefreshCostDisplay(purchaseResourceType, currentBalance);
+        }
     }
 
     public void SetUnlocked(bool state)
@@ -146,11 +173,20 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (isPurchased) return;
         isUnlocked = state;
         UpdateUIState();
-        if (CrownManager.Instance != null) RefreshCostDisplay(CrownManager.Instance.CurrentCrowns);
+        
+        // ИСПРАВЛЕНО: Обновление UI через новый менеджер
+        if (GlobalResourceManager.Instance != null && purchaseResourceType != null) 
+        {
+            int currentBalance = GlobalResourceManager.Instance.GetResourceAmount(purchaseResourceType);
+            RefreshCostDisplay(purchaseResourceType, currentBalance);
+        }
     }
 
-    private void RefreshCostDisplay(int currentBalance)
+    // ИСПРАВЛЕНО: Сигнатура метода теперь соответствует событию OnResourceChanged
+    private void RefreshCostDisplay(ResourceType changedType, int newBalance)
     {
+        // Игнорируем изменения других ресурсов, реагируем только на наш
+        if (changedType != purchaseResourceType) return;
         if (costText == null) return;
 
         if (isPurchased)
@@ -160,12 +196,13 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
 
         costText.gameObject.SetActive(true);
-        costText.text = cost + " / " + currentBalance;
+        costText.text = cost + " / " + newBalance;
 
-        if (!isUnlocked) costText.color = lockedColor;
-        else costText.color = (currentBalance >= cost) ? canAffordColor : cantAffordColor;
+        if (!isUnlocked) 
+            costText.color = lockedColor;
+        else 
+            costText.color = (newBalance >= cost) ? canAffordColor : cantAffordColor;
         
-        // Перепроверяем спрайт при изменении баланса
         UpdateUIState();
     }
 
@@ -174,7 +211,6 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (uiButton != null) uiButton.interactable = isUnlocked && !isPurchased;
         if (targetImage == null) return;
 
-        // ЛОГИКА СМЕНЫ СПРАЙТОВ
         if (isPurchased)
         {
             targetImage.sprite = purchasedSprite;
@@ -185,8 +221,14 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
         else
         {
-            // Разблокировано, но не куплено — проверяем баланс
-            if (CrownManager.Instance != null && CrownManager.Instance.CurrentCrowns >= cost)
+            // ИСПРАВЛЕНО: Проверка баланса через новый менеджер
+            int currentBalance = 0;
+            if (GlobalResourceManager.Instance != null && purchaseResourceType != null)
+            {
+                currentBalance = GlobalResourceManager.Instance.GetResourceAmount(purchaseResourceType);
+            }
+
+            if (currentBalance >= cost)
                 targetImage.sprite = canAffordSprite;
             else
                 targetImage.sprite = cantAffordSprite;
