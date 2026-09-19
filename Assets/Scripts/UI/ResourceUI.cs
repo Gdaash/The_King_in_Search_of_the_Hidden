@@ -2,8 +2,9 @@ using UnityEngine;
 using TMPro;
 using System.Collections;
 
-public class ResourceUI : MonoBehaviour
+public partial class ResourceUI : MonoBehaviour
 {
+    [SerializeField] private bool showAllGlobalResources;
     [Header("Настройки ресурса")]
     [Tooltip("Тип ресурса, который отображает этот конкретный элемент UI")]
     [SerializeField] private ResourceType resourceType;
@@ -36,6 +37,12 @@ public class ResourceUI : MonoBehaviour
 
     private void OnEnable()
     {
+        if (showAllGlobalResources)
+        {
+            EnableGlobalResources();
+            return;
+        }
+
         if (resourceType != null)
         {
             GlobalResourceManager.OnResourceChanged += HandleValueChange;
@@ -51,6 +58,12 @@ public class ResourceUI : MonoBehaviour
 
     private void OnDisable()
     {
+        if (showAllGlobalResources)
+        {
+            DisableGlobalResources();
+            return;
+        }
+
         if (resourceType != null)
         {
             GlobalResourceManager.OnResourceChanged -= HandleValueChange;

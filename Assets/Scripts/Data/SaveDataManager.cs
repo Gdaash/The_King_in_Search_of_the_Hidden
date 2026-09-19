@@ -1,4 +1,4 @@
-﻿using DeskCat.FindIt.Scripts.Core.Main.System;
+using System.IO;
 using UnityEngine;
 
 namespace Data
@@ -13,7 +13,10 @@ namespace Data
         
         public bool SaveFile<T>(string fileName, T objectToSave)
         {
-            string data = JsonHelper.SaveToJson(objectToSave, fileName);    //Сохраняем локально в файл
+            string data = JsonUtility.ToJson(objectToSave, true);
+            string directory = Path.Combine(Application.dataPath, "Data");
+            Directory.CreateDirectory(directory);
+            File.WriteAllText(Path.Combine(directory, fileName), data);
             bool isSave = _cloud.SaveFile(fileName, data);                  //Сохраняем в облако
             return isSave;
         }
