@@ -102,7 +102,7 @@ public partial class ResourceUI
         var background = cell.GetComponent<Image>();
         background.color = new Color(0.10f, 0.13f, 0.17f, 0.9f);
         background.raycastTarget = true;
-        cell.GetComponent<ResourceTooltipTrigger>().Initialize(type.resourceName, cellRect);
+        cell.GetComponent<ResourceTooltipTrigger>().Initialize(type, cellRect);
 
         var iconObject = new GameObject("Icon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
         iconObject.transform.SetParent(cell.transform, false);

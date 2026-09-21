@@ -201,6 +201,26 @@ public class ResourceRequester : MonoBehaviour {
         }
     }
 
+    public int SendHumansHome(ResourceType humanType, Warehouse warehouse)
+    {
+        if (humanType == null || warehouse == null) return 0;
+
+        int sent = 0;
+        foreach (var requirement in requirements)
+        {
+            if (requirement.resourceType != humanType) continue;
+            while (requirement.currentAmount > 0 && warehouse.SendHumanHomeFrom(transform.position))
+            {
+                requirement.currentAmount--;
+                sent++;
+            }
+            requirement.reservedAmount = 0;
+        }
+
+        if (sent > 0) UpdateIndicator();
+        return sent;
+    }
+
     protected virtual void CheckCompletion() {
         if (requirements.All(r => r.currentAmount >= r.requiredAmount)) {
             _isProcessing = true;

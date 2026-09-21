@@ -21,6 +21,7 @@ public class TimerController : MonoBehaviour
     private float _currentTime;
     private int _remainingRepeats;
     private bool _isActive = false;
+    private bool _stoppedForEscape;
 
     // Логика: берем время из статов или из локальной переменной
     private float CurrentDuration => stats != null ? stats.TotalProductionTime : duration;
@@ -50,7 +51,7 @@ public class TimerController : MonoBehaviour
 
     void Update()
     {
-        if (!_isActive) return;
+        if (!_isActive || _stoppedForEscape) return;
 
         if (_currentTime > 0)
         {
@@ -65,6 +66,7 @@ public class TimerController : MonoBehaviour
 
     public void SetDurationAndStart(float newDuration)
     {
+        if (_stoppedForEscape) return;
         duration = newDuration;
         _currentTime = duration;
         _remainingRepeats = repeatCount;
@@ -114,6 +116,7 @@ public class TimerController : MonoBehaviour
 
     public void StartTimer() 
     {
+        if (_stoppedForEscape) return;
         _isActive = true;
         if (progressBarObject != null) 
             progressBarObject.SendMessage("Show", SendMessageOptions.DontRequireReceiver);
@@ -121,8 +124,17 @@ public class TimerController : MonoBehaviour
 
     public void ResetTimer()
     {
+        if (_stoppedForEscape) return;
         _currentTime = CurrentDuration;
         _remainingRepeats = repeatCount;
         StartTimer();
+    }
+
+    public void StopForEscape()
+    {
+        _stoppedForEscape = true;
+        _isActive = false;
+        if (progressBarObject != null)
+            progressBarObject.SendMessage("Hide", SendMessageOptions.DontRequireReceiver);
     }
 }

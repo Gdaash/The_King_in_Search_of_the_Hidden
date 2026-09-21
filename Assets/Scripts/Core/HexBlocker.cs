@@ -22,8 +22,16 @@ public class HexBlocker : MonoBehaviour
     [SerializeField] private float checkRadius = 1.1f; 
     [SerializeField] private LayerMask hexLayer;       
 
+    [Header("Стартовое состояние")]
+    [Tooltip("Этот гекс доступен с начала игры независимо от числа соседей.")]
+    [SerializeField] private bool unlockedAtStart;
+
     [Header("События")]
     public UnityEvent OnHexUnlocked; 
+
+    [Header("Тревога")]
+    [Tooltip("Сколько тревоги добавить при первом открытии этого гекса.")]
+    [SerializeField, Min(0f)] private float alarmOnUnlock = 5f;
 
     [Header("Настройки анимации исчезновения")]
     [SerializeField] private float destroyScale = 1.1f;
@@ -36,10 +44,15 @@ public class HexBlocker : MonoBehaviour
     private HexManager _hexManager;
     private bool _isRemoved = false;
     private bool _isCurrentlyUnlocked = false; 
+    private bool _alarmRaised;
+    private AlarmSystem _alarmSystem;
+
+    public bool IsBlocked => !_isRemoved && gameObject.activeInHierarchy && !_isCurrentlyUnlocked;
 
     private void Awake()
     {
         _hexManager = Object.FindFirstObjectByType<HexManager>();
+        _alarmSystem = Object.FindFirstObjectByType<AlarmSystem>();
         
         // УБРАНО: выключение skullIcon и dangerText отсюда
         // Они будут выключены в Start() после проверки опасности
@@ -51,7 +64,7 @@ public class HexBlocker : MonoBehaviour
         if (skullIcon != null) skullIcon.SetActive(false);
         if (dangerText != null) dangerText.gameObject.SetActive(false);
         
-        if (shouldAutoUnlock)
+        if (shouldAutoUnlock && !unlockedAtStart)
         {
             RemoveHex(); 
             return;      
@@ -116,6 +129,7 @@ public class HexBlocker : MonoBehaviour
     {
         if (_isRemoved) return;
         _isRemoved = true;
+        RaiseAlarmForUnlock();
 
         if (prefabToSpawn != null)
         {
@@ -180,7 +194,7 @@ public class HexBlocker : MonoBehaviour
             }
         }
 
-        bool canUnlock = (neighborCount <= 4);
+        bool canUnlock = unlockedAtStart || neighborCount <= 4;
 
         if (canUnlock && !_isCurrentlyUnlocked)
         {
@@ -239,6 +253,17 @@ public class HexBlocker : MonoBehaviour
             HexBlocker hex = col.GetComponent<HexBlocker>();
             if (hex != null) hex.Invoke(nameof(CheckStatus), 0.05f);
         }
+    }
+
+    private void RaiseAlarmForUnlock()
+    {
+        if (_alarmRaised || alarmOnUnlock <= 0f) return;
+
+        _alarmSystem ??= Object.FindFirstObjectByType<AlarmSystem>();
+        if (_alarmSystem == null) return;
+
+        _alarmRaised = true;
+        _alarmSystem.AddAlarmFromWorldPosition(alarmOnUnlock, transform.position);
     }
 
     private void OnDrawGizmosSelected()

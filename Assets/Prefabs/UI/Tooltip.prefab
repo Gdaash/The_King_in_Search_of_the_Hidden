@@ -28,15 +28,15 @@ RectTransform:
   m_GameObject: {fileID: 125384109803872398}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.2, y: 0.2, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3923040392942392734}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.617, y: 2.004}
-  m_SizeDelta: {x: 1900, y: 800}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 176, y: 28}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2349128451585425836
 CanvasRenderer:
@@ -60,7 +60,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0.21176472, g: 0.21960786, b: 0.21568629, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -68,16 +68,16 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 98aa4fd6233ab5f4eaf3ed5f413d101c, type: 3}
-    m_FontSize: 100
+    m_FontSize: 20
     m_FontStyle: 0
-    m_BestFit: 1
+    m_BestFit: 0
     m_MinSize: 0
     m_MaxSize: 100
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: 70\80
 --- !u!114 &2778834773104975071
@@ -147,7 +147,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 107.7}
-  m_SizeDelta: {x: 208, y: 104}
+  m_SizeDelta: {x: 208, y: 52}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6568955172946194346
 CanvasRenderer:
@@ -179,7 +179,7 @@ MonoBehaviour:
       m_Calls: []
   m_Sprite: {fileID: 21300000, guid: 420c4223e0a121f43a73f059a892d31f, type: 3}
   m_Type: 0
-  m_PreserveAspect: 1
+  m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -201,6 +201,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tooltipText: {fileID: 8986710763017602997}
   fadeSpeed: 5
+  distanceToTarget: 20
+  textPadding: {x: 16, y: 12}
+  maxWidth: 420
+  screenMargin: 8
 --- !u!225 &2280835568425030510
 CanvasGroup:
   m_ObjectHideFlags: 0

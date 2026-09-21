@@ -10,11 +10,15 @@ public class TooltipManager : MonoBehaviour
     [SerializeField] private Text tooltipText; // Ссылка на текст внутри префаба
     [SerializeField] private float fadeSpeed = 10f; // Скорость появления
     [SerializeField] private float distanceToTarget = 20f; // Отступ от элемента
+    [SerializeField] private Vector2 textPadding = new Vector2(16f, 12f);
+    [SerializeField] private float maxWidth = 420f;
+    [SerializeField] private float screenMargin = 8f;
 
     private CanvasGroup _canvasGroup;
     private RectTransform _rectTransform;
     private Coroutine _fadeRoutine;
     private RectTransform _currentTarget;
+    private RectTransform _textRect;
 
     private void Awake()
     {
@@ -24,6 +28,18 @@ public class TooltipManager : MonoBehaviour
 
         _canvasGroup = GetComponent<CanvasGroup>();
         _rectTransform = GetComponent<RectTransform>();
+        if (tooltipText != null)
+        {
+            _textRect = tooltipText.rectTransform;
+            // The original prefab uses a large font on a scaled-down text object.
+            // Normalize it so text measurements match the visible size.
+            tooltipText.fontSize = Mathf.Max(1, Mathf.RoundToInt(tooltipText.fontSize * _textRect.localScale.x));
+            _textRect.localScale = Vector3.one;
+            tooltipText.resizeTextForBestFit = false;
+            tooltipText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            tooltipText.verticalOverflow = VerticalWrapMode.Overflow;
+            tooltipText.raycastTarget = false;
+        }
 
         // Начальное состояние: невидим и не мешает кликам
         _canvasGroup.alpha = 0;
@@ -42,13 +58,35 @@ public class TooltipManager : MonoBehaviour
     public void Show(string description, RectTransform target)
     {
         _currentTarget = target;
-        if (tooltipText != null) tooltipText.text = description;
-
-        // Обновляем верстку, чтобы RectTransform тултипа пересчитал размер под новый текст
-        LayoutRebuilder.ForceRebuildLayoutImmediate(_rectTransform);
+        if (tooltipText != null)
+        {
+            tooltipText.text = description;
+            ResizeToText();
+        }
 
         UpdatePosition();
         Fade(1f);
+    }
+
+    private void ResizeToText()
+    {
+        var canvas = GetComponentInParent<Canvas>();
+        float scale = canvas != null ? canvas.rootCanvas.scaleFactor : 1f;
+        scale = Mathf.Max(scale, 0.01f);
+        float availableWidth = Screen.width / scale - 2f * screenMargin;
+        float contentLimit = Mathf.Max(1f, Mathf.Min(maxWidth - 2f * textPadding.x,
+            availableWidth - 2f * textPadding.x));
+
+        tooltipText.horizontalOverflow = HorizontalWrapMode.Overflow;
+        float contentWidth = Mathf.Min(tooltipText.preferredWidth, contentLimit);
+        tooltipText.horizontalOverflow = HorizontalWrapMode.Wrap;
+        _textRect.anchorMin = _textRect.anchorMax = new Vector2(0.5f, 0.5f);
+        _textRect.anchoredPosition = Vector2.zero;
+        _textRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, contentWidth);
+        float contentHeight = tooltipText.preferredHeight;
+        _textRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, contentHeight);
+        _rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, contentWidth + 2f * textPadding.x);
+        _rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, contentHeight + 2f * textPadding.y);
     }
 
     public void Hide()
@@ -119,6 +157,14 @@ public class TooltipManager : MonoBehaviour
 
         // Применяем настройки
         _rectTransform.pivot = new Vector2(pivotX, pivotY);
+        var canvas = GetComponentInParent<Canvas>();
+        float scale = canvas != null ? canvas.rootCanvas.scaleFactor : 1f;
+        float width = _rectTransform.rect.width * scale;
+        float height = _rectTransform.rect.height * scale;
+        spawnPosition.x = Mathf.Clamp(spawnPosition.x,
+            screenMargin + width * pivotX, screenW - screenMargin - width * (1f - pivotX));
+        spawnPosition.y = Mathf.Clamp(spawnPosition.y,
+            screenMargin + height * pivotY, screenH - screenMargin - height * (1f - pivotY));
         _rectTransform.position = spawnPosition;
     }
 

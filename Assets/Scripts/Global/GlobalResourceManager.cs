@@ -1,6 +1,8 @@
+using PlayerPrefs = GameFoundation.Saves.SaveSlotPrefs;
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using GameFoundation.MetaProgression;
 
 [System.Serializable]
 public class ResourceInitialValue
@@ -30,17 +32,50 @@ public class GlobalResourceManager : MonoBehaviour
     [SerializeField] private List<ResourceInitialValue> initialValues = new List<ResourceInitialValue>();
 
     [Header("Отображение в инспекторе")]
-    [SerializeField] private List<ResourceDisplay> currentValuesDisplay = new List<ResourceDisplay>();
+    [SerializeField, HideInInspector] private List<ResourceDisplay> currentValuesDisplay = new List<ResourceDisplay>();
 
     private Dictionary<ResourceType, int> _resourceAmounts = new Dictionary<ResourceType, int>();
 
     public static event Action<ResourceType, int> OnResourceChanged;
 
+    public IReadOnlyList<ResourceType> AvailableResources => availableResources;
+
     public int GetResourceAmount(ResourceType type)
     {
-        if (type != null && _resourceAmounts.TryGetValue(type, out int amount))
+        if (type == null) return 0;
+        if (!Application.isPlaying || Instance != this)
+            return GetSavedAmount(type);
+        if (_resourceAmounts.TryGetValue(type, out int amount))
             return amount;
         return 0;
+    }
+
+    private int GetInitialAmount(ResourceType type)
+    {
+        if (initialValues != null)
+            foreach (var initial in initialValues)
+                if (initial.resourceType == type)
+                    return initial.startAmount;
+        return 0;
+    }
+
+    private int GetSavedAmount(ResourceType type)
+    {
+        return PlayerPrefs.GetInt(saveKeyPrefix + type.name, GetInitialAmount(type));
+    }
+
+    public void SetResourceAmount(ResourceType type, int amount)
+    {
+        if (type == null) return;
+        amount = Mathf.Max(0, amount);
+        PlayerPrefs.SetInt(saveKeyPrefix + type.name, amount);
+        PlayerPrefs.Save();
+        if (Application.isPlaying && Instance == this)
+        {
+            _resourceAmounts[type] = amount;
+            OnResourceChanged?.Invoke(type, amount);
+        }
+        RefreshDisplay();
     }
 
     public Dictionary<ResourceType, int> GetAllResourcesData()
@@ -54,6 +89,8 @@ public class GlobalResourceManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            if (GetComponent<GameFoundation.Saves.SaveSlotClock>() == null)
+                gameObject.AddComponent<GameFoundation.Saves.SaveSlotClock>();
             InitializeResources();
             LoadResources();
         }
@@ -83,6 +120,7 @@ public class GlobalResourceManager : MonoBehaviour
         if (type == null) return;
         if (!_resourceAmounts.ContainsKey(type)) _resourceAmounts[type] = 0;
 
+        DayResourceLedger.RecordBaseChange(type, amount);
         _resourceAmounts[type] += amount;
         SaveResource(type);
         OnResourceChanged?.Invoke(type, _resourceAmounts[type]);
@@ -96,6 +134,7 @@ public class GlobalResourceManager : MonoBehaviour
 
         if (_resourceAmounts[type] >= cost)
         {
+            DayResourceLedger.RecordBaseChange(type, -cost);
             _resourceAmounts[type] -= cost;
             SaveResource(type);
             OnResourceChanged?.Invoke(type, _resourceAmounts[type]);
@@ -123,25 +162,9 @@ public class GlobalResourceManager : MonoBehaviour
         {
             string key = saveKeyPrefix + res.name;
             
-            if (PlayerPrefs.HasKey(key))
-            {
-                int loadedAmount = PlayerPrefs.GetInt(key, 0);
-                _resourceAmounts[res] = loadedAmount;
-            }
-            else
-            {
-                int startAmount = 0;
-                foreach (var initial in initialValues)
-                {
-                    if (initial.resourceType == res)
-                    {
-                        startAmount = initial.startAmount;
-                        break;
-                    }
-                }
-                _resourceAmounts[res] = startAmount;
-                PlayerPrefs.SetInt(key, startAmount);
-            }
+            _resourceAmounts[res] = GetSavedAmount(res);
+            if (!PlayerPrefs.HasKey(key))
+                PlayerPrefs.SetInt(key, _resourceAmounts[res]);
             
             OnResourceChanged?.Invoke(res, _resourceAmounts[res]);
         }
@@ -150,68 +173,64 @@ public class GlobalResourceManager : MonoBehaviour
         RefreshDisplay();
     }
 
-    public void RefreshDisplay()
+    public bool RefreshDisplay()
     {
-        currentValuesDisplay.Clear();
-        var keys = new List<ResourceType>(_resourceAmounts.Keys);
-        foreach (var res in keys)
+        if (currentValuesDisplay == null) currentValuesDisplay = new List<ResourceDisplay>();
+        var values = new List<ResourceDisplay>();
+        if (availableResources == null) return false;
+        foreach (var res in availableResources)
         {
-            currentValuesDisplay.Add(new ResourceDisplay
+            if (res == null) continue;
+            values.Add(new ResourceDisplay
             {
                 resourceType = res,
-                currentAmount = _resourceAmounts[res]
+                currentAmount = GetResourceAmount(res)
             });
         }
-    }
-
-    [ContextMenu("Refresh Inspector Display")]
-    public void RefreshDisplayContextMenu()
-    {
-        RefreshDisplay();
+        bool changed = currentValuesDisplay.Count != values.Count;
+        for (int i = 0; !changed && i < values.Count; i++)
+            changed = currentValuesDisplay[i].resourceType != values[i].resourceType ||
+                currentValuesDisplay[i].currentAmount != values[i].currentAmount;
+        if (!changed) return false;
+        currentValuesDisplay.Clear();
+        currentValuesDisplay.AddRange(values);
+        return true;
     }
 
     [ContextMenu("Debug: Add 100 of ALL resources")]
     public void DebugAddAll()
     {
-        var keys = new List<ResourceType>(_resourceAmounts.Keys);
-        foreach (var res in keys)
-        {
-            AddResource(res, 100);
-        }
+        if (availableResources == null) return;
+        foreach (var res in availableResources)
+            if (res != null)
+                SetResourceAmount(res, GetResourceAmount(res) + 100);
     }
 
     [ContextMenu("Debug: Reset ALL resources to initial values")]
     public void DebugResetToInitial()
     {
-        var keys = new List<ResourceType>(_resourceAmounts.Keys);
-        foreach (var res in keys)
-        {
-            int startAmount = 0;
-            foreach (var initial in initialValues)
-            {
-                if (initial.resourceType == res)
-                {
-                    startAmount = initial.startAmount;
-                    break;
-                }
-            }
-            
-            _resourceAmounts[res] = startAmount;
-            SaveResource(res);
-            OnResourceChanged?.Invoke(res, startAmount);
-        }
-        RefreshDisplay();
+        if (availableResources == null) return;
+        foreach (var res in availableResources)
+            if (res != null)
+                SetResourceAmount(res, GetInitialAmount(res));
     }
 
     [ContextMenu("Debug: Clear ALL saves")]
     public void DebugClearAllSaves()
     {
-        var keys = new List<ResourceType>(_resourceAmounts.Keys);
-        foreach (var res in keys)
+        if (availableResources == null) return;
+        foreach (var res in availableResources)
         {
+            if (res == null) continue;
             string key = saveKeyPrefix + res.name;
             PlayerPrefs.DeleteKey(key);
+            if (Application.isPlaying && Instance == this)
+            {
+                _resourceAmounts[res] = GetInitialAmount(res);
+                OnResourceChanged?.Invoke(res, _resourceAmounts[res]);
+            }
         }
         PlayerPrefs.Save();
+        RefreshDisplay();
     }
 }

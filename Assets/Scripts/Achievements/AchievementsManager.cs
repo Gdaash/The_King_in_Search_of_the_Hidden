@@ -14,6 +14,7 @@ namespace Achievements
         private IInventoryEvent _achievementInventoryEvent;
         private IInventoryItems _achievementInventoryItems;
         private IAchievementsCloud _achievementsCloud;
+        private bool _subscribed;
 
         [SerializeField] private List<Achievement> _achievements;
 
@@ -26,16 +27,26 @@ namespace Achievements
             _achievementInventoryEvent = achievementInventoryEvent;
             _achievementInventoryItems = achievementInventoryItems;
             _achievementsCloud = achievementsCloud;
+            Subscribe();
         }
 
         private void OnEnable()
         {
-            _achievementInventoryEvent.OnChanged += OnChanged;
+            Subscribe();
         }
 
         private void OnDisable()
         {
-            _achievementInventoryEvent.OnChanged -= OnChanged;
+            if (_subscribed && _achievementInventoryEvent != null)
+                _achievementInventoryEvent.OnChanged -= OnChanged;
+            _subscribed = false;
+        }
+
+        private void Subscribe()
+        {
+            if (_subscribed || !isActiveAndEnabled || _achievementInventoryEvent == null) return;
+            _achievementInventoryEvent.OnChanged += OnChanged;
+            _subscribed = true;
         }
 
         private void OnChanged()

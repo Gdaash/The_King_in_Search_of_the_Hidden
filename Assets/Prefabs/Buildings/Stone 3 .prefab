@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7702145275380646270}
   - component: {fileID: 5243489039614361324}
+  - component: {fileID: 2265427285556440313}
   m_Layer: 0
   m_Name: Timer
   m_TagString: Untagged
@@ -77,6 +78,31 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 2265427285556440313}
+        m_TargetAssemblyTypeName: AlarmEmitter, Assembly-CSharp
+        m_MethodName: AddAlarm
+        m_Mode: 4
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 1
+          m_FloatArgument: 5
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &2265427285556440313
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 429742736810911129}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d4d5f13a3c64dfc8b4f79c4f2158e19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AlarmEmitter
+  alarmAmount: 5
 --- !u!1 &1285815968822731066
 GameObject:
   m_ObjectHideFlags: 0

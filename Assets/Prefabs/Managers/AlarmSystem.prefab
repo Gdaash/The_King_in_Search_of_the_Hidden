@@ -1,0 +1,76 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4100001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4200001}
+  - component: {fileID: 11400001}
+  m_Layer: 0
+  m_Name: AlarmSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4200001
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4100001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &11400001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4100001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d4f3d2cdaee42b8bd8a248fb089d071, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maximumAlarm: 100
+  currentAlarm: 0
+  fillSpeed: 3
+  fillImage: {fileID: 0}
+  uiSprite: {fileID: 7482667652216324306, guid: 71493d29645d01d4e92475135c1bf043, type: 3}
+  createRuntimeUiWhenMissing: 1
+  uiSize: {x: 360, y: 24}
+  uiTopOffset: {x: 0, y: -94}
+  thresholds:
+  - alarmValue: 25
+    minSpawnInterval: 8
+    maxSpawnInterval: 12
+    minEnemiesPerWave: 1
+    maxEnemiesPerWave: 2
+    enemies:
+    - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+      weight: 5
+    - prefab: {fileID: 3082682973624649699, guid: e816844cf4bd9534ca329252266e5d08, type: 3}
+      weight: 3
+    - prefab: {fileID: 3082682973624649699, guid: 18db26efc223b1e43bdb7660677b3a8e, type: 3}
+      weight: 2
+  nearestBlockedHexesToUse: 8
+  mapCenter: {fileID: 0}
+  spawnPositionJitter: 0.15
+  OnAlarmChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnThresholdReached:
+    m_PersistentCalls:
+      m_Calls: []

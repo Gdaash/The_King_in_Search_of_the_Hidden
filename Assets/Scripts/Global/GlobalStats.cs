@@ -1,7 +1,9 @@
+using PlayerPrefs = GameFoundation.Saves.SaveSlotPrefs;
 using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GameFoundation.MetaProgression;
 
 [CreateAssetMenu(fileName = "NewGlobalStats", menuName = "Game/Global Stats")]
 public class GlobalStats : ScriptableObject
@@ -56,6 +58,7 @@ public class GlobalStats : ScriptableObject
     [Header("Гексы (Контент и Состояния)")]
     public List<string> unlockedHexContentIDs = new List<string>();
     public List<string> upgradedVisualStates = new List<string>(); // НОВОЕ: список ID улучшенных визуалов
+    public List<string> unlockedFlashlightIDs = new List<string>();
 
     public event Action OnStatsUpdated;
 
@@ -92,6 +95,18 @@ public class GlobalStats : ScriptableObject
         }
     }
 
+    public bool HasUnlockedFlashlight(string id) => unlockedFlashlightIDs != null && unlockedFlashlightIDs.Contains(id);
+
+    public void UnlockFlashlight(string id)
+    {
+        if (unlockedFlashlightIDs == null) unlockedFlashlightIDs = new List<string>();
+        if (string.IsNullOrEmpty(id) || unlockedFlashlightIDs.Contains(id)) return;
+        unlockedFlashlightIDs.Add(id);
+        PlayerPrefs.SetString(unitTypeKey + "_UnlockedFlashlights", string.Join(",", unlockedFlashlightIDs));
+        PlayerPrefs.Save();
+        OnStatsUpdated?.Invoke();
+    }
+
     public void LoadStats()
     {
         if (string.IsNullOrEmpty(unitTypeKey)) return;
@@ -110,6 +125,41 @@ public class GlobalStats : ScriptableObject
 
         string savedHex = PlayerPrefs.GetString(unitTypeKey + "_UnlockedHex", "");
         unlockedHexContentIDs = !string.IsNullOrEmpty(savedHex) ? savedHex.Split(',').ToList() : new List<string>();
+
+        string flashlightKey = unitTypeKey + "_UnlockedFlashlights";
+        string savedFlashlights = PlayerPrefs.GetString(flashlightKey, "");
+        unlockedFlashlightIDs = !string.IsNullOrEmpty(savedFlashlights)
+            ? savedFlashlights.Split(',').ToList() : new List<string>();
+        if (unitTypeKey == "globalHexStats" && !PlayerPrefs.HasKey(unitTypeKey + "_FlashlightsMigrated"))
+        {
+            int oldLevel = Mathf.Clamp(MetaProgressionService.GetSavedLevel(WorldFlashlightAvailability.LegacyUpgradeId), 0, 5);
+            for (int i = 2; i <= oldLevel + 1; i++)
+            {
+                string id = "Flashlight" + i;
+                if (!unlockedFlashlightIDs.Contains(id)) unlockedFlashlightIDs.Add(id);
+                PlayerPrefs.SetInt(id + "_Purchased", 1);
+            }
+            if (oldLevel > 0)
+                PlayerPrefs.SetString(flashlightKey, string.Join(",", unlockedFlashlightIDs));
+            PlayerPrefs.SetInt(unitTypeKey + "_FlashlightsMigrated", 1);
+            PlayerPrefs.Save();
+        }
+        if (unitTypeKey == "globalHexStats")
+        {
+            bool restoredPurchase = false;
+            for (int i = 2; i <= WorldFlashlightAvailability.MaximumCount; i++)
+            {
+                string id = "Flashlight" + i;
+                if (PlayerPrefs.GetInt(id + "_Purchased", 0) != 1 || unlockedFlashlightIDs.Contains(id)) continue;
+                unlockedFlashlightIDs.Add(id);
+                restoredPurchase = true;
+            }
+            if (restoredPurchase)
+            {
+                PlayerPrefs.SetString(flashlightKey, string.Join(",", unlockedFlashlightIDs));
+                PlayerPrefs.Save();
+            }
+        }
 
         // ЗАГРУЗКА СОСТОЯНИЙ ВИЗУАЛА
         string savedVisuals = PlayerPrefs.GetString(unitTypeKey + "_VisualStates", "");
@@ -153,12 +203,15 @@ public class GlobalStats : ScriptableObject
     [ContextMenu("Reset Progress")]
     public void ResetProgress() {
         bonusHealth = 0; bonusRegenAmount = 0; bonusRegenDelayReduction = 0; bonusSpeed = 0; bonusAttackSpeed = 0; bonusAttackRange = 0; bonusProductionSpeed = 0; bonusDifficultyReduction = 0;
-        unlockedHexContentIDs.Clear(); upgradedVisualStates.Clear();
+        unlockedHexContentIDs.Clear(); upgradedVisualStates.Clear(); unlockedFlashlightIDs?.Clear();
         if (!string.IsNullOrEmpty(unitTypeKey)) {
             PlayerPrefs.DeleteKey(unitTypeKey + "_BonusHP"); PlayerPrefs.DeleteKey(unitTypeKey + "_BonusRegenAmt"); PlayerPrefs.DeleteKey(unitTypeKey + "_BonusRegenDelay");
             PlayerPrefs.DeleteKey(unitTypeKey + "_BonusSpeed"); PlayerPrefs.DeleteKey(unitTypeKey + "_BonusAtkSpeed"); PlayerPrefs.DeleteKey(unitTypeKey + "_BonusRange");
             PlayerPrefs.DeleteKey(unitTypeKey + "_BonusProdSpeed"); PlayerPrefs.DeleteKey(unitTypeKey + "_DifficultyBonus"); PlayerPrefs.DeleteKey(unitTypeKey + "_UnlockedHex");
             PlayerPrefs.DeleteKey(unitTypeKey + "_VisualStates");
+            PlayerPrefs.DeleteKey(unitTypeKey + "_UnlockedFlashlights");
+            if (unitTypeKey == "globalHexStats")
+                for (int i = 2; i <= 6; i++) PlayerPrefs.DeleteKey("Flashlight" + i + "_Purchased");
             foreach (var d in damageSettings) PlayerPrefs.DeleteKey(unitTypeKey + "_BonusDmg_" + d.type.ToString());
             foreach (var r in resistances) PlayerPrefs.DeleteKey(unitTypeKey + "_BonusRes_" + r.type.ToString());
         }

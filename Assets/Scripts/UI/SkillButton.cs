@@ -1,3 +1,4 @@
+using PlayerPrefs = GameFoundation.Saves.SaveSlotPrefs;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
@@ -65,7 +66,11 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     }
 
     // ИСПРАВЛЕНО: Подписка на новое событие GlobalResourceManager
-    private void OnEnable() => GlobalResourceManager.OnResourceChanged += RefreshCostDisplay;
+    private void OnEnable()
+    {
+        GlobalResourceManager.OnResourceChanged += RefreshCostDisplay;
+        RefreshStatus();
+    }
     private void OnDisable() => GlobalResourceManager.OnResourceChanged -= RefreshCostDisplay;
 
     private void Start()
@@ -81,7 +86,12 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (isUnlocked && !isPurchased) _targetScale = _baseScale * hoverScale;
-        if (TooltipManager.Instance != null && isUnlocked) TooltipManager.Instance.Show(description, _rectTransform);
+        if (TooltipManager.Instance != null && isUnlocked)
+        {
+            var key = "skill." + skillID + ".description";
+            var translated = GameFoundation.Localization.LocalizationService.Instance?.Get(key);
+            TooltipManager.Instance.Show(string.IsNullOrEmpty(translated) || translated == key ? description : translated, _rectTransform);
+        }
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -102,6 +112,8 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void RefreshStatus()
     {
+        if (!string.IsNullOrEmpty(skillID) && PlayerPrefs.GetInt(skillID + "_Purchased", 0) == 1)
+            isPurchased = true;
         if (isPurchased)
         {
             isUnlocked = true;

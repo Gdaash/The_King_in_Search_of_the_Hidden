@@ -12,6 +12,7 @@ public class Warehouse : MonoBehaviour
     public float checkRadius = 2f;
     [SerializeField] private GameObject humanPrefab;
     [SerializeField] private ResourceType humanResourceType;
+    [SerializeField] private ResourceType cartResourceType;
     
     [Header("Префаб носильщика")]
     [Tooltip("Префаб носильщика (Porter), который будет спауниться за 1 человека")]
@@ -59,10 +60,21 @@ public class Warehouse : MonoBehaviour
         GlobalResourceManager.Instance.AddResource(humanResourceType, 1);
     }
 
+    public bool SendHumanHomeFrom(Vector3 position)
+    {
+        if (humanPrefab == null) return false;
+        GameObject humanObject = Instantiate(humanPrefab, position, Quaternion.identity);
+        if (humanObject.TryGetComponent(out HumanUnit human)) return true;
+        Destroy(humanObject);
+        return false;
+    }
+
     public bool CanSpawnPorter()
     {
-        if (GlobalResourceManager.Instance == null || humanResourceType == null || porterPrefab == null) return false;
-        return GlobalResourceManager.Instance.GetResourceAmount(humanResourceType) >= 1;
+        if (GlobalResourceManager.Instance == null || humanResourceType == null || cartResourceType == null || porterPrefab == null) return false;
+
+        return GlobalResourceManager.Instance.GetResourceAmount(humanResourceType) >= 1
+            && GlobalResourceManager.Instance.GetResourceAmount(cartResourceType) >= 1;
     }
 
     public Porter SpawnPorter()
@@ -70,6 +82,11 @@ public class Warehouse : MonoBehaviour
         if (!CanSpawnPorter()) return null;
         
         if (!GlobalResourceManager.Instance.TrySpendResource(humanResourceType, 1)) return null;
+        if (!GlobalResourceManager.Instance.TrySpendResource(cartResourceType, 1))
+        {
+            GlobalResourceManager.Instance.AddResource(humanResourceType, 1);
+            return null;
+        }
 
         Vector3 spawnPos = GetSpawnPoint() + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0);
         GameObject porterObj = Instantiate(porterPrefab, spawnPos, Quaternion.identity);
@@ -77,16 +94,16 @@ public class Warehouse : MonoBehaviour
     }
 
     /// <summary>
-    /// НОВОЕ: Деспаун носильщика — он превращается обратно в 1 человека
+    /// Носильщик возвращает человека и телегу в глобальное хранилище.
     /// </summary>
     public void DespawnPorter(Porter porter)
     {
-        if (porter == null || humanResourceType == null || GlobalResourceManager.Instance == null) return;
+        if (porter == null || humanResourceType == null || cartResourceType == null || GlobalResourceManager.Instance == null) return;
         
-        // Возвращаем 1 человека в глобальное хранилище
         GlobalResourceManager.Instance.AddResource(humanResourceType, 1);
+        GlobalResourceManager.Instance.AddResource(cartResourceType, 1);
         
-        Debug.Log($"[Warehouse] Носильщик деспаунится и превращается в 1 человека. Всего людей: {GlobalResourceManager.Instance.GetResourceAmount(humanResourceType)}");
+        Debug.Log($"[Warehouse] Носильщик вернул человека и телегу.");
         
         // Уничтожаем носильщика
         Destroy(porter.gameObject);
