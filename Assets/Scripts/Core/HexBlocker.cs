@@ -116,7 +116,9 @@ public class HexBlocker : MonoBehaviour
         TimerController timer = GetComponentInChildren<TimerController>(true);
         if (timer != null)
         {
-            float calculatedTime = assignedDangerLevel * GlobalSettings.DifficultyTimerMultiplier;
+            GlobalStats stats = _hexManager != null ? _hexManager.Stats : null;
+            float calculatedTime = assignedDangerLevel * (stats != null ? stats.TotalDifficultyMultiplier : GlobalSettings.DifficultyTimerMultiplier);
+            if (stats != null) calculatedTime *= stats.HexOpeningTimeMultiplier;
             timer.SetDurationAndStart(calculatedTime);
         }
         else
@@ -263,7 +265,9 @@ public class HexBlocker : MonoBehaviour
         if (_alarmSystem == null) return;
 
         _alarmRaised = true;
-        _alarmSystem.AddAlarmFromWorldPosition(alarmOnUnlock, transform.position);
+        GlobalStats stats = _hexManager != null ? _hexManager.Stats : null;
+        float amount = alarmOnUnlock - (stats != null ? stats.HexAlarmReduction : 0f);
+        if (amount > 0f) _alarmSystem.AddAlarmFromWorldPosition(amount, transform.position);
     }
 
     private void OnDrawGizmosSelected()

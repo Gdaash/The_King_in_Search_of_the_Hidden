@@ -25,6 +25,7 @@ public class HexManager : MonoBehaviour
 
     [Header("Глобальные настройки")]
     [SerializeField] private GlobalStats globalHexStats;
+    public GlobalStats Stats => globalHexStats;
 
     [Header("Настройки групп префабов")]
     [SerializeField] private List<HexGroupSettings> groups;

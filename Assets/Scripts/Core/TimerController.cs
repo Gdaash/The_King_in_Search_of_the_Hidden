@@ -19,6 +19,7 @@ public class TimerController : MonoBehaviour
     public UnityEvent OnTimerEnd; 
 
     private float _currentTime;
+    private float _cycleDuration;
     private int _remainingRepeats;
     private bool _isActive = false;
     private bool _stoppedForEscape;
@@ -29,24 +30,10 @@ public class TimerController : MonoBehaviour
     void Start()
     {
         _currentTime = CurrentDuration;
+        _cycleDuration = _currentTime;
         _remainingRepeats = repeatCount;
         
         if (runOnStart) StartTimer();
-    }
-
-    private void OnEnable()
-    {
-        if (stats != null) stats.OnStatsUpdated += SyncWithGlobalStats;
-    }
-
-    private void OnDisable()
-    {
-        if (stats != null) stats.OnStatsUpdated -= SyncWithGlobalStats;
-    }
-
-    private void SyncWithGlobalStats()
-    {
-        // При обновлении глобальных данных таймер подхватит новое время в следующем цикле
     }
 
     void Update()
@@ -69,6 +56,7 @@ public class TimerController : MonoBehaviour
         if (_stoppedForEscape) return;
         duration = newDuration;
         _currentTime = duration;
+        _cycleDuration = duration;
         _remainingRepeats = repeatCount;
         _isActive = true;
         
@@ -80,7 +68,7 @@ public class TimerController : MonoBehaviour
     {
         if (progressBarObject == null) return;
         
-        float progress = 1f - (Mathf.Clamp01(_currentTime / CurrentDuration));
+        float progress = 1f - Mathf.Clamp01(_currentTime / Mathf.Max(0.001f, _cycleDuration));
         progressBarObject.SendMessage("SetProgress", progress, SendMessageOptions.DontRequireReceiver);
         
         if (progress > 0.001f && progress < 0.999f)
@@ -94,6 +82,7 @@ public class TimerController : MonoBehaviour
         if (loopInfinitely)
         {
             _currentTime = CurrentDuration;
+            _cycleDuration = _currentTime;
         }
         else
         {
@@ -101,6 +90,7 @@ public class TimerController : MonoBehaviour
             if (_remainingRepeats > 0)
             {
                 _currentTime = CurrentDuration;
+                _cycleDuration = _currentTime;
             }
             else
             {
@@ -126,6 +116,7 @@ public class TimerController : MonoBehaviour
     {
         if (_stoppedForEscape) return;
         _currentTime = CurrentDuration;
+        _cycleDuration = _currentTime;
         _remainingRepeats = repeatCount;
         StartTimer();
     }

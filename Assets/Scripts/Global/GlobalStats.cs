@@ -18,7 +18,8 @@ public class GlobalStats : ScriptableObject
     [Header("Здоровье и Регенерация")]
     public float baseMaxHealth = 100f;
     public float bonusHealth = 0f;
-    public float TotalMaxHealth => baseMaxHealth + bonusHealth;
+    public float TotalMaxHealth => (baseMaxHealth + bonusHealth) *
+        (applyStrongWalls ? ScientificMultiplier(ScientificUpgrades.StrongWalls) : 1f);
     public float baseRegenAmount = 5f;
     public float bonusRegenAmount = 0f;
     public float TotalRegenAmount => baseRegenAmount + bonusRegenAmount;
@@ -45,12 +46,74 @@ public class GlobalStats : ScriptableObject
     [Header("Производство (Таймеры)")]
     public float baseProductionTime = 5f;
     public float bonusProductionSpeed = 0f; 
-    public float TotalProductionTime => Mathf.Max(0.2f, baseProductionTime - bonusProductionSpeed);
+    public float TotalProductionTime => Mathf.Max(0.2f, (baseProductionTime - bonusProductionSpeed) *
+        (applySharpAxes ? ScientificMultiplier(ScientificUpgrades.SharpAxes) : 1f));
 
     [Header("Мировые настройки (Difficulty)")]
     public float baseDifficultyMultiplier = 120f;
     public float bonusDifficultyReduction = 0f;
     public float TotalDifficultyMultiplier => baseDifficultyMultiplier + bonusDifficultyReduction;
+
+    [Header("Научная лаборатория")]
+    [Tooltip("Таблица с определениями и значениями эффектов улучшений. Назначается на глобальные статы гексов.")]
+    [SerializeField] private ScientificUpgradeTable scientificUpgradeTable;
+    [Tooltip("Источник купленных научных улучшений для статов конкретного объекта.")]
+    [SerializeField] private GlobalStats scientificProgressStats;
+    [Tooltip("Стрельба разрешена после покупки «Магических стрел».")]
+    [SerializeField] private bool requiresPortalArrows;
+    [Tooltip("Умножать здоровье на эффект «Крепких стен».")]
+    [SerializeField] private bool applyStrongWalls;
+    [Tooltip("Умножать время производства на эффект «Заточить топоры».")]
+    [SerializeField] private bool applySharpAxes;
+    [Tooltip("Умножать время открытия гекса на эффект ускорения.")]
+    [SerializeField] private bool applyFastHex;
+    [Tooltip("Уменьшать тревогу при открытии гекса на эффект разведки.")]
+    [SerializeField] private bool applyQuietScouting;
+
+    private GlobalStats ScientificSource => scientificProgressStats != null ? scientificProgressStats : this;
+    public ScientificUpgradeTable.Entry FindUpgradeDefinition(string id) =>
+        ScientificSource.scientificUpgradeTable != null ? ScientificSource.scientificUpgradeTable.Find(id) : null;
+    public bool CanAttack => !requiresPortalArrows || HasUpgrade(ScientificUpgrades.PortalArrows);
+    public float HexOpeningTimeMultiplier => applyFastHex ? ScientificMultiplier(ScientificUpgrades.FastHex) : 1f;
+    public float HexAlarmReduction => applyQuietScouting ? ScientificReduction(ScientificUpgrades.QuietScouting) : 0f;
+    public int AvailableFlashlightCount
+    {
+        get
+        {
+            int count = 1;
+            foreach (string id in ScientificUpgrades.Flashlights)
+            {
+                if (!HasUpgrade(id)) break;
+                count++;
+            }
+            return count;
+        }
+    }
+
+    public bool HasUpgrade(string id)
+    {
+        if (string.IsNullOrEmpty(id)) return false;
+        if (ScientificSource != this) return ScientificSource.HasUpgrade(id);
+        if (PlayerPrefs.GetInt(id + "_Purchased", 0) == 1) return true;
+        for (int i = 0; i < ScientificUpgrades.Flashlights.Length; i++)
+            if (id == ScientificUpgrades.Flashlights[i])
+                return PlayerPrefs.GetInt("Flashlight" + (i + 2) + "_Purchased", 0) == 1;
+        return false;
+    }
+
+    public void UnlockUpgrade(string id)
+    {
+        if (ScientificSource != this) { ScientificSource.UnlockUpgrade(id); return; }
+        if (string.IsNullOrEmpty(id) || HasUpgrade(id)) return;
+        PlayerPrefs.SetInt(id + "_Purchased", 1);
+        PlayerPrefs.Save();
+        OnStatsUpdated?.Invoke();
+    }
+
+    private float ScientificEffect(string id, float inactiveValue) =>
+        HasUpgrade(id) ? (FindUpgradeDefinition(id)?.effectValue ?? inactiveValue) : inactiveValue;
+    private float ScientificMultiplier(string id) => ScientificEffect(id, 1f);
+    private float ScientificReduction(string id) => ScientificEffect(id, 0f);
 
     [Header("Урон (Список)")]
     public List<DamageInfo> damageSettings = new List<DamageInfo>();
@@ -211,7 +274,12 @@ public class GlobalStats : ScriptableObject
             PlayerPrefs.DeleteKey(unitTypeKey + "_VisualStates");
             PlayerPrefs.DeleteKey(unitTypeKey + "_UnlockedFlashlights");
             if (unitTypeKey == "globalHexStats")
+            {
+                if (scientificUpgradeTable != null)
+                    foreach (var entry in scientificUpgradeTable.entries)
+                        if (entry != null && !string.IsNullOrEmpty(entry.id)) PlayerPrefs.DeleteKey(entry.id + "_Purchased");
                 for (int i = 2; i <= 6; i++) PlayerPrefs.DeleteKey("Flashlight" + i + "_Purchased");
+            }
             foreach (var d in damageSettings) PlayerPrefs.DeleteKey(unitTypeKey + "_BonusDmg_" + d.type.ToString());
             foreach (var r in resistances) PlayerPrefs.DeleteKey(unitTypeKey + "_BonusRes_" + r.type.ToString());
         }

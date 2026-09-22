@@ -32,6 +32,7 @@ public class ArcherTower : MonoBehaviour
 
     void Update()
     {
+        if (stats != null && !stats.CanAttack) return;
         FindClosestTarget();
 
         if (_target != null && !_isAttacking && Time.time >= _nextAttackTime)

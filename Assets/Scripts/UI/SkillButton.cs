@@ -1,4 +1,3 @@
-using PlayerPrefs = GameFoundation.Saves.SaveSlotPrefs;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
@@ -9,6 +8,7 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 {
     [Header("Настройки сохранения")]
     public string skillID;
+    [SerializeField] private GlobalStats upgradeStats;
 
     [Header("Настройки покупки")]
     [Tooltip("Ресурс, который тратится на покупку этого навыка (например, Короны)")]
@@ -25,11 +25,14 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public Sprite purchasedSprite;
 
     [Header("Описание")]
+    public string title;
     [TextArea(3, 5)] public string description;
 
     [Header("Ссылки на UI компоненты")]
     public Button uiButton;
     public Image targetImage; // Изображение, которое будет менять спрайт (обычно фон кнопки)
+    [SerializeField] private Image costResourceIconImage;
+    [SerializeField] private Image upgradeIconImage;
     public Text costText;
 
     [Header("Визуальные эффекты (Бамп)")]
@@ -61,15 +64,36 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
         if (!string.IsNullOrEmpty(skillID))
         {
-            isPurchased = PlayerPrefs.GetInt(skillID + "_Purchased", 0) == 1;
+            isPurchased = upgradeStats != null && upgradeStats.HasUpgrade(skillID);
         }
     }
 
     // ИСПРАВЛЕНО: Подписка на новое событие GlobalResourceManager
     private void OnEnable()
     {
+        if (upgradeStats == null)
+            Debug.LogError($"[SkillButton] Для {name} не назначен GlobalStats с прогрессом улучшений.", this);
+        ApplyScientificDefinition();
         GlobalResourceManager.OnResourceChanged += RefreshCostDisplay;
         RefreshStatus();
+    }
+    private void ApplyScientificDefinition()
+    {
+        var entry = upgradeStats != null ? upgradeStats.FindUpgradeDefinition(skillID) : null;
+        if (entry == null) return;
+        title = entry.title;
+        description = entry.description;
+        purchaseResourceType = entry.costResource;
+        cost = entry.cost;
+        if (costResourceIconImage == null)
+            costResourceIconImage = transform.Find("CostIconBacking/CostResourceIcon")?.GetComponent<Image>();
+        if (upgradeIconImage == null)
+            upgradeIconImage = transform.Find("UpgradeIcon")?.GetComponent<Image>();
+        if (costResourceIconImage != null && purchaseResourceType != null)
+        {
+            costResourceIconImage.sprite = purchaseResourceType.resourceIcon;
+            costResourceIconImage.preserveAspect = true;
+        }
     }
     private void OnDisable() => GlobalResourceManager.OnResourceChanged -= RefreshCostDisplay;
 
@@ -90,7 +114,8 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         {
             var key = "skill." + skillID + ".description";
             var translated = GameFoundation.Localization.LocalizationService.Instance?.Get(key);
-            TooltipManager.Instance.Show(string.IsNullOrEmpty(translated) || translated == key ? description : translated, _rectTransform);
+            var body = string.IsNullOrEmpty(translated) || translated == key ? description : translated;
+            TooltipManager.Instance.Show(string.IsNullOrEmpty(title) ? body : "<b>" + title + "</b>\n" + body, _rectTransform);
         }
     }
 
@@ -112,7 +137,7 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void RefreshStatus()
     {
-        if (!string.IsNullOrEmpty(skillID) && PlayerPrefs.GetInt(skillID + "_Purchased", 0) == 1)
+        if (!string.IsNullOrEmpty(skillID) && upgradeStats != null && upgradeStats.HasUpgrade(skillID))
             isPurchased = true;
         if (isPurchased)
         {
@@ -139,7 +164,7 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void TryPurchase()
     {
-        if (isPurchased || !isUnlocked) return;
+        if (isPurchased || !isUnlocked || upgradeStats == null) return;
         
         // ИСПРАВЛЕНО: Списание через новый менеджер
         if (GlobalResourceManager.Instance != null && GlobalResourceManager.Instance.TrySpendResource(purchaseResourceType, cost)) 
@@ -160,8 +185,7 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
         if (!string.IsNullOrEmpty(skillID))
         {
-            PlayerPrefs.SetInt(skillID + "_Purchased", 1);
-            PlayerPrefs.Save();
+            upgradeStats.UnlockUpgrade(skillID);
         }
 
         OnSkillPurchased?.Invoke();

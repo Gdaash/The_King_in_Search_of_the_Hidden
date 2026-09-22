@@ -21,16 +21,7 @@ namespace GameFoundation.MetaProgression
 
         private void Awake()
         {
-            int count = 1;
-            if (flashlightStats != null)
-            {
-                flashlightStats.LoadStats();
-                for (int i = 2; i <= MaximumCount; i++)
-                {
-                    if (!flashlightStats.HasUnlockedFlashlight("Flashlight" + i)) break;
-                    count++;
-                }
-            }
+            int count = flashlightStats != null ? flashlightStats.AvailableFlashlightCount : 1;
             if (flashlights == null) return;
             _initialLightIntensities = new float[flashlights.Length];
 
