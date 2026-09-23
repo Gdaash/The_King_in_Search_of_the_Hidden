@@ -91,7 +91,7 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             upgradeIconImage = transform.Find("UpgradeIcon")?.GetComponent<Image>();
         if (costResourceIconImage != null && purchaseResourceType != null)
         {
-            costResourceIconImage.sprite = purchaseResourceType.resourceIcon;
+            ResourceIconSizing.Apply(costResourceIconImage, purchaseResourceType.resourceIcon);
             costResourceIconImage.preserveAspect = true;
         }
     }

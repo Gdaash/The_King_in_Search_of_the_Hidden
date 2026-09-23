@@ -48,6 +48,10 @@ public class HexBlocker : MonoBehaviour
     private AlarmSystem _alarmSystem;
 
     public bool IsBlocked => !_isRemoved && gameObject.activeInHierarchy && !_isCurrentlyUnlocked;
+    private bool StartsUnlocked => unlockedAtStart ||
+        (GetComponentInParent<HexMapGenerator>() is HexMapGenerator generator && generator.IsFirstRingHex(transform));
+
+    public void SetUnlockedAtStart(bool value) => unlockedAtStart = value;
 
     private void Awake()
     {
@@ -64,7 +68,7 @@ public class HexBlocker : MonoBehaviour
         if (skullIcon != null) skullIcon.SetActive(false);
         if (dangerText != null) dangerText.gameObject.SetActive(false);
         
-        if (shouldAutoUnlock && !unlockedAtStart)
+        if (shouldAutoUnlock && !StartsUnlocked)
         {
             RemoveHex(); 
             return;      
@@ -117,7 +121,10 @@ public class HexBlocker : MonoBehaviour
         if (timer != null)
         {
             GlobalStats stats = _hexManager != null ? _hexManager.Stats : null;
-            float calculatedTime = assignedDangerLevel * (stats != null ? stats.TotalDifficultyMultiplier : GlobalSettings.DifficultyTimerMultiplier);
+            // Базовое время открытия задаётся непосредственно на TimerController.
+            // Уровень опасности отвечает за опасность гекса, но не должен скрыто
+            // перезаписывать значение Duration из инспектора.
+            float calculatedTime = timer.ConfiguredDuration;
             if (stats != null) calculatedTime *= stats.HexOpeningTimeMultiplier;
             timer.SetDurationAndStart(calculatedTime);
         }
@@ -196,7 +203,7 @@ public class HexBlocker : MonoBehaviour
             }
         }
 
-        bool canUnlock = unlockedAtStart || neighborCount <= 4;
+        bool canUnlock = StartsUnlocked || neighborCount <= 4;
 
         if (canUnlock && !_isCurrentlyUnlocked)
         {

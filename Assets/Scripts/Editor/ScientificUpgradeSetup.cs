@@ -118,8 +118,7 @@ internal static class ScientificUpgradeSetup
                 var icon = instance.transform.Find("CostIconBacking/CostResourceIcon")?.GetComponent<UnityEngine.UI.Image>();
                 if (icon != null && entry.costResource != null)
                 {
-                    icon.sprite = entry.costResource.resourceIcon;
-                    icon.preserveAspect = true;
+            ResourceIconSizing.Apply(icon, entry.costResource.resourceIcon);
                 }
                 buttons[i] = skill;
             }

@@ -31,7 +31,7 @@ internal sealed class GlobalStatsEditor : Editor
             EditorGUILayout.IntField("Ячейка сохранения", SaveSlotPrefs.SelectedSlot);
             EditorGUILayout.FloatField("Здоровье", stats.TotalMaxHealth);
             EditorGUILayout.FloatField("Время производства", stats.TotalProductionTime);
-            EditorGUILayout.FloatField("Множитель открытия гекса", stats.HexOpeningTimeMultiplier);
+            EditorGUILayout.FloatField("Множитель апгрейда открытия гекса", stats.HexOpeningTimeMultiplier);
             EditorGUILayout.FloatField("Снижение тревоги", stats.HexAlarmReduction);
             EditorGUILayout.Toggle("Может стрелять", stats.CanAttack);
             EditorGUILayout.IntField("Доступно фонарей", stats.AvailableFlashlightCount);

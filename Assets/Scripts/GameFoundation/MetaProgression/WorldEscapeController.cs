@@ -27,6 +27,7 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private ScrollRect statisticsScroll;
         [SerializeField] private TMP_Text durationLabel;
         [SerializeField] private Button returnButton;
+        [SerializeField] private TMP_Text defeatMessage;
         [SerializeField, Min(0f)] private float rowRevealDelay = 0.22f;
         [SerializeField] private string baseScene = "Base";
 
@@ -56,6 +57,7 @@ namespace GameFoundation.MetaProgression
 
             if (progressPanel != null) progressPanel.SetActive(false);
             if (statisticsPanel != null) statisticsPanel.SetActive(false);
+            if (defeatMessage != null) defeatMessage.gameObject.SetActive(false);
             if (buttonLabel != null) buttonLabel.text = "Сбежать";
             if (escapeButton != null) escapeButton.onClick.AddListener(OnEscapeClicked);
             if (returnButton != null) returnButton.onClick.AddListener(ReturnToBase);
@@ -102,10 +104,7 @@ namespace GameFoundation.MetaProgression
             }
 
             _escaping = true;
-            foreach (TimerController timer in UnityEngine.Object.FindObjectsByType<TimerController>(FindObjectsInactive.Include))
-                timer.StopForEscape();
-            if (flashlightAvailability != null) flashlightAvailability.DisableAllForEscape();
-            if (OrderManager.Instance != null) OrderManager.Instance.enabled = false;
+            StopWorldForEscape();
 
             foreach (HumanUnit human in UnityEngine.Object.FindObjectsByType<HumanUnit>())
                 human.ResetTask();
@@ -117,6 +116,28 @@ namespace GameFoundation.MetaProgression
             if (buttonLabel != null) buttonLabel.text = "Сбежать немедленно";
             if (progressPanel != null) progressPanel.SetActive(true);
             RefreshProgress();
+        }
+
+        public void ShowPortalDestroyedStatistics()
+        {
+            if (_loading || _showingStatistics) return;
+            _escaping = true;
+            StopWorldForEscape();
+            if (defeatMessage != null)
+            {
+                defeatMessage.text = "Вы не успели сбежать, портал был уничтожен.";
+                defeatMessage.color = new Color(0.9f, 0.16f, 0.16f, 1f);
+                defeatMessage.gameObject.SetActive(true);
+            }
+            ShowStatistics();
+        }
+
+        private void StopWorldForEscape()
+        {
+            foreach (TimerController timer in UnityEngine.Object.FindObjectsByType<TimerController>(FindObjectsInactive.Include))
+                timer.StopForEscape();
+            if (flashlightAvailability != null) flashlightAvailability.DisableAllForEscape();
+            if (OrderManager.Instance != null) OrderManager.Instance.enabled = false;
         }
 
         private Dictionary<ResourceType, int> CaptureResources()

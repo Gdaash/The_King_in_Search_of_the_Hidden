@@ -47,7 +47,7 @@ public class HexMapGenerator : MonoBehaviour
 
         if (centerPrefab != null)
         {
-            CreateHex(centerPrefab, centerPosition, "Center_Hex");
+            CreateHex(centerPrefab, centerPosition, "Center_Hex", false);
         }
 
         for (int r = 0; r < rings.Count; r++)
@@ -69,7 +69,7 @@ public class HexMapGenerator : MonoBehaviour
             int count = Mathf.Min(positions.Count, pool.Count);
             for (int i = 0; i < count; i++)
             {
-                CreateHex(pool[i], positions[i], $"Ring{ringNumber}_Hex{i}");
+                CreateHex(pool[i], positions[i], $"Ring{ringNumber}_Hex{i}", ringNumber == 1);
             }
         }
 
@@ -132,7 +132,27 @@ public class HexMapGenerator : MonoBehaviour
         }
     }
 
-    private void CreateHex(GameObject prefab, Vector3 position, string objectName)
+    public bool IsFirstRingHex(Transform hexTransform)
+    {
+        if (hexTransform == null) return false;
+
+        // Use the generated hex root, not an inner component whose offset varies by prefab.
+        while (hexTransform.parent != null && hexTransform.parent != transform)
+            hexTransform = hexTransform.parent;
+        if (hexTransform.parent != transform) return false;
+
+        float tolerance = Mathf.Max(0.1f, Mathf.Abs(hexScale) * 0.1f);
+        float toleranceSquared = tolerance * tolerance;
+        for (int i = 0; i < RingDirections.Length; i++)
+        {
+            Vector3 firstRingPosition = centerPosition + RingDirections[i] * hexScale;
+            if (((Vector2)(hexTransform.localPosition - firstRingPosition)).sqrMagnitude <= toleranceSquared)
+                return true;
+        }
+        return false;
+    }
+
+    private void CreateHex(GameObject prefab, Vector3 position, string objectName, bool firstRing)
     {
         GameObject go;
 #if UNITY_EDITOR
@@ -143,6 +163,16 @@ public class HexMapGenerator : MonoBehaviour
         go.name = objectName;
         go.transform.localPosition = position;
         go.transform.localRotation = Quaternion.identity;
+        if (firstRing)
+        {
+            foreach (var blocker in go.GetComponentsInChildren<HexBlocker>(true))
+            {
+                blocker.SetUnlockedAtStart(true);
+#if UNITY_EDITOR
+                UnityEditor.PrefabUtility.RecordPrefabInstancePropertyModifications(blocker);
+#endif
+            }
+        }
     }
 
     #if UNITY_EDITOR

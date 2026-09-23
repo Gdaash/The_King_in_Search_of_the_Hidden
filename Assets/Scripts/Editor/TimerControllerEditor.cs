@@ -15,6 +15,16 @@ internal sealed class TimerControllerEditor : Editor
             $"ДЛИТЕЛЬНОСТЬ ЦИКЛА: {effectiveDuration:0.##} с. " +
             (stats != null ? $"Берётся из GlobalStats «{stats.name}». Поле Duration ниже запасное."
                 : "Берётся из локального поля Duration."), MessageType.Info);
+
+        if (Application.isPlaying)
+        {
+            var timer = (TimerController)target;
+            EditorGUILayout.HelpBox(
+                $"ФАКТИЧЕСКИЙ ЗАПУЩЕННЫЙ ЦИКЛ: {timer.ActiveCycleDuration:0.##} с. " +
+                $"ОСТАЛОСЬ: {timer.TimeRemaining:0.##} с. " +
+                "Здесь уже учтены игровые улучшения.", MessageType.None);
+        }
+
         DrawDefaultInspector();
     }
 

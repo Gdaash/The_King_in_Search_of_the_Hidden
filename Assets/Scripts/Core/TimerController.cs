@@ -27,6 +27,19 @@ public class TimerController : MonoBehaviour
     // Логика: берем время из статов или из локальной переменной
     private float CurrentDuration => stats != null ? stats.TotalProductionTime : duration;
 
+    /// <summary>
+    /// Длительность, настроенная для этого таймера в инспекторе либо через GlobalStats.
+    /// Системы, запускающие таймер, должны брать базовое время отсюда, а не подменять его
+    /// собственной формулой.
+    /// </summary>
+    public float ConfiguredDuration => CurrentDuration;
+
+    /// <summary>Фактическая длительность текущего цикла с учётом улучшений.</summary>
+    public float ActiveCycleDuration => _cycleDuration;
+
+    /// <summary>Оставшееся игровое время текущего цикла.</summary>
+    public float TimeRemaining => Mathf.Max(0f, _currentTime);
+
     void Start()
     {
         _currentTime = CurrentDuration;
@@ -42,7 +55,10 @@ public class TimerController : MonoBehaviour
 
         if (_currentTime > 0)
         {
-            _currentTime -= Time.deltaTime;
+            // Считаем от реального времени и применяем выбранную скорость ровно один раз.
+            // Это исключает скрытое повторное масштабирование Time.deltaTime при прямом
+            // запуске World и сохраняет ожидаемые режимы пауза / x1 / x2 / x4.
+            _currentTime -= Time.unscaledDeltaTime * GameSpeedControls.SimulationSpeed;
             SendProgressToBar();
         }
         else
@@ -54,9 +70,10 @@ public class TimerController : MonoBehaviour
     public void SetDurationAndStart(float newDuration)
     {
         if (_stoppedForEscape) return;
-        duration = newDuration;
-        _currentTime = duration;
-        _cycleDuration = duration;
+        // Не перезаписываем настроенную базовую Duration. newDuration — это
+        // фактический цикл с уже применёнными игровыми улучшениями.
+        _currentTime = newDuration;
+        _cycleDuration = newDuration;
         _remainingRepeats = repeatCount;
         _isActive = true;
         

@@ -16,7 +16,7 @@ namespace GameFoundation.MetaProgression
         {
             if (icon != null)
             {
-                icon.sprite = resource.defaultCarrySprite;
+                ResourceIconSizing.Apply(icon, resource.defaultCarrySprite);
                 icon.enabled = icon.sprite != null;
             }
             if (resourceLabel != null)

@@ -39,6 +39,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &5071981245349226902
 SpriteRenderer:
+  serializedVersion: 3
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -57,6 +58,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -78,9 +81,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 970f8ad78cb00044da364aa3a0c8c79d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -90,8 +95,8 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+  m_BlendShapeWeights: []
 --- !u!114 &6041123912582541703
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -200,11 +205,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DropRegionName: Crown
-  HideWhenDropToRegion: 1
-  EnableCollisionWhenDrag: 0
-  IsThisRegionAsTarget: 1
-  DragToRegionToFound: 0
-  IsReturnToOriginalPosition: 1
+  DestroyWhenDropToRegion: 1
+  DisableColliderWhenDrag: 1
+  TriggerEventsOnRegion: 1
+  ReturnToOriginalPositionOnFail: 1
   freezeX: 0
   freezeY: 0
   freezeZ: 1
@@ -271,6 +275,7 @@ MonoBehaviour:
   onDropRegion:
     m_PersistentCalls:
       m_Calls: []
+  CanDrag: 1
 --- !u!114 &6000578183199997536
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -301,6 +306,7 @@ GameObject:
   - component: {fileID: 2058380908684724269}
   - component: {fileID: 5640747664619177461}
   - component: {fileID: 7711079260480058582}
+  - component: {fileID: 3566378556467270279}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -358,8 +364,8 @@ MonoBehaviour:
   m_text: "\u041F\u0435\u0440\u0435\u043D\u0435\u0441\u0438 \u043A\u043E\u0440\u043E\u043D\u0443
     \u0432 \u0437\u0430\u043C\u043E\u043A."
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f0ec534eb6eaaa42af79fe4da69db12, type: 2}
+  m_sharedMaterial: {fileID: -444959752083346409, guid: 8f0ec534eb6eaaa42af79fe4da69db12, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -394,6 +400,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -427,6 +434,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &3566378556467270279
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2321200492928943903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 302424c1582bd1640b6e205c3dae3c1c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.TMPWordLetterSpacing
+  spacing: 1.5
 --- !u!1 &2700047137471240932
 GameObject:
   m_ObjectHideFlags: 0
@@ -656,6 +676,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
+  m_UseReflectionProbes: 0
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0

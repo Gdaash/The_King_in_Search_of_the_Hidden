@@ -19,7 +19,7 @@ namespace GameFoundation.Base
         {
             if (icon != null)
             {
-                icon.sprite = type != null ? type.defaultCarrySprite : null;
+                ResourceIconSizing.Apply(icon, type != null ? type.defaultCarrySprite : null);
                 icon.enabled = icon.sprite != null;
             }
             if (nameLabel != null) nameLabel.text = type != null && !string.IsNullOrWhiteSpace(type.resourceName) ? type.resourceName : entry.resource;

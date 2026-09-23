@@ -42,7 +42,17 @@ namespace InventoryEngine.GUI
         /// <param name="count"></param>
         public virtual void UpdateCount(InventoryItem inventoryItem, string min, string max, Color ?color = null)
         {
-            image.sprite = inventoryItem is null ? null : inventoryItem.Icon;
+            if (image != null)
+            {
+                var sprite = inventoryItem is null ? null : inventoryItem.Icon;
+                image.sprite = sprite;
+                if (sprite != null)
+                {
+                    image.preserveAspect = true;
+                    image.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, sprite.rect.width * 2f);
+                    image.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, sprite.rect.height * 2f);
+                }
+            }
             text_count.text = $"{min}{separator}{max}{suffix}";
             if(color != null) text_count.color = (Color)color;
         }

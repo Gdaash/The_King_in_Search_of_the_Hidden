@@ -48,10 +48,21 @@ MonoBehaviour:
   currentAlarm: 0
   fillSpeed: 3
   fillImage: {fileID: 0}
+  previewImage: {fileID: 0}
+  tickContainer: {fileID: 0}
   uiSprite: {fileID: 7482667652216324306, guid: 71493d29645d01d4e92475135c1bf043, type: 3}
   createRuntimeUiWhenMissing: 1
   uiSize: {x: 360, y: 24}
   uiTopOffset: {x: 0, y: -94}
+  alarmOrbSprite: {fileID: 0}
+  orbSettings: {fileID: 0}
+  maximumOrbsPerAddition: 5
+  orbFlightDuration: 1.7
+  orbSpreadDuration: 0.35
+  orbLaunchDelayMax: 0.12
+  orbClusterRadius: 28
+  orbArcHeight: 80
+  orbSize: 36
   thresholds:
   - alarmValue: 25
     minSpawnInterval: 8
@@ -68,6 +79,7 @@ MonoBehaviour:
   nearestBlockedHexesToUse: 8
   mapCenter: {fileID: 0}
   spawnPositionJitter: 0.15
+  monsterSpawnWarningPrefab: {fileID: 5076411004074996437, guid: bb6c2a7badadaf14dad25ccd07f87ea1, type: 3}
   OnAlarmChanged:
     m_PersistentCalls:
       m_Calls: []

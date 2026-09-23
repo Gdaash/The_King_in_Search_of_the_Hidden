@@ -10,14 +10,13 @@ public class HexLightUnlocker : MonoBehaviour
     [Header("Ссылки на компоненты разблокировки")]
     [Tooltip("Объект с прогрессбаром (на нём должен висеть RadialProgressBar)")]
     [SerializeField] private RadialProgressBar progressBar;
+    [Tooltip("Единый источник базового времени открытия гекса.")]
+    [SerializeField] private TimerController timerController;
 
     [Header("Настройки таймера")]
     [Tooltip("Радиус, при попадании в который маркер начинает разблокировку")]
     [SerializeField] private float detectionRadius = 1.5f;
     
-    [Tooltip("Время разблокировки в секундах (умножается на уровень опасности)")]
-    [SerializeField] private float baseDuration = 5f;
-
     [Header("События")]
     [Tooltip("Вызывается при завершении таймера разблокировки")]
     public UnityEvent OnUnlockCompleteEvent;
@@ -31,8 +30,16 @@ public class HexLightUnlocker : MonoBehaviour
     private bool _isUnlocking = false;
     private bool _isUnlocked = false;
 
+    public float ActiveDuration => _duration;
+    public float TimeRemaining => Mathf.Max(0f, _currentTime);
+
     private void Awake()
     {
+        if (timerController == null)
+        {
+            timerController = GetComponentInChildren<TimerController>(true);
+        }
+
         if (progressBar != null)
         {
             progressBar.Hide();
@@ -87,8 +94,14 @@ public class HexLightUnlocker : MonoBehaviour
         _isUnlocking = true;
         _isActive = true;
 
-        _duration = baseDuration * dangerLevel;
-        if (_duration <= 0f) _duration = baseDuration;
+        float configuredDuration = timerController != null ? timerController.ConfiguredDuration : 5f;
+        HexManager hexManager = Object.FindFirstObjectByType<HexManager>();
+        GlobalStats stats = hexManager != null ? hexManager.Stats : null;
+        float upgradeMultiplier = stats != null ? stats.HexOpeningTimeMultiplier : 1f;
+
+        // Уровень опасности больше не меняет время. Единственный источник базы —
+        // Duration в TimerController, единственный модификатор — купленный апгрейд.
+        _duration = Mathf.Max(0.01f, configuredDuration * upgradeMultiplier);
         
         _currentTime = _duration;
         

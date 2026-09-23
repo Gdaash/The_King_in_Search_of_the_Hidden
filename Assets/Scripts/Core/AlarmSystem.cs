@@ -61,12 +61,22 @@ public class AlarmSystem : MonoBehaviour
     [SerializeField] private Transform mapCenter;
     [SerializeField, Min(0f)] private float spawnPositionJitter = 0.15f;
 
+    [Header("Предупреждение о появлении врагов")]
+    [SerializeField] private MonsterSpawnWarningView monsterSpawnWarningPrefab;
+
+    [Header("Уведомление об уровне опасности")]
+    [SerializeField] private DangerLevelNotificationView dangerLevelNotificationPrefab;
+
     [Header("События")]
     public UnityEvent<float> OnAlarmChanged;
     public UnityEvent<AlarmThreshold> OnThresholdReached;
 
     private readonly List<Coroutine> _waveRoutines = new();
     private readonly HashSet<AlarmThreshold> _activatedThresholds = new();
+    private readonly List<GameObject> _activeSpawnWarnings = new();
+    private readonly Queue<int> _dangerNotificationQueue = new();
+    private Coroutine _dangerNotificationRoutine;
+    private DangerLevelNotificationView _activeDangerNotification;
     private float _displayedFill;
     private float _pendingAlarm;
     private Canvas _canvas;
@@ -105,6 +115,14 @@ public class AlarmSystem : MonoBehaviour
         foreach (Coroutine routine in _waveRoutines)
             if (routine != null) StopCoroutine(routine);
         _waveRoutines.Clear();
+        foreach (GameObject warning in _activeSpawnWarnings)
+            if (warning != null) Destroy(warning);
+        _activeSpawnWarnings.Clear();
+        _dangerNotificationQueue.Clear();
+        if (_dangerNotificationRoutine != null) StopCoroutine(_dangerNotificationRoutine);
+        _dangerNotificationRoutine = null;
+        if (_activeDangerNotification != null) Destroy(_activeDangerNotification.gameObject);
+        _activeDangerNotification = null;
     }
 
     /// <summary>Добавляет значение из UnityEvent&lt;float&gt;.</summary>
@@ -163,25 +181,48 @@ public class AlarmSystem : MonoBehaviour
 
             _activatedThresholds.Add(threshold);
             OnThresholdReached?.Invoke(threshold);
+            EnqueueDangerLevelNotification(thresholds.IndexOf(threshold) + 1);
             _waveRoutines.Add(StartCoroutine(SpawnWavesForever(threshold)));
         }
+    }
+
+    private void EnqueueDangerLevelNotification(int level)
+    {
+        if (dangerLevelNotificationPrefab == null) return;
+        _dangerNotificationQueue.Enqueue(level);
+        if (_dangerNotificationRoutine == null)
+            _dangerNotificationRoutine = StartCoroutine(ShowDangerLevelNotifications());
+    }
+
+    private IEnumerator ShowDangerLevelNotifications()
+    {
+        while (_dangerNotificationQueue.Count > 0)
+        {
+            int level = _dangerNotificationQueue.Dequeue();
+            Transform parent = _canvas != null ? _canvas.transform : transform.parent;
+            _activeDangerNotification = Instantiate(dangerLevelNotificationPrefab, parent, false);
+            yield return _activeDangerNotification.Play(level, thresholds.Count);
+            if (_activeDangerNotification != null) Destroy(_activeDangerNotification.gameObject);
+            _activeDangerNotification = null;
+        }
+        _dangerNotificationRoutine = null;
     }
 
     private IEnumerator SpawnWavesForever(AlarmThreshold threshold)
     {
         while (true)
         {
-            SpawnWave(threshold);
+            yield return SpawnWave(threshold);
             float min = Mathf.Min(threshold.minSpawnInterval, threshold.maxSpawnInterval);
             float max = Mathf.Max(threshold.minSpawnInterval, threshold.maxSpawnInterval);
             yield return new WaitForSeconds(UnityEngine.Random.Range(min, max));
         }
     }
 
-    private void SpawnWave(AlarmThreshold threshold)
+    private IEnumerator SpawnWave(AlarmThreshold threshold)
     {
         if (threshold.enemies == null || threshold.enemies.Count == 0)
-            return;
+            yield break;
 
         List<HexBlocker> candidates = UnityEngine.Object.FindObjectsByType<HexBlocker>(FindObjectsSortMode.None)
             .Where(hex => hex.IsBlocked)
@@ -192,13 +233,15 @@ public class AlarmSystem : MonoBehaviour
         if (candidates.Count == 0)
         {
             Debug.LogWarning("[AlarmSystem] Нет заблокированных гексов для появления врагов.", this);
-            return;
+            yield break;
         }
 
         int minCount = Mathf.Min(threshold.minEnemiesPerWave, threshold.maxEnemiesPerWave);
         int maxCount = Mathf.Max(threshold.minEnemiesPerWave, threshold.maxEnemiesPerWave);
         int count = UnityEngine.Random.Range(minCount, maxCount + 1);
 
+        var spawnEntries = new List<SpawnEntry>(count);
+        var warnings = new Dictionary<HexBlocker, MonsterSpawnWarningView>();
         for (int i = 0; i < count; i++)
         {
             GameObject enemyPrefab = GetWeightedEnemy(threshold.enemies);
@@ -206,7 +249,131 @@ public class AlarmSystem : MonoBehaviour
 
             HexBlocker hex = candidates[UnityEngine.Random.Range(0, candidates.Count)];
             Vector2 offset = UnityEngine.Random.insideUnitCircle * spawnPositionJitter;
-            UnityEngine.Object.Instantiate((UnityEngine.Object)enemyPrefab, hex.transform.position + (Vector3)offset, Quaternion.identity);
+            spawnEntries.Add(new SpawnEntry(enemyPrefab, hex, hex.transform.position + (Vector3)offset));
+            if (!warnings.ContainsKey(hex)) warnings.Add(hex, CreateSpawnWarning(hex.transform.position));
+        }
+
+        if (spawnEntries.Count == 0) yield break;
+        yield return AnimateWarningsIn(warnings.Values);
+
+        foreach (SpawnEntry entry in spawnEntries)
+        {
+            MonsterSpawnWarningView warning = warnings[entry.Hex];
+            yield return PrepareMonsterSpawn(warning);
+            UnityEngine.Object.Instantiate((UnityEngine.Object)entry.Prefab, entry.Position, Quaternion.identity);
+            if (warning != null) warning.HideLightImmediate();
+            yield return BumpWarning(warning);
+        }
+
+        yield return FadeWarningsOut(warnings.Values);
+    }
+
+    private MonsterSpawnWarningView CreateSpawnWarning(Vector3 position)
+    {
+        if (monsterSpawnWarningPrefab == null)
+        {
+            Debug.LogError("[AlarmSystem] Не назначен префаб эффекта появления монстров.", this);
+            return null;
+        }
+        MonsterSpawnWarningView warning = Instantiate(monsterSpawnWarningPrefab, position, Quaternion.identity);
+        warning.name = monsterSpawnWarningPrefab.name;
+        warning.Prepare();
+        _activeSpawnWarnings.Add(warning.gameObject);
+        return warning;
+    }
+
+    private IEnumerator AnimateWarningsIn(IEnumerable<MonsterSpawnWarningView> warnings)
+    {
+        float elapsed = 0f;
+        float duration = warnings.Where(x => x != null).Select(x => x.AppearDuration).DefaultIfEmpty(0.01f).Max();
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            foreach (MonsterSpawnWarningView warning in warnings)
+            {
+                if (warning == null || warning.Renderer == null) continue;
+                float t = Mathf.Clamp01(elapsed / warning.AppearDuration);
+                float eased = t * t * (3f - 2f * t);
+                warning.transform.localScale = Vector3.LerpUnclamped(warning.InitialScale, warning.FinalScale, eased);
+                Color color = warning.VisibleColor;
+                color.a *= eased;
+                warning.Renderer.color = color;
+            }
+            yield return null;
+        }
+    }
+
+    private IEnumerator PrepareMonsterSpawn(MonsterSpawnWarningView warning)
+    {
+        if (warning == null) yield break;
+
+        warning.HideLightImmediate();
+        float fadeDuration = Mathf.Min(warning.LightFadeDuration, warning.SpawnDelayAfterAppearance);
+        float delayBeforeLight = Mathf.Max(0f, warning.SpawnDelayAfterAppearance - fadeDuration);
+        if (delayBeforeLight > 0f) yield return new WaitForSeconds(delayBeforeLight);
+
+        float elapsed = 0f;
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = fadeDuration > 0f ? Mathf.Clamp01(elapsed / fadeDuration) : 1f;
+            warning.SetLightVisibility(t * t * (3f - 2f * t));
+            yield return null;
+        }
+        warning.SetLightVisibility(1f);
+    }
+
+    private IEnumerator BumpWarning(MonsterSpawnWarningView warning)
+    {
+        if (warning == null) yield break;
+        float elapsed = 0f;
+        while (elapsed < warning.BumpDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / warning.BumpDuration);
+            float bump = 1f + Mathf.Sin(t * Mathf.PI) * (warning.BumpScale - 1f);
+            warning.transform.localScale = warning.FinalScale * bump;
+            yield return null;
+        }
+        if (warning != null) warning.transform.localScale = warning.FinalScale;
+    }
+
+    private IEnumerator FadeWarningsOut(IEnumerable<MonsterSpawnWarningView> warnings)
+    {
+        float elapsed = 0f;
+        float duration = warnings.Where(x => x != null).Select(x => x.FadeDuration).DefaultIfEmpty(0.01f).Max();
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            foreach (MonsterSpawnWarningView warning in warnings)
+            {
+                if (warning == null || warning.Renderer == null) continue;
+                Color color = warning.VisibleColor;
+                color.a *= 1f - Mathf.Clamp01(elapsed / warning.FadeDuration);
+                warning.Renderer.color = color;
+            }
+            yield return null;
+        }
+
+        foreach (MonsterSpawnWarningView warning in warnings)
+        {
+            if (warning == null) continue;
+            _activeSpawnWarnings.Remove(warning.gameObject);
+            Destroy(warning.gameObject);
+        }
+    }
+
+    private readonly struct SpawnEntry
+    {
+        public readonly GameObject Prefab;
+        public readonly HexBlocker Hex;
+        public readonly Vector3 Position;
+
+        public SpawnEntry(GameObject prefab, HexBlocker hex, Vector3 position)
+        {
+            Prefab = prefab;
+            Hex = hex;
+            Position = position;
         }
     }
 

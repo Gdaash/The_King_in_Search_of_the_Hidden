@@ -49,11 +49,6 @@ public class GlobalStats : ScriptableObject
     public float TotalProductionTime => Mathf.Max(0.2f, (baseProductionTime - bonusProductionSpeed) *
         (applySharpAxes ? ScientificMultiplier(ScientificUpgrades.SharpAxes) : 1f));
 
-    [Header("Мировые настройки (Difficulty)")]
-    public float baseDifficultyMultiplier = 120f;
-    public float bonusDifficultyReduction = 0f;
-    public float TotalDifficultyMultiplier => baseDifficultyMultiplier + bonusDifficultyReduction;
-
     [Header("Научная лаборатория")]
     [Tooltip("Таблица с определениями и значениями эффектов улучшений. Назначается на глобальные статы гексов.")]
     [SerializeField] private ScientificUpgradeTable scientificUpgradeTable;
@@ -181,7 +176,6 @@ public class GlobalStats : ScriptableObject
         bonusAttackSpeed = PlayerPrefs.GetFloat(unitTypeKey + "_BonusAtkSpeed", 0f);
         bonusAttackRange = PlayerPrefs.GetFloat(unitTypeKey + "_BonusRange", 0f);
         bonusProductionSpeed = PlayerPrefs.GetFloat(unitTypeKey + "_BonusProdSpeed", 0f);
-        bonusDifficultyReduction = PlayerPrefs.GetFloat(unitTypeKey + "_DifficultyBonus", 0f);
 
         foreach (var d in damageSettings) d.bonusDamage = PlayerPrefs.GetFloat(unitTypeKey + "_BonusDmg_" + d.type.ToString(), 0f);
         foreach (var r in resistances) r.bonusResist = PlayerPrefs.GetFloat(unitTypeKey + "_BonusRes_" + r.type.ToString(), 0f);
@@ -228,7 +222,6 @@ public class GlobalStats : ScriptableObject
         string savedVisuals = PlayerPrefs.GetString(unitTypeKey + "_VisualStates", "");
         upgradedVisualStates = !string.IsNullOrEmpty(savedVisuals) ? savedVisuals.Split(',').ToList() : new List<string>();
         
-        GlobalSettings.DifficultyTimerMultiplier = TotalDifficultyMultiplier;
         OnStatsUpdated?.Invoke();
     }
 
@@ -239,14 +232,6 @@ public class GlobalStats : ScriptableObject
     public void AddProductionSpeedUpgrade(float amount) => SaveValue(ref bonusProductionSpeed, "_BonusProdSpeed", amount);
     public void AddRegenAmountUpgrade(float amount) => SaveValue(ref bonusRegenAmount, "_BonusRegenAmt", amount);
     public void AddRegenDelayUpgrade(float amount) => SaveValue(ref bonusRegenDelayReduction, "_BonusRegenDelay", amount);
-
-    public void AddDifficultyMultiplierUpgrade(float amount) {
-        bonusDifficultyReduction += amount;
-        if (!string.IsNullOrEmpty(unitTypeKey)) PlayerPrefs.SetFloat(unitTypeKey + "_DifficultyBonus", bonusDifficultyReduction);
-        GlobalSettings.DifficultyTimerMultiplier = TotalDifficultyMultiplier;
-        PlayerPrefs.Save();
-        OnStatsUpdated?.Invoke();
-    }
 
     public void AddDamageUpgrade(DamageType type, float amount) {
         var d = damageSettings.FirstOrDefault(x => x.type == type);
@@ -265,7 +250,7 @@ public class GlobalStats : ScriptableObject
 
     [ContextMenu("Reset Progress")]
     public void ResetProgress() {
-        bonusHealth = 0; bonusRegenAmount = 0; bonusRegenDelayReduction = 0; bonusSpeed = 0; bonusAttackSpeed = 0; bonusAttackRange = 0; bonusProductionSpeed = 0; bonusDifficultyReduction = 0;
+        bonusHealth = 0; bonusRegenAmount = 0; bonusRegenDelayReduction = 0; bonusSpeed = 0; bonusAttackSpeed = 0; bonusAttackRange = 0; bonusProductionSpeed = 0;
         unlockedHexContentIDs.Clear(); upgradedVisualStates.Clear(); unlockedFlashlightIDs?.Clear();
         if (!string.IsNullOrEmpty(unitTypeKey)) {
             PlayerPrefs.DeleteKey(unitTypeKey + "_BonusHP"); PlayerPrefs.DeleteKey(unitTypeKey + "_BonusRegenAmt"); PlayerPrefs.DeleteKey(unitTypeKey + "_BonusRegenDelay");

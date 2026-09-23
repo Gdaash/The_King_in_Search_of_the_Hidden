@@ -10,7 +10,7 @@ public class UIResourceRow : MonoBehaviour
 
     public void UpdateRow(Sprite icon, string name, int count)
     {
-        if (resourceIcon != null) resourceIcon.sprite = icon;
+        ResourceIconSizing.Apply(resourceIcon, icon);
         if (resourceNameText != null) resourceNameText.text = name;
         if (resourceCountText != null) resourceCountText.text = count.ToString();
     }
