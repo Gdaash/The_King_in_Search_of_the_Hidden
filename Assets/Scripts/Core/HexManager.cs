@@ -29,6 +29,10 @@ public class HexManager : MonoBehaviour
 
     [Header("Настройки групп префабов")]
     [SerializeField] private List<HexGroupSettings> groups;
+    [SerializeField] private HexDifficultyTable difficultyTable;
+
+    public IReadOnlyList<HexGroupSettings> ConfiguredGroups => groups;
+    public HexDifficultyTable DifficultyTable => difficultyTable;
 
     [Header("Настройки анимации появления (бамп)")]
     [SerializeField] private float bumpScaleUp = 1.1f;
@@ -48,6 +52,9 @@ public class HexManager : MonoBehaviour
 
     private void AssignHexContents()
     {
+        IReadOnlyList<HexGroupSettings> activeGroups = difficultyTable != null
+            ? difficultyTable.GetGroups(GameFoundation.MetaProgression.DayCycleService.CurrentPortalDifficulty)
+            : groups;
         HexBlocker[] allHexes = Object.FindObjectsByType<HexBlocker>(FindObjectsSortMode.None);
         var groupedHexes = allHexes.GroupBy(h => h.groupID);
 
@@ -55,7 +62,7 @@ public class HexManager : MonoBehaviour
         {
             int currentID = group.Key;
             List<HexBlocker> hexesInGroup = group.ToList();
-            HexGroupSettings settings = groups.Find(g => g.groupID == currentID);
+            HexGroupSettings settings = activeGroups.FirstOrDefault(g => g.groupID == currentID);
             
             if (settings != null && settings.prefabsForGroup.Count > 0)
             {

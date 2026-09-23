@@ -35,6 +35,11 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
     
     private Vector2 _personalOffset;
     private GameObject _offsetAnchor;
+    private bool _hasAssignedHomePoint;
+    private Vector3 _assignedHomePoint;
+
+    public bool HasAssignedHomePoint => _hasAssignedHomePoint;
+    public Vector3 AssignedHomePoint => _assignedHomePoint;
 
     // Свойства для удобного доступа к статам
     public float CurrentAttackRange => stats != null ? stats.TotalAttackRange : defaultAttackRange;
@@ -56,7 +61,7 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
         if (_target == null) ValidateOrFindHome();
 
         if (_target != null) HandleCombat();
-        else if (_homeTransform != null) ReturnToHome();
+        else if (_homeTransform != null || _hasAssignedHomePoint) ReturnToHome();
         else OnStop?.Invoke();
     }
 
@@ -88,7 +93,9 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
 
     private void ReturnToHome()
     {
-        Vector3 targetPoint = _homeTransform.position + (Vector3)_personalOffset;
+        Vector3 targetPoint = _hasAssignedHomePoint
+            ? _assignedHomePoint
+            : _homeTransform.position + (Vector3)_personalOffset;
         _offsetAnchor.transform.position = targetPoint;
         float distanceToPoint = Vector2.Distance(transform.position, targetPoint);
 
@@ -100,7 +107,7 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
     {
         var targets = GameObject.FindGameObjectsWithTag(targetTag);
         _target = targets
-            .Where(t => t.activeInHierarchy)
+            .Where(t => t.activeInHierarchy && (t.GetComponentInParent<Health>() == null || !t.GetComponentInParent<Health>().IsDead))
             .OrderBy(t => Vector2.SqrMagnitude(t.transform.position - transform.position))
             .Select(t => t.transform)
             .FirstOrDefault();
@@ -119,7 +126,7 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
     public Transform GetTarget() 
     {
         if (_target != null) return _target;
-        if (_homeTransform != null) return _offsetAnchor.transform;
+        if (_hasAssignedHomePoint || _homeTransform != null) return _offsetAnchor.transform;
         return null;
     }
 
@@ -129,6 +136,11 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
 
     private void ValidateOrFindHome()
     {
+        if (_hasAssignedHomePoint)
+        {
+            _offsetAnchor.transform.position = _assignedHomePoint;
+            return;
+        }
         if (_homeTransform == null || !_homeTransform.gameObject.activeInHierarchy)
         {
             var home = Object.FindObjectsByType<HomeBase>(FindObjectsSortMode.None)
@@ -142,5 +154,12 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
     private void OnDestroy() 
     { 
         if (_offsetAnchor != null) Destroy(_offsetAnchor); 
+    }
+
+    public void SetHomePoint(Vector3 worldPosition)
+    {
+        _hasAssignedHomePoint = true;
+        _assignedHomePoint = worldPosition;
+        if (_offsetAnchor != null) _offsetAnchor.transform.position = worldPosition;
     }
 }

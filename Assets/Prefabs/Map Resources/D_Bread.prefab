@@ -205,11 +205,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DropRegionName: Bread
-  HideWhenDropToRegion: 1
-  EnableCollisionWhenDrag: 0
-  IsThisRegionAsTarget: 1
-  DragToRegionToFound: 0
-  IsReturnToOriginalPosition: 1
+  DestroyWhenDropToRegion: 1
+  DisableColliderWhenDrag: 1
+  TriggerEventsOnRegion: 1
+  ReturnToOriginalPositionOnFail: 1
   freezeX: 0
   freezeY: 0
   freezeZ: 1
@@ -252,6 +251,7 @@ MonoBehaviour:
   onDropRegion:
     m_PersistentCalls:
       m_Calls: []
+  CanDrag: 1
 --- !u!114 &9193863603940976247
 MonoBehaviour:
   m_ObjectHideFlags: 0

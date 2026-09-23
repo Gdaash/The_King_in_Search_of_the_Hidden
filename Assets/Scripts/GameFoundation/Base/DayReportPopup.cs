@@ -40,7 +40,7 @@ namespace GameFoundation.Base
             if (starvation != null)
             {
                 starvation.gameObject.SetActive(report.starved > 0);
-                starvation.text = $"От голода умерло людей: {report.starved}";
+                starvation.text = $"От голода умерло жителей и воинов: {report.starved}";
             }
 
             var types = new Dictionary<string, ResourceType>();

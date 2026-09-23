@@ -40,6 +40,7 @@ public class Warehouse : MonoBehaviour
     }
 
     public Vector3 GetSpawnPoint() => spawnPoint != null ? spawnPoint.position : transform.position;
+    public Transform GetSpawnPointTransform() => spawnPoint != null ? spawnPoint : transform;
 
     public HumanUnit SpawnHumanForJob(ResourceRequester job, ResourceType resourceType, bool shouldReserve = true)
     {

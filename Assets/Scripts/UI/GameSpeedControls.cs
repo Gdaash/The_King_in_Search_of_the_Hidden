@@ -27,10 +27,15 @@ public sealed class GameSpeedControls : MonoBehaviour
 
     public void SetSpeed(float speed)
     {
-        CurrentSpeed = Mathf.Clamp(speed, 0f, 4f);
-        SimulationSpeed = CurrentSpeed;
-        Time.timeScale = CurrentSpeed;
+        CurrentSpeed = SetSimulationSpeed(speed);
         RefreshSelection();
+    }
+
+    public static float SetSimulationSpeed(float speed)
+    {
+        SimulationSpeed = Mathf.Clamp(speed, 0f, 4f);
+        Time.timeScale = SimulationSpeed;
+        return SimulationSpeed;
     }
 
     private void Bind(Button button, float speed)

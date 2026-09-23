@@ -19,6 +19,11 @@ public class Health : MonoBehaviour
     [Header("Состояние")]
     [SerializeField] private float _cur; 
 
+    [Header("Визуальная реакция")]
+    [SerializeField, Min(0.01f)] private float hitFlashDuration = 0.16f;
+    [SerializeField, Min(0f)] private float hitScaleAmount = 0.12f;
+    [SerializeField, Min(0.01f)] private float deathDuration = 0.3f;
+
     // Свойства берут данные из GlobalStats
     private float CurrentRegenAmount => stats != null ? stats.TotalRegenAmount : 0f;
     private float CurrentRegenDelay => stats != null ? stats.TotalRegenDelay : 0f;
@@ -34,9 +39,13 @@ public class Health : MonoBehaviour
     private Coroutine _flashCoroutine;
 
     public float MaxHealth => stats != null ? stats.TotalMaxHealth : 100f;
+    public float CurrentHealth => _cur;
+    public float NormalizedHealth => MaxHealth > 0f ? Mathf.Clamp01(_cur / MaxHealth) : 0f;
+    public bool IsDead => _dead;
 
     void Awake() 
     {
+        _ai = GetComponent<IEnemyAI>();
         if (stats != null) _cur = MaxHealth;
         if (!targetSprite) targetSprite = GetComponentInChildren<SpriteRenderer>();
         if (targetSprite) 
@@ -48,7 +57,6 @@ public class Health : MonoBehaviour
 
     void Start() 
     {
-        _ai = GetComponent<IEnemyAI>();
         _regenCoroutine = StartCoroutine(RegenTickRoutine());
     }
 
@@ -136,10 +144,23 @@ public class Health : MonoBehaviour
         Color flashColor = c;
         flashColor.a = currentAlpha;
         targetSprite.color = flashColor;
-        yield return new WaitForSeconds(0.2f);
+        Transform visual = targetSprite.transform;
+        Vector3 baseScale = visual.localScale;
+        bool animateScale = _ai != null;
+        float elapsed = 0f;
+        while (elapsed < hitFlashDuration)
+        {
+            elapsed += Time.deltaTime;
+            float normalized = Mathf.Clamp01(elapsed / hitFlashDuration);
+            float pulse = Mathf.Sin(normalized * Mathf.PI);
+            if (animateScale) visual.localScale = baseScale * (1f + pulse * hitScaleAmount);
+            targetSprite.color = Color.Lerp(c, _orig, normalized);
+            yield return null;
+        }
         Color resetColor = _orig;
         resetColor.a = currentAlpha;
         targetSprite.color = resetColor;
+        if (animateScale) visual.localScale = baseScale;
     }
 
     private bool IsAIAttacking() 
@@ -162,8 +183,37 @@ public class Health : MonoBehaviour
         if (_dead) return;
         _dead = true; 
         if (_regenCoroutine != null) StopCoroutine(_regenCoroutine);
-        if (targetSprite) targetSprite.color = _orig; 
-        OnDeath?.Invoke(); 
-        gameObject.SetActive(false); 
+        if (_flashCoroutine != null) StopCoroutine(_flashCoroutine);
+        EnemyMovement movement = GetComponent<EnemyMovement>();
+        if (movement != null) movement.SetMove(false);
+        EnemyAI melee = GetComponent<EnemyAI>();
+        if (melee != null) melee.enabled = false;
+        EnemyAI_Ranged ranged = GetComponent<EnemyAI_Ranged>();
+        if (ranged != null) ranged.enabled = false;
+        foreach (Collider2D collider in GetComponentsInChildren<Collider2D>()) collider.enabled = false;
+        StartCoroutine(DeathRoutine());
+    }
+
+    private IEnumerator DeathRoutine()
+    {
+        if (targetSprite != null)
+        {
+            Transform visual = targetSprite.transform;
+            Vector3 startScale = visual.localScale;
+            Color startColor = targetSprite.color;
+            float elapsed = 0f;
+            while (elapsed < deathDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = deathDuration > 0f ? Mathf.Clamp01(elapsed / deathDuration) : 1f;
+                float eased = t * t * (3f - 2f * t);
+                visual.localScale = Vector3.LerpUnclamped(startScale, startScale * 0.35f, eased);
+                Color color = Color.Lerp(startColor, new Color(0.72f, 0.72f, 0.72f, 0f), eased);
+                targetSprite.color = color;
+                yield return null;
+            }
+        }
+        OnDeath?.Invoke();
+        gameObject.SetActive(false);
     }
 }

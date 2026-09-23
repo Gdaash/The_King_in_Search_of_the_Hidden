@@ -17,6 +17,9 @@ public class EnemyVisuals : MonoBehaviour
     [Header("Настройки Атаки")]
     [SerializeField] private float jabDist = 0.7f;
     [SerializeField] private float jabSpeed = 15f;
+    [SerializeField, Min(0f)] private float windupDuration = 0.16f;
+    [SerializeField, Min(0f)] private float impactHoldDuration = 0.06f;
+    [SerializeField] private Vector2 windupScale = new(1.08f, 0.9f);
 
     private Vector3 _startPos;
     private bool _isMoving;
@@ -63,8 +66,6 @@ public class EnemyVisuals : MonoBehaviour
         Transform target = _ai.GetTarget();
         if (target == null) { _ai.FinishAttack(); yield break; }
 
-        yield return new WaitForSeconds(0.2f);
-        
         Vector3 worldDir = (target.position - transform.position).normalized;
         Vector3 localDir = transform.InverseTransformDirection(worldDir);
         localDir.x *= Mathf.Sign(transform.localScale.x);
@@ -72,7 +73,21 @@ public class EnemyVisuals : MonoBehaviour
 
         Vector3 targetLocalPos = _startPos + localDir * jabDist;
 
-        // ПРИМЕНЕНИЕ УРОНА (ИЗ СПИСКА)
+        Vector3 baseScale = spriteParent.localScale;
+        Vector3 preparedScale = new(baseScale.x * windupScale.x, baseScale.y * windupScale.y, baseScale.z);
+        yield return AnimatePose(_startPos, _startPos - localDir * jabDist * 0.18f, baseScale, preparedScale, windupDuration);
+
+        target = _ai.GetTarget();
+        if (target == null) { RestorePose(baseScale); _ai.FinishAttack(); yield break; }
+        worldDir = (target.position - transform.position).normalized;
+        localDir = transform.InverseTransformDirection(worldDir);
+        localDir.x *= Mathf.Sign(transform.localScale.x);
+        localDir.y *= Mathf.Sign(transform.localScale.y);
+        targetLocalPos = _startPos + localDir * jabDist;
+
+        yield return AnimatePose(spriteParent.localPosition, targetLocalPos, spriteParent.localScale,
+            new Vector3(baseScale.x * 0.92f, baseScale.y * 1.08f, baseScale.z), 1f / Mathf.Max(0.01f, jabSpeed));
+
         if (target.TryGetComponent<Health>(out var h) && stats != null) 
         {
             foreach (var dmgInfo in stats.damageSettings)
@@ -80,23 +95,31 @@ public class EnemyVisuals : MonoBehaviour
                 h.TakeDamage(dmgInfo.TotalDamage, dmgInfo.type, transform);
             }
         }
-        
-        // Анимация выпада
-        float p = 0;
-        while (p < 1f) 
-        { 
-            p += Time.deltaTime * jabSpeed; 
-            spriteParent.localPosition = Vector3.Lerp(_startPos, targetLocalPos, p); 
-            yield return null; 
-        }
-        p = 0;
-        while (p < 1f) 
-        { 
-            p += Time.deltaTime * jabSpeed; 
-            spriteParent.localPosition = Vector3.Lerp(targetLocalPos, _startPos, p); 
-            yield return null; 
-        }
-        
+        CombatImpactBurst.Spawn(target.position, new Color(1f, 0.82f, 0.48f, 1f));
+        if (impactHoldDuration > 0f) yield return new WaitForSeconds(impactHoldDuration);
+        yield return AnimatePose(spriteParent.localPosition, _startPos, spriteParent.localScale, baseScale,
+            1.5f / Mathf.Max(0.01f, jabSpeed));
+        RestorePose(baseScale);
         _ai.FinishAttack();
+    }
+
+    private IEnumerator AnimatePose(Vector3 fromPosition, Vector3 toPosition, Vector3 fromScale, Vector3 toScale, float duration)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = duration > 0f ? Mathf.Clamp01(elapsed / duration) : 1f;
+            float eased = t * t * (3f - 2f * t);
+            spriteParent.localPosition = Vector3.LerpUnclamped(fromPosition, toPosition, eased);
+            spriteParent.localScale = Vector3.LerpUnclamped(fromScale, toScale, eased);
+            yield return null;
+        }
+    }
+
+    private void RestorePose(Vector3 scale)
+    {
+        spriteParent.localPosition = _startPos;
+        spriteParent.localScale = scale;
     }
 }

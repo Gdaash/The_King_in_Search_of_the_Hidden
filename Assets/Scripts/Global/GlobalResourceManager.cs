@@ -146,6 +146,42 @@ public class GlobalResourceManager : MonoBehaviour
         return false;
     }
 
+    public bool TryExchangeResources(ResourceType inputA, int inputAAmount,
+        ResourceType inputB, int inputBAmount, ResourceType output, int outputAmount)
+    {
+        if (inputA == null || inputB == null || output == null ||
+            inputAAmount < 0 || inputBAmount < 0 || outputAmount < 0)
+            return false;
+
+        int availableA = GetResourceAmount(inputA);
+        int availableB = inputA == inputB ? availableA : GetResourceAmount(inputB);
+        int requiredA = inputAAmount + (inputA == inputB ? inputBAmount : 0);
+        if (availableA < requiredA || (inputA != inputB && availableB < inputBAmount))
+            return false;
+
+        SetResourceAmountWithoutSaving(inputA, availableA - inputAAmount);
+        if (inputA == inputB)
+            SetResourceAmountWithoutSaving(inputA, availableA - inputAAmount - inputBAmount);
+        else
+            SetResourceAmountWithoutSaving(inputB, availableB - inputBAmount);
+        SetResourceAmountWithoutSaving(output, GetResourceAmount(output) + outputAmount);
+
+        DayResourceLedger.RecordBaseChange(inputA, -inputAAmount);
+        DayResourceLedger.RecordBaseChange(inputB, -inputBAmount);
+        DayResourceLedger.RecordBaseChange(output, outputAmount);
+        PlayerPrefs.Save();
+        RefreshDisplay();
+        return true;
+    }
+
+    private void SetResourceAmountWithoutSaving(ResourceType type, int amount)
+    {
+        amount = Mathf.Max(0, amount);
+        _resourceAmounts[type] = amount;
+        PlayerPrefs.SetInt(saveKeyPrefix + type.name, amount);
+        OnResourceChanged?.Invoke(type, amount);
+    }
+
     private void SaveResource(ResourceType type)
     {
         if (type == null) return;

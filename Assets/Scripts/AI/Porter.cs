@@ -113,7 +113,7 @@ public class Porter : MonoBehaviour, IEnemyAI
     {
         if (Warehouse.Instance == null) return;
         _isReturningToWarehouse = true;
-        _currentTarget = Warehouse.Instance.transform;
+        _currentTarget = Warehouse.Instance.GetSpawnPointTransform();
         if (_rb != null) _rb.WakeUp();
     }
 

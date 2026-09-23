@@ -6,6 +6,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using GameFoundation.UI;
+using GameFoundation.Audio;
 
 namespace GameFoundation.MetaProgression
 {
@@ -19,6 +21,17 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private TMP_Text progressLabel;
         [SerializeField] private ResourceType humanResource;
         [SerializeField] private WorldFlashlightAvailability flashlightAvailability;
+        [SerializeField] private WorldMilitaryDeploymentController militaryDeployment;
+
+        [Header("Предупреждение о здоровье портала")]
+        [SerializeField] private Health portalTowerHealth;
+        [SerializeField, Range(0f, 1f)] private float softWarningThreshold = 0.5f;
+        [SerializeField, Range(0f, 1f)] private float criticalWarningThreshold = 0.25f;
+        [SerializeField, Min(0f)] private float softPulseAmount = 0.025f;
+        [SerializeField, Min(0f)] private float criticalPulseAmount = 0.07f;
+        [SerializeField, Min(0.01f)] private float softPulseFrequency = 1.15f;
+        [SerializeField, Min(0.01f)] private float criticalPulseFrequency = 2.1f;
+        [SerializeField] private Color criticalLabelColor = new(0.95f, 0.16f, 0.13f, 1f);
 
         [Header("Итоги забега")]
         [SerializeField] private GameObject statisticsPanel;
@@ -38,6 +51,9 @@ namespace GameFoundation.MetaProgression
         private bool _escaping;
         private bool _showingStatistics;
         private bool _loading;
+        private UnifiedButtonFeedback _buttonFeedback;
+        private Color _normalButtonLabelColor = Color.white;
+        private float _portalHealthNormalized = 1f;
 
         private void Start()
         {
@@ -59,6 +75,9 @@ namespace GameFoundation.MetaProgression
             if (statisticsPanel != null) statisticsPanel.SetActive(false);
             if (defeatMessage != null) defeatMessage.gameObject.SetActive(false);
             if (buttonLabel != null) buttonLabel.text = "Сбежать";
+            if (buttonLabel != null) _normalButtonLabelColor = buttonLabel.color;
+            if (escapeButton != null) _buttonFeedback = escapeButton.GetComponent<UnifiedButtonFeedback>();
+            ResolvePortalTowerHealth();
             if (escapeButton != null) escapeButton.onClick.AddListener(OnEscapeClicked);
             if (returnButton != null) returnButton.onClick.AddListener(ReturnToBase);
         }
@@ -67,12 +86,60 @@ namespace GameFoundation.MetaProgression
         {
             if (escapeButton != null) escapeButton.onClick.RemoveListener(OnEscapeClicked);
             if (returnButton != null) returnButton.onClick.RemoveListener(ReturnToBase);
+            if (portalTowerHealth != null) portalTowerHealth.OnHealthChanged.RemoveListener(OnPortalHealthChanged);
+            if (_buttonFeedback != null) _buttonFeedback.ExternalScaleMultiplier = 1f;
+            if (buttonLabel != null) buttonLabel.color = _normalButtonLabelColor;
         }
 
         private void Update()
         {
+            UpdateEscapeButtonWarning();
             if (!_escaping || _showingStatistics || _loading) return;
             RefreshProgress();
+        }
+
+        private void ResolvePortalTowerHealth()
+        {
+            if (portalTowerHealth == null)
+            {
+                GameObject tower = GameObject.Find("PortalTower");
+                if (tower != null) portalTowerHealth = tower.GetComponent<Health>() ?? tower.GetComponentInChildren<Health>(true);
+            }
+            if (portalTowerHealth == null) return;
+            _portalHealthNormalized = portalTowerHealth.NormalizedHealth;
+            portalTowerHealth.OnHealthChanged.RemoveListener(OnPortalHealthChanged);
+            portalTowerHealth.OnHealthChanged.AddListener(OnPortalHealthChanged);
+        }
+
+        private void OnPortalHealthChanged(float normalizedHealth)
+        {
+            _portalHealthNormalized = Mathf.Clamp01(normalizedHealth);
+        }
+
+        private void UpdateEscapeButtonWarning()
+        {
+            if (_buttonFeedback == null || buttonLabel == null) return;
+            if (_escaping || _showingStatistics || _loading)
+            {
+                _buttonFeedback.ExternalScaleMultiplier = 1f;
+                buttonLabel.color = _normalButtonLabelColor;
+                return;
+            }
+
+            bool critical = _portalHealthNormalized < criticalWarningThreshold;
+            bool warning = _portalHealthNormalized < softWarningThreshold;
+            if (!warning)
+            {
+                _buttonFeedback.ExternalScaleMultiplier = 1f;
+                buttonLabel.color = _normalButtonLabelColor;
+                return;
+            }
+
+            float amount = critical ? criticalPulseAmount : softPulseAmount;
+            float frequency = critical ? criticalPulseFrequency : softPulseFrequency;
+            float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * Mathf.PI * 2f * frequency);
+            _buttonFeedback.ExternalScaleMultiplier = 1f + amount * wave;
+            buttonLabel.color = critical ? criticalLabelColor : _normalButtonLabelColor;
         }
 
         private void RefreshProgress()
@@ -83,7 +150,8 @@ namespace GameFoundation.MetaProgression
             if (progressLabel != null)
                 progressLabel.text = $"{stored}/{_startingHumans}";
 
-            if (stored >= _startingHumans)
+            bool militaryReturned = militaryDeployment == null || !militaryDeployment.HasReturningUnits;
+            if (stored >= _startingHumans && militaryReturned)
                 ShowStatistics();
         }
 
@@ -104,6 +172,7 @@ namespace GameFoundation.MetaProgression
             }
 
             _escaping = true;
+            GameAudioController.PlayUI(GameAudioCue.Portal, 0.9f, 0.98f, 1.02f, 0.2f);
             StopWorldForEscape();
 
             foreach (HumanUnit human in UnityEngine.Object.FindObjectsByType<HumanUnit>())
@@ -112,6 +181,10 @@ namespace GameFoundation.MetaProgression
                 porter.ResetTask();
             foreach (ResourceRequester requester in UnityEngine.Object.FindObjectsByType<ResourceRequester>())
                 requester.SendHumansHome(humanResource, Warehouse.Instance);
+            if (militaryDeployment == null)
+                militaryDeployment = UnityEngine.Object.FindAnyObjectByType<WorldMilitaryDeploymentController>();
+            if (militaryDeployment != null)
+                militaryDeployment.BeginEscapeRecall();
 
             if (buttonLabel != null) buttonLabel.text = "Сбежать немедленно";
             if (progressPanel != null) progressPanel.SetActive(true);
@@ -156,6 +229,9 @@ namespace GameFoundation.MetaProgression
         {
             if (_showingStatistics) return;
             _showingStatistics = true;
+            GameSpeedControls speedControls = UnityEngine.Object.FindAnyObjectByType<GameSpeedControls>();
+            if (speedControls != null) speedControls.SetSpeed(0f);
+            else GameSpeedControls.SetSimulationSpeed(0f);
             if (escapeButton != null) escapeButton.gameObject.SetActive(false);
             if (progressPanel != null) progressPanel.SetActive(false);
             if (statisticsPanel != null) statisticsPanel.SetActive(true);
@@ -210,6 +286,7 @@ namespace GameFoundation.MetaProgression
         {
             if (_loading) return;
             _loading = true;
+            GameSpeedControls.SetSimulationSpeed(1f);
             DayResourceLedger.EndRun(_runDurationSeconds);
             SceneManager.LoadScene(baseScene);
         }

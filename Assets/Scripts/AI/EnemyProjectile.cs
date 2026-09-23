@@ -33,6 +33,7 @@ public class EnemyProjectile : MonoBehaviour
             if (h != null && _damageData != null) {
                 foreach (var dmg in _damageData) h.TakeDamage(dmg.TotalDamage, dmg.type, transform);
             }
+            CombatImpactBurst.Spawn(transform.position, new Color(1f, 0.88f, 0.55f, 1f));
             Destroy(gameObject);
         }
         else if (((1 << target.layer) & obstacleLayers) != 0) Destroy(gameObject);

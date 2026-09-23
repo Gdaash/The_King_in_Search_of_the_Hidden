@@ -16,6 +16,8 @@ public class EnemyVisuals_Ranged : MonoBehaviour
     [Header("Анимация отдачи")]
     [SerializeField] private float kickbackDist = 0.3f;
     [SerializeField] private float shootSpeed = 10f;
+    [SerializeField, Min(0f)] private float windupDuration = 0.22f;
+    [SerializeField] private Vector2 windupScale = new(0.9f, 1.08f);
 
     [Header("Порог разворота")]
     [SerializeField] private float flipThreshold = 0.1f; 
@@ -90,7 +92,28 @@ public class EnemyVisuals_Ranged : MonoBehaviour
         Transform target = ai.GetTarget();
         if (target == null) { ai.FinishAttack(); yield break; }
 
-        yield return new WaitForSeconds(0.3f);
+        Vector3 baseScale = spriteParent != null ? spriteParent.localScale : Vector3.one;
+        if (spriteParent != null)
+        {
+            float elapsed = 0f;
+            Vector3 preparedScale = new(baseScale.x * windupScale.x, baseScale.y * windupScale.y, baseScale.z);
+            while (elapsed < windupDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = windupDuration > 0f ? Mathf.Clamp01(elapsed / windupDuration) : 1f;
+                float eased = t * t * (3f - 2f * t);
+                spriteParent.localScale = Vector3.LerpUnclamped(baseScale, preparedScale, eased);
+                yield return null;
+            }
+        }
+
+        target = ai.GetTarget();
+        if (target == null)
+        {
+            if (spriteParent != null) spriteParent.localScale = baseScale;
+            ai.FinishAttack();
+            yield break;
+        }
 
         Vector3 worldDir = (target.position - shootPoint.position).normalized;
         
@@ -131,6 +154,7 @@ public class EnemyVisuals_Ranged : MonoBehaviour
                 yield return null;
             }
             spriteParent.localPosition = _startPos;
+            spriteParent.localScale = baseScale;
         }
 
         ai.FinishAttack(); 

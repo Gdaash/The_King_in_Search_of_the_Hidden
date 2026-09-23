@@ -209,7 +209,7 @@ public class HumanUnit : MonoBehaviour, IEnemyAI
         if (_isReturningToWarehouse) return;
         
         _isReturningToWarehouse = true;
-        _currentTarget = Warehouse.Instance.transform;
+        _currentTarget = Warehouse.Instance.GetSpawnPointTransform();
         
         if (_rb != null) _rb.WakeUp();
     }

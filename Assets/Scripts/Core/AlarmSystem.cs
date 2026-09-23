@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using GameFoundation.Audio;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
@@ -40,6 +41,11 @@ public class AlarmSystem : MonoBehaviour
     [SerializeField] private Image previewImage;
     [SerializeField] private Transform tickContainer;
     [SerializeField] private Sprite uiSprite;
+    [SerializeField] private Sprite thresholdSkullSprite;
+    [SerializeField] private Color lockedSkullColor = Color.black;
+    [SerializeField] private Color unlockedSkullColor = Color.white;
+    [SerializeField] private Vector2 thresholdSkullSize = new(32f, 32f);
+    [SerializeField] private float thresholdSkullYOffset = -30f;
     [SerializeField] private bool createRuntimeUiWhenMissing = true;
     [SerializeField] private Vector2 uiSize = new(360f, 24f);
     [SerializeField] private Vector2 uiTopOffset = new(0f, -94f);
@@ -57,6 +63,7 @@ public class AlarmSystem : MonoBehaviour
 
     [Header("Пороги и волны")]
     [SerializeField] private List<AlarmThreshold> thresholds = new();
+    [SerializeField] private AlarmDifficultyTable difficultyTable;
     [SerializeField, Min(1)] private int nearestBlockedHexesToUse = 8;
     [SerializeField] private Transform mapCenter;
     [SerializeField, Min(0f)] private float spawnPositionJitter = 0.15f;
@@ -77,6 +84,7 @@ public class AlarmSystem : MonoBehaviour
     private readonly Queue<int> _dangerNotificationQueue = new();
     private Coroutine _dangerNotificationRoutine;
     private DangerLevelNotificationView _activeDangerNotification;
+    private readonly List<Image> _thresholdSkulls = new();
     private float _displayedFill;
     private float _pendingAlarm;
     private Canvas _canvas;
@@ -85,9 +93,14 @@ public class AlarmSystem : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        if (difficultyTable != null)
+            thresholds = difficultyTable.GetThresholds(GameFoundation.MetaProgression.DayCycleService.CurrentPortalDifficulty).ToList();
         _canvas = GetComponentInParent<Canvas>() ?? UnityEngine.Object.FindFirstObjectByType<Canvas>();
         _canvasRect = _canvas != null ? _canvas.transform as RectTransform : null;
     }
+
+    public IReadOnlyList<AlarmThreshold> ConfiguredThresholds => thresholds;
+    public AlarmDifficultyTable DifficultyTable => difficultyTable;
 
     private void OnDestroy()
     {
@@ -312,6 +325,8 @@ public class AlarmSystem : MonoBehaviour
         float delayBeforeLight = Mathf.Max(0f, warning.SpawnDelayAfterAppearance - fadeDuration);
         if (delayBeforeLight > 0f) yield return new WaitForSeconds(delayBeforeLight);
 
+        GameAudioController.PlayAt(GameAudioCue.MonsterSpawn, warning.transform.position, 0.78f, 0.94f, 1.05f, 0.05f);
+
         float elapsed = 0f;
         while (elapsed < fadeDuration)
         {
@@ -402,6 +417,7 @@ public class AlarmSystem : MonoBehaviour
     private void ApplyFill(float value)
     {
         if (fillImage != null) fillImage.fillAmount = value;
+        RefreshThresholdSkulls();
     }
 
     private void ApplyPreview(float value)
@@ -540,22 +556,62 @@ public class AlarmSystem : MonoBehaviour
 
     private void CreateThresholdTicks(Transform panel)
     {
+        _thresholdSkulls.Clear();
+        for (int index = panel.childCount - 1; index >= 0; index--)
+        {
+            Transform child = panel.GetChild(index);
+            if (child.name.StartsWith("Threshold ")) Destroy(child.gameObject);
+        }
+
         foreach (AlarmThreshold threshold in thresholds)
         {
             if (threshold == null) continue;
 
-            GameObject tick = new($"Threshold {threshold.alarmValue:0}", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            tick.transform.SetParent(panel, false);
-            RectTransform tickRect = tick.GetComponent<RectTransform>();
+            GameObject marker = new($"Threshold {threshold.alarmValue:0}", typeof(RectTransform));
+            marker.transform.SetParent(panel, false);
+            RectTransform markerRect = marker.GetComponent<RectTransform>();
             float normalizedValue = Mathf.Clamp01(threshold.alarmValue / maximumAlarm);
-            tickRect.anchorMin = tickRect.anchorMax = new Vector2(normalizedValue, 0.5f);
-            tickRect.pivot = new Vector2(0.5f, 0.5f);
-            tickRect.anchoredPosition = Vector2.zero;
+            markerRect.anchorMin = markerRect.anchorMax = new Vector2(normalizedValue, 0.5f);
+            markerRect.pivot = new Vector2(0.5f, 0.5f);
+            markerRect.anchoredPosition = Vector2.zero;
+            markerRect.sizeDelta = Vector2.zero;
+
+            GameObject tick = new("Tick", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            tick.transform.SetParent(marker.transform, false);
+            RectTransform tickRect = tick.GetComponent<RectTransform>();
             tickRect.sizeDelta = new Vector2(3f, uiSize.y + 6f);
 
             Image tickImage = tick.GetComponent<Image>();
             tickImage.color = new Color(1f, 0.83f, 0.3f, 1f);
             tickImage.raycastTarget = false;
+
+            if (thresholdSkullSprite == null) continue;
+            GameObject skull = new("Skull", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            skull.transform.SetParent(marker.transform, false);
+            RectTransform skullRect = skull.GetComponent<RectTransform>();
+            skullRect.anchorMin = skullRect.anchorMax = new Vector2(0.5f, 0.5f);
+            skullRect.pivot = new Vector2(0.5f, 0.5f);
+            skullRect.anchoredPosition = new Vector2(0f, thresholdSkullYOffset);
+            skullRect.sizeDelta = thresholdSkullSize;
+            Image skullImage = skull.GetComponent<Image>();
+            skullImage.sprite = thresholdSkullSprite;
+            skullImage.preserveAspect = true;
+            skullImage.raycastTarget = false;
+            _thresholdSkulls.Add(skullImage);
+        }
+        RefreshThresholdSkulls();
+    }
+
+    private void RefreshThresholdSkulls()
+    {
+        int visualIndex = 0;
+        foreach (AlarmThreshold threshold in thresholds)
+        {
+            if (threshold == null) continue;
+            if (visualIndex >= _thresholdSkulls.Count) break;
+            bool reached = currentAlarm >= threshold.alarmValue;
+            _thresholdSkulls[visualIndex].color = reached ? unlockedSkullColor : lockedSkullColor;
+            visualIndex++;
         }
     }
 }

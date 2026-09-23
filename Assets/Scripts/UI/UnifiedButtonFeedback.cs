@@ -22,6 +22,8 @@ namespace GameFoundation.UI
         private bool focused;
         private bool pressed;
 
+        public float ExternalScaleMultiplier { get; set; } = 1f;
+
         private void Awake()
         {
             button = GetComponent<Button>();
@@ -42,7 +44,7 @@ namespace GameFoundation.UI
 
             if (animateScale)
             {
-                var targetScale = originalScale * scale;
+                var targetScale = originalScale * scale * Mathf.Max(0.01f, ExternalScaleMultiplier);
                 if ((transform.localScale - targetScale).sqrMagnitude > 0.000001f)
                     transform.localScale = Vector3.Lerp(transform.localScale, targetScale, step);
             }
@@ -86,6 +88,7 @@ namespace GameFoundation.UI
         private void OnDisable()
         {
             hovered = focused = pressed = false;
+            ExternalScaleMultiplier = 1f;
             if (animateScale) transform.localScale = originalScale;
             if (graphic != null) graphic.color = originalColor;
             if (outline != null)

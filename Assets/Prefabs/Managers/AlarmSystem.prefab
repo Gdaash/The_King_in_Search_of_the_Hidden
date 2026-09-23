@@ -51,6 +51,11 @@ MonoBehaviour:
   previewImage: {fileID: 0}
   tickContainer: {fileID: 0}
   uiSprite: {fileID: 7482667652216324306, guid: 71493d29645d01d4e92475135c1bf043, type: 3}
+  thresholdSkullSprite: {fileID: 0}
+  lockedSkullColor: {r: 0, g: 0, b: 0, a: 1}
+  unlockedSkullColor: {r: 1, g: 1, b: 1, a: 1}
+  thresholdSkullSize: {x: 32, y: 32}
+  thresholdSkullYOffset: -30
   createRuntimeUiWhenMissing: 1
   uiSize: {x: 360, y: 24}
   uiTopOffset: {x: 0, y: -94}
@@ -76,10 +81,12 @@ MonoBehaviour:
       weight: 3
     - prefab: {fileID: 3082682973624649699, guid: 18db26efc223b1e43bdb7660677b3a8e, type: 3}
       weight: 2
+  difficultyTable: {fileID: 11400000, guid: 7f94dcaf26b34bd468ba37adb5367df2, type: 2}
   nearestBlockedHexesToUse: 8
   mapCenter: {fileID: 0}
   spawnPositionJitter: 0.15
   monsterSpawnWarningPrefab: {fileID: 5076411004074996437, guid: bb6c2a7badadaf14dad25ccd07f87ea1, type: 3}
+  dangerLevelNotificationPrefab: {fileID: 0}
   OnAlarmChanged:
     m_PersistentCalls:
       m_Calls: []

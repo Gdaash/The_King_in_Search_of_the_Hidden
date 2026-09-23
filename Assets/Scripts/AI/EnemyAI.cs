@@ -33,6 +33,11 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
     private Vector2 _personalOffset;
     // Якорь-пустышка для EnemyMovement
     private GameObject _offsetAnchor; 
+    private bool _hasAssignedHomePoint;
+    private Vector3 _assignedHomePoint;
+
+    public bool HasAssignedHomePoint => _hasAssignedHomePoint;
+    public Vector3 AssignedHomePoint => _assignedHomePoint;
 
     void Awake()
     {
@@ -58,7 +63,7 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
         {
             HandleCombat();
         }
-        else if (_homeTransform != null)
+        else if (_homeTransform != null || _hasAssignedHomePoint)
         {
             ReturnToHome();
         }
@@ -70,6 +75,11 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
 
     private void ValidateOrFindHome()
     {
+        if (_hasAssignedHomePoint)
+        {
+            _offsetAnchor.transform.position = _assignedHomePoint;
+            return;
+        }
         if (_homeTransform == null || !_homeTransform.gameObject.activeInHierarchy)
         {
             var home = Object.FindObjectsByType<HomeBase>(FindObjectsSortMode.None)
@@ -108,7 +118,9 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
     private void ReturnToHome()
     {
         // Целевая точка = Центр базы + Индивидуальный сдвиг
-        Vector3 targetPoint = _homeTransform.position + (Vector3)_personalOffset;
+        Vector3 targetPoint = _hasAssignedHomePoint
+            ? _assignedHomePoint
+            : _homeTransform.position + (Vector3)_personalOffset;
         _offsetAnchor.transform.position = targetPoint;
 
         float distanceToPoint = Vector2.Distance(transform.position, targetPoint);
@@ -128,7 +140,7 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
         var targets = GameObject.FindGameObjectsWithTag(targetTag);
         
         _target = targets
-            .Where(t => t.activeInHierarchy)
+            .Where(t => t.activeInHierarchy && (t.GetComponentInParent<Health>() == null || !t.GetComponentInParent<Health>().IsDead))
             .OrderBy(t => Vector2.SqrMagnitude(t.transform.position - transform.position))
             .Select(t => t.transform)
             .FirstOrDefault();
@@ -149,7 +161,7 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
     public Transform GetTarget() 
     {
         if (_target != null) return _target;
-        if (_homeTransform != null) return _offsetAnchor.transform;
+        if (_hasAssignedHomePoint || _homeTransform != null) return _offsetAnchor.transform;
         return null;
     }
 
@@ -160,4 +172,11 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
         if (_offsetAnchor != null) Destroy(_offsetAnchor); 
     }
     public bool GetIsAttacking() => _isAttacking;
+
+    public void SetHomePoint(Vector3 worldPosition)
+    {
+        _hasAssignedHomePoint = true;
+        _assignedHomePoint = worldPosition;
+        if (_offsetAnchor != null) _offsetAnchor.transform.position = worldPosition;
+    }
 }

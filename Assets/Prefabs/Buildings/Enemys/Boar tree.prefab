@@ -125,6 +125,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
+  m_UseReflectionProbes: 0
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
@@ -317,6 +318,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &3884981053325103957
 SpriteRenderer:
+  serializedVersion: 3
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -335,6 +337,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -356,9 +360,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 58fff76aa19f6b344869e2de0dc87b97, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -368,8 +374,8 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+  m_BlendShapeWeights: []
 --- !u!61 &6635042856157650514
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -430,6 +436,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxProductionPool: 3
   storageFullVisual: {fileID: 0}
+  maxProductionCycles: 0
   ignoreFlag: 0
   priority: 10
   requirements: []
@@ -439,6 +446,7 @@ MonoBehaviour:
   spawnPoint: {fileID: 6723440225734276665}
   spawnSpread: 0.3
   iconPrefab: {fileID: 2980702624733634541, guid: cffa8ac521b79ff438ccebad0e8c8c29, type: 3}
+  inTransitIconPrefab: {fileID: 0}
   iconsContainer: {fileID: 8668909615778337043}
   iconSpacing: 0.4
   bobbingAmount: 0.1
@@ -462,6 +470,9 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   OnActionExecuted:
+    m_PersistentCalls:
+      m_Calls: []
+  OnStorageFullChanged:
     m_PersistentCalls:
       m_Calls: []
 --- !u!114 &8726194278714842505
@@ -489,7 +500,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0c8b4964dd3a5645ace6add3d5391cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stats: {fileID: 11400000, guid: ffa08edb9adae764d8a7e53d70664dbc, type: 2}
+  stats: {fileID: 0}
   targetSprite: {fileID: 3884981053325103957}
   damageTextPrefab: {fileID: 0}
   _cur: 0

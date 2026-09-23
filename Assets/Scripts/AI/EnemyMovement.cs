@@ -19,6 +19,15 @@ public class EnemyMovement : MonoBehaviour
     private float _finalSpeed;
     private float _individualVariation; // Персональное отклонение скорости
 
+    public float CurrentSpeed
+    {
+        get
+        {
+            if (_finalSpeed <= 0f) UpdateSpeed();
+            return Mathf.Max(0.1f, _finalSpeed);
+        }
+    }
+
     void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
@@ -91,7 +100,10 @@ public class EnemyMovement : MonoBehaviour
             return;
         }
 
-        _rb.linearVelocity = direction.normalized * _finalSpeed;
+        Vector2 moveDirection = direction.normalized;
+        if (CompareTag("Player"))
+            moveDirection = PlayerHexNavigation.ResolveDirection(currentPos, moveDirection);
+        _rb.linearVelocity = moveDirection * _finalSpeed;
         HandleFlip();
     }
 
