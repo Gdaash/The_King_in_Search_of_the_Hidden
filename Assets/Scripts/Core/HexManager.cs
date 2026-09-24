@@ -34,6 +34,13 @@ public class HexManager : MonoBehaviour
     public IReadOnlyList<HexGroupSettings> ConfiguredGroups => groups;
     public HexDifficultyTable DifficultyTable => difficultyTable;
 
+#if UNITY_EDITOR
+    public void ReplaceConfiguredGroups(List<HexGroupSettings> value)
+    {
+        groups = value ?? new List<HexGroupSettings>();
+    }
+#endif
+
     [Header("Настройки анимации появления (бамп)")]
     [SerializeField] private float bumpScaleUp = 1.1f;
     [SerializeField] private float bumpScaleDown = 0.95f;
@@ -52,9 +59,10 @@ public class HexManager : MonoBehaviour
 
     private void AssignHexContents()
     {
-        IReadOnlyList<HexGroupSettings> activeGroups = difficultyTable != null
-            ? difficultyTable.GetGroups(GameFoundation.MetaProgression.DayCycleService.CurrentPortalDifficulty)
-            : groups;
+        int difficulty = GameFoundation.MetaProgression.DayCycleService.CurrentPortalDifficulty;
+        IReadOnlyList<HexGroupSettings> activeGroups = groups;
+        if (difficulty > 1 && difficultyTable != null && difficultyTable.TryGetExactGroups(difficulty, out var configuredGroups))
+            activeGroups = configuredGroups;
         HexBlocker[] allHexes = Object.FindObjectsByType<HexBlocker>(FindObjectsSortMode.None);
         var groupedHexes = allHexes.GroupBy(h => h.groupID);
 

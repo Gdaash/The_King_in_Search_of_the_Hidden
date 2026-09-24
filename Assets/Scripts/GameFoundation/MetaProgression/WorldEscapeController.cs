@@ -194,6 +194,7 @@ namespace GameFoundation.MetaProgression
         public void ShowPortalDestroyedStatistics()
         {
             if (_loading || _showingStatistics) return;
+            DayCycleService.Instance?.DeactivateSelectedPortal();
             _escaping = true;
             StopWorldForEscape();
             if (defeatMessage != null)

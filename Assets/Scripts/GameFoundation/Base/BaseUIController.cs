@@ -9,7 +9,7 @@ namespace GameFoundation.Base
 {
     public sealed class BaseUIController : MonoBehaviour
     {
-        [SerializeField] private GameObject globalMap, laboratory, settings, warehouse, housing, refugees, square;
+        [SerializeField] private GameObject globalMap, laboratory, settings, warehouse, housing, refugees, square, blacksmith;
         [SerializeField] private GameObject nextDayConfirmation;
         [SerializeField] private FoodForecastView nextDayForecast, housingForecast;
         [SerializeField] private Button[] portalButtons;
@@ -37,6 +37,7 @@ namespace GameFoundation.Base
             Bind("Base Panel/Housing", OpenHousing);
             Bind("Base Panel/Refugees", OpenRefugees);
             Bind("Base Panel/Square", OpenSquare);
+            Bind("Base Panel/Blacksmith", OpenBlacksmith);
             Bind("Base Panel/Settings", OpenSettings);
             Bind("Global Map/Search Portals", SearchPortals);
             Bind("Global Map/Close", CloseMap);
@@ -47,6 +48,7 @@ namespace GameFoundation.Base
             Bind("Refugees Popup/Close", CloseRefugees);
             Bind("Refugees Popup/Admit", AdmitRefugee);
             Bind("Square Popup/Close", CloseSquare);
+            Bind("Blacksmith Popup/Close", CloseBlacksmith);
         }
         private void OnEnable()
         {
@@ -108,7 +110,7 @@ namespace GameFoundation.Base
             }
             if (dayText) dayText.text = Tr("base.day", "День") + " " + (day?.Day ?? 1);
             var search = transform.Find("Global Map/Search Portals")?.GetComponent<Button>();
-            if (search) search.interactable = day != null && !day.SearchedToday && day.Portals.Count < DayCycleService.MaxPortals;
+            if (search) search.gameObject.SetActive(false);
             var available = transform.Find("Refugees Popup/Available")?.GetComponent<Text>();
             if (available) available.text = Tr("base.waiting", "Ожидают:") + " " + (day?.RefugeesAvailable ?? 0);
             var admit = transform.Find("Refugees Popup/Admit")?.GetComponent<Button>();
@@ -117,21 +119,20 @@ namespace GameFoundation.Base
             {
                 var button = portalButtons[i];
                 if (!button) continue;
-                var visible = day != null && i < day.Portals.Count;
+                var view = button.GetComponent<PortalSiteButtonView>();
+                PortalSite site = day?.Portals.Find(item => item.locationId == view?.LocationId);
+                if (site == null && day != null && i < day.Portals.Count) site = day.Portals[i];
+                PortalLocationDefinition location = site != null ? DayCycleService.GetPortalLocation(site.locationId) : null;
+                var visible = site != null && location != null;
                 button.gameObject.SetActive(visible);
                 if (!visible) continue;
-                var site = day.Portals[i];
-                var rect = button.GetComponent<RectTransform>();
-                rect.anchorMin = rect.anchorMax = new Vector2(site.x, site.y);
-                rect.anchoredPosition = Vector2.zero;
-                var view = button.GetComponent<PortalSiteButtonView>();
                 if (view != null)
-                    view.Refresh(site, magicOre, oreAmount, day.EnteredToday, Tr("base.level", "Ур."), Tr("base.enter", "Войти"));
+                    view.Refresh(site, location, magicOre, oreAmount, day.EnteredToday,
+                        Tr("base.enter", "Войти"), Tr("base.portal.free", "Бесплатно"));
                 button.onClick.RemoveAllListeners();
                 var portal = site;
                 button.onClick.AddListener(() => SelectPortal(portal));
             }
-            SeparatePortalButtons();
             RefreshForecasts();
         }
 
@@ -142,54 +143,6 @@ namespace GameFoundation.Base
             var forecast = day.GetFoodForecast();
             nextDayForecast?.SetData(forecast);
             housingForecast?.SetData(forecast);
-        }
-        private void SeparatePortalButtons()
-        {
-            if (portalButtons == null) return;
-            var occupied = new List<Rect>();
-            var castle = globalMap != null ? globalMap.transform.Find("Castle") as RectTransform : null;
-            if (castle != null && portalButtons.Length > 0 && portalButtons[0] != null)
-            {
-                var sites = portalButtons[0].transform.parent as RectTransform;
-                if (sites != null)
-                {
-                    var center = (Vector2)sites.InverseTransformPoint(castle.position);
-                    occupied.Add(new Rect(center.x - castle.rect.width * .5f - 16f,
-                        center.y - castle.rect.height * .5f - 16f,
-                        castle.rect.width + 32f, castle.rect.height + 32f));
-                }
-            }
-            foreach (var button in portalButtons)
-            {
-                if (button == null || !button.gameObject.activeSelf) continue;
-                var rect = button.GetComponent<RectTransform>();
-                var parent = rect.parent as RectTransform;
-                if (parent == null) continue;
-                var original = (Vector2)rect.localPosition;
-                var chosen = Vector2.zero;
-                var found = false;
-                for (var ring = 0; ring <= 4 && !found; ring++)
-                {
-                    for (var y = -ring; y <= ring && !found; y++)
-                    for (var x = -ring; x <= ring && !found; x++)
-                    {
-                        if (Mathf.Max(Mathf.Abs(x), Mathf.Abs(y)) != ring) continue;
-                        var offset = new Vector2(x * 205f, y * 160f);
-                        var center = original + offset;
-                        var bounds = new Rect(center.x - 100f, center.y - 50f, 200f, 160f);
-                        if (bounds.xMin < parent.rect.xMin || bounds.xMax > parent.rect.xMax ||
-                            bounds.yMin < parent.rect.yMin || bounds.yMax > parent.rect.yMax) continue;
-                        var overlap = false;
-                        foreach (var previous in occupied)
-                            if (bounds.Overlaps(previous)) { overlap = true; break; }
-                        if (overlap) continue;
-                        chosen = offset;
-                        occupied.Add(bounds);
-                        found = true;
-                    }
-                }
-                if (found) rect.anchoredPosition = chosen;
-            }
         }
         private void SelectPortal(PortalSite site)
         {
@@ -247,6 +200,7 @@ namespace GameFoundation.Base
         public void OpenHousing() { RefreshForecasts(); Show(housing, true); }
         public void OpenRefugees() => Show(refugees, true);
         public void OpenSquare() => Show(square, true);
+        public void OpenBlacksmith() => Show(blacksmith, true);
         public void CloseMap() => Show(globalMap, false);
         public void CloseLaboratory() => Show(laboratory, false);
         public void CloseSettings() => Show(settings, false);
@@ -254,6 +208,7 @@ namespace GameFoundation.Base
         public void CloseHousing() => Show(housing, false);
         public void CloseRefugees() => Show(refugees, false);
         public void CloseSquare() => Show(square, false);
+        public void CloseBlacksmith() => Show(blacksmith, false);
         public void NextDay() { if (DayCycleService.Instance == null) return; RefreshForecasts(); Show(nextDayConfirmation, true); }
         public void CancelNextDay() => Show(nextDayConfirmation, false);
         public void ConfirmNextDay()

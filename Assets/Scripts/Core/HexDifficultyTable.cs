@@ -21,4 +21,11 @@ public sealed class HexDifficultyTable : ScriptableObject
         selected ??= difficulties.FirstOrDefault(item => item.level == 1);
         return selected != null ? selected.groups : Array.Empty<HexManager.HexGroupSettings>();
     }
+
+    public bool TryGetExactGroups(int level, out IReadOnlyList<HexManager.HexGroupSettings> groups)
+    {
+        Difficulty selected = difficulties.FirstOrDefault(item => item.level == Mathf.Clamp(level, 1, 5));
+        groups = selected != null ? selected.groups : Array.Empty<HexManager.HexGroupSettings>();
+        return selected != null;
+    }
 }

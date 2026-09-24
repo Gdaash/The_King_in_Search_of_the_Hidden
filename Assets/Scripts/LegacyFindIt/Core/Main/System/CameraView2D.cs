@@ -8,6 +8,8 @@ public class CameraView2D : MonoBehaviour
 
     [Header("Настройки зума")]
     public bool enableZoom = true;
+    [Tooltip("Ортографический размер камеры при загрузке сцены.")]
+    public float startZoom = 5.4f;
     public float zoomMin = 2f;
     public float zoomMax = 5.4f;
     public float zoomPan = 0f;
@@ -54,7 +56,8 @@ public class CameraView2D : MonoBehaviour
 
         _lastScreenWidth = Screen.width;
         _lastScreenHeight = Screen.height;
-        
+
+        _camera.orthographicSize = Mathf.Clamp(startZoom, zoomMin, zoomMax);
         ScaleOverflowCamera();
     }
 

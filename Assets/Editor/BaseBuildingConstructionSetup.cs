@@ -30,7 +30,9 @@ public static class BaseBuildingConstructionSetup
         New("Fort", "fort", "base.base_panel.fort.label", "Форт", "Fort",
             "base.building.fort.description", "Позволяет вооружать жителей мечами и создавать мечников.", "Turns residents with swords into swordsmen."),
         New("Archery Range", "archery_range", "base.base_panel.archery_range.label", "Стрельбище", "Archery range",
-            "base.building.archery_range.description", "Позволяет вооружать жителей луками и создавать лучников.", "Turns residents with bows into archers.")
+            "base.building.archery_range.description", "Позволяет вооружать жителей луками и создавать лучников.", "Turns residents with bows into archers."),
+        New("Blacksmith", "blacksmith", "base.base_panel.blacksmith.label", "Кузница", "Blacksmith",
+            "base.building.blacksmith.description", "Куёт мечи из железной руды и изготавливает луки из дерева.", "Forges swords from iron ore and makes bows from wood.")
     };
 
     [MenuItem("Tools/Game Foundation/Setup Base Construction")]
@@ -62,7 +64,7 @@ public static class BaseBuildingConstructionSetup
         GameObject root = PrefabUtility.LoadPrefabContents(PanelPath);
         foreach (Definition definition in Definitions)
         {
-            if (definition.objectName == "Fort" || definition.objectName == "Archery Range") continue;
+            if (definition.objectName == "Fort" || definition.objectName == "Archery Range" || definition.objectName == "Blacksmith") continue;
             Transform target = root.transform.Find(definition.objectName);
             if (target != null) ConfigureBuilding(target.gameObject, definition, wood, stone, buttonSprite, font);
         }
@@ -76,7 +78,7 @@ public static class BaseBuildingConstructionSetup
         GameObject panel = GameObject.Find("Base Panel");
         foreach (Definition definition in Definitions)
         {
-            if (definition.objectName != "Fort" && definition.objectName != "Archery Range") continue;
+            if (definition.objectName != "Fort" && definition.objectName != "Archery Range" && definition.objectName != "Blacksmith") continue;
             Transform target = panel != null ? panel.transform.Find(definition.objectName) : null;
             if (target != null) ConfigureBuilding(target.gameObject, definition, wood, stone, buttonSprite, font);
         }

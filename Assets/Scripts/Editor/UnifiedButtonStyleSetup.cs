@@ -104,6 +104,12 @@ public static class UnifiedButtonStyleSetup
 
     private static void Apply(Button button, ButtonVisualTheme theme)
     {
+        // Tooltips use Button only as a convenient raycast target. Their root image is
+        // a stretchable tooltip background and must not receive the shared button art.
+        if (button.name.IndexOf("Tooltip", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            button.GetComponent<TooltipManager>() != null)
+            return;
+
         bool skill = button.GetComponent<SkillButton>() != null;
         bool warehouse = button.name == "Buy Cart" &&
                          button.GetComponentInParent<WarehouseCartPurchaseView>(true) != null;

@@ -16,37 +16,18 @@ public static class WorldDifficultyTablesMenu
     private const string AlarmSheet = "AlarmSpawner";
     private const string HexAssetPath = "Assets/Resources/World/HexDifficultyTable.asset";
     private const string AlarmAssetPath = "Assets/Resources/World/AlarmDifficultyTable.asset";
+    private const string HexManagerPrefabPath = "Assets/Prefabs/Managers/HexManager.prefab";
     private const string HexHeader = "difficulty,group_id,prefab_path,content_id,mandatory,auto_unlock,start_locked";
     private const string AlarmHeader = "difficulty,threshold,alarm_value,min_spawn_interval,max_spawn_interval,min_enemies,max_enemies,enemy_prefab_path,enemy_weight";
 
-    [MenuItem("Tools/Таблицы/HexManager/Экспорт CSV")]
-    private static void ExportHexFile() => SaveCsv("Экспорт наполнения гексов", "hex_difficulties.csv", BuildHexCsv());
-
-    [MenuItem("Tools/Таблицы/HexManager/Скопировать для Google Sheets")]
+    [MenuItem("Tools/Таблицы/HexManager/Экспорт в Google Sheets")]
     private static void CopyHexGoogle() => CopyForGoogle(BuildHexCsv(), HexSheet, "наполнение HexManager");
-
-    [MenuItem("Tools/Таблицы/HexManager/Импорт CSV")]
-    private static void ImportHexFile()
-    {
-        string path = EditorUtility.OpenFilePanel("Импорт наполнения гексов", "", "csv");
-        if (!string.IsNullOrEmpty(path)) ImportHex(File.ReadAllText(path, Encoding.UTF8));
-    }
 
     [MenuItem("Tools/Таблицы/HexManager/Импорт из Google Sheets")]
     private static async void ImportHexGoogle() => await ImportGoogle(HexSheet, ImportHex);
 
-    [MenuItem("Tools/Таблицы/Alarm Bar/Экспорт CSV")]
-    private static void ExportAlarmFile() => SaveCsv("Экспорт спавнера тревоги", "alarm_difficulties.csv", BuildAlarmCsv());
-
-    [MenuItem("Tools/Таблицы/Alarm Bar/Скопировать для Google Sheets")]
+    [MenuItem("Tools/Таблицы/Alarm Bar/Экспорт в Google Sheets")]
     private static void CopyAlarmGoogle() => CopyForGoogle(BuildAlarmCsv(), AlarmSheet, "настройки спавнера тревоги");
-
-    [MenuItem("Tools/Таблицы/Alarm Bar/Импорт CSV")]
-    private static void ImportAlarmFile()
-    {
-        string path = EditorUtility.OpenFilePanel("Импорт спавнера тревоги", "", "csv");
-        if (!string.IsNullOrEmpty(path)) ImportAlarm(File.ReadAllText(path, Encoding.UTF8));
-    }
 
     [MenuItem("Tools/Таблицы/Alarm Bar/Импорт из Google Sheets")]
     private static async void ImportAlarmGoogle() => await ImportGoogle(AlarmSheet, ImportAlarm);
@@ -55,6 +36,8 @@ public static class WorldDifficultyTablesMenu
     {
         HexDifficultyTable table = AssetDatabase.LoadAssetAtPath<HexDifficultyTable>(HexAssetPath);
         if (table == null) throw new InvalidDataException("Не найден " + HexAssetPath);
+        HexManager manager = LoadHexManagerPrefab();
+        SynchronizeDifficultyOne(table, manager.ConfiguredGroups);
         var rows = new List<string> { HexHeader };
         foreach (HexDifficultyTable.Difficulty difficulty in table.difficulties.OrderBy(item => item.level))
         foreach (HexManager.HexGroupSettings group in difficulty.groups.OrderBy(item => item.groupID))
@@ -118,7 +101,54 @@ public static class WorldDifficultyTablesMenu
         }
         Undo.RecordObject(table, "Import HexManager difficulties");
         table.difficulties = difficulties.Values.OrderBy(item => item.level).ToList();
+        HexDifficultyTable.Difficulty difficultyOne = table.difficulties.FirstOrDefault(item => item.level == 1);
+        if (difficultyOne != null)
+        {
+            HexManager manager = LoadHexManagerPrefab();
+            Undo.RecordObject(manager, "Import HexManager difficulty 1");
+            manager.ReplaceConfiguredGroups(CloneGroups(difficultyOne.groups));
+            EditorUtility.SetDirty(manager);
+            PrefabUtility.SavePrefabAsset(manager.gameObject);
+        }
         Save(table, $"Импортировано строк HexManager: {rows.Count - 1}");
+    }
+
+    private static HexManager LoadHexManagerPrefab()
+    {
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(HexManagerPrefabPath);
+        HexManager manager = prefab != null ? prefab.GetComponent<HexManager>() : null;
+        if (manager == null) throw new InvalidDataException("Не найден HexManager в " + HexManagerPrefabPath);
+        return manager;
+    }
+
+    private static void SynchronizeDifficultyOne(HexDifficultyTable table, IReadOnlyList<HexManager.HexGroupSettings> source)
+    {
+        HexDifficultyTable.Difficulty difficulty = table.difficulties.FirstOrDefault(item => item.level == 1);
+        if (difficulty == null)
+        {
+            difficulty = new HexDifficultyTable.Difficulty { level = 1 };
+            table.difficulties.Add(difficulty);
+        }
+        difficulty.groups = CloneGroups(source);
+        table.difficulties = table.difficulties.OrderBy(item => item.level).ToList();
+        EditorUtility.SetDirty(table);
+        AssetDatabase.SaveAssets();
+    }
+
+    private static List<HexManager.HexGroupSettings> CloneGroups(IEnumerable<HexManager.HexGroupSettings> source)
+    {
+        return source.Select(group => new HexManager.HexGroupSettings
+        {
+            groupID = group.groupID,
+            prefabsForGroup = group.prefabsForGroup.Select(item => new HexManager.HexPrefabData
+            {
+                contentID = item.contentID,
+                prefab = item.prefab,
+                isMandatory = item.isMandatory,
+                autoUnlockHex = item.autoUnlockHex,
+                startLocked = item.startLocked
+            }).ToList()
+        }).ToList();
     }
 
     private static void ImportAlarm(string csv)
@@ -201,14 +231,6 @@ public static class WorldDifficultyTablesMenu
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
         if (prefab == null) throw new InvalidDataException("Не найден префаб: " + path);
         return prefab;
-    }
-
-    private static void SaveCsv(string title, string defaultName, string csv)
-    {
-        string path = EditorUtility.SaveFilePanel(title, "", defaultName, "csv");
-        if (string.IsNullOrEmpty(path)) return;
-        File.WriteAllText(path, csv, new UTF8Encoding(true));
-        EditorUtility.RevealInFinder(path);
     }
 
     private static void ValidateHeader(List<List<string>> rows, string expected)

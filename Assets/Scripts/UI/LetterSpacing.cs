@@ -16,11 +16,13 @@ namespace GameFoundation.UI
             ApplyPointFilter();
         }
 
+#if UNITY_EDITOR
         protected override void OnValidate()
         {
             base.OnValidate();
             ApplyPointFilter();
         }
+#endif
 
         private void ApplyPointFilter()
         {

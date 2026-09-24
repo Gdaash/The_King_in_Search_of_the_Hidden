@@ -9,15 +9,19 @@ namespace GameFoundation.Base
     {
         [SerializeField] private ResourceType human;
         [SerializeField] private ResourceType berries;
+        [SerializeField] private ResourceType crowns;
         [SerializeField] private Image residentsIcon;
         [SerializeField] private Image berriesIcon;
         [SerializeField] private Image starvationIcon;
+        [SerializeField] private Image crownsIcon;
         [SerializeField] private Text residentsLabel;
         [SerializeField] private Text foodLabel;
         [SerializeField] private Text starvationLabel;
+        [SerializeField] private Text crownsLabel;
         [SerializeField] private Text residentsAmount;
         [SerializeField] private Text berriesAmount;
         [SerializeField] private Text starvationAmount;
+        [SerializeField] private Text crownsAmount;
         [SerializeField] private Color normalColor = new Color(0.94f, 0.91f, 0.82f, 1f);
         [SerializeField] private Color dangerColor = new Color(1f, 0.47f, 0.47f, 1f);
 
@@ -26,13 +30,21 @@ namespace GameFoundation.Base
             SetIcon(residentsIcon, human);
             SetIcon(berriesIcon, berries);
             SetIcon(starvationIcon, human);
+            SetIcon(crownsIcon, crowns);
             if (residentsLabel != null) residentsLabel.text = Tr("base.food_forecast.residents", "Жители");
             if (foodLabel != null) foodLabel.text = Tr("base.food_forecast.food", "Еда");
             if (starvationLabel != null) starvationLabel.text = Tr("base.food_forecast.deaths", "Умрёт от голода");
+            if (crownsLabel != null) crownsLabel.text = Tr("base.food_forecast.crowns", "Изменение корон");
             SetAmount(residentsAmount, forecast.Residents, normalColor);
             SetAmount(berriesAmount, forecast.Berries, normalColor);
             SetAmount(starvationAmount, forecast.Starving,
                 forecast.Starving > 0 ? dangerColor : normalColor);
+            if (crownsAmount != null)
+            {
+                int delta = forecast.CrownDelta;
+                crownsAmount.text = delta > 0 ? "+" + delta : delta.ToString();
+                crownsAmount.color = delta < 0 ? dangerColor : normalColor;
+            }
             if (starvationIcon != null)
                 starvationIcon.color = forecast.Starving > 0 ? dangerColor : Color.white;
         }

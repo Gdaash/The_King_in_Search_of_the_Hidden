@@ -13,26 +13,14 @@ public static class GameTablesMenu
     private const string UpgradePath = "Assets/Resources/ScientificUpgradeTable.asset";
     private const string LocalizationPath = "Assets/Prefabs/Base/Base Localization.asset";
     private const string SheetId = "1eepDmDSn5Y-Bs6qj49qZV8EjP1zo-pi58c8EeYKflyg";
-    private const string SheetCsvUrl = "https://docs.google.com/spreadsheets/d/" + SheetId + "/export?format=csv&gid=0";
+    private const string UpgradeSheet = "ScientificUpgrades";
+    private const string LocalizationSheet = "Localization";
+    private const string UpgradeReadUrl = "https://docs.google.com/spreadsheets/d/" + SheetId + "/export?format=csv&gid=0";
+    private const string LocalizationGid = "412557074";
+    private const string LocalizationReadUrl = "https://docs.google.com/spreadsheets/d/" + SheetId + "/export?format=csv&gid=" + LocalizationGid;
     private const string UpgradeHeader = "id,parent,title_ru,description_ru,cost_resource,cost_amount,effect_value";
 
-    [MenuItem("Tools/Таблицы/Улучшения/Экспорт CSV")]
-    private static void ExportUpgrades()
-    {
-        var table = AssetDatabase.LoadAssetAtPath<ScientificUpgradeTable>(UpgradePath);
-        if (table == null) { EditorUtility.DisplayDialog("Улучшения", "Таблица улучшений не найдена.", "OK"); return; }
-        string path = EditorUtility.SaveFilePanel("Экспорт улучшений", "", "scientific_upgrades.csv", "csv");
-        if (string.IsNullOrEmpty(path)) return;
-        var rows = new List<string> { UpgradeHeader };
-        foreach (var entry in table.entries)
-            rows.Add(Row(entry.id, entry.parentId, entry.title, entry.description,
-                entry.costResource != null ? entry.costResource.name : "", entry.cost.ToString(CultureInfo.InvariantCulture),
-                entry.effectValue.ToString(CultureInfo.InvariantCulture)));
-        File.WriteAllText(path, string.Join("\r\n", rows), new UTF8Encoding(true));
-        EditorUtility.RevealInFinder(path);
-    }
-
-    [MenuItem("Tools/Таблицы/Улучшения/Скопировать для Google Sheets")]
+    [MenuItem("Tools/Таблицы/Улучшения/Экспорт в Google Sheets")]
     private static void CopyUpgradesForGoogle()
     {
         var table = AssetDatabase.LoadAssetAtPath<ScientificUpgradeTable>(UpgradePath);
@@ -43,15 +31,7 @@ public static class GameTablesMenu
                 entry.costResource != null ? entry.costResource.name : "",
                 entry.cost.ToString(CultureInfo.InvariantCulture), entry.effectValue.ToString(CultureInfo.InvariantCulture) }));
         EditorGUIUtility.systemCopyBuffer = string.Join("\n", rows);
-        Application.OpenURL("https://docs.google.com/spreadsheets/d/" + SheetId + "/edit?gid=0#gid=0");
-        EditorUtility.DisplayDialog("Экспорт улучшений", "Данные скопированы. Вставьте их в ячейку A1 таблицы Google Sheets.", "OK");
-    }
-
-    [MenuItem("Tools/Таблицы/Улучшения/Импорт CSV")]
-    private static void ImportUpgradesFile()
-    {
-        string path = EditorUtility.OpenFilePanel("Импорт улучшений", "", "csv");
-        if (!string.IsNullOrEmpty(path)) ImportUpgrades(File.ReadAllText(path, Encoding.UTF8));
+        OpenGoogleSheet(UpgradeSheet, "улучшений", "0");
     }
 
     [MenuItem("Tools/Таблицы/Улучшения/Импорт из Google Sheets")]
@@ -60,7 +40,7 @@ public static class GameTablesMenu
         try
         {
             using var client = new System.Net.Http.HttpClient();
-            var csv = await client.GetStringAsync(SheetCsvUrl);
+            var csv = await client.GetStringAsync(UpgradeReadUrl);
             if (string.IsNullOrWhiteSpace(csv)) throw new InvalidDataException("Таблица Google Sheets пока пустая или не опубликована как CSV.");
             ImportUpgrades(csv);
         }
@@ -95,39 +75,61 @@ public static class GameTablesMenu
         EditorUtility.DisplayDialog("Импорт улучшений", "Импортировано улучшений: " + entries.Count, "OK");
     }
 
-    [MenuItem("Tools/Таблицы/Локализация/Экспорт CSV")]
+    [MenuItem("Tools/Таблицы/Локализация/Экспорт в Google Sheets")]
     private static void ExportLocalization()
     {
         var table = AssetDatabase.LoadAssetAtPath<LocalizationTable>(LocalizationPath);
         if (table == null) return;
-        string path = EditorUtility.SaveFilePanel("Экспорт локализации", "", "localization.csv", "csv");
-        if (string.IsNullOrEmpty(path)) return;
         var rows = new List<string> { Row((new[] { "key" }).Concat(table.languages).ToArray()) };
         foreach (var entry in table.entries)
             rows.Add(Row((new[] { entry.key }).Concat(Enumerable.Range(0, table.languages.Count)
                 .Select(i => i < entry.values.Count ? entry.values[i] : "")).ToArray()));
-        File.WriteAllText(path, string.Join("\r\n", rows), new UTF8Encoding(true));
-        EditorUtility.RevealInFinder(path);
+        EditorGUIUtility.systemCopyBuffer = string.Join("\n", Parse(string.Join("\r\n", rows)).Select(row => string.Join("\t", row)));
+        OpenGoogleSheet(LocalizationSheet, "локализации", LocalizationGid);
     }
 
-    [MenuItem("Tools/Таблицы/Локализация/Импорт CSV")]
-    private static void ImportLocalizationFile()
+    [MenuItem("Tools/Таблицы/Локализация/Импорт из Google Sheets")]
+    private static async void ImportLocalizationGoogle()
     {
-        string path = EditorUtility.OpenFilePanel("Импорт локализации", "", "csv");
-        if (string.IsNullOrEmpty(path)) return;
-        var rows = Parse(File.ReadAllText(path, Encoding.UTF8));
+        try
+        {
+            using var client = new System.Net.Http.HttpClient();
+            string csv = await client.GetStringAsync(LocalizationReadUrl);
+            ImportLocalization(csv);
+        }
+        catch (Exception error) { EditorUtility.DisplayDialog("Импорт локализации", error.Message, "OK"); }
+    }
+
+    private static void ImportLocalization(string csv)
+    {
+        var rows = Parse(csv);
         if (rows.Count == 0 || rows[0].Count < 2 || rows[0][0] != "key")
         { EditorUtility.DisplayDialog("Импорт локализации", "Первый столбец должен быть key.", "OK"); return; }
         var table = AssetDatabase.LoadAssetAtPath<LocalizationTable>(LocalizationPath);
         if (table == null) return;
         Undo.RecordObject(table, "Import localization");
-        table.languages = rows[0].Skip(1).ToList();
+        List<int> languageColumns = Enumerable.Range(1, rows[0].Count - 1)
+            .Where(index => !string.IsNullOrWhiteSpace(rows[0][index]) &&
+                !rows[0][index].StartsWith("ignore_", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        table.languages = languageColumns.Select(index => rows[0][index]).ToList();
         table.entries = rows.Skip(1).Where(row => row.Count > 0 && !string.IsNullOrWhiteSpace(row[0]))
-            .Select(row => new LocalizationTable.Entry { key = row[0], values = Enumerable.Range(1, table.languages.Count)
-                .Select(i => i < row.Count ? row[i] : "").ToList() }).ToList();
+            .Select(row => new LocalizationTable.Entry { key = row[0], values = languageColumns
+                .Select(index => index < row.Count ? row[index] : "").ToList() }).ToList();
         EditorUtility.SetDirty(table);
         AssetDatabase.SaveAssets();
         EditorUtility.DisplayDialog("Импорт локализации", "Импортировано строк: " + table.entries.Count, "OK");
+    }
+
+    private static string GoogleReadUrl(string sheet) =>
+        $"https://docs.google.com/spreadsheets/d/{SheetId}/gviz/tq?tqx=out:csv&sheet={Uri.EscapeDataString(sheet)}";
+
+    private static void OpenGoogleSheet(string sheet, string title, string gid = null)
+    {
+        string suffix = string.IsNullOrEmpty(gid) ? string.Empty : $"?gid={gid}#gid={gid}";
+        Application.OpenURL($"https://docs.google.com/spreadsheets/d/{SheetId}/edit{suffix}");
+        EditorUtility.DisplayDialog("Экспорт " + title,
+            $"Данные для вкладки {sheet} скопированы. Выберите A1 во вкладке и вставьте их.", "OK");
     }
 
     private static string Row(params string[] cells) => string.Join(",", cells.Select(cell => "\"" + (cell ?? "").Replace("\"", "\"\"") + "\""));
