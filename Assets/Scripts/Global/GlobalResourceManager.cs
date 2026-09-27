@@ -88,6 +88,11 @@ public class GlobalResourceManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            // A persistent object must be a scene root. The manager is placed under
+            // the scene's Managers group for editor organization, so detach it only
+            // at runtime before preserving it across scene loads.
+            if (transform.parent != null)
+                transform.SetParent(null);
             DontDestroyOnLoad(gameObject);
             if (GetComponent<GameFoundation.Saves.SaveSlotClock>() == null)
                 gameObject.AddComponent<GameFoundation.Saves.SaveSlotClock>();
