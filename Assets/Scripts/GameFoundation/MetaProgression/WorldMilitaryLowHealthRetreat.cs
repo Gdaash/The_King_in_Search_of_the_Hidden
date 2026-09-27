@@ -1,4 +1,5 @@
 using UnityEngine;
+using GameFoundation.Base;
 
 namespace GameFoundation.MetaProgression
 {
@@ -6,14 +7,12 @@ namespace GameFoundation.MetaProgression
     public sealed class WorldMilitaryLowHealthRetreat : MonoBehaviour
     {
         private WorldMilitaryDeploymentController deployment;
-        private GlobalStats scientificStats;
         private Health health;
         private bool retreatRequested;
 
         public void Initialize(WorldMilitaryDeploymentController owner, GlobalStats progressStats)
         {
             deployment = owner;
-            scientificStats = progressStats;
             health = GetComponent<Health>();
             if (health != null)
             {
@@ -32,9 +31,8 @@ namespace GameFoundation.MetaProgression
 
         private void CheckHealth(float normalizedHealth)
         {
-            if (retreatRequested || deployment == null || scientificStats == null) return;
-            float threshold = scientificStats.WarriorRetreatHealthThreshold;
-            if (threshold <= 0f || normalizedHealth > threshold) return;
+            if (retreatRequested || deployment == null || !RoyalDecreeService.IsEnabled(RoyalDecreeService.CautiousWarriors)) return;
+            if (normalizedHealth > 0.1f) return;
             retreatRequested = deployment.RequestLowHealthRetreat(gameObject);
         }
     }

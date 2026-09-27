@@ -32,7 +32,9 @@ public static class BaseBuildingConstructionSetup
         New("Archery Range", "archery_range", "base.base_panel.archery_range.label", "Стрельбище", "Archery range",
             "base.building.archery_range.description", "Позволяет вооружать жителей луками и создавать лучников.", "Turns residents with bows into archers."),
         New("Blacksmith", "blacksmith", "base.base_panel.blacksmith.label", "Кузница", "Blacksmith",
-            "base.building.blacksmith.description", "Куёт мечи из железной руды и изготавливает луки из дерева.", "Forges swords from iron ore and makes bows from wood.")
+            "base.building.blacksmith.description", "Куёт мечи из железной руды и изготавливает луки из дерева.", "Forges swords from iron ore and makes bows from wood."),
+        New("Castle", "castle", "base.base_panel.castle.label", "Замок", "Castle",
+            "base.building.castle.description", "Позволяет издавать указы, меняющие работу систем.", "Issues decrees that change how game systems work.")
     };
 
     [MenuItem("Tools/Game Foundation/Setup Base Construction")]
@@ -78,7 +80,7 @@ public static class BaseBuildingConstructionSetup
         GameObject panel = GameObject.Find("Base Panel");
         foreach (Definition definition in Definitions)
         {
-            if (definition.objectName != "Fort" && definition.objectName != "Archery Range" && definition.objectName != "Blacksmith") continue;
+            if (definition.objectName != "Fort" && definition.objectName != "Archery Range" && definition.objectName != "Blacksmith" && definition.objectName != "Castle") continue;
             Transform target = panel != null ? panel.transform.Find(definition.objectName) : null;
             if (target != null) ConfigureBuilding(target.gameObject, definition, wood, stone, buttonSprite, font);
         }

@@ -52,6 +52,26 @@ namespace GameFoundation.MetaProgression
         private void SetHealth(float value)
         {
             if (healthFill == null) return;
+            value = Mathf.Clamp01(value);
+
+            // The roster bar uses a plain UI image without a source sprite. In that
+            // configuration Image.fillAmount can keep rendering the entire rectangle
+            // on some Canvas render paths, despite holding the correct value. Resize
+            // the fill from its left edge as well, so the displayed width always
+            // matches the stored health on both the Base and World rosters.
+            RectTransform fillRect = healthFill.rectTransform;
+            RectTransform barRect = fillRect.parent as RectTransform;
+            if (barRect != null)
+            {
+                fillRect.anchorMin = new Vector2(0f, .5f);
+                fillRect.anchorMax = new Vector2(0f, .5f);
+                fillRect.pivot = new Vector2(0f, .5f);
+                fillRect.anchoredPosition = Vector2.zero;
+                fillRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, barRect.rect.width * value);
+                fillRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, barRect.rect.height);
+            }
+
+            healthFill.type = Image.Type.Simple;
             healthFill.fillAmount = value;
             healthFill.color = value <= .25f ? criticalColor : value <= .5f ? warningColor : healthyColor;
         }

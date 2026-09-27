@@ -151,7 +151,7 @@ namespace GameFoundation.MetaProgression
             Refresh();
         }
 
-        /// <summary>Called by a deployed warrior when a researched low-health retreat threshold is reached.</summary>
+        /// <summary>Called by a deployed warrior when an active decree requests a low-health retreat.</summary>
         public bool RequestLowHealthRetreat(GameObject unit)
         {
             if (unit == null || portal == null || unit.GetComponent<WorldMilitaryReturner>() != null) return false;
