@@ -213,12 +213,7 @@ namespace GameFoundation.MetaProgression
             return deaths;
         }
 
-        private static ResourceType Find(string name)
-        {
-            foreach (var type in Resources.FindObjectsOfTypeAll<ResourceType>())
-                if (type.name == name || type.resourceName == name) return type;
-            return null;
-        }
+        private static ResourceType Find(string name) => ResourceCatalog.Find(name);
         private void EnsureFixedPortals()
         {
             IReadOnlyList<PortalLocationDefinition> locations = GetPortalLocations();

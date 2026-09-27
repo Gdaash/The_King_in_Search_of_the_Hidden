@@ -17,8 +17,7 @@ namespace EditorTools
                     "Отмена"))
                 return;
 
-            PlayerPrefs.DeleteAll();
-            PlayerPrefs.Save();
+            GameFoundation.Saves.SaveSlotPrefs.ResetAll();
             Debug.Log("Сохранения PlayerPrefs сброшены. Запустите игру заново, чтобы обновить состояние сцены.");
         }
 

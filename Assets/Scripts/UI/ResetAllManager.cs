@@ -13,8 +13,7 @@ public class ResetAllManager : MonoBehaviour
     public void ResetEverything()
     {
         // 1. Стираем абсолютно все записи PlayerPrefs (короны, покупки кнопок, бонусы статов)
-        PlayerPrefs.DeleteAll();
-        PlayerPrefs.Save();
+        GameFoundation.Saves.SaveSlotPrefs.ResetAll();
 
         // 2. Сбрасываем значения в самих ScriptableObjects (чтобы изменения применились мгновенно)
         foreach (var stat in allStats)

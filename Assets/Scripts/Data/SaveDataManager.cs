@@ -7,6 +7,7 @@ namespace Data
     /// Мэнаджер сохранения и загрузки данных
     /// TODO
     /// </summary>
+    [System.Obsolete("Legacy file save. Gameplay state uses GameFoundation.Saves.SaveSlotPrefs.")]
     public class SaveDataManager : MonoBehaviour, ISaveData
     {
         private ICloud _cloud;
