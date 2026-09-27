@@ -23,9 +23,9 @@ internal static class ScientificUpgradeSetup
         {
             EnsureTable();
             RebuildTree();
-            ConfigurePrefab("Assets/Prefabs/Buildings/Башня-портал.prefab", root =>
+            ConfigurePrefab("Assets/Prefabs/Buildings/PortalTower.prefab", root =>
             {
-                root.name = "Башня-портал";
+                root.name = "PortalTower";
             });
             RenamePortalPrefabAndSceneInstance();
             AssetDatabase.SaveAssets();
@@ -39,13 +39,15 @@ internal static class ScientificUpgradeSetup
         if (!AssetDatabase.IsValidFolder("Assets/Resources")) AssetDatabase.CreateFolder("Assets", "Resources");
         var table = AssetDatabase.LoadAssetAtPath<ScientificUpgradeTable>(TablePath);
         if (table == null) { table = ScriptableObject.CreateInstance<ScientificUpgradeTable>(); AssetDatabase.CreateAsset(table, TablePath); }
-        var ore = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Prefabs/Resources/MagicOre.asset");
-        var stone = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Prefabs/Resources/Stone.asset");
+        var ore = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/MagicOre.asset");
+        var stone = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/Stone.asset");
         AddIfMissing(table, ScientificUpgrades.PortalArrows, "", "Магические стрелы", "Кристалл на башне портала теперь может стрелять.", ore, 1, 1f);
         AddIfMissing(table, ScientificUpgrades.StrongWalls, ScientificUpgrades.PortalArrows, "Крепкие стены", "Повышает здоровье башни портала на 20%.", stone, 2, 1.2f);
         AddIfMissing(table, ScientificUpgrades.FastHex, ScientificUpgrades.PortalArrows, "Уменьшение времени на открытие гекса на 50%", "Уменьшает время открытия гекса на 50%.", ore, 5, 0.5f);
         AddIfMissing(table, ScientificUpgrades.SharpAxes, ScientificUpgrades.PortalArrows, "Заточить топоры", "Уменьшает время рубки леса на 20%.", stone, 2, 0.8f);
         AddIfMissing(table, ScientificUpgrades.QuietScouting, ScientificUpgrades.PortalArrows, "Бесшумная разведка", "Уменьшает на 1 количество тревоги при открытии гекса.", ore, 1, 1f);
+        AddIfMissing(table, ScientificUpgrades.WarriorRetreat, ScientificUpgrades.FastHex, "Тактическое отступление", "Воины возвращаются к порталу, когда их здоровье падает до 10%.", ore, 3, 0.1f);
+        AddIfMissing(table, ScientificUpgrades.WarriorBaseRegen, ScientificUpgrades.WarriorRetreat, "Полевой лазарет", "Воины у портала восстанавливают 1% здоровья в секунду.", ore, 5, 0.01f);
         for (int i = 0; i < ScientificUpgrades.Flashlights.Length; i++)
             AddIfMissing(table, ScientificUpgrades.Flashlights[i], i == 0 ? ScientificUpgrades.StrongWalls : ScientificUpgrades.Flashlights[i - 1],
                 "Фонарь " + (i + 2), "Открывает " + (i + 2) + "-й фонарь для работы с гексами.", ore, (i + 1) * 5, 1f);
@@ -71,11 +73,13 @@ internal static class ScientificUpgradeSetup
             if (source == null) throw new FileNotFoundException(ButtonPath);
             string[] ids = { ScientificUpgrades.PortalArrows, ScientificUpgrades.StrongWalls, ScientificUpgrades.FastHex,
                 ScientificUpgrades.SharpAxes, ScientificUpgrades.QuietScouting,
+                ScientificUpgrades.WarriorRetreat, ScientificUpgrades.WarriorBaseRegen,
                 ScientificUpgrades.Flashlights[0], ScientificUpgrades.Flashlights[1], ScientificUpgrades.Flashlights[2],
                 ScientificUpgrades.Flashlights[3], ScientificUpgrades.Flashlights[4] };
             Vector2[] places = { Vector2.zero, new(0, 230), new(270, 0), new(0, -230), new(-270, 0),
+                new(270, 230), new(270, 460),
                 new(0, 460), new(0, 690), new(0, 920), new(0, 1150), new(0, 1380) };
-            int[] parentIndexes = { -1, 0, 0, 0, 0, 1, 5, 6, 7, 8 };
+            int[] parentIndexes = { -1, 0, 0, 0, 0, 2, 5, 1, 7, 8, 9, 10 };
             var buttons = new SkillButton[ids.Length];
             var table = AssetDatabase.LoadAssetAtPath<ScientificUpgradeTable>(TablePath);
             var arrowSource = AssetDatabase.LoadAssetAtPath<GameObject>(ArrowPath);
@@ -150,7 +154,7 @@ internal static class ScientificUpgradeSetup
     private static void RenamePortalPrefabAndSceneInstance()
     {
         const string oldPath = "Assets/Prefabs/Buildings/Castle.prefab";
-        const string newPath = "Assets/Prefabs/Buildings/Башня-портал.prefab";
+        const string newPath = "Assets/Prefabs/Buildings/PortalTower.prefab";
         if (AssetDatabase.LoadAssetAtPath<GameObject>(oldPath) != null)
         {
             string error = AssetDatabase.MoveAsset(oldPath, newPath);
@@ -160,7 +164,7 @@ internal static class ScientificUpgradeSetup
         bool opened = !world.IsValid() || !world.isLoaded;
         if (opened) world = EditorSceneManager.OpenScene("Assets/Scenes/World.unity", OpenSceneMode.Additive);
         foreach (var root in world.GetRootGameObjects())
-            if (root.name == "Castle") { root.name = "Башня-портал"; EditorUtility.SetDirty(root); }
+            if (root.name == "Castle" || root.name == "Башня-портал") { root.name = "PortalTower"; EditorUtility.SetDirty(root); }
         EditorSceneManager.SaveScene(world);
         if (opened && UnityEngine.SceneManagement.SceneManager.sceneCount > 1)
             EditorSceneManager.CloseScene(world, true);

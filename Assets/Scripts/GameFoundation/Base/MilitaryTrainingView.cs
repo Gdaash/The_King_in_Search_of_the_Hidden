@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using GameFoundation.MetaProgression;
 
 namespace GameFoundation.Base
 {
@@ -37,7 +38,8 @@ namespace GameFoundation.Base
 
         public void Arm()
         {
-            GlobalResourceManager.Instance?.TryExchangeResources(human, 1, weapon, 1, warrior, 1);
+            if (GlobalResourceManager.Instance?.TryExchangeResources(human, 1, weapon, 1, warrior, 1) == true)
+                MilitaryExperienceService.GetStored(warrior, GlobalResourceManager.Instance.GetResourceAmount(warrior));
             Refresh();
         }
 
@@ -49,6 +51,7 @@ namespace GameFoundation.Base
             {
                 manager.AddResource(human, 1);
                 manager.AddResource(weapon, 1);
+                MilitaryExperienceService.RemoveStored(warrior);
             }
             Refresh();
         }

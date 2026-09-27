@@ -109,7 +109,7 @@ namespace GameFoundation.MetaProgression
             Save();
             Changed?.Invoke();
         }
-        public void NextDay(){DayResourceLedger.EnsureDay(Day);int starved=ConsumeFood();UpdateCrowns(starved);DayResourceLedger.FinishDay(Day);Day++;SearchedToday=false;EnteredToday=false;RefugeesAvailable=UnityEngine.Random.Range(1,4);Save();DayResourceLedger.StartNextDay(Day);Changed?.Invoke();}
+        public void NextDay(){DayResourceLedger.EnsureDay(Day);int starved=ConsumeFood();MilitaryExperienceService.HealAll();UpdateCrowns(starved);DayResourceLedger.FinishDay(Day);Day++;SearchedToday=false;EnteredToday=false;RefugeesAvailable=UnityEngine.Random.Range(1,4);Save();DayResourceLedger.StartNextDay(Day);Changed?.Invoke();}
         public bool AdmitRefugee(){if(RefugeesAvailable<=0)return false;RefugeesAvailable--;Save();Changed?.Invoke();return true;}
         public FoodForecast GetFoodForecast()
         {
@@ -202,11 +202,13 @@ namespace GameFoundation.MetaProgression
             {
                 resources.TrySpendResource(swordsmen, swordsmanDeaths);
                 if (swords != null) resources.AddResource(swords, swordsmanDeaths);
+                for (int i = 0; i < swordsmanDeaths; i++) MilitaryExperienceService.RemoveStored(swordsmen);
             }
             if (archerDeaths > 0)
             {
                 resources.TrySpendResource(archers, archerDeaths);
                 if (bows != null) resources.AddResource(bows, archerDeaths);
+                for (int i = 0; i < archerDeaths; i++) MilitaryExperienceService.RemoveStored(archers);
             }
             return deaths;
         }

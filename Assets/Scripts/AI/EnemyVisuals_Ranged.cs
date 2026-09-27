@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using GameFoundation.MetaProgression;
 
 public class EnemyVisuals_Ranged : MonoBehaviour
 {
@@ -127,12 +128,12 @@ public class EnemyVisuals_Ranged : MonoBehaviour
                 var stats = ai.GetStats();
                 if (stats != null)
                 {
-                    p.Setup(worldDir, ai.GetTargetTag(), stats.damageSettings);
+                    p.Setup(worldDir, ai.GetTargetTag(), stats.damageSettings, transform, MilitaryExperience.Multiplier(this));
                 }
                 else
                 {
                     // Если статы не назначены, передаем пустой список во избежание ошибок
-                    p.Setup(worldDir, ai.GetTargetTag(), new System.Collections.Generic.List<GlobalStats.DamageInfo>());
+                    p.Setup(worldDir, ai.GetTargetTag(), new System.Collections.Generic.List<GlobalStats.DamageInfo>(), transform, MilitaryExperience.Multiplier(this));
                 }
             }
         }

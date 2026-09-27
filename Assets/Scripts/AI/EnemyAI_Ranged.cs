@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Linq;
 using UnityEngine.Events;
+using GameFoundation.MetaProgression;
 
 public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
 {
@@ -42,9 +43,9 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
     public Vector3 AssignedHomePoint => _assignedHomePoint;
 
     // Свойства для удобного доступа к статам
-    public float CurrentAttackRange => stats != null ? stats.TotalAttackRange : defaultAttackRange;
-    public float CurrentStopRange => stats != null ? (stats.TotalAttackRange * 0.75f) : defaultStopRange;
-    public float CurrentCooldown => stats != null ? stats.TotalCooldown : 2f;
+    public float CurrentAttackRange => (stats != null ? stats.TotalAttackRange : defaultAttackRange) * MilitaryExperience.Multiplier(this);
+    public float CurrentStopRange => (stats != null ? (stats.TotalAttackRange * 0.75f) : defaultStopRange) * MilitaryExperience.Multiplier(this);
+    public float CurrentCooldown => (stats != null ? stats.TotalCooldown : 2f) / MilitaryExperience.Multiplier(this);
 
     void Awake()
     {

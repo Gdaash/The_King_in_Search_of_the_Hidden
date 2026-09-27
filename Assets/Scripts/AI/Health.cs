@@ -3,6 +3,7 @@ using UnityEngine.Events;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using GameFoundation.MetaProgression;
 
 public class Health : MonoBehaviour
 {
@@ -25,8 +26,8 @@ public class Health : MonoBehaviour
     [SerializeField, Min(0.01f)] private float deathDuration = 0.3f;
 
     // Свойства берут данные из GlobalStats
-    private float CurrentRegenAmount => stats != null ? stats.TotalRegenAmount : 0f;
-    private float CurrentRegenDelay => stats != null ? stats.TotalRegenDelay : 0f;
+    private float CurrentRegenAmount => (stats != null ? stats.TotalRegenAmount : 0f) * MilitaryExperience.Multiplier(this);
+    private float CurrentRegenDelay => (stats != null ? stats.TotalRegenDelay : 0f) / MilitaryExperience.Multiplier(this);
 
     public UnityEvent<float> OnHealthChanged;
     public UnityEvent OnDeath;
@@ -37,16 +38,39 @@ public class Health : MonoBehaviour
     private IEnemyAI _ai; 
     private Coroutine _regenCoroutine;
     private Coroutine _flashCoroutine;
+    private readonly Dictionary<MilitaryExperience, float> _contributors = new();
+    private MilitaryExperience _lastContributor;
 
-    public float MaxHealth => stats != null ? stats.TotalMaxHealth : 100f;
+    public float MaxHealth => (stats != null ? stats.TotalMaxHealth : 100f) * MilitaryExperience.Multiplier(this);
     public float CurrentHealth => _cur;
     public float NormalizedHealth => MaxHealth > 0f ? Mathf.Clamp01(_cur / MaxHealth) : 0f;
     public bool IsDead => _dead;
 
+    /// <summary>Restores health without treating it as a combat hit. Used by authored recovery rules.</summary>
+    public bool RestoreHealth(float amount)
+    {
+        if (_dead || amount <= 0f || _cur >= MaxHealth) return false;
+        float previous = _cur;
+        _cur = Mathf.Min(MaxHealth, _cur + amount);
+        if (_cur <= previous) return false;
+        OnHealthChanged?.Invoke(NormalizedHealth);
+        return true;
+    }
+
+    /// <summary>Applies persisted unit health after its maximum health is configured.</summary>
+    public void SetNormalizedHealth(float normalizedHealth)
+    {
+        if (_dead) return;
+        _cur = MaxHealth * Mathf.Clamp01(normalizedHealth);
+        OnHealthChanged?.Invoke(NormalizedHealth);
+    }
+
     void Awake() 
     {
         _ai = GetComponent<IEnemyAI>();
-        if (stats != null) _cur = MaxHealth;
+        // Runtime units always begin a new spawn at full health. This must not depend on
+        // a stats asset being assigned, otherwise a serialized _cur value leaks into battle.
+        _cur = MaxHealth;
         if (!targetSprite) targetSprite = GetComponentInChildren<SpriteRenderer>();
         if (targetSprite) 
         {
@@ -86,6 +110,13 @@ public class Health : MonoBehaviour
         
         if (final > 0) 
         {
+            MilitaryExperience contributor = attacker != null ? attacker.GetComponentInParent<MilitaryExperience>() : null;
+            if (contributor != null)
+            {
+                _contributors.TryGetValue(contributor, out float dealt);
+                _contributors[contributor] = dealt + final;
+                _lastContributor = contributor;
+            }
             _cur = Mathf.Clamp(_cur - final, 0, MaxHealth);
             _lastDamageTime = Time.time; 
             TriggerFlash(Color.red); 
@@ -182,6 +213,7 @@ public class Health : MonoBehaviour
     { 
         if (_dead) return;
         _dead = true; 
+        AwardMilitaryExperience();
         if (_regenCoroutine != null) StopCoroutine(_regenCoroutine);
         if (_flashCoroutine != null) StopCoroutine(_flashCoroutine);
         EnemyMovement movement = GetComponent<EnemyMovement>();
@@ -192,6 +224,18 @@ public class Health : MonoBehaviour
         if (ranged != null) ranged.enabled = false;
         foreach (Collider2D collider in GetComponentsInChildren<Collider2D>()) collider.enabled = false;
         StartCoroutine(DeathRoutine());
+    }
+
+    private void AwardMilitaryExperience()
+    {
+        foreach (MilitaryExperience contributor in _contributors.Keys.ToArray())
+        {
+            if (contributor == null) continue;
+            if (contributor == _lastContributor) contributor.AwardKill();
+            else contributor.AwardAssist();
+        }
+        _contributors.Clear();
+        _lastContributor = null;
     }
 
     private IEnumerator DeathRoutine()

@@ -202,7 +202,7 @@ public static class BlacksmithFeatureSetup
 
     private static void AddLocalization()
     {
-        LocalizationTable table = AssetDatabase.LoadAssetAtPath<LocalizationTable>("Assets/Prefabs/Base/Base Localization.asset");
+        LocalizationTable table = AssetDatabase.LoadAssetAtPath<LocalizationTable>("Assets/Resources/Localization/Base Localization.asset");
         SetEntry(table, "base.base_panel.blacksmith.label", "Кузница", "Blacksmith");
         SetEntry(table, "base.blacksmith_popup.title", "КУЗНИЦА", "BLACKSMITH");
         SetEntry(table, "base.blacksmith_popup.sword", "Мечи", "Swords");
@@ -239,7 +239,7 @@ public static class BlacksmithFeatureSetup
     }
 
     private static ResourceType LoadResource(string name) =>
-        AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Prefabs/Resources/" + name + ".asset");
+        AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/" + name + ".asset");
 
     private static void DestroyChild(Transform parent, string name)
     {

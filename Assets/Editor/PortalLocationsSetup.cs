@@ -204,7 +204,7 @@ public static class PortalLocationsSetup
 
     private static void AddLocalization()
     {
-        LocalizationTable table = AssetDatabase.LoadAssetAtPath<LocalizationTable>("Assets/Prefabs/Base/Base Localization.asset");
+        LocalizationTable table = AssetDatabase.LoadAssetAtPath<LocalizationTable>("Assets/Resources/Localization/Base Localization.asset");
         SetEntry(table, "base.portal.free", "Бесплатно", "Free");
         SetEntry(table, "base.portal.tooltip.danger", "Опасность", "Danger");
         SetEntry(table, "base.portal.abundance.many", "Много", "Plentiful");
@@ -235,7 +235,7 @@ public static class PortalLocationsSetup
     }
 
     private static ResourceType LoadResource(string name) =>
-        AssetDatabase.LoadAssetAtPath<ResourceType>($"Assets/Prefabs/Resources/{name}.asset");
+        AssetDatabase.LoadAssetAtPath<ResourceType>($"Assets/Resources/ResourceTypes/{name}.asset");
 
     private static Sprite FindSprite(string name)
     {

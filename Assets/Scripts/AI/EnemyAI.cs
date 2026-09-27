@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Linq;
 using UnityEngine.Events;
+using GameFoundation.MetaProgression;
 
 public class EnemyAI : MonoBehaviour, IEnemyAI
 {
@@ -95,7 +96,7 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
     {
         float distanceToTarget = Vector2.Distance(transform.position, _target.position);
 
-        if (distanceToTarget <= attackRange)
+        if (distanceToTarget <= attackRange * MilitaryExperience.Multiplier(this))
         {
             OnStop?.Invoke();
             if (!_isAttacking && Time.time >= _nextAttackTime)
@@ -155,7 +156,7 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
         }
     }
 
-    private void ResetCooldown() => _currentCooldown = baseAttackCooldown + Random.Range(-cooldownVariation, cooldownVariation);
+    private void ResetCooldown() => _currentCooldown = Mathf.Max(.05f, (baseAttackCooldown + Random.Range(-cooldownVariation, cooldownVariation)) / MilitaryExperience.Multiplier(this));
     
     // EnemyMovement берет эту цель. Если врага нет — берет персональную точку у дома
     public Transform GetTarget() 

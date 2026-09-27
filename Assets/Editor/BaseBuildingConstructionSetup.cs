@@ -38,8 +38,8 @@ public static class BaseBuildingConstructionSetup
     [MenuItem("Tools/Game Foundation/Setup Base Construction")]
     public static void Run()
     {
-        ResourceType wood = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Prefabs/Resources/Wood.asset");
-        ResourceType stone = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Prefabs/Resources/Stone.asset");
+        ResourceType wood = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/Wood.asset");
+        ResourceType stone = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/Stone.asset");
         Font font = FindAsset<Font>("OpenTTD-Sans");
         Sprite buttonSprite = FindSprite("PopupButton9Slice");
         Sprite panelSprite = FindSprite("PopupFrame9Slice") ?? FindSprite("PopupPanel9Slice") ?? buttonSprite;
@@ -201,7 +201,7 @@ public static class BaseBuildingConstructionSetup
 
     private static void SetupLocalization()
     {
-        LocalizationTable table = AssetDatabase.LoadAssetAtPath<LocalizationTable>("Assets/Prefabs/Base/Base Localization.asset");
+        LocalizationTable table = AssetDatabase.LoadAssetAtPath<LocalizationTable>("Assets/Resources/Localization/Base Localization.asset");
         SetEntry(table, "base.building.build", "Строить", "Build");
         SetEntry(table, "base.building.price", "Цена постройки", "Construction cost");
         foreach (Definition definition in Definitions)

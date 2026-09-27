@@ -71,6 +71,10 @@ public class GlobalStats : ScriptableObject
     public bool CanAttack => !requiresPortalArrows || HasUpgrade(ScientificUpgrades.PortalArrows);
     public float HexOpeningTimeMultiplier => applyFastHex ? ScientificMultiplier(ScientificUpgrades.FastHex) : 1f;
     public float HexAlarmReduction => applyQuietScouting ? ScientificReduction(ScientificUpgrades.QuietScouting) : 0f;
+    /// <summary>Health fraction at which warriors retreat to the portal. A negative value means the upgrade is unavailable.</summary>
+    public float WarriorRetreatHealthThreshold => ScientificEffect(ScientificUpgrades.WarriorRetreat, -1f);
+    /// <summary>Fraction of maximum warrior health restored each second while at the portal base.</summary>
+    public float WarriorBaseRegenPerSecond => ScientificEffect(ScientificUpgrades.WarriorBaseRegen, 0f);
     public int AvailableFlashlightCount
     {
         get

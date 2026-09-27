@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using GameFoundation.MetaProgression;
 
 public class EnemyVisuals : MonoBehaviour
 {
@@ -92,7 +93,7 @@ public class EnemyVisuals : MonoBehaviour
         {
             foreach (var dmgInfo in stats.damageSettings)
             {
-                h.TakeDamage(dmgInfo.TotalDamage, dmgInfo.type, transform);
+                h.TakeDamage(dmgInfo.TotalDamage * MilitaryExperience.Multiplier(this), dmgInfo.type, transform);
             }
         }
         CombatImpactBurst.Spawn(target.position, new Color(1f, 0.82f, 0.48f, 1f));

@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 public static class UnifiedButtonStyleSetup
 {
-    private const string ThemePath = "Assets/Prefabs/UI/ButtonVisualTheme.asset";
+    private const string ThemePath = "Assets/Resources/UI/ButtonVisualTheme.asset";
     private const string ButtonSpritePath =
         "Assets/Sprites/Evolution adventure/Sprites/UI/Sprites/Popups/Sprites/Shared/PopupButton9Slice.png";
 

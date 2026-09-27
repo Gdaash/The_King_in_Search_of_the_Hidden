@@ -18,8 +18,8 @@ public static class MilitaryFeatureSetup
     [MenuItem("Tools/Game Setup/Rebuild Military Buildings")]
     public static void Build()
     {
-        CreateResource("Assets/Prefabs/Resources/Swordsman.asset", "Мечник", "Assets/Prefabs/Units/RedSwordsman.prefab");
-        CreateResource("Assets/Prefabs/Resources/Archer.asset", "Лучник", "Assets/Prefabs/Units/RedArcher.prefab");
+        CreateResource("Assets/Resources/ResourceTypes/Swordsman.asset", "Мечник", "Assets/Prefabs/Units/RedSwordsman.prefab");
+        CreateResource("Assets/Resources/ResourceTypes/Archer.asset", "Лучник", "Assets/Prefabs/Units/RedArcher.prefab");
         AssetDatabase.SaveAssets();
         ConfigureBase();
         ConfigureWorld();
@@ -200,7 +200,7 @@ public static class MilitaryFeatureSetup
 
     private static void AddLocalization()
     {
-        LocalizationTable table = AssetDatabase.LoadAssetAtPath<LocalizationTable>("Assets/Prefabs/Base/Base Localization.asset");
+        LocalizationTable table = AssetDatabase.LoadAssetAtPath<LocalizationTable>("Assets/Resources/Localization/Base Localization.asset");
         if (table == null) return;
         AddLocalizationEntry(table, "resource.Swordsman.name", "Мечники", "Swordsmen");
         AddLocalizationEntry(table, "resource.Archer.name", "Лучники", "Archers");
@@ -298,7 +298,7 @@ public static class MilitaryFeatureSetup
         so.ApplyModifiedPropertiesWithoutUndo();
     }
 
-    private static ResourceType LoadResource(string name) => AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Prefabs/Resources/" + name + ".asset");
+    private static ResourceType LoadResource(string name) => AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/" + name + ".asset");
     private static void DestroyChild(Transform parent, string name) { Transform child = parent.Find(name); if (child != null) Object.DestroyImmediate(child.gameObject); }
     private static void SetSpriteSize(RectTransform transform, Sprite sprite) { if (sprite != null) transform.sizeDelta = new Vector2(sprite.rect.width * 2, sprite.rect.height * 2); }
 }

@@ -11,7 +11,7 @@ using UnityEngine;
 public static class GameTablesMenu
 {
     private const string UpgradePath = "Assets/Resources/ScientificUpgradeTable.asset";
-    private const string LocalizationPath = "Assets/Prefabs/Base/Base Localization.asset";
+    private const string LocalizationPath = "Assets/Resources/Localization/Base Localization.asset";
     private const string SheetId = "1eepDmDSn5Y-Bs6qj49qZV8EjP1zo-pi58c8EeYKflyg";
     private const string UpgradeSheet = "ScientificUpgrades";
     private const string LocalizationSheet = "Localization";

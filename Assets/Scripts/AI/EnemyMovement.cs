@@ -1,4 +1,5 @@
 using UnityEngine;
+using GameFoundation.MetaProgression;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class EnemyMovement : MonoBehaviour
@@ -24,7 +25,7 @@ public class EnemyMovement : MonoBehaviour
         get
         {
             if (_finalSpeed <= 0f) UpdateSpeed();
-            return Mathf.Max(0.1f, _finalSpeed);
+            return Mathf.Max(0.1f, _finalSpeed * MilitaryExperience.Multiplier(this));
         }
     }
 
