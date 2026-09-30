@@ -143,6 +143,7 @@ public class HexBlocker : MonoBehaviour
         if (prefabToSpawn != null)
         {
             GameObject spawned = Instantiate(prefabToSpawn, transform.position, Quaternion.identity);
+            if (_alarmSystem != null) _alarmSystem.RegisterSpawnedEnemy(prefabToSpawn, spawned);
             
             if (_hexManager != null)
             {

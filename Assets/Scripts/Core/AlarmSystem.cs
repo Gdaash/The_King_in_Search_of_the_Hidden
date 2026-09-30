@@ -90,6 +90,30 @@ public class AlarmSystem : MonoBehaviour
     private Canvas _canvas;
     private RectTransform _canvasRect;
 
+    // Scene-local registry. Counts change on actual spawning, death and removal, not on wave planning.
+    private readonly Dictionary<GameObject, int> _aliveEnemyCounts = new();
+    public event Action<GameObject, int> EnemyCountChanged;
+    public bool HasSpawnedEnemies { get; private set; }
+    public IEnumerable<GameObject> SpawnedEnemyTypes => _aliveEnemyCounts.Keys;
+    public int GetAliveEnemyCount(GameObject prefab) => prefab != null && _aliveEnemyCounts.TryGetValue(prefab, out int count) ? count : 0;
+
+    public void RegisterSpawnedEnemy(GameObject prefab, GameObject instance)
+    {
+        if (prefab == null || instance == null || !instance.CompareTag("Enemy1") || instance.GetComponent<Health>() == null) return;
+        var member = instance.GetComponent<AlarmSpawnedEnemy>();
+        if (member == null) member = instance.AddComponent<AlarmSpawnedEnemy>();
+        member.Initialize(this, prefab);
+    }
+
+    internal void ChangeEnemyCount(GameObject prefab, int delta)
+    {
+        if (prefab == null) return;
+        int count = Mathf.Max(0, GetAliveEnemyCount(prefab) + delta);
+        _aliveEnemyCounts[prefab] = count;
+        if (delta > 0) HasSpawnedEnemies = true;
+        EnemyCountChanged?.Invoke(prefab, count);
+    }
+
     private void Awake()
     {
         Instance = this;
@@ -273,7 +297,8 @@ public class AlarmSystem : MonoBehaviour
         {
             MonsterSpawnWarningView warning = warnings[entry.Hex];
             yield return PrepareMonsterSpawn(warning);
-            UnityEngine.Object.Instantiate((UnityEngine.Object)entry.Prefab, entry.Position, Quaternion.identity);
+            GameObject enemy = Instantiate(entry.Prefab, entry.Position, Quaternion.identity);
+            RegisterSpawnedEnemy(entry.Prefab, enemy);
             if (warning != null) warning.HideLightImmediate();
             yield return BumpWarning(warning);
         }

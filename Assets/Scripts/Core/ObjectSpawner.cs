@@ -24,6 +24,8 @@ public class ObjectSpawner : MonoBehaviour
 
         // Создаем объект
         GameObject newObject = Instantiate(prefabToSpawn, position, rotation);
+        if (AlarmSystem.Instance != null)
+            AlarmSystem.Instance.RegisterSpawnedEnemy(prefabToSpawn, newObject);
 
         // Если нужно прикрепить объект к спавнеру
         if (parentToSpawner)

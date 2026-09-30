@@ -11,13 +11,18 @@ namespace GameFoundation.UI
         public ResourceType resource;
         public ResourceType food;
         public GlobalStats scientificStats;
+        [Header("Представление врага")]
+        public bool isEnemy;
+        public Sprite portraitIcon;
+        public string fallbackTitle;
         public string titleKey;
         public string roleKey;
         public string fallbackRole;
         public string descriptionKey;
         [TextArea] public string fallbackDescription;
 
-        public string Title => UnitDescriptionText.Get(titleKey, resource != null ? resource.resourceName : name);
+        public Sprite Portrait => portraitIcon != null ? portraitIcon : resource != null ? resource.resourceIcon : null;
+        public string Title => UnitDescriptionText.Get(titleKey, !string.IsNullOrEmpty(fallbackTitle) ? fallbackTitle : resource != null ? resource.resourceName : name);
         public string Role => UnitDescriptionText.Get(roleKey, fallbackRole);
         public string Description => UnitDescriptionText.Get(descriptionKey, fallbackDescription);
     }

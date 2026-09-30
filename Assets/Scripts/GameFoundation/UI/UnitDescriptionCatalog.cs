@@ -6,6 +6,13 @@ namespace GameFoundation.UI
     public sealed class UnitDescriptionCatalog : ScriptableObject
     {
         public UnitDescriptionDefinition[] units;
+        public UnitDescriptionDefinition Find(GameObject prefab)
+        {
+            if (units == null || prefab == null) return null;
+            foreach (var unit in units)
+                if (unit != null && unit.unitPrefab == prefab) return unit;
+            return null;
+        }
         public UnitDescriptionDefinition Find(string resourceId)
         {
             if (units == null || string.IsNullOrEmpty(resourceId)) return null;

@@ -111,21 +111,28 @@ namespace GameFoundation.UI
             if (title != null) title.text = definition.Title;
             if (role != null) role.text = definition.Role;
             if (description != null) description.text = definition.Description;
-            if (portrait != null) ResourceIconSizing.Apply(portrait, definition.resource != null ? definition.resource.resourceIcon : null);
+            if (portrait != null)
+            {
+                portrait.enabled = definition.Portrait != null;
+                ResourceIconSizing.Apply(portrait, definition.Portrait);
+            }
             if (progress != null)
             {
                 int earned = 0;
                 for (int level = 0; level < stars; level++) earned += 10 + 5 * level;
-                progress.text = profile == null ? T("recruit", "Новобранец · без звёзд") :
+                progress.text = definition.isEnemy ? T("enemy_type", "Характеристики типа врага") : profile == null ? T("recruit", "Новобранец · без звёзд") :
                     string.Format(T("progress", "Уровень {0}/10 · опыт {1}"), stars,
                         stars >= 10 ? T("maximum", "максимум") : (profile.experience - earned) + " / " + (10 + 5 * stars));
             }
-            if (footer != null) footer.text = string.Format(T("footer", "За убийство: {0} опыта · за помощь: {1}\nНовый день полностью восстанавливает здоровье.\nКолесо мыши — прокрутка характеристик."), MilitaryExperience.KillExperience, MilitaryExperience.AssistExperience);
+            if (footer != null) footer.text = definition.isEnemy
+                ? T("enemy_footer", "Базовые характеристики этого типа врагов.\nКолесо мыши — прокрутка характеристик.")
+                : string.Format(T("footer", "За убийство: {0} опыта · за помощь: {1}\nНовый день полностью восстанавливает здоровье.\nКолесо мыши — прокрутка характеристик."), MilitaryExperience.KillExperience, MilitaryExperience.AssistExperience);
 
             int visible = 0;
             foreach (UnitStatPresentation entry in stats)
             {
                 if (entry != null && entry.stat == UnitStat.Food && !showFoodStat) continue;
+                if (definition.isEnemy && entry != null && (entry.stat == UnitStat.Food || entry.stat == UnitStat.Retreat || entry.stat == UnitStat.PortalHealing)) continue;
                 if (entry == null || !TryValue(entry, multiplier, out string value, out Color color)) continue;
                 if (visible == rowViews.Count)
                 {
@@ -206,7 +213,7 @@ namespace GameFoundation.UI
                 case UnitStat.Food:
                     value = T("food_amount", "1 / день"); return definition.food != null;
                 case UnitStat.TargetPriority:
-                    bool weakest = ranged != null && RoyalDecreeService.IsEnabled(RoyalDecreeService.FinishOffEnemies);
+                    bool weakest = !definition.isEnemy && ranged != null && RoyalDecreeService.IsEnabled(RoyalDecreeService.FinishOffEnemies);
                     value = weakest ? T("weakest", "Меньше % HP") : T("nearest", "Ближайший");
                     color = weakest ? positiveColor : normalColor; return true;
             }
