@@ -55,6 +55,14 @@ public static class EnemyRosterSetup
             foreach (var difficulty in AssetDatabase.LoadAssetAtPath<AlarmDifficultyTable>(AssetDatabase.GUIDToAssetPath(guid)).difficulties)
                 foreach (var threshold in difficulty.thresholds)
                     foreach (var enemy in threshold.enemies) if (enemy?.prefab != null) prefabs.Add(enemy.prefab);
+        // The bestiary can keep entries for any combat prefab, including types that
+        // are enabled only by a later location configuration.
+        foreach (var guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Prefabs/Units" }))
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
+            if (prefab != null && prefab.CompareTag("Enemy1") && prefab.GetComponent<Health>() != null)
+                prefabs.Add(prefab);
+        }
         var definitions = new List<UnitDescriptionDefinition>();
         foreach (var prefab in prefabs.OrderBy(p => p.name))
         {

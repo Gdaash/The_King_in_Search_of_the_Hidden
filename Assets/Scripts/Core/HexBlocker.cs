@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using GameFoundation.Bestiary;
 using TMPro;
 using DG.Tweening;
 using System.Collections;
@@ -143,6 +144,7 @@ public class HexBlocker : MonoBehaviour
         if (prefabToSpawn != null)
         {
             GameObject spawned = Instantiate(prefabToSpawn, transform.position, Quaternion.identity);
+            BestiaryService.RegisterSpawn(prefabToSpawn, spawned);
             if (_alarmSystem != null) _alarmSystem.RegisterSpawnedEnemy(prefabToSpawn, spawned);
             
             if (_hexManager != null)

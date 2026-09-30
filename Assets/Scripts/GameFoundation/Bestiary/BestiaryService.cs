@@ -1,0 +1,65 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using GameFoundation.Saves;
+using UnityEngine;
+
+namespace GameFoundation.Bestiary
+{
+    [Serializable]
+    internal sealed class BestiarySave
+    {
+        public List<string> encountered = new();
+    }
+
+    /// <summary>Slot-local record of enemy types that have appeared in a World run.</summary>
+    public static class BestiaryService
+    {
+        private const string SaveKey = "bestiary.encountered";
+        private static BestiarySave save;
+        private static int loadedSlot = -1;
+
+        public static event Action<string> Encountered;
+
+        public static IReadOnlyList<string> EncounteredIds => Data.encountered;
+
+        public static bool HasEncountered(GameObject enemyPrefab) =>
+            enemyPrefab != null && Data.encountered.Contains(enemyPrefab.name);
+
+        /// <summary>Records only combat enemies. Calling it more than once for a spawn is safe.</summary>
+        public static void RegisterSpawn(GameObject enemyPrefab, GameObject instance)
+        {
+            if (enemyPrefab == null || instance == null || !instance.CompareTag("Enemy1") || instance.GetComponent<Health>() == null)
+                return;
+
+            string id = enemyPrefab.name;
+            if (Data.encountered.Contains(id))
+                return;
+
+            Data.encountered.Add(id);
+            Persist();
+            Encountered?.Invoke(id);
+        }
+
+        private static BestiarySave Data
+        {
+            get
+            {
+                if (save != null && loadedSlot == SaveSlotPrefs.SelectedSlot)
+                    return save;
+
+                loadedSlot = SaveSlotPrefs.SelectedSlot;
+                save = SaveSlotPrefs.HasKey(SaveKey)
+                    ? JsonUtility.FromJson<BestiarySave>(SaveSlotPrefs.GetString(SaveKey))
+                    : null;
+                return save ??= new BestiarySave();
+            }
+        }
+
+        private static void Persist()
+        {
+            SaveSlotPrefs.SetString(SaveKey, JsonUtility.ToJson(Data));
+            SaveSlotPrefs.Save();
+        }
+    }
+}

@@ -13,6 +13,13 @@ namespace GameFoundation.UI
                 if (unit != null && unit.unitPrefab == prefab) return unit;
             return null;
         }
+        public UnitDescriptionDefinition FindPrefabName(string prefabName)
+        {
+            if (units == null || string.IsNullOrEmpty(prefabName)) return null;
+            foreach (var unit in units)
+                if (unit != null && unit.unitPrefab != null && unit.unitPrefab.name == prefabName) return unit;
+            return null;
+        }
         public UnitDescriptionDefinition Find(string resourceId)
         {
             if (units == null || string.IsNullOrEmpty(resourceId)) return null;

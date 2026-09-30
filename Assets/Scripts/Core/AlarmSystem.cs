@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using GameFoundation.Audio;
+using GameFoundation.Bestiary;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
@@ -100,6 +101,7 @@ public class AlarmSystem : MonoBehaviour
     public void RegisterSpawnedEnemy(GameObject prefab, GameObject instance)
     {
         if (prefab == null || instance == null || !instance.CompareTag("Enemy1") || instance.GetComponent<Health>() == null) return;
+        BestiaryService.RegisterSpawn(prefab, instance);
         var member = instance.GetComponent<AlarmSpawnedEnemy>();
         if (member == null) member = instance.AddComponent<AlarmSpawnedEnemy>();
         member.Initialize(this, prefab);

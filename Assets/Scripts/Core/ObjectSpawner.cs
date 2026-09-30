@@ -1,4 +1,5 @@
 using UnityEngine;
+using GameFoundation.Bestiary;
 
 public class ObjectSpawner : MonoBehaviour
 {
@@ -24,6 +25,7 @@ public class ObjectSpawner : MonoBehaviour
 
         // Создаем объект
         GameObject newObject = Instantiate(prefabToSpawn, position, rotation);
+        BestiaryService.RegisterSpawn(prefabToSpawn, newObject);
         if (AlarmSystem.Instance != null)
             AlarmSystem.Instance.RegisterSpawnedEnemy(prefabToSpawn, newObject);
 

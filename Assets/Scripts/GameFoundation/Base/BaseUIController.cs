@@ -9,7 +9,7 @@ namespace GameFoundation.Base
 {
     public sealed class BaseUIController : MonoBehaviour
     {
-        [SerializeField] private GameObject globalMap, laboratory, settings, warehouse, housing, refugees, square, blacksmith;
+        [SerializeField] private GameObject globalMap, laboratory, settings, warehouse, housing, refugees, square, blacksmith, magicLibrary;
         [SerializeField] private GameObject nextDayConfirmation;
         [SerializeField] private FoodForecastView nextDayForecast, housingForecast;
         [SerializeField] private Button[] portalButtons;
@@ -38,6 +38,7 @@ namespace GameFoundation.Base
             Bind("Base Panel/Refugees", OpenRefugees);
             Bind("Base Panel/Square", OpenSquare);
             Bind("Base Panel/Blacksmith", OpenBlacksmith);
+            Bind("Base Panel/Magic Library", OpenMagicLibrary);
             Bind("Base Panel/Settings", OpenSettings);
             Bind("Global Map/Search Portals", SearchPortals);
             Bind("Global Map/Close", CloseMap);
@@ -49,6 +50,8 @@ namespace GameFoundation.Base
             Bind("Refugees Popup/Admit", AdmitRefugee);
             Bind("Square Popup/Close", CloseSquare);
             Bind("Blacksmith Popup/Close", CloseBlacksmith);
+            // The library close icon is part of its window, unlike several older popups.
+            Bind("Magic Library Popup/Window/Close", CloseMagicLibrary);
         }
         private void OnEnable()
         {
@@ -188,7 +191,12 @@ namespace GameFoundation.Base
         private void Show(GameObject panel, bool visible) { if (panel) panel.SetActive(visible); }
         private void Bind(string path, UnityEngine.Events.UnityAction action)
         {
-            var button = transform.Find(path)?.GetComponent<Button>();
+            var target = transform.Find(path);
+            if (!target) return;
+
+            // Popup Close Icon is a shared visual prefab.  Older instances may not
+            // yet contain a Button, so make the visual clickable while loading.
+            var button = target.GetComponent<Button>() ?? target.gameObject.AddComponent<Button>();
             if (!button) return;
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(action);
@@ -201,6 +209,7 @@ namespace GameFoundation.Base
         public void OpenRefugees() => Show(refugees, true);
         public void OpenSquare() => Show(square, true);
         public void OpenBlacksmith() => Show(blacksmith, true);
+        public void OpenMagicLibrary() => Show(magicLibrary, true);
         public void CloseMap() => Show(globalMap, false);
         public void CloseLaboratory() => Show(laboratory, false);
         public void CloseSettings() => Show(settings, false);
@@ -209,6 +218,7 @@ namespace GameFoundation.Base
         public void CloseRefugees() => Show(refugees, false);
         public void CloseSquare() => Show(square, false);
         public void CloseBlacksmith() => Show(blacksmith, false);
+        public void CloseMagicLibrary() => Show(magicLibrary, false);
         public void NextDay() { if (DayCycleService.Instance == null) return; RefreshForecasts(); Show(nextDayConfirmation, true); }
         public void CancelNextDay() => Show(nextDayConfirmation, false);
         public void ConfirmNextDay()
