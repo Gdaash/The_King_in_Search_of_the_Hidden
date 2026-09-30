@@ -42,7 +42,7 @@ public static class EnemyRosterValidation
                 threshold.FindPropertyRelative("minSpawnInterval").floatValue=10000;threshold.FindPropertyRelative("maxSpawnInterval").floatValue=10000;
                 threshold.FindPropertyRelative("minEnemiesPerWave").intValue=1;threshold.FindPropertyRelative("maxEnemiesPerWave").intValue=1;
                 var enemies=threshold.FindPropertyRelative("enemies");enemies.arraySize=1;
-                enemies.GetArrayElementAtIndex(0).FindPropertyRelative("prefab").objectReferenceValue=Prefab(i==0?"Goblin":"Orc");
+                enemies.GetArrayElementAtIndex(0).FindPropertyRelative("prefab").objectReferenceValue=Prefab(i==0?"Octopus":"CursedMage");
                 enemies.GetArrayElementAtIndex(0).FindPropertyRelative("weight").intValue=1;
             }
             so.ApplyModifiedPropertiesWithoutUndo();
@@ -68,28 +68,28 @@ public static class EnemyRosterValidation
     }
     public static void CheckLifecycle()
     {
-        var alarm=AlarmSystem.Instance;var goblin=Prefab("Goblin");var orc=Prefab("Orc");
-        Check(alarm.GetAliveEnemyCount(goblin)==1,"Real AlarmSystem wave did not register its Goblin.");
+        var alarm=AlarmSystem.Instance;var octopus=Prefab("Octopus");var mage=Prefab("CursedMage");
+        Check(alarm.GetAliveEnemyCount(octopus)==1,"Real AlarmSystem wave did not register its Octopus.");
         var panel=Object.FindAnyObjectByType<EnemyRosterView>();
         Check(panel.GetComponent<CanvasGroup>().alpha==1,"Panel must appear with the first real spawn.");
-        Check(alarm.GetAliveEnemyCount(orc)==0,"Future waves must not inflate live counts.");
+        Check(alarm.GetAliveEnemyCount(mage)==0,"Future waves must not inflate live counts.");
         var first=Object.FindAnyObjectByType<AlarmSpawnedEnemy>().gameObject;
-        var second=Object.Instantiate(goblin,new Vector3(4,2,0),Quaternion.identity);alarm.RegisterSpawnedEnemy(goblin,second);alarm.RegisterSpawnedEnemy(goblin,second);
-        Check(alarm.GetAliveEnemyCount(goblin)==2,"Duplicate registration changed the count.");
+        var second=Object.Instantiate(octopus,new Vector3(4,2,0),Quaternion.identity);alarm.RegisterSpawnedEnemy(octopus,second);alarm.RegisterSpawnedEnemy(octopus,second);
+        Check(alarm.GetAliveEnemyCount(octopus)==2,"Duplicate registration changed the count.");
         second.GetComponent<Health>().TakeDamage(100000,DamageType.Physical);
-        Check(alarm.GetAliveEnemyCount(goblin)==1,"Dead enemies must disappear from counts immediately.");
-        first.SetActive(false);Check(alarm.GetAliveEnemyCount(goblin)==0,"Inactive enemy still counted.");
-        first.SetActive(true);Check(alarm.GetAliveEnemyCount(goblin)==1,"Re-enabled living enemy missing.");
-        Object.DestroyImmediate(first);Check(alarm.GetAliveEnemyCount(goblin)==0,"Destroyed enemy still counted.");
-        var spawner=new GameObject("QA Object Spawner").AddComponent<ObjectSpawner>();var so=new SerializedObject(spawner);so.FindProperty("prefabToSpawn").objectReferenceValue=orc;so.ApplyModifiedPropertiesWithoutUndo();spawner.SpawnObject();
-        Check(alarm.GetAliveEnemyCount(orc)==1,"ObjectSpawner must also register enemies on the map.");
+        Check(alarm.GetAliveEnemyCount(octopus)==1,"Dead enemies must disappear from counts immediately.");
+        first.SetActive(false);Check(alarm.GetAliveEnemyCount(octopus)==0,"Inactive enemy still counted.");
+        first.SetActive(true);Check(alarm.GetAliveEnemyCount(octopus)==1,"Re-enabled living enemy missing.");
+        Object.DestroyImmediate(first);Check(alarm.GetAliveEnemyCount(octopus)==0,"Destroyed enemy still counted.");
+        var spawner=new GameObject("QA Object Spawner").AddComponent<ObjectSpawner>();var so=new SerializedObject(spawner);so.FindProperty("prefabToSpawn").objectReferenceValue=mage;so.ApplyModifiedPropertiesWithoutUndo();spawner.SpawnObject();
+        Check(alarm.GetAliveEnemyCount(mage)==1,"ObjectSpawner must also register enemies on the map.");
         foreach(var member in Object.FindObjectsByType<AlarmSpawnedEnemy>())if(!member.GetComponent<Health>().IsDead)member.GetComponent<Health>().TakeDamage(100000,DamageType.Physical);
-        Check(alarm.GetAliveEnemyCount(orc)==0 && alarm.GetAliveEnemyCount(goblin)==0,"Counts did not reach zero.");
+        Check(alarm.GetAliveEnemyCount(mage)==0 && alarm.GetAliveEnemyCount(octopus)==0,"Counts did not reach zero.");
         Check(panel.GetComponent<CanvasGroup>().alpha==1,"Panel should retain zero counts between waves.");
-        for(int i=0;i<3;i++){var unit=Object.Instantiate(goblin,new Vector3(3+i,0,0),Quaternion.identity);alarm.RegisterSpawnedEnemy(goblin,unit);}spawner.SpawnObject();
+        for(int i=0;i<3;i++){var unit=Object.Instantiate(octopus,new Vector3(3+i,0,0),Quaternion.identity);alarm.RegisterSpawnedEnemy(octopus,unit);}spawner.SpawnObject();
         panel.gameObject.SetActive(false);panel.gameObject.SetActive(true);
         Check(panel.GetComponentsInChildren<EnemyRosterItemView>().Length==2,"Reopening duplicated rows.");
-        var row=panel.GetComponentsInChildren<EnemyRosterItemView>().First(x=>x.name=="Enemy Goblin");
+        var row=panel.GetComponentsInChildren<EnemyRosterItemView>().First(x=>x.name=="Enemy Octopus");
         Check(row.transform.Find("Count").GetComponent<UnityEngine.UI.Text>().text=="3","Displayed count is stale.");
         Time.timeScale=0;row.OnSelect(new BaseEventData(EventSystem.current));
         Debug.Log("PASS: real wave; future type zero; duplicate registration; immediate death; disable/re-enable; destroy; secondary spawner; zero state; panel reopening. Tooltip opened while paused.");
@@ -99,7 +99,7 @@ public static class EnemyRosterValidation
         var panel=Object.FindAnyObjectByType<EnemyRosterView>();var tooltip=panel.GetComponentInChildren<UnitDescriptionTooltip>(true);
         Check(tooltip.GetComponent<CanvasGroup>().alpha==1,"Tooltip does not open while paused.");
         var card=tooltip.GetComponentInChildren<UnitDescriptionView>(true);
-        Check(card.Definition.isEnemy && card.Definition.unitPrefab==Prefab("Goblin"),"Wrong tooltip data.");
+        Check(card.Definition.isEnemy && card.Definition.unitPrefab==Prefab("Octopus"),"Wrong tooltip data.");
         var texts=card.GetComponentsInChildren<UnityEngine.UI.Text>().Select(t=>t.text).ToArray();
         Check(!texts.Any(t=>t.Contains("Новобранец") || t.Contains("Указ выключен") || t.Contains("Новый день")),"Friendly-only rules leaked into an enemy tooltip.");
         foreach(var item in panel.GetComponentsInChildren<EnemyRosterItemView>())

@@ -71,13 +71,14 @@ public static class EnemyRosterSetup
             if (data == null)
             {
                 data = ScriptableObject.CreateInstance<UnitDescriptionDefinition>();
-                data.isEnemy = true; data.unitPrefab = prefab; data.fallbackTitle = prefab.name;
-                data.titleKey = "unit.enemy." + prefab.name.ToLowerInvariant() + ".title";
-                data.descriptionKey = "unit.enemy." + prefab.name.ToLowerInvariant() + ".description";
-                data.roleKey = "unit.enemy.role"; data.fallbackRole = "ВРАГ";
-                data.portraitIcon = UiIcon(prefab);
                 AssetDatabase.CreateAsset(data, path);
             }
+            data.isEnemy = true; data.unitPrefab = prefab; data.fallbackTitle = prefab.name;
+            data.titleKey = "unit.enemy." + prefab.name.ToLowerInvariant() + ".title";
+            data.descriptionKey = "unit.enemy." + prefab.name.ToLowerInvariant() + ".description";
+            data.roleKey = "unit.enemy.role"; data.fallbackRole = "ВРАГ";
+            data.portraitIcon = UiIcon(prefab);
+            EditorUtility.SetDirty(data);
             definitions.Add(data);
         }
         catalog.units = definitions.ToArray(); EditorUtility.SetDirty(catalog);
@@ -167,12 +168,14 @@ public static class EnemyRosterSetup
         Add(table,"unit.enemy.role","ВРАГ","ENEMY");
         Add(table,"unit.details.enemy_type","Характеристики типа врага","Enemy type statistics");
         Add(table,"unit.details.enemy_footer","Базовые характеристики этого типа врагов.\nКолесо мыши — прокрутка характеристик.","Base statistics for this enemy type.\nMouse wheel — scroll statistics.");
-        Add(table,"unit.enemy.goblin.title","Гоблин","Goblin");
-        Add(table,"unit.enemy.orc.title","Орк","Orc");
-        Add(table,"unit.enemy.skeleton.title","Скелет","Skeleton");
-        Add(table,"unit.enemy.goblin.description","Враг ближнего боя. Сближается с целью и атакует её.","A melee enemy that closes in on its target to attack.");
-        Add(table,"unit.enemy.orc.description","Враг ближнего боя. Его характеристики указаны в таблице ниже.","A melee enemy. Its combat statistics are shown below.");
-        Add(table,"unit.enemy.skeleton.description","Воин нежити. Его характеристики указаны в таблице ниже.","An undead warrior. Its combat statistics are shown below.");
+        Add(table,"unit.enemy.octopus.title","Осьминог","Octopus");
+        Add(table,"unit.enemy.cursedmage.title","Проклятый маг","Cursed mage");
+        Add(table,"unit.enemy.cursedknight.title","Проклятый рыцарь","Cursed knight");
+        Add(table,"unit.enemy.octopuswarrior.title","Воин-осьминог","Octopus warrior");
+        Add(table,"unit.enemy.octopus.description","Враг ближнего боя. Сближается с целью и атакует её.","A melee enemy that closes in on its target to attack.");
+        Add(table,"unit.enemy.cursedmage.description","Проклятый маг ведёт бой на расстоянии и выпускает магический снаряд.","A ranged enemy that fires a magical projectile.");
+        Add(table,"unit.enemy.cursedknight.description","Тяжёлый воин ближнего боя с мощной атакой.","A heavy melee warrior with a powerful attack.");
+        Add(table,"unit.enemy.octopuswarrior.description","Медленный и очень опасный воин ближнего боя.","A slow and extremely dangerous melee warrior.");
         EditorUtility.SetDirty(table);
     }
     private static void Add(LocalizationTable table,string key,string ru,string en)

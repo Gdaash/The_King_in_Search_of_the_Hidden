@@ -52,8 +52,22 @@ namespace GameFoundation.Bestiary
                 save = SaveSlotPrefs.HasKey(SaveKey)
                     ? JsonUtility.FromJson<BestiarySave>(SaveSlotPrefs.GetString(SaveKey))
                     : null;
-                return save ??= new BestiarySave();
+                save ??= new BestiarySave();
+                if (MigrateLegacyIds(save))
+                {
+                    SaveSlotPrefs.SetString(SaveKey, JsonUtility.ToJson(save));
+                    SaveSlotPrefs.Save();
+                }
+                return save;
             }
+        }
+
+        private static bool MigrateLegacyIds(BestiarySave data)
+        {
+            // Goblin became Octopus while retaining the same gameplay role.
+            if (!data.encountered.Remove("Goblin")) return false;
+            if (!data.encountered.Contains("Octopus")) data.encountered.Add("Octopus");
+            return true;
         }
 
         private static void Persist()
