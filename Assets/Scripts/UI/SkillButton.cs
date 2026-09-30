@@ -56,6 +56,47 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     private Vector3 _targetScale;
     private RectTransform _rectTransform;
 
+    /// <summary>True when this unlocked, unpurchased upgrade can be bought with the current resources.</summary>
+    public bool CanPurchaseNow
+    {
+        get
+        {
+            bool purchased = IsPurchasedNow;
+            // The laboratory popup starts inactive. Read the table directly so its badge does not
+            // depend on ApplyScientificDefinition having already run on an inactive SkillButton.
+            ScientificUpgradeTable.Entry definition = upgradeStats != null ? upgradeStats.FindUpgradeDefinition(skillID) : null;
+            ResourceType resource = definition != null && definition.costResource != null
+                ? definition.costResource
+                : purchaseResourceType;
+            int price = definition != null ? definition.cost : cost;
+            return IsUnlockedNow && !purchased && resource != null &&
+                GlobalResourceManager.Instance != null &&
+                GlobalResourceManager.Instance.GetResourceAmount(resource) >= price;
+        }
+    }
+
+    private bool IsPurchasedNow => isPurchased ||
+        (!string.IsNullOrEmpty(skillID) && upgradeStats != null && upgradeStats.HasUpgrade(skillID));
+
+    private bool IsUnlockedNow
+    {
+        get
+        {
+            if (isUnlocked) return true;
+
+            // The laboratory popup may be closed while its buttons are inactive. In that case
+            // their cached isUnlocked fields have not been refreshed yet, so derive availability
+            // from the saved purchase state of their direct parent skill.
+            foreach (SkillButton candidate in UnityEngine.Object.FindObjectsByType<SkillButton>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (candidate == null || candidate.nextSkills == null) continue;
+                foreach (SkillButton child in candidate.nextSkills)
+                    if (child == this && candidate.IsPurchasedNow) return true;
+            }
+            return false;
+        }
+    }
+
     private void Awake()
     {
         _baseScale = transform.localScale;

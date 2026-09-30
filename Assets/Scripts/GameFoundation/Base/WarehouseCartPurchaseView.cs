@@ -33,6 +33,14 @@ namespace GameFoundation.Base
         [SerializeField] private Color buttonDisabledColor = new Color(0.42f, 0.39f, 0.43f);
 
         public int WoodCost => woodCost;
+        public bool CanBuyCart
+        {
+            get
+            {
+                GlobalResourceManager manager = GlobalResourceManager.Instance;
+                return manager != null && wood != null && cart != null && manager.GetResourceAmount(wood) >= woodCost;
+            }
+        }
 
         private void OnEnable()
         {
@@ -65,8 +73,7 @@ namespace GameFoundation.Base
         private void Refresh()
         {
             GlobalResourceManager manager = GlobalResourceManager.Instance;
-            int woodAmount = manager != null && wood != null ? manager.GetResourceAmount(wood) : 0;
-            bool canBuy = manager != null && wood != null && cart != null && woodAmount >= woodCost;
+            bool canBuy = CanBuyCart;
 
             ApplyPalette();
             if (buyButton != null) buyButton.interactable = canBuy;

@@ -6,6 +6,7 @@ public class EnemyVisuals : MonoBehaviour
 {
     [Header("Глобальные настройки")]
     [SerializeField] private GlobalStats stats; 
+    public GlobalStats Stats => stats;
 
     [Header("Ссылки")]
     [SerializeField] private Transform spriteParent; 

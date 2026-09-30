@@ -39,6 +39,10 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
 
     public bool HasAssignedHomePoint => _hasAssignedHomePoint;
     public Vector3 AssignedHomePoint => _assignedHomePoint;
+    public float BaseAttackRange => attackRange;
+    public float BaseAttackCooldown => baseAttackCooldown;
+    public float CooldownVariation => cooldownVariation;
+    public float DetectionRange => detectionRange;
 
     void Awake()
     {

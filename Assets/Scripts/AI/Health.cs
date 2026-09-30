@@ -43,6 +43,7 @@ public class Health : MonoBehaviour
 
     public float MaxHealth => (stats != null ? stats.TotalMaxHealth : 100f) * MilitaryExperience.Multiplier(this);
     public float CurrentHealth => _cur;
+    public GlobalStats Stats => stats;
     public float NormalizedHealth => MaxHealth > 0f ? Mathf.Clamp01(_cur / MaxHealth) : 0f;
     public bool IsDead => _dead;
 

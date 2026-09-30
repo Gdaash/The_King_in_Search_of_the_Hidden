@@ -1,10 +1,12 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using GameFoundation.UI;
 
 namespace GameFoundation.MetaProgression
 {
     /// <summary>Inspector-authored visual template for one deployed warrior in the World HUD.</summary>
-    public sealed class WorldMilitaryRosterItemView : MonoBehaviour
+    public sealed class WorldMilitaryRosterItemView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler, IScrollHandler
     {
         [SerializeField] private Image icon;
         [SerializeField] private Image healthFill;
@@ -12,10 +14,21 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private Color healthyColor = new(0.28f, 0.8f, 0.35f, 1f);
         [SerializeField] private Color warningColor = new(0.93f, 0.7f, 0.18f, 1f);
         [SerializeField] private Color criticalColor = new(0.9f, 0.18f, 0.18f, 1f);
+        [Header("Описание при наведении")]
+        [SerializeField] private UnitDescriptionCatalog descriptions;
+        [SerializeField] private UnitDescriptionTooltip detailsTooltip;
+        [SerializeField, Min(0f)] private float tooltipDelay = .18f;
 
         private Health health;
         private MilitaryExperience experience;
         private int starCount;
+        private MilitaryProfile storedProfile;
+        private UnitDescriptionDefinition description;
+        private GameObject liveUnit;
+        private float storedHealth = 1f;
+        private float showAt;
+        private bool hovering;
+        private bool showing;
 
         public void SetUnit(GameObject unit)
         {
@@ -26,12 +39,21 @@ namespace GameFoundation.MetaProgression
                 MilitaryExperienceService.Stars(unitExperience?.Profile));
             health = unitHealth;
             experience = unitExperience;
+            liveUnit = unit;
+            storedProfile = unitExperience?.Profile;
+            description = descriptions != null ? descriptions.Find(storedProfile?.type) : null;
+            if (description != null && description.resource != null && icon != null)
+                ResourceIconSizing.Apply(icon, description.resource.resourceIcon);
         }
 
         public void SetIcon(Sprite sprite, float normalizedHealth, int stars = 0)
         {
             health = null;
             experience = null;
+            liveUnit = null;
+            storedProfile = null;
+            description = null;
+            storedHealth = normalizedHealth;
             starCount = stars;
             if (icon != null)
             {
@@ -44,9 +66,36 @@ namespace GameFoundation.MetaProgression
 
         public void Refresh()
         {
-            SetHealth(health != null ? health.NormalizedHealth : 0f);
+            SetHealth(health != null ? health.NormalizedHealth : storedProfile != null ? MilitaryExperienceService.HealthPercent(storedProfile) : storedHealth);
             if (experience != null) starCount = experience.Stars;
+            else if (storedProfile != null) starCount = MilitaryExperienceService.Stars(storedProfile);
             if (starsView != null) starsView.SetStars(starCount);
+        }
+
+        public void SetProfile(ResourceType resource, MilitaryProfile profile)
+        {
+            SetIcon(resource != null ? resource.resourceIcon : null, MilitaryExperienceService.HealthPercent(profile), MilitaryExperienceService.Stars(profile));
+            storedProfile = profile;
+            description = descriptions != null && resource != null ? descriptions.Find(resource.name) : null;
+            if (icon != null && resource != null) ResourceIconSizing.Apply(icon, resource.resourceIcon);
+        }
+
+        public void OnPointerEnter(PointerEventData eventData) { hovering = true; showAt = Time.unscaledTime + tooltipDelay; }
+        public void OnPointerExit(PointerEventData eventData) => HideDetails();
+        public void OnSelect(BaseEventData eventData) { hovering = true; showAt = Time.unscaledTime; }
+        public void OnDeselect(BaseEventData eventData) => HideDetails();
+        public void OnScroll(PointerEventData eventData) { if (showing && detailsTooltip != null) detailsTooltip.Scroll(this, eventData.scrollDelta.y); }
+        private void Update()
+        {
+            if (!hovering || showing || Time.unscaledTime < showAt || description == null || detailsTooltip == null) return;
+            detailsTooltip.Show(this, description, storedProfile, liveUnit);
+            showing = true;
+        }
+        private void OnDisable() => HideDetails();
+        private void HideDetails()
+        {
+            hovering = false; showing = false;
+            if (detailsTooltip != null) detailsTooltip.Hide(this);
         }
 
         private void SetHealth(float value)

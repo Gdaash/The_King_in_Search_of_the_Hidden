@@ -369,6 +369,8 @@ MonoBehaviour:
   bounceSpeed: 8
   kickbackDist: 0.3
   shootSpeed: 10
+  windupDuration: 0.22
+  windupScale: {x: 0.9, y: 1.08}
   flipThreshold: 0.1
 --- !u!114 &4679095970568541840
 MonoBehaviour:
@@ -401,6 +403,9 @@ MonoBehaviour:
   targetSprite: {fileID: 6799221602381481980}
   damageTextPrefab: {fileID: 0}
   _cur: 0
+  hitFlashDuration: 0.16
+  hitScaleAmount: 0.12
+  deathDuration: 0.3
   OnHealthChanged:
     m_PersistentCalls:
       m_Calls:
@@ -522,6 +527,10 @@ PrefabInstance:
     - target: {fileID: 4231113923864240260, guid: d1c1c6bf719723b4fae55149a101940f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8716222255271241027, guid: d1c1c6bf719723b4fae55149a101940f, type: 3}
+      propertyPath: m_FillAmount
+      value: 0.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

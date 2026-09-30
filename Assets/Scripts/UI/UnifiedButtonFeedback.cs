@@ -12,6 +12,7 @@ namespace GameFoundation.UI
         [SerializeField] private ButtonVisualTheme theme;
         [SerializeField] private bool animateScale = true;
         [SerializeField] private bool useButtonPalette;
+        [SerializeField, Min(1f)] private float hoverScaleMultiplier = 1f;
 
         private Button button;
         private Graphic graphic;
@@ -39,7 +40,7 @@ namespace GameFoundation.UI
             bool enabledButton = button.IsActive() && button.interactable;
             bool highlighted = enabledButton && (hovered || focused);
             float scale = pressed && enabledButton ? theme.pressedScale :
-                highlighted ? theme.hoverScale : 1f;
+                highlighted ? theme.hoverScale * hoverScaleMultiplier : 1f;
             float step = 1f - Mathf.Exp(-theme.transitionSpeed * Time.unscaledDeltaTime);
 
             if (animateScale)

@@ -7,6 +7,7 @@ namespace GameFoundation.Base
     public static class RoyalDecreeService
     {
         public const string CautiousWarriors = "cautious_warriors";
+        public const string FinishOffEnemies = "finish_off_enemies";
         private const string Prefix = "foundation.decree.";
 
         public static event Action<string, bool> Changed;

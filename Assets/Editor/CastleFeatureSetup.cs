@@ -77,31 +77,22 @@ public static class CastleFeatureSetup
 
     private static GameObject CreatePopup(Transform parent, UIImage source, Font font)
     {
-        RectTransform root = CreateRect("Castle Popup", parent, Vector2.zero, new Vector2(780f, 460f));
+        RectTransform root = CreateRect("Castle Popup", parent, Vector2.zero, new Vector2(780f, 680f));
         UIImage background = root.gameObject.AddComponent<UIImage>();
         background.sprite = source.sprite;
         background.type = UIImage.Type.Sliced;
         background.color = source.color;
-        Text title = CreateText("Title", root, new Vector2(0f, 180f), new Vector2(620f, 52f), font, 32);
+        Text title = CreateText("Title", root, new Vector2(0f, 285f), new Vector2(620f, 52f), font, 32);
         SetLocalized(title.gameObject, "base.castle_popup.title");
-        Text name = CreateText("Cautious Warriors Name", root, new Vector2(0f, 88f), new Vector2(650f, 42f), font, 24);
-        SetLocalized(name.gameObject, "base.castle_popup.decree.cautious.name");
-        Text description = CreateText("Cautious Warriors Description", root, new Vector2(0f, 22f), new Vector2(640f, 86f), font, 19);
-        SetLocalized(description.gameObject, "base.castle_popup.decree.cautious.description");
-        Text state = CreateText("Cautious Warriors State", root, new Vector2(0f, -74f), new Vector2(420f, 36f), font, 20);
-        state.color = new Color(.95f, .35f, .32f);
 
-        RectTransform toggle = CreateRect("Toggle Cautious Warriors", root, new Vector2(0f, -145f), new Vector2(270f, 58f));
-        UIImage toggleImage = toggle.gameObject.AddComponent<UIImage>();
-        toggleImage.sprite = source.sprite;
-        toggleImage.type = UIImage.Type.Sliced;
-        toggleImage.color = new Color(.43f, .35f, .52f);
-        Button toggleButton = toggle.gameObject.AddComponent<Button>();
-        toggleButton.targetGraphic = toggleImage;
-        Text toggleLabel = CreateText("Label", toggle, Vector2.zero, new Vector2(240f, 44f), font, 20);
-        toggleLabel.text = "Включить";
+        Button cautiousButton = CreateDecreeCard(root, source, font, "Cautious Warriors Card", new Vector2(0f, 120f),
+            "base.castle_popup.decree.cautious.name", "base.castle_popup.decree.cautious.description",
+            out Text cautiousButtonLabel, out Text cautiousState);
+        Button finishOffButton = CreateDecreeCard(root, source, font, "Finish Off Enemies Card", new Vector2(0f, -150f),
+            "base.castle_popup.decree.finish_off.name", "base.castle_popup.decree.finish_off.description",
+            out Text finishOffButtonLabel, out Text finishOffState);
 
-        RectTransform close = CreateRect("Close", root, new Vector2(350f, 198f), new Vector2(46f, 46f));
+        RectTransform close = CreateRect("Close", root, new Vector2(350f, 305f), new Vector2(46f, 46f));
         UIImage closeImage = close.gameObject.AddComponent<UIImage>();
         closeImage.sprite = source.sprite;
         closeImage.type = UIImage.Type.Sliced;
@@ -113,11 +104,44 @@ public static class CastleFeatureSetup
 
         RoyalDecreePopupView view = root.gameObject.AddComponent<RoyalDecreePopupView>();
         SetObject(view, "closeButton", closeButton);
-        SetObject(view, "cautiousWarriorsButton", toggleButton);
-        SetObject(view, "cautiousWarriorsButtonLabel", toggleLabel);
-        SetObject(view, "cautiousWarriorsState", state);
+        SetObject(view, "cautiousWarriorsButton", cautiousButton);
+        SetObject(view, "cautiousWarriorsButtonLabel", cautiousButtonLabel);
+        SetObject(view, "cautiousWarriorsState", cautiousState);
+        SetObject(view, "finishOffEnemiesButton", finishOffButton);
+        SetObject(view, "finishOffEnemiesButtonLabel", finishOffButtonLabel);
+        SetObject(view, "finishOffEnemiesState", finishOffState);
         root.gameObject.SetActive(false);
         return root.gameObject;
+    }
+
+    private static Button CreateDecreeCard(Transform parent, UIImage source, Font font, string cardName, Vector2 position,
+        string nameKey, string descriptionKey, out Text buttonLabel, out Text state)
+    {
+        RectTransform card = CreateRect(cardName, parent, position, new Vector2(700f, 230f));
+        UIImage cardImage = card.gameObject.AddComponent<UIImage>();
+        cardImage.sprite = source.sprite;
+        cardImage.type = UIImage.Type.Sliced;
+        cardImage.color = new Color(.13f, .09f, .16f, .96f);
+
+        Text decree = CreateText("Decree", card, new Vector2(0f, 88f), new Vector2(610f, 28f), font, 16);
+        decree.text = "ПРИКАЗ";
+        Text name = CreateText("Name", card, new Vector2(0f, 52f), new Vector2(640f, 36f), font, 24);
+        SetLocalized(name.gameObject, nameKey);
+        Text description = CreateText("Description", card, new Vector2(0f, 4f), new Vector2(630f, 58f), font, 18);
+        SetLocalized(description.gameObject, descriptionKey);
+        state = CreateText("State", card, new Vector2(-145f, -68f), new Vector2(250f, 34f), font, 18);
+        state.color = new Color(.95f, .35f, .32f);
+
+        RectTransform toggle = CreateRect("Toggle", card, new Vector2(175f, -68f), new Vector2(220f, 50f));
+        UIImage toggleImage = toggle.gameObject.AddComponent<UIImage>();
+        toggleImage.sprite = source.sprite;
+        toggleImage.type = UIImage.Type.Sliced;
+        toggleImage.color = new Color(.43f, .35f, .52f);
+        Button button = toggle.gameObject.AddComponent<Button>();
+        button.targetGraphic = toggleImage;
+        buttonLabel = CreateText("Label", toggle, Vector2.zero, new Vector2(195f, 38f), font, 18);
+        buttonLabel.text = "Включить";
+        return button;
     }
 
     private static RectTransform CreateRect(string name, Transform parent, Vector2 position, Vector2 size)
@@ -179,6 +203,8 @@ public static class CastleFeatureSetup
         Add(table, "base.castle_popup.title", "ЗАМОК", "CASTLE");
         Add(table, "base.castle_popup.decree.cautious.name", "Не трус, а осторожный", "Not cowardly, but cautious");
         Add(table, "base.castle_popup.decree.cautious.description", "Если здоровье воина упало ниже 10%, то воин бежит с поля боя в портал.", "If a warrior's health falls below 10%, they flee the battlefield through the portal.");
+        Add(table, "base.castle_popup.decree.finish_off.name", "Бей раненых", "Finish off the wounded");
+        Add(table, "base.castle_popup.decree.finish_off.description", "Лучники атакуют врагов с наименьшим процентом здоровья", "Archers attack enemies with the lowest health percentage.");
         Add(table, "base.castle.decree.enabled", "Указ включён", "Decree enabled");
         Add(table, "base.castle.decree.disabled", "Указ выключен", "Decree disabled");
         Add(table, "base.castle.decree.turn_on", "Включить", "Enable");

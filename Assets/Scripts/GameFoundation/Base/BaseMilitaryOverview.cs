@@ -33,6 +33,7 @@ namespace GameFoundation.Base
 
         private readonly List<WorldMilitaryRosterItemView> items = new();
         private RectTransform panel;
+        private float nextHealthRefresh;
 
         private void Awake()
         {
@@ -48,6 +49,12 @@ namespace GameFoundation.Base
 
         private void OnDisable() => GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
         private void OnResourceChanged(ResourceType _, int __) => Refresh();
+        private void LateUpdate()
+        {
+            if (Time.unscaledTime < nextHealthRefresh) return;
+            nextHealthRefresh = Time.unscaledTime + .2f;
+            foreach (var item in items) if (item != null) item.Refresh();
+        }
 
         private void Refresh()
         {
@@ -84,8 +91,7 @@ namespace GameFoundation.Base
                 WorldMilitaryRosterItemView item = Instantiate(itemTemplate, content);
                 item.name = type.resource.resourceName + " " + (i + 1);
                 item.gameObject.SetActive(true);
-                item.SetIcon(type.resource.resourceIcon, MilitaryExperienceService.HealthPercent(profiles[i]),
-                    MilitaryExperienceService.Stars(profiles[i]));
+                item.SetProfile(type.resource, profiles[i]);
                 items.Add(item);
             }
         }

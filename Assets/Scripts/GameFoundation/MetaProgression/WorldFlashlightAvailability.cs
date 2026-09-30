@@ -15,22 +15,35 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private GameObject[] flashlights;
         [SerializeField, Min(0f)] private float activationDelay = 0.1f;
         [SerializeField, Min(0f)] private float lightWarmupDelay = 0.3f;
+        [Header("Activation button placement")]
+        [Tooltip("World-space offset from the first flashlight. It is not affected by the flashlight rotation.")]
+        [SerializeField] private Vector3 activationButtonWorldOffset = new(0f, -3f, 0f);
 
         private float[] _initialLightIntensities;
         private bool _escapeRequested;
+        private bool _lightsActivated;
+        private int _availableFlashlightCount;
+        private FlashlightActivationButton _activationButton;
 
         private void Awake()
         {
-            int count = flashlightStats != null ? flashlightStats.AvailableFlashlightCount : 1;
+            _availableFlashlightCount = flashlightStats != null ? flashlightStats.AvailableFlashlightCount : 1;
             if (flashlights == null) return;
             _initialLightIntensities = new float[flashlights.Length];
 
-            // Этот компонент находится на первом фонаре: его корень должен
-            // оставаться активным, даже если он выпадет последним в очереди.
+            // Purchased flashlights are visible from the start. Their beams and ground
+            // markers stay off until the player deliberately turns the network on.
             for (int i = 0; i < flashlights.Length; i++)
             {
                 GameObject flashlight = flashlights[i];
                 if (flashlight == null) continue;
+
+                bool isAvailable = i < Mathf.Min(_availableFlashlightCount, flashlights.Length);
+                if (flashlight != gameObject) flashlight.SetActive(isAvailable);
+                if (!isAvailable) continue;
+
+                FlashlightActivationButton button = flashlight.GetComponentInChildren<FlashlightActivationButton>(true);
+                if (button != null) button.gameObject.SetActive(false);
 
                 Transform light = flashlight.transform.Find("Light");
                 if (light != null && light.TryGetComponent(out Light2D light2D))
@@ -45,12 +58,33 @@ namespace GameFoundation.MetaProgression
                 if (flagLight != null) flagLight.gameObject.SetActive(false);
 
                 SetContentsActive(flashlight, false);
-                if (flashlight != gameObject)
-                    flashlight.SetActive(false);
             }
+            if (flashlights.Length > 0 && flashlights[0] != null)
+            {
+                _activationButton = flashlights[0].GetComponentInChildren<FlashlightActivationButton>(true);
+                if (_activationButton != null)
+                {
+                    // The editable source stays in the Flashlight prefab, but the
+                    // runtime button becomes an independent scene object. This keeps
+                    // it upright and prevents the flashlight's aiming rotation from
+                    // affecting its position or collider.
+                    _activationButton.transform.SetParent(null, true);
+                    _activationButton.transform.position = flashlights[0].transform.position + activationButtonWorldOffset;
+                    _activationButton.transform.rotation = Quaternion.identity;
+                    _activationButton.gameObject.SetActive(true);
+                }
+            }
+        }
+
+        public void ActivateAvailableLights()
+        {
+            if (_lightsActivated || _escapeRequested || flashlights == null) return;
+            _lightsActivated = true;
+            if (_activationButton != null) _activationButton.gameObject.SetActive(false);
 
             var order = new List<int>();
-            for (int i = 0; i < Mathf.Min(count, flashlights.Length); i++)
+            int count = Mathf.Min(_availableFlashlightCount, flashlights.Length);
+            for (int i = 0; i < count; i++)
                 if (flashlights[i] != null)
                     order.Add(i);
 
@@ -59,7 +93,6 @@ namespace GameFoundation.MetaProgression
                 int other = Random.Range(0, i + 1);
                 (order[i], order[other]) = (order[other], order[i]);
             }
-
             StartCoroutine(ActivateInOrder(order));
         }
 
@@ -76,8 +109,7 @@ namespace GameFoundation.MetaProgression
                 if (flag != null)
                     flag.transform.localScale = Vector3.one * 0.5f;
 
-                if (flashlight != gameObject)
-                    flashlight.SetActive(true);
+                flashlight.SetActive(true);
                 if (flag != null) flag.gameObject.SetActive(true);
 
                 if (flag != null)
@@ -139,6 +171,7 @@ namespace GameFoundation.MetaProgression
         {
             _escapeRequested = true;
             StopAllCoroutines();
+            if (_activationButton != null) _activationButton.gameObject.SetActive(false);
             if (flashlights == null) return;
 
             foreach (GameObject flashlight in flashlights)

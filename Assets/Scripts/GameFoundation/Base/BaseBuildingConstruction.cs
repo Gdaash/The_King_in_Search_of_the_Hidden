@@ -26,6 +26,8 @@ namespace GameFoundation.Base
         private bool hovering;
         private bool languageSubscribed;
         private string SaveKey => "foundation.building." + buildingId + ".built";
+        public bool IsBuilt => built;
+        public bool CanAffordConstruction => !built && CanAfford();
 
         private void Awake()
         {

@@ -24,6 +24,7 @@ public sealed class CheatResourcePopup : MonoBehaviour
     }
 
     [SerializeField] private GameObject window;
+    [SerializeField] private GameObject dimmer;
     [SerializeField] private Button closeButton;
     [SerializeField] private List<ResourceRow> rows = new List<ResourceRow>();
 
@@ -53,6 +54,8 @@ public sealed class CheatResourcePopup : MonoBehaviour
 
         if (window != null)
             window.SetActive(false);
+        if (dimmer != null)
+            dimmer.SetActive(false);
     }
 
     private void OnEnable()
@@ -70,6 +73,7 @@ public sealed class CheatResourcePopup : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.L) && !IsEditingText())
         {
             if (window != null) window.SetActive(!window.activeSelf);
+            if (dimmer != null) dimmer.SetActive(window != null && window.activeSelf);
             Refresh();
         }
         else if (window != null && window.activeSelf && Input.GetKeyDown(KeyCode.Escape))
@@ -150,5 +154,6 @@ public sealed class CheatResourcePopup : MonoBehaviour
     private void Close()
     {
         if (window != null) window.SetActive(false);
+        if (dimmer != null) dimmer.SetActive(false);
     }
 }

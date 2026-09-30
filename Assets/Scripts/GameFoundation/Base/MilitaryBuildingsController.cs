@@ -14,17 +14,8 @@ namespace GameFoundation.Base
         {
             if (fortButton != null) fortButton.onClick.AddListener(() => Open(fortPopup));
             if (archeryRangeButton != null) archeryRangeButton.onClick.AddListener(() => Open(archeryRangePopup));
-            BindClose(fortPopup);
-            BindClose(archeryRangePopup);
             if (fortPopup != null) fortPopup.SetActive(false);
             if (archeryRangePopup != null) archeryRangePopup.SetActive(false);
-        }
-
-        private static void BindClose(GameObject popup)
-        {
-            if (popup == null) return;
-            var close = popup.transform.Find("Close")?.GetComponent<Button>();
-            if (close != null) close.onClick.AddListener(() => popup.SetActive(false));
         }
 
         private static void Open(GameObject popup)

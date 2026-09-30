@@ -11,11 +11,15 @@ namespace GameFoundation.Base
         [SerializeField] private Button cautiousWarriorsButton;
         [SerializeField] private Text cautiousWarriorsButtonLabel;
         [SerializeField] private Text cautiousWarriorsState;
+        [SerializeField] private Button finishOffEnemiesButton;
+        [SerializeField] private Text finishOffEnemiesButtonLabel;
+        [SerializeField] private Text finishOffEnemiesState;
 
         private void Awake()
         {
             if (closeButton != null) closeButton.onClick.AddListener(Close);
             if (cautiousWarriorsButton != null) cautiousWarriorsButton.onClick.AddListener(ToggleCautiousWarriors);
+            if (finishOffEnemiesButton != null) finishOffEnemiesButton.onClick.AddListener(ToggleFinishOffEnemies);
         }
 
         private void OnEnable()
@@ -35,6 +39,7 @@ namespace GameFoundation.Base
         {
             if (closeButton != null) closeButton.onClick.RemoveListener(Close);
             if (cautiousWarriorsButton != null) cautiousWarriorsButton.onClick.RemoveListener(ToggleCautiousWarriors);
+            if (finishOffEnemiesButton != null) finishOffEnemiesButton.onClick.RemoveListener(ToggleFinishOffEnemies);
         }
 
         public void Open()
@@ -46,20 +51,31 @@ namespace GameFoundation.Base
         public void Close() => gameObject.SetActive(false);
 
         public void ToggleCautiousWarriors() => RoyalDecreeService.Toggle(RoyalDecreeService.CautiousWarriors);
+        public void ToggleFinishOffEnemies() => RoyalDecreeService.Toggle(RoyalDecreeService.FinishOffEnemies);
 
-        private void OnDecreeChanged(string decreeId, bool _) { if (decreeId == RoyalDecreeService.CautiousWarriors) Refresh(); }
+        private void OnDecreeChanged(string decreeId, bool _)
+        {
+            if (decreeId == RoyalDecreeService.CautiousWarriors || decreeId == RoyalDecreeService.FinishOffEnemies)
+                Refresh();
+        }
 
         private void Refresh()
         {
-            bool enabled = RoyalDecreeService.IsEnabled(RoyalDecreeService.CautiousWarriors);
-            if (cautiousWarriorsState != null)
+            RefreshDecree(RoyalDecreeService.CautiousWarriors, cautiousWarriorsState, cautiousWarriorsButtonLabel);
+            RefreshDecree(RoyalDecreeService.FinishOffEnemies, finishOffEnemiesState, finishOffEnemiesButtonLabel);
+        }
+
+        private static void RefreshDecree(string decreeId, Text state, Text buttonLabel)
+        {
+            bool enabled = RoyalDecreeService.IsEnabled(decreeId);
+            if (state != null)
             {
-                cautiousWarriorsState.text = Tr(enabled ? "base.castle.decree.enabled" : "base.castle.decree.disabled",
+                state.text = Tr(enabled ? "base.castle.decree.enabled" : "base.castle.decree.disabled",
                     enabled ? "Указ включён" : "Указ выключен");
-                cautiousWarriorsState.color = enabled ? new Color(0.4f, 0.95f, 0.45f) : new Color(0.95f, 0.35f, 0.32f);
+                state.color = enabled ? new Color(0.4f, 0.95f, 0.45f) : new Color(0.95f, 0.35f, 0.32f);
             }
-            if (cautiousWarriorsButtonLabel != null)
-                cautiousWarriorsButtonLabel.text = Tr(enabled ? "base.castle.decree.turn_off" : "base.castle.decree.turn_on",
+            if (buttonLabel != null)
+                buttonLabel.text = Tr(enabled ? "base.castle.decree.turn_off" : "base.castle.decree.turn_on",
                     enabled ? "Выключить" : "Включить");
         }
 

@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Linq;
 using UnityEngine.Events;
 using GameFoundation.MetaProgression;
+using GameFoundation.Base;
 
 public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
 {
@@ -41,6 +42,8 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
 
     public bool HasAssignedHomePoint => _hasAssignedHomePoint;
     public Vector3 AssignedHomePoint => _assignedHomePoint;
+    public float CooldownVariation => cooldownVariation;
+    public float DetectionRange => detectionRange;
 
     // Свойства для удобного доступа к статам
     public float CurrentAttackRange => (stats != null ? stats.TotalAttackRange : defaultAttackRange) * MilitaryExperience.Multiplier(this);
@@ -107,8 +110,26 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
     private void FindClosestTarget()
     {
         var targets = GameObject.FindGameObjectsWithTag(targetTag);
-        _target = targets
-            .Where(t => t.activeInHierarchy && (t.GetComponentInParent<Health>() == null || !t.GetComponentInParent<Health>().IsDead))
+        var viableTargets = targets
+            .Where(t => t.activeInHierarchy && (t.GetComponentInParent<Health>() == null || !t.GetComponentInParent<Health>().IsDead));
+
+        // Player archers use the decree only when they target enemies. The comparison
+        // is normalized HP, so a 10/100 enemy is preferred over a 20/500 enemy.
+        if (targetTag == "Enemy1" && RoyalDecreeService.IsEnabled(RoyalDecreeService.FinishOffEnemies))
+        {
+            _target = viableTargets
+                .OrderBy(t =>
+                {
+                    Health health = t.GetComponentInParent<Health>();
+                    return health != null ? health.NormalizedHealth : 1f;
+                })
+                .ThenBy(t => Vector2.SqrMagnitude(t.transform.position - transform.position))
+                .Select(t => t.transform)
+                .FirstOrDefault();
+            return;
+        }
+
+        _target = viableTargets
             .OrderBy(t => Vector2.SqrMagnitude(t.transform.position - transform.position))
             .Select(t => t.transform)
             .FirstOrDefault();

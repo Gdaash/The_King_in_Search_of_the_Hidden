@@ -19,6 +19,10 @@ public class EnemyMovement : MonoBehaviour
     private float _initialScaleX;
     private float _finalSpeed;
     private float _individualVariation; // Персональное отклонение скорости
+    public GlobalStats Stats => stats;
+    public float SpeedVariation => speedVariation;
+    // FixedUpdate currently uses this speed; the UI must describe actual movement.
+    public float CombatSpeed => _finalSpeed > 0f ? _finalSpeed : (stats != null ? stats.TotalSpeed : 3f) + _individualVariation;
 
     public float CurrentSpeed
     {

@@ -26,6 +26,8 @@ namespace GameFoundation.Base
         [SerializeField] private Color notEnoughColor = new Color(0.95f, 0.38f, 0.35f);
         [SerializeField] private Color stockColor = new Color(0.94f, 0.91f, 0.82f);
 
+        public bool CanProduceAny => CanProduce(swordRecipe) || CanProduce(bowRecipe);
+
         private void Awake()
         {
             Bind(swordRecipe);
@@ -82,9 +84,8 @@ namespace GameFoundation.Base
         {
             if (recipe == null) return;
             GlobalResourceManager manager = GlobalResourceManager.Instance;
-            int inputStock = manager != null && recipe.input != null ? manager.GetResourceAmount(recipe.input) : 0;
             int outputStock = manager != null && recipe.output != null ? manager.GetResourceAmount(recipe.output) : 0;
-            bool canProduce = manager != null && recipe.input != null && recipe.output != null && inputStock >= recipe.inputAmount;
+            bool canProduce = CanProduce(recipe);
 
             if (recipe.produceButton != null) recipe.produceButton.interactable = canProduce;
             if (recipe.inputAmountText != null)
@@ -99,6 +100,13 @@ namespace GameFoundation.Base
             }
             ApplyIcon(recipe.inputIcon, recipe.input);
             ApplyIcon(recipe.outputIcon, recipe.output);
+        }
+
+        private static bool CanProduce(RecipeView recipe)
+        {
+            GlobalResourceManager manager = GlobalResourceManager.Instance;
+            return manager != null && recipe != null && recipe.input != null && recipe.output != null &&
+                manager.GetResourceAmount(recipe.input) >= recipe.inputAmount;
         }
 
         private static void ApplyIcon(Image image, ResourceType resource)
