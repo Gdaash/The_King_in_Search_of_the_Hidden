@@ -6,7 +6,7 @@ namespace GameFoundation.Base
     /// <summary>Shows a building-button badge when the building can perform an action now.</summary>
     public sealed class BuildingActionAvailabilityIndicator : MonoBehaviour
     {
-        public enum ActionType { CartPurchase, BlacksmithProduction, MilitaryTraining, BuildingConstruction, LaboratoryUpgrade, PortalTravel }
+        public enum ActionType { CartPurchase, BlacksmithProduction, MilitaryTraining, BuildingConstruction, LaboratoryUpgrade, PortalTravel, RefugeeAdmission }
 
         [SerializeField] private GameObject marker;
         [SerializeField] private ActionType actionType;
@@ -65,6 +65,7 @@ namespace GameFoundation.Base
                 ActionType.BuildingConstruction => construction != null && construction.CanAffordConstruction,
                 ActionType.LaboratoryUpgrade => HasAvailableLaboratoryUpgrade(),
                 ActionType.PortalTravel => DayCycleService.Instance != null && !DayCycleService.Instance.EnteredToday,
+                ActionType.RefugeeAdmission => DayCycleService.Instance != null && DayCycleService.Instance.RefugeesAvailable > 0 && BuildingUpgradeService.CanAdmitResident,
                 _ => false
             };
             bool buildingReady = actionType == ActionType.BuildingConstruction || construction == null || construction.IsBuilt;
