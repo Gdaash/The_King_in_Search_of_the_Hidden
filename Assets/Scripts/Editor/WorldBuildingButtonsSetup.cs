@@ -26,14 +26,8 @@ public static class WorldBuildingButtonsSetup
     public static void Run()
     {
         if (EditorApplication.isPlaying) throw new System.InvalidOperationException("Stop Play Mode first.");
-        const string iconPath = "Assets/Art/BaseScene/Construction Placeholder.png";
-        if (!System.IO.File.Exists(iconPath))
-        {
-            var texture = new Texture2D(32, 32, TextureFormat.RGBA32, false);
-            texture.SetPixels(Enumerable.Repeat(Color.white, 32 * 32).ToArray()); texture.Apply();
-            System.IO.File.WriteAllBytes(iconPath, texture.EncodeToPNG()); Object.DestroyImmediate(texture);
-            AssetDatabase.ImportAsset(iconPath);
-        }
+        const string iconPath = "Assets/Art/BaseScene/Construction Icon.png";
+        if (!System.IO.File.Exists(iconPath)) throw new System.IO.FileNotFoundException("Construction icon is missing", iconPath);
         var importer = (TextureImporter)AssetImporter.GetAtPath(iconPath);
         importer.textureType = TextureImporterType.Sprite; importer.spriteImportMode = SpriteImportMode.Single;
         importer.spritePixelsPerUnit = 32; importer.filterMode = FilterMode.Point;
@@ -68,7 +62,7 @@ public static class WorldBuildingButtonsSetup
                     build.anchoredPosition = Vector2.zero; build.localScale = Vector3.one;
                     var buildImage = build.GetComponent<Image>(); buildImage.sprite = icon; buildImage.type = Image.Type.Simple; buildImage.color = Color.white;
                     var buildLabel = build.Find("Label"); if (buildLabel != null) { buildLabel.gameObject.SetActive(false); PrefabUtility.RecordPrefabInstancePropertyModifications(buildLabel.gameObject); }
-                    // Keep the construction placeholder white, with a visible hover response.
+                    // Keep the original icon colors, with a visible hover response.
                     var f = build.GetComponent<UnifiedButtonFeedback>(); if (f != null) f.enabled = false;
                     var b = build.GetComponent<Button>(); b.transition = Selectable.Transition.ColorTint;
                     var colors = b.colors; colors.normalColor = Color.white; colors.highlightedColor = new Color(1,.85f,.45f); colors.pressedColor = new Color(.8f,.65f,.3f); colors.disabledColor = new Color(.55f,.55f,.55f); b.colors = colors;
