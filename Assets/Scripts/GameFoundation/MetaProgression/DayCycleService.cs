@@ -110,7 +110,7 @@ namespace GameFoundation.MetaProgression
             Changed?.Invoke();
         }
         public void NextDay(){DayResourceLedger.EnsureDay(Day);int starved=ConsumeFood();MilitaryExperienceService.HealAll();UpdateCrowns(starved);DayResourceLedger.FinishDay(Day);Day++;SearchedToday=false;EnteredToday=false;RefugeesAvailable=UnityEngine.Random.Range(1,4);Save();DayResourceLedger.StartNextDay(Day);Changed?.Invoke();}
-        public bool AdmitRefugee(){if(RefugeesAvailable<=0)return false;RefugeesAvailable--;Save();Changed?.Invoke();return true;}
+        public bool AdmitRefugee(){if(RefugeesAvailable<=0 || !GameFoundation.Base.BuildingUpgradeService.CanAdmitResident)return false;RefugeesAvailable--;Save();Changed?.Invoke();return true;}
         public FoodForecast GetFoodForecast()
         {
             var resources = GlobalResourceManager.Instance;

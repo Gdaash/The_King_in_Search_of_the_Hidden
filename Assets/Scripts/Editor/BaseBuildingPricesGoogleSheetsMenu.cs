@@ -17,7 +17,8 @@ public static class BaseBuildingPricesGoogleSheetsMenu
     private const string SheetId = "1eepDmDSn5Y-Bs6qj49qZV8EjP1zo-pi58c8EeYKflyg";
     private const string SheetName = "BaseBuildings";
     private const string ScenePath = "Assets/Scenes/Base.unity";
-    private const string Header = "building_id,building_name,resource_type,cost_amount";
+    private const string LegacyHeader = "building_id,building_name,resource_type,cost_amount";
+    private const string Header = LegacyHeader + ",upgrade_level,capacity_bonus";
 
     [MenuItem("Tools/Таблицы/Строения базы/Экспорт в Google Sheets")]
     private static void ExportToGoogleSheets()
@@ -46,7 +47,7 @@ public static class BaseBuildingPricesGoogleSheetsMenu
         }
     }
 
-    private static string BuildCsv()
+    public static string BuildCsv()
     {
         var rows = new List<string> { Header };
         foreach (BaseBuildingConstruction building in LoadBuildings().OrderBy(item => Id(item), StringComparer.Ordinal))
@@ -59,16 +60,26 @@ public static class BaseBuildingPricesGoogleSheetsMenu
                 serialized.FindProperty("stone").objectReferenceValue as ResourceType,
                 serialized.FindProperty("stoneCost").intValue);
         }
+        var catalog = BuildingUpgradeService.Catalog;
+        if (catalog != null)
+            foreach (var building in catalog.buildings)
+                for (int i = 0; i < building.levels.Count; i++)
+                {
+                    var level = building.levels[i];
+                    rows.Add(Row(building.id, building.displayName, level.resourceA.name, level.costA.ToString(), (i + 1).ToString(), level.additionalCapacity.ToString()));
+                    rows.Add(Row(building.id, building.displayName, level.resourceB.name, level.costB.ToString(), (i + 1).ToString(), level.additionalCapacity.ToString()));
+                }
         return string.Join("\r\n", rows);
     }
 
-    private static void Import(string csv)
+    public static void Import(string csv, bool showDialog = true, bool validateOnly = false)
     {
         List<List<string>> rows = Parse(csv);
-        if (rows.Count == 0 || !rows[0].SequenceEqual(Header.Split(',')))
+        if (rows.Count == 0 || (!rows[0].SequenceEqual(Header.Split(',')) && !rows[0].SequenceEqual(LegacyHeader.Split(','))))
             throw new InvalidDataException("Нужны столбцы: " + Header);
 
         var prices = new Dictionary<string, List<(ResourceType resource, int amount)>>(StringComparer.Ordinal);
+        var upgrades = new Dictionary<(string id, int level), List<(ResourceType resource, int amount, int bonus)>>();
         foreach (List<string> cells in rows.Skip(1))
         {
             if (cells.Count < 4 || string.IsNullOrWhiteSpace(cells[0])) continue;
@@ -76,6 +87,21 @@ public static class BaseBuildingPricesGoogleSheetsMenu
             if (resource == null) throw new InvalidDataException("Неизвестный ресурс: " + cells[2]);
             if (!int.TryParse(cells[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out int amount) || amount < 0)
                 throw new InvalidDataException($"Некорректная цена для {cells[0]}: {cells[3]}");
+            int level = 0;
+            if (cells.Count > 4 && (!int.TryParse(cells[4], out level) || level < 0))
+                throw new InvalidDataException("Некорректный upgrade_level: " + cells[4]);
+            if (level > 0)
+            {
+                if (cells.Count < 6 || !int.TryParse(cells[5], out int bonus) || bonus < 0)
+                    throw new InvalidDataException("Некорректный capacity_bonus для " + cells[0]);
+                var definition = BuildingUpgradeService.Catalog?.Find(cells[0]);
+                if (definition == null || level > definition.levels.Count)
+                    throw new InvalidDataException("Неизвестное улучшение: " + cells[0] + " / " + level);
+                var key = (cells[0], level);
+                if (!upgrades.TryGetValue(key, out var upgrade)) upgrades.Add(key, upgrade = new());
+                upgrade.Add((resource, amount, bonus));
+                continue;
+            }
             if (!prices.TryGetValue(cells[0], out var costs)) prices.Add(cells[0], costs = new List<(ResourceType, int)>());
             costs.Add((resource, amount));
         }
@@ -87,6 +113,27 @@ public static class BaseBuildingPricesGoogleSheetsMenu
         foreach (string id in byId.Keys)
             if (!prices.ContainsKey(id)) throw new InvalidDataException("В таблице нет цен строения: " + id);
 
+        // Validate the complete input before changing any asset or scene.
+        foreach (var pair in prices)
+            if (pair.Value.Count != 2 || pair.Value[0].resource == pair.Value[1].resource)
+                throw new InvalidDataException("Нужны две разные цены: " + pair.Key);
+        foreach (var pair in upgrades)
+            if (pair.Value.Count != 2 || pair.Value[0].resource == pair.Value[1].resource || pair.Value[0].bonus != pair.Value[1].bonus)
+                throw new InvalidDataException("Для улучшения нужны две строки с одинаковым capacity_bonus: " + pair.Key);
+        if (rows[0].Count > 4)
+            foreach (var building in BuildingUpgradeService.Catalog.buildings)
+                for (int i = 1; i <= building.levels.Count; i++)
+                    if (!upgrades.ContainsKey((building.id, i)))
+                        throw new InvalidDataException("Нет цены улучшения " + building.id + " / " + i);
+        if (validateOnly) return;
+        foreach (var pair in upgrades)
+        {
+            var target = BuildingUpgradeService.Catalog.Find(pair.Key.id).levels[pair.Key.level - 1];
+            target.resourceA = pair.Value[0].resource; target.costA = pair.Value[0].amount;
+            target.resourceB = pair.Value[1].resource; target.costB = pair.Value[1].amount;
+            target.additionalCapacity = pair.Value[0].bonus;
+        }
+        if (upgrades.Count > 0) EditorUtility.SetDirty(BuildingUpgradeService.Catalog);
         foreach (var pair in prices)
         {
             if (pair.Value.Count != 2)
@@ -100,17 +147,28 @@ public static class BaseBuildingPricesGoogleSheetsMenu
             serialized.FindProperty("stone").objectReferenceValue = pair.Value[1].resource;
             serialized.FindProperty("stoneCost").intValue = pair.Value[1].amount;
             serialized.ApplyModifiedPropertiesWithoutUndo();
-            EditorUtility.SetDirty(byId[pair.Key]);
+            var component = byId[pair.Key];
+            PrefabUtility.RecordPrefabInstancePropertyModifications(component);
+            string prefab = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(component);
+            if (!string.IsNullOrEmpty(prefab))
+                foreach (string field in new[] { "wood", "woodCost", "stone", "stoneCost" })
+                    PrefabUtility.ApplyPropertyOverride(serialized.FindProperty(field), prefab, InteractionMode.AutomatedAction);
+            EditorUtility.SetDirty(component);
         }
 
         EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
         AssetDatabase.SaveAssets();
-        EditorUtility.DisplayDialog("Импорт строений базы", $"Обновлены цены строений: {prices.Count}.", "OK");
+        if (showDialog) EditorUtility.DisplayDialog("Импорт строений базы", $"Обновлены строения: {prices.Count}, улучшения: {upgrades.Count}.", "OK");
     }
 
     private static BaseBuildingConstruction[] LoadBuildings()
     {
-        EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().path != ScenePath)
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                throw new OperationCanceledException("Импорт/экспорт отменён.");
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+        }
         BaseBuildingConstruction[] buildings = UnityEngine.Object.FindObjectsByType<BaseBuildingConstruction>(
             FindObjectsInactive.Include, FindObjectsSortMode.None);
         if (buildings.Length == 0) throw new InvalidDataException("На сцене Base не найдены строения.");
@@ -127,7 +185,7 @@ public static class BaseBuildingPricesGoogleSheetsMenu
         .Select(AssetDatabase.LoadAssetAtPath<ResourceType>)
         .FirstOrDefault(resource => resource != null && string.Equals(resource.name, name, StringComparison.OrdinalIgnoreCase));
     private static void AddRow(List<string> rows, string id, string name, ResourceType resource, int amount) =>
-        rows.Add(Row(id, name, resource != null ? resource.name : "", amount.ToString(CultureInfo.InvariantCulture)));
+        rows.Add(Row(id, name, resource != null ? resource.name : "", amount.ToString(CultureInfo.InvariantCulture), "0", ""));
     private static string Row(params string[] cells) => string.Join(",", cells.Select(cell => "\"" + (cell ?? "").Replace("\"", "\"\"") + "\""));
     private static string ToTabSeparated(string csv) => string.Join("\n", Parse(csv).Select(row => string.Join("\t", row)));
 

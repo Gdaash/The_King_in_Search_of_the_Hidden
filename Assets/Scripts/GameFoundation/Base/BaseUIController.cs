@@ -58,6 +58,7 @@ namespace GameFoundation.Base
             SubscribeDay();
             SubscribeLanguage();
             GlobalResourceManager.OnResourceChanged += OnResourceChanged;
+            BuildingUpgradeService.Changed += Refresh;
             Refresh();
         }
         private void OnDisable()
@@ -72,11 +73,12 @@ namespace GameFoundation.Base
             if (languageSubscribed && LocalizationService.Instance != null) LocalizationService.Instance.LanguageChanged -= Refresh;
             languageSubscribed = false;
             GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
+            BuildingUpgradeService.Changed -= Refresh;
         }
         private void OnResourceChanged(ResourceType type, int amount)
         {
             RefreshForecasts();
-            if (type == magicOre) Refresh();
+            if (type == magicOre || type == human) Refresh();
         }
         private void Start()
         {
@@ -117,7 +119,7 @@ namespace GameFoundation.Base
             var available = transform.Find("Refugees Popup/Available")?.GetComponent<Text>();
             if (available) available.text = Tr("base.waiting", "Ожидают:") + " " + (day?.RefugeesAvailable ?? 0);
             var admit = transform.Find("Refugees Popup/Admit")?.GetComponent<Button>();
-            if (admit) admit.interactable = day != null && day.RefugeesAvailable > 0;
+            if (admit) admit.interactable = day != null && day.RefugeesAvailable > 0 && BuildingUpgradeService.CanAdmitResident;
             for (var i = 0; portalButtons != null && i < portalButtons.Length; i++)
             {
                 var button = portalButtons[i];

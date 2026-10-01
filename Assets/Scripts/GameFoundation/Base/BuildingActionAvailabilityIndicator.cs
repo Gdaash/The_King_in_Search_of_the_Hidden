@@ -27,6 +27,7 @@ namespace GameFoundation.Base
         private void OnEnable()
         {
             GlobalResourceManager.OnResourceChanged += OnResourceChanged;
+            BuildingUpgradeService.Changed += Refresh;
             SubscribeDay();
             Refresh();
         }
@@ -40,6 +41,7 @@ namespace GameFoundation.Base
         private void OnDisable()
         {
             GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
+            BuildingUpgradeService.Changed -= Refresh;
             if (daySubscribed && DayCycleService.Instance != null) DayCycleService.Instance.Changed -= Refresh;
             daySubscribed = false;
         }

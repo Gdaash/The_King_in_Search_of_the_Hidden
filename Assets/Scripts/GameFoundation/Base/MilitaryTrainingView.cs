@@ -41,7 +41,8 @@ namespace GameFoundation.Base
             {
                 GlobalResourceManager manager = GlobalResourceManager.Instance;
                 return manager != null && human != null && weapon != null && warrior != null &&
-                    manager.GetResourceAmount(human) > 0 && manager.GetResourceAmount(weapon) > 0;
+                    manager.GetResourceAmount(human) > 0 && manager.GetResourceAmount(weapon) > 0 &&
+                    manager.GetResourceAmount(warrior) < BuildingUpgradeService.MilitaryCapacity(warrior);
             }
         }
 
@@ -57,6 +58,7 @@ namespace GameFoundation.Base
         private void OnEnable()
         {
             GlobalResourceManager.OnResourceChanged += OnResourceChanged;
+            BuildingUpgradeService.Changed += Refresh;
             localization = LocalizationService.Instance;
             if (localization != null) localization.LanguageChanged += Refresh;
             Refresh();
@@ -65,12 +67,14 @@ namespace GameFoundation.Base
         private void OnDisable()
         {
             GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
+            BuildingUpgradeService.Changed -= Refresh;
             if (localization != null) localization.LanguageChanged -= Refresh;
         }
         private void OnResourceChanged(ResourceType _, int __) => Refresh();
 
         public void Arm()
         {
+            if (!CanArmWarrior) return;
             if (GlobalResourceManager.Instance?.TryExchangeResources(human, 1, weapon, 1, warrior, 1) == true)
                 MilitaryExperienceService.GetStored(warrior, GlobalResourceManager.Instance.GetResourceAmount(warrior));
             Refresh();
@@ -99,7 +103,7 @@ namespace GameFoundation.Base
             if (disarmButton != null) disarmButton.interactable = manager != null && warriors > 0;
             if (humanAmount != null) humanAmount.text = humans.ToString();
             if (weaponAmount != null) weaponAmount.text = weapons.ToString();
-            if (warriorAmount != null) warriorAmount.text = warriors.ToString();
+            if (warriorAmount != null) warriorAmount.text = warriors + " / " + BuildingUpgradeService.MilitaryCapacity(warrior);
             if (humanCostAmount != null) { humanCostAmount.text = "1"; humanCostAmount.color = humans > 0 ? affordableColor : unaffordableColor; }
             if (weaponCostAmount != null) { weaponCostAmount.text = "1"; weaponCostAmount.color = weapons > 0 ? affordableColor : unaffordableColor; }
             ApplyIcon(humanIcon, human);

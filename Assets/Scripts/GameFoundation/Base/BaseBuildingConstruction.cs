@@ -27,6 +27,7 @@ namespace GameFoundation.Base
         private bool languageSubscribed;
         private string SaveKey => "foundation.building." + buildingId + ".built";
         public bool IsBuilt => built;
+        public string BuildingId => buildingId;
         public bool CanAffordConstruction => !built && CanAfford();
 
         private void Awake()
@@ -79,6 +80,7 @@ namespace GameFoundation.Base
             GameAudioController.PlayUI(GameAudioCue.BuildingComplete, 0.9f, 0.98f, 1.02f, 0.1f);
             SaveSlotPrefs.SetInt(SaveKey, 1);
             SaveSlotPrefs.Save();
+            BuildingUpgradeService.NotifyChanged();
             BuildingConstructionTooltip.Instance?.Hide();
             hovering = false;
             Refresh();
