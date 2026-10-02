@@ -103,7 +103,7 @@ namespace GameFoundation.Base
                 buildButton.interactable = !built && CanAfford();
             }
             if (buildButtonLabel != null)
-                buildButtonLabel.text = Tr("base.building.build", "Построить");
+                buildButtonLabel.text = Tr(nameKey, fallbackName);
             if (hovering) ShowTooltip();
         }
 
@@ -122,8 +122,12 @@ namespace GameFoundation.Base
 
         private void ShowTooltip()
         {
+            string description = Tr(descriptionKey, fallbackDescription);
+            if (buildingId == "housing")
+                description += "\n" + string.Format(Tr("base.building.housing.extra_places", "Увеличивает количество жилых мест для людей на {0}."),
+                    BuildingUpgradeService.Catalog?.Find("housing")?.constructionCapacity ?? 0);
             BuildingConstructionTooltip.Instance?.Show(
-                Tr(nameKey, fallbackName), Tr(descriptionKey, fallbackDescription),
+                Tr(nameKey, fallbackName), description,
                 Tr("base.building.price", "Цена постройки"), wood, woodCost, stone, stoneCost);
         }
 

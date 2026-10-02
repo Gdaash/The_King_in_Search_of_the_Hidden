@@ -8,6 +8,8 @@ namespace GameFoundation.Base
     public sealed class WorldBuildingButton : MonoBehaviour
     {
         [SerializeField] private string artworkRoot = "Base Scene Artwork";
+        [Tooltip("Keep the position authored in the scene for World Space buttons.")]
+        [SerializeField] private bool manuallyPositioned;
         [SerializeField] private string[] artworkLayers;
         [SerializeField] private Vector2 constructionPixelPosition;
         [SerializeField] private Vector2 buttonSize = new(236, 64);
@@ -72,6 +74,7 @@ namespace GameFoundation.Base
         }
         public void UpdatePosition()
         {
+            if (manuallyPositioned) return;
             if (rect == null || artwork == null || sprites.Count == 0) return;
             var parent = rect.parent as RectTransform;
             if (parent == null) return;

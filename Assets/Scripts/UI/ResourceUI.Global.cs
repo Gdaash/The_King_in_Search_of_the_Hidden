@@ -20,6 +20,7 @@ public partial class ResourceUI
     private void EnableGlobalResources()
     {
         GlobalResourceManager.OnResourceChanged += UpdateGlobalResource;
+        GameFoundation.Base.BuildingUpgradeService.Changed += RefreshHousingCount;
         if (TooltipManager.Instance == null && globalTooltipPrefab != null)
         {
             var canvas = GetComponentInParent<Canvas>();
@@ -36,13 +37,14 @@ public partial class ResourceUI
             yield return null;
         foreach (var cell in globalCells)
             if (cell?.resource != null && cell.count != null)
-                cell.count.text = GlobalResourceManager.Instance.GetResourceAmount(cell.resource).ToString();
+                cell.count.text = FormatGlobalCount(cell.resource, GlobalResourceManager.Instance.GetResourceAmount(cell.resource));
         _waitForResources = null;
     }
 
     private void DisableGlobalResources()
     {
         GlobalResourceManager.OnResourceChanged -= UpdateGlobalResource;
+        GameFoundation.Base.BuildingUpgradeService.Changed -= RefreshHousingCount;
         if (_waitForResources != null)
         {
             StopCoroutine(_waitForResources);
@@ -54,6 +56,21 @@ public partial class ResourceUI
     {
         foreach (var cell in globalCells)
             if (cell?.resource == type && cell.count != null)
-                cell.count.text = amount.ToString();
+                cell.count.text = FormatGlobalCount(type, amount);
+    }
+
+    private static string FormatGlobalCount(ResourceType type, int amount)
+    {
+        var housing = GameFoundation.Base.BuildingUpgradeService.Catalog?.Find("housing");
+        return housing != null && type == housing.capacityResource
+            ? $"{amount} / {GameFoundation.Base.BuildingUpgradeService.Capacity("housing")}"
+            : amount.ToString();
+    }
+
+    private void RefreshHousingCount()
+    {
+        var human = GameFoundation.Base.BuildingUpgradeService.Catalog?.Find("housing")?.capacityResource;
+        if (human != null && GlobalResourceManager.Instance != null)
+            UpdateGlobalResource(human, GlobalResourceManager.Instance.GetResourceAmount(human));
     }
 }

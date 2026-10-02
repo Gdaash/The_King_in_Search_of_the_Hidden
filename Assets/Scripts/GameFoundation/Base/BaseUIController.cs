@@ -9,6 +9,7 @@ namespace GameFoundation.Base
 {
     public sealed class BaseUIController : MonoBehaviour
     {
+        [SerializeField] private Transform worldBuildingButtons;
         [SerializeField] private GameObject globalMap, laboratory, settings, warehouse, housing, refugees, square, blacksmith, magicLibrary;
         [SerializeField] private GameObject nextDayConfirmation;
         [SerializeField] private FoodForecastView nextDayForecast, housingForecast;
@@ -194,6 +195,8 @@ namespace GameFoundation.Base
         private void Bind(string path, UnityEngine.Events.UnityAction action)
         {
             var target = transform.Find(path);
+            if (!target && worldBuildingButtons != null && path.StartsWith("Base Panel/"))
+                target = worldBuildingButtons.Find(path.Substring("Base Panel/".Length));
             if (!target) return;
 
             // Popup Close Icon is a shared visual prefab.  Older instances may not
