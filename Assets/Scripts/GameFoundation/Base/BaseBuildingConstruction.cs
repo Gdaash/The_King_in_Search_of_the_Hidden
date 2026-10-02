@@ -103,7 +103,7 @@ namespace GameFoundation.Base
                 buildButton.interactable = !built && CanAfford();
             }
             if (buildButtonLabel != null)
-                buildButtonLabel.text = Tr("base.building.build", "Строить");
+                buildButtonLabel.text = Tr("base.building.build", "Построить");
             if (hovering) ShowTooltip();
         }
 
