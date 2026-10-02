@@ -216,14 +216,7 @@ namespace GameFoundation.MetaProgression
 
         private Dictionary<ResourceType, int> CaptureResources()
         {
-            var snapshot = GlobalResourceManager.Instance != null
-                ? GlobalResourceManager.Instance.GetAllResourcesData()
-                : new Dictionary<ResourceType, int>();
-            if (GlobalResourceManager.Instance?.AvailableResources != null)
-                foreach (ResourceType resource in GlobalResourceManager.Instance.AvailableResources)
-                    if (resource != null && !snapshot.ContainsKey(resource))
-                        snapshot.Add(resource, GlobalResourceManager.Instance.GetResourceAmount(resource));
-            return snapshot;
+            return DayResourceLedger.CaptureOwnedResources();
         }
 
         private void ShowStatistics()

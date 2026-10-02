@@ -19,12 +19,14 @@ public class TooltipManager : MonoBehaviour
     private Coroutine _fadeRoutine;
     private RectTransform _currentTarget;
     private RectTransform _textRect;
+    private bool _alwaysBelow;
+    private readonly Vector3[] _targetCorners = new Vector3[4];
 
     private void Awake()
     {
         // Синглтон для быстрого доступа
         if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        else { Destroy(gameObject); return; }
 
         _canvasGroup = GetComponent<CanvasGroup>();
         _rectTransform = GetComponent<RectTransform>();
@@ -55,9 +57,13 @@ public class TooltipManager : MonoBehaviour
         }
     }
 
-    public void Show(string description, RectTransform target)
+    private void OnDestroy() { if (Instance == this) Instance = null; }
+
+    public void Show(string description, RectTransform target, bool alwaysBelow = false)
     {
         _currentTarget = target;
+        _alwaysBelow = alwaysBelow;
+        transform.SetAsLastSibling();
         if (tooltipText != null)
         {
             tooltipText.text = description;
@@ -98,6 +104,7 @@ public class TooltipManager : MonoBehaviour
     private void UpdatePosition()
     {
         if (_currentTarget == null) return;
+        if (_alwaysBelow) { PositionBelow(); return; }
 
         // Получаем мировые углы целевого объекта (0 - bottom-left, 1 - top-left, 2 - top-right, 3 - bottom-right)
         Vector3[] corners = new Vector3[4];
@@ -174,11 +181,34 @@ public class TooltipManager : MonoBehaviour
         _fadeRoutine = StartCoroutine(FadeRoutine(targetAlpha));
     }
 
+    private void PositionBelow()
+    {
+        var parent = _rectTransform.parent as RectTransform;
+        if (parent == null) return;
+        var canvas = GetComponentInParent<Canvas>();
+        var targetCanvas = _currentTarget.GetComponentInParent<Canvas>();
+        Camera camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+        Camera targetCamera = targetCanvas != null && targetCanvas.renderMode != RenderMode.ScreenSpaceOverlay ? targetCanvas.worldCamera : null;
+        float scale = canvas != null ? Mathf.Max(.01f, canvas.rootCanvas.scaleFactor) : 1f;
+        _currentTarget.GetWorldCorners(_targetCorners);
+        Vector2 left = RectTransformUtility.WorldToScreenPoint(targetCamera, _targetCorners[0]);
+        Vector2 right = RectTransformUtility.WorldToScreenPoint(targetCamera, _targetCorners[3]);
+        float halfWidth = _rectTransform.rect.width * scale * .5f;
+        float margin = screenMargin * scale;
+        Vector2 screen = new Vector2(
+            Mathf.Clamp((left.x + right.x) * .5f, margin + halfWidth, Screen.width - margin - halfWidth),
+            Mathf.Min(left.y, right.y) - distanceToTarget * scale);
+        screen.x = Mathf.Round(screen.x); screen.y = Mathf.Round(screen.y);
+        _rectTransform.pivot = new Vector2(.5f, 1);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, screen, camera, out var local);
+        _rectTransform.localPosition = new Vector3(local.x, local.y, 0);
+    }
+
     private IEnumerator FadeRoutine(float target)
     {
         while (!Mathf.Approximately(_canvasGroup.alpha, target))
         {
-            _canvasGroup.alpha = Mathf.MoveTowards(_canvasGroup.alpha, target, Time.deltaTime * fadeSpeed);
+            _canvasGroup.alpha = Mathf.MoveTowards(_canvasGroup.alpha, target, Time.unscaledDeltaTime * fadeSpeed);
             yield return null;
         }
     }

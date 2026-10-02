@@ -7,6 +7,7 @@ public class ResourceTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPoin
     [SerializeField] private string _resourceName;
     [SerializeField] private ResourceType _resourceType;
     [SerializeField] private RectTransform _target;
+    [SerializeField] private bool alwaysBelow;
     private bool _hovering;
     private LocalizationService _localization;
 
@@ -66,7 +67,7 @@ public class ResourceTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPoin
     private void RefreshTooltip()
     {
         if (_hovering && TooltipManager.Instance != null)
-            TooltipManager.Instance.Show(LocalizedName(), _target);
+            TooltipManager.Instance.Show(LocalizedName(), _target, alwaysBelow);
     }
 
     private string LocalizedName()

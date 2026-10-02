@@ -151,14 +151,24 @@ namespace GameFoundation.MetaProgression
         private static Dictionary<string, int> Snapshot()
         {
             var result = new Dictionary<string, int>();
+            foreach (var pair in CaptureOwnedResources())
+                result[pair.Key.name] = pair.Value;
+            return result;
+        }
+
+        public static Dictionary<ResourceType, int> CaptureOwnedResources()
+        {
+            var result = new Dictionary<ResourceType, int>();
             var manager = GlobalResourceManager.Instance;
             if (manager == null) return result;
             foreach (var pair in manager.GetAllResourcesData())
-                if (pair.Key != null) result[pair.Key.name] = pair.Value;
+                if (pair.Key != null) result[pair.Key] = pair.Value;
             if (manager.AvailableResources != null)
                 foreach (var resource in manager.AvailableResources)
-                    if (resource != null && !result.ContainsKey(resource.name))
-                        result[resource.name] = manager.GetResourceAmount(resource);
+                    if (resource != null && !result.ContainsKey(resource))
+                        result[resource] = manager.GetResourceAmount(resource);
+            foreach (var deployment in UnityEngine.Object.FindObjectsByType<WorldMilitaryDeploymentController>(FindObjectsSortMode.None))
+                deployment.AddDeployedToSnapshot(result);
             return result;
         }
 

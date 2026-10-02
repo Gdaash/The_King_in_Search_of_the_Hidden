@@ -82,10 +82,15 @@ namespace GameFoundation.MetaProgression
             Persist();
         }
         public static int Stars(MilitaryProfile profile) => profile == null ? 0 : Stars(profile.experience);
+        public static int ExperienceForNextStar(int currentStars) => 50 + 25 * Mathf.Clamp(currentStars, 0, 9);
         public static int Stars(int experience)
         {
-            int stars = 0, threshold = 10, spent = 0;
-            while (stars < 10 && experience >= spent + threshold) { spent += threshold; threshold += 5; stars++; }
+            int stars = 0, spent = 0;
+            while (stars < 10 && experience >= spent + ExperienceForNextStar(stars))
+            {
+                spent += ExperienceForNextStar(stars);
+                stars++;
+            }
             return stars;
         }
         private static void Persist() { PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(SaveData)); PlayerPrefs.Save(); }

@@ -81,6 +81,23 @@ namespace GameFoundation.MetaProgression
             }
         }
 
+        // Deployment only moves a warrior out of storage; it is not a resource loss.
+        // Include living deployed warriors in run/day snapshots, including before
+        // scene teardown returns survivors to storage.
+        public void AddDeployedToSnapshot(Dictionary<ResourceType, int> snapshot)
+        {
+            AddDeployedToSnapshot(swordsmen, snapshot);
+            AddDeployedToSnapshot(archers, snapshot);
+        }
+
+        private static void AddDeployedToSnapshot(UnitControl control, Dictionary<ResourceType, int> snapshot)
+        {
+            if (control.resource == null) return;
+            RemoveDestroyed(control);
+            snapshot.TryGetValue(control.resource, out int stored);
+            snapshot[control.resource] = stored + control.deployed.Count;
+        }
+
         private void DeployAll(UnitControl control)
         {
             if (control.resource == null || GlobalResourceManager.Instance == null) return;

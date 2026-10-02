@@ -5,6 +5,7 @@ using System.Collections;
 public partial class ResourceUI : MonoBehaviour
 {
     [SerializeField] private bool showAllGlobalResources;
+    public bool DisplaysGlobalResources => showAllGlobalResources;
     [Header("Настройки ресурса")]
     [Tooltip("Тип ресурса, который отображает этот конкретный элемент UI")]
     [SerializeField] private ResourceType resourceType;

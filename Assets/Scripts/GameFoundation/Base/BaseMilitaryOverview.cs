@@ -25,19 +25,11 @@ namespace GameFoundation.Base
         [SerializeField] private Text emptyLabel;
         [SerializeField] private WorldMilitaryRosterItemView itemTemplate;
 
-        [Header("Layout")]
-        [SerializeField, Min(48f)] private float itemSpacing = 64f;
-        [SerializeField, Min(0f)] private float horizontalPadding = 12f;
-        [SerializeField, Min(1f)] private float minimumPanelWidth = 216f;
-        [SerializeField, Min(1f)] private float panelHeight = 118f;
-
         private readonly List<WorldMilitaryRosterItemView> items = new();
-        private RectTransform panel;
         private float nextHealthRefresh;
 
         private void Awake()
         {
-            panel = transform as RectTransform;
             if (itemTemplate != null) itemTemplate.gameObject.SetActive(false);
         }
 
@@ -65,20 +57,7 @@ namespace GameFoundation.Base
             AddWarriors(swordsmen);
             AddWarriors(archers);
 
-            float contentWidth = Mathf.Max(itemSpacing, items.Count * itemSpacing);
-            content.sizeDelta = new Vector2(contentWidth, content.sizeDelta.y);
-            if (panel != null) panel.sizeDelta = new Vector2(Mathf.Max(minimumPanelWidth, contentWidth + horizontalPadding * 2f), panelHeight);
-            if (title != null) title.sizeDelta = new Vector2(Mathf.Max(minimumPanelWidth - horizontalPadding * 2f, contentWidth), title.sizeDelta.y);
-            if (emptyLabel != null)
-            {
-                emptyLabel.rectTransform.sizeDelta = new Vector2(contentWidth, emptyLabel.rectTransform.sizeDelta.y);
-                emptyLabel.gameObject.SetActive(items.Count == 0);
-            }
-            for (int i = 0; i < items.Count; i++)
-            {
-                RectTransform rect = items[i].transform as RectTransform;
-                if (rect != null) rect.anchoredPosition = new Vector2(-contentWidth * .5f + itemSpacing * .5f + i * itemSpacing, 0f);
-            }
+            if (emptyLabel != null) emptyLabel.gameObject.SetActive(items.Count == 0);
         }
 
         private void AddWarriors(MilitaryCount type)

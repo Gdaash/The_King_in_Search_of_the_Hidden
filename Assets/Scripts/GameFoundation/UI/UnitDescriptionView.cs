@@ -119,10 +119,10 @@ namespace GameFoundation.UI
             if (progress != null)
             {
                 int earned = 0;
-                for (int level = 0; level < stars; level++) earned += 10 + 5 * level;
+                for (int level = 0; level < stars; level++) earned += MilitaryExperienceService.ExperienceForNextStar(level);
                 progress.text = definition.isEnemy ? T("enemy_type", "Характеристики типа врага") : profile == null ? T("recruit", "Новобранец · без звёзд") :
                     string.Format(T("progress", "Уровень {0}/10 · опыт {1}"), stars,
-                        stars >= 10 ? T("maximum", "максимум") : (profile.experience - earned) + " / " + (10 + 5 * stars));
+                        stars >= 10 ? T("maximum", "максимум") : (profile.experience - earned) + " / " + MilitaryExperienceService.ExperienceForNextStar(stars));
             }
             if (footer != null) footer.text = definition.isEnemy
                 ? T("enemy_footer", "Базовые характеристики этого типа врагов.\nКолесо мыши — прокрутка характеристик.")
