@@ -45,6 +45,8 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private string baseScene = "Base";
 
         private readonly Dictionary<ResourceType, int> _startingResources = new();
+        private readonly Dictionary<ResourceType, int> _lastStoredResources = new();
+        private readonly HashSet<ResourceType> _changedResources = new();
         private int _startingHumans;
         private float _runStartedAt;
         private int _runDurationSeconds;
@@ -70,6 +72,12 @@ namespace GameFoundation.MetaProgression
             foreach (var item in CaptureResources())
                 _startingResources[item.Key] = item.Value;
             _startingHumans = GetStoredHumans();
+            if (GlobalResourceManager.Instance != null)
+                foreach (var item in GlobalResourceManager.Instance.GetAllResourcesData())
+                    _lastStoredResources[item.Key] = item.Value;
+            GlobalResourceManager.OnResourceChanged += OnRunResourceChanged;
+            if (militaryDeployment == null)
+                militaryDeployment = UnityEngine.Object.FindAnyObjectByType<WorldMilitaryDeploymentController>();
 
             if (progressPanel != null) progressPanel.SetActive(false);
             if (statisticsPanel != null) statisticsPanel.SetActive(false);
@@ -84,6 +92,7 @@ namespace GameFoundation.MetaProgression
 
         private void OnDestroy()
         {
+            GlobalResourceManager.OnResourceChanged -= OnRunResourceChanged;
             if (escapeButton != null) escapeButton.onClick.RemoveListener(OnEscapeClicked);
             if (returnButton != null) returnButton.onClick.RemoveListener(ReturnToBase);
             if (portalTowerHealth != null) portalTowerHealth.OnHealthChanged.RemoveListener(OnPortalHealthChanged);
@@ -219,6 +228,24 @@ namespace GameFoundation.MetaProgression
             return DayResourceLedger.CaptureOwnedResources();
         }
 
+        private void OnRunResourceChanged(ResourceType resource, int amount)
+        {
+            if (_showingStatistics || resource == null) return;
+            _lastStoredResources.TryGetValue(resource, out int previous);
+            // A spent resource returned later still participated in this run.
+            // Repeated notifications with an unchanged amount do not count.
+            if (amount != previous) _changedResources.Add(resource);
+            _lastStoredResources[resource] = amount;
+        }
+
+        private bool ShouldRevealResource(ResourceType resource, int before, int after)
+        {
+            if (resource == humanResource || resource.isHumanResource) return true;
+            if (before != after || _changedResources.Contains(resource)) return true;
+            return militaryDeployment != null && militaryDeployment.IsMilitaryResource(resource) &&
+                (before > 0 || after > 0);
+        }
+
         private void ShowStatistics()
         {
             if (_showingStatistics) return;
@@ -243,6 +270,8 @@ namespace GameFoundation.MetaProgression
         {
             var resourceSet = new HashSet<ResourceType>(_startingResources.Keys);
             foreach (ResourceType resource in endingResources.Keys) resourceSet.Add(resource);
+            resourceSet.UnionWith(_changedResources);
+            if (humanResource != null) resourceSet.Add(humanResource);
             var resources = new List<ResourceType>(resourceSet);
             resources.RemoveAll(resource => resource == null);
             resources.Sort((a, b) => string.Compare(a.resourceName, b.resourceName, StringComparison.CurrentCultureIgnoreCase));
@@ -251,6 +280,7 @@ namespace GameFoundation.MetaProgression
             {
                 _startingResources.TryGetValue(resource, out int before);
                 endingResources.TryGetValue(resource, out int after);
+                if (!ShouldRevealResource(resource, before, after)) continue;
                 RevealRow(statisticsContent, statisticsScroll, resource, before, after);
                 yield return new WaitForSecondsRealtime(rowRevealDelay);
             }

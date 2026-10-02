@@ -65,7 +65,7 @@ public class Warehouse : MonoBehaviour
     {
         if (humanPrefab == null) return false;
         GameObject humanObject = Instantiate(humanPrefab, position, Quaternion.identity);
-        if (humanObject.TryGetComponent(out HumanUnit human)) return true;
+        if (humanObject.TryGetComponent(out HumanUnit human)) { human.ReturnToPortal(); return true; }
         Destroy(humanObject);
         return false;
     }

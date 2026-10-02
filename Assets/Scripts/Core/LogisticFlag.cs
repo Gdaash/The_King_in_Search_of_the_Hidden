@@ -5,6 +5,21 @@ using UnityEngine.Events;
 
 public class LogisticFlag : MonoBehaviour
 {
+    public bool CrystalControlled { get; private set; }
+    public ResourceRequester CrystalTarget { get; private set; }
+    // The hover prefab draws the coloured frame; do not draw a second white frame underneath it.
+    public void SetCrystalHoverVisible(bool visible)
+    {
+        if (idleRenderer != null) idleRenderer.forceRenderingOff = visible;
+        if (activeRenderer != null) activeRenderer.forceRenderingOff = visible;
+    }
+    public void SetCrystalTarget(ResourceRequester target)
+    {
+        CrystalControlled = true;
+        CrystalTarget = target;
+        _buildingsUnderFlag = target != null ? 1 : 0;
+        UpdateState();
+    }
     [Header("Ссылки на спрайты (ВАЖНО: используйте два разных SpriteRenderer)")]
     [Tooltip("Спрайт-рендерер для состояния покоя")]
     [SerializeField] private SpriteRenderer idleRenderer;   
@@ -46,7 +61,7 @@ public class LogisticFlag : MonoBehaviour
     }
 
     void OnEnable() => StartCoroutine(ValidationRoutine());
-    void OnDisable() => StopAllCoroutines();
+    void OnDisable() { StopAllCoroutines(); SetCrystalHoverVisible(false); }
 
     private IEnumerator ValidationRoutine() {
         while (true) {
@@ -57,6 +72,7 @@ public class LogisticFlag : MonoBehaviour
     }
 
     public void OnMouseUp() {
+        if (CrystalControlled) return;
         StopAllCoroutines();
         StartCoroutine(NotifyRoutine());
         StartCoroutine(ValidationRoutine());

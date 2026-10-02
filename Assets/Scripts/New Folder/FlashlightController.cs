@@ -39,6 +39,19 @@ public class FlashlightController : MonoBehaviour
     private float _currentInnerAngle; // НОВОЕ: текущий внутренний угол
     
     private HexLightUnlocker _currentHex;
+    private bool _crystalControlled;
+    private bool _crystalLit;
+
+    public void SetCrystalTarget(Vector2 position, bool lit)
+    {
+        _crystalControlled = true;
+        _crystalLit = lit;
+        _isDragging = false;
+        StopAllCoroutines();
+        if (marker != null) marker.transform.position = position;
+        if (spotLight == null) spotLight = GetComponent<Light2D>();
+        if (spotLight != null) spotLight.enabled = lit;
+    }
 
     private void Awake()
     {
@@ -54,6 +67,11 @@ public class FlashlightController : MonoBehaviour
 
     private void Update()
     {
+        if (_crystalControlled)
+        {
+            if (_crystalLit) UpdateLight();
+            return;
+        }
         HandleDragging();
         UpdateLight();
         CheckHexUnderMarker();

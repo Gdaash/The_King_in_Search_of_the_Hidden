@@ -14,6 +14,13 @@ public class HumanUnit : MonoBehaviour, IEnemyAI
     private ResourceRequester _currentJob;
     private bool _isReserved = false;
     private bool _isReturningToWarehouse = false;
+    private bool _mustReachPortal;
+    public bool CanBeReassigned => !_mustReachPortal;
+    public void ReturnToPortal()
+    {
+        ResetTask();
+        _mustReachPortal = true;
+    }
 
     public bool IsBusy() => _currentTarget != null;
     public Transform GetTarget() => _currentTarget;

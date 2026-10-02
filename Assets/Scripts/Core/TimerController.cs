@@ -23,6 +23,17 @@ public class TimerController : MonoBehaviour
     private int _remainingRepeats;
     private bool _isActive = false;
     private bool _stoppedForEscape;
+    public ResourceRequester CrystalOwner { get; private set; }
+    public event System.Action CrystalCycleStarted;
+    public bool IsRunning => _isActive && !_stoppedForEscape;
+    private bool _crystalPending;
+    public void BindCrystalOwner(ResourceRequester requester) => CrystalOwner = requester;
+    private bool CrystalCanStart => CrystalOwner == null ||
+        (CrystalOwner.HasLogisticFlag() && CrystalOwner.CrystalResourcesReady);
+    public void ResumeCrystalCycle()
+    {
+        if (_crystalPending && CrystalCanStart) StartTimer();
+    }
 
     // Логика: берем время из статов или из локальной переменной
     private float CurrentDuration => stats != null ? stats.TotalProductionTime : duration;
@@ -75,7 +86,10 @@ public class TimerController : MonoBehaviour
         _currentTime = newDuration;
         _cycleDuration = newDuration;
         _remainingRepeats = repeatCount;
+        if (!CrystalCanStart) { _crystalPending = true; return; }
         _isActive = true;
+        _crystalPending = false;
+        CrystalCycleStarted?.Invoke();
         
         if (progressBarObject != null) 
             progressBarObject.SendMessage("Show", SendMessageOptions.DontRequireReceiver);
@@ -95,6 +109,15 @@ public class TimerController : MonoBehaviour
     private void TimerFinished()
     {
         OnTimerEnd?.Invoke();
+
+        // A crystal activation pays for exactly one production cycle, regardless of legacy repeats.
+        if (CrystalOwner != null)
+        {
+            _isActive = false;
+            if (progressBarObject != null)
+                progressBarObject.SendMessage("Hide", SendMessageOptions.DontRequireReceiver);
+            return;
+        }
 
         if (loopInfinitely)
         {
@@ -124,7 +147,11 @@ public class TimerController : MonoBehaviour
     public void StartTimer() 
     {
         if (_stoppedForEscape) return;
+        if (!CrystalCanStart) { _crystalPending = true; return; }
+        if (_isActive && CrystalOwner != null) return;
         _isActive = true;
+        _crystalPending = false;
+        CrystalCycleStarted?.Invoke();
         if (progressBarObject != null) 
             progressBarObject.SendMessage("Show", SendMessageOptions.DontRequireReceiver);
     }

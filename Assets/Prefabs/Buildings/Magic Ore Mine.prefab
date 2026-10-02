@@ -707,6 +707,8 @@ MonoBehaviour:
   storageFullVisual: {fileID: 0}
   maxProductionCycles: 0
   ignoreFlag: 0
+  retainHumansBetweenCycles: 1
+  humanSuccessor: {fileID: 0}
   priority: 1
   requirements:
   - resourceType: {fileID: 11400000, guid: e1d6c57c419940944ae0a9e345159fc6, type: 2}
@@ -728,6 +730,16 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+    OnAllUnitsDelivered:
+      m_PersistentCalls:
+        m_Calls: []
+  - resourceType: {fileID: 11400000, guid: 07868ec9cbda2e44a81ed7cdb689956f, type: 2}
+    requiredAmount: 1
+    currentAmount: 0
+    reservedAmount: 0
+    OnOneUnitDelivered:
+      m_PersistentCalls:
+        m_Calls: []
     OnAllUnitsDelivered:
       m_PersistentCalls:
         m_Calls: []
@@ -1080,6 +1092,8 @@ MonoBehaviour:
   storageFullVisual: {fileID: 0}
   maxProductionCycles: 1
   ignoreFlag: 0
+  retainHumansBetweenCycles: 0
+  humanSuccessor: {fileID: 4606251337823689033}
   priority: 1
   requirements:
   - resourceType: {fileID: 11400000, guid: 07868ec9cbda2e44a81ed7cdb689956f, type: 2}
@@ -1112,9 +1126,7 @@ MonoBehaviour:
     OnAllUnitsDelivered:
       m_PersistentCalls:
         m_Calls: []
-  outputResources:
-  - prefab: {fileID: 4242096650927029993, guid: 65ada1a355f3d8d4e8ca2fbc6b08cea4, type: 3}
-    count: 1
+  outputResources: []
   spawnPoint: {fileID: 9127175738648567830}
   spawnSpread: 0.5
   iconPrefab: {fileID: 2980702624733634541, guid: cffa8ac521b79ff438ccebad0e8c8c29, type: 3}

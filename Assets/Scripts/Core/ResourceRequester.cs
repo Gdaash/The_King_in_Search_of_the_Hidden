@@ -23,6 +23,7 @@ public class ResourceOutput {
 }
 
 public class ResourceRequester : MonoBehaviour {
+    public static readonly HashSet<ResourceRequester> ActiveInstances = new();
     [Header("Настройки ограничений")]
     [SerializeField] private int maxProductionPool = 3;  
     [SerializeField] private GameObject storageFullVisual; 
@@ -31,6 +32,11 @@ public class ResourceRequester : MonoBehaviour {
 
     [Header("Настройки флажка")]
     [SerializeField] protected bool ignoreFlag = false; 
+    [Header("Рабочие внутри здания")]
+    [Tooltip("Сохранять доставленных людей между производственными циклами.")]
+    [SerializeField] private bool retainHumansBetweenCycles;
+    [Tooltip("После завершения строительства передать людей этому рабочему зданию.")]
+    [SerializeField] private ResourceRequester humanSuccessor;
 
     [Header("Настройки рецепта")]
     public int priority = 1;
@@ -73,6 +79,31 @@ public class ResourceRequester : MonoBehaviour {
     protected float _bobbingOffset;
     
     private int _completedCycles = 0;
+    private bool _crystalControlled;
+    private LogisticFlag _crystalFlag;
+    public bool IsProcessing => _isProcessing;
+    public bool CanRecallHumans => isActiveAndEnabled && !_isProcessing &&
+        requirements.Any(r => r.resourceType != null && r.resourceType.isHumanResource && r.currentAmount > 0);
+    public int RecallIdleHumans()
+    {
+        if (!CanRecallHumans || Warehouse.Instance == null) return 0;
+        int sent = 0;
+        foreach (var type in requirements.Where(r => r.resourceType != null && r.resourceType.isHumanResource)
+                     .Select(r => r.resourceType).Distinct())
+            sent += SendHumansHome(type, Warehouse.Instance);
+        return sent;
+    }
+    public bool CrystalResourcesReady => requirements.All(r => r.currentAmount >= r.requiredAmount);
+    public bool CanSelectCrystalCycle => enabled && gameObject.activeInHierarchy && !ignoreFlag &&
+        requirements.Count > 0 && !_isProcessing && !IsStorageFull() &&
+        (maxProductionCycles == 0 || _completedCycles < maxProductionCycles);
+    public void SetCrystalFlag(LogisticFlag flag)
+    {
+        _crystalControlled = true;
+        _crystalFlag = flag;
+        UpdateIndicator();
+    }
+    public void TryStartCrystalCycle() => CheckCompletion();
 
     protected virtual void Awake() { 
         if (iconsContainer != null) _containerBasePos = iconsContainer.localPosition;
@@ -82,6 +113,7 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     protected virtual void OnEnable() {
+        ActiveInstances.Add(this);
         _lastFlagState = HasLogisticFlag();
         _wasFull = IsStorageFull(); 
         UpdateIndicator(); 
@@ -89,6 +121,7 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     protected virtual void OnDisable() {
+        ActiveInstances.Remove(this);
         if (OrderManager.Instance != null) OrderManager.Instance.UnregisterRequester(this);
     }
 
@@ -138,6 +171,7 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     public bool HasLogisticFlag() {
+        if (_crystalControlled) return _crystalFlag != null && _crystalFlag.isActiveAndEnabled && _crystalFlag.CrystalTarget == this;
         if (ignoreFlag) return true;
         if (_myCollider == null) return false;
 
@@ -147,7 +181,8 @@ public class ResourceRequester : MonoBehaviour {
         
         int count = _myCollider.Overlap(filter, results);
         for (int i = 0; i < count; i++) {
-            if (results[i] != null && results[i].TryGetComponent<LogisticFlag>(out _)) return true;
+            if (results[i] != null && results[i].TryGetComponent<LogisticFlag>(out var flag) &&
+                (!flag.CrystalControlled || flag.CrystalTarget == this)) return true;
         }
         return false;
     }
@@ -222,18 +257,36 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     protected virtual void CheckCompletion() {
+        if (_crystalControlled && (_isProcessing || !HasLogisticFlag() || !CanSelectCrystalCycle)) return;
         if (requirements.All(r => r.currentAmount >= r.requiredAmount)) {
             _isProcessing = true;
             OnAllResourcesReceived?.Invoke();
+            if (_crystalControlled)
+                foreach (var timer in GetComponentsInChildren<TimerController>(true))
+                    if (timer.CrystalOwner == this) timer.ResumeCrystalCycle();
         }
     }
 
     public virtual void FinishProcessing() {
+        if (humanSuccessor != null)
+        {
+            foreach (var req in requirements)
+            {
+                if (req.resourceType == null || !req.resourceType.isHumanResource) continue;
+                var next = humanSuccessor.requirements.FirstOrDefault(r => r.resourceType == req.resourceType);
+                if (next == null) continue;
+                int count = Mathf.Min(req.currentAmount, Mathf.Max(0, next.requiredAmount - next.currentAmount));
+                next.currentAmount += count;
+                req.currentAmount -= count;
+            }
+            humanSuccessor.UpdateIndicator();
+        }
         SpawnAllResults();
         _isProcessing = false;
         _carryingToUs = 0;
         foreach (var req in requirements) {
-            req.currentAmount = 0;
+            if (!retainHumansBetweenCycles || req.resourceType == null || !req.resourceType.isHumanResource)
+                req.currentAmount = 0;
             req.reservedAmount = 0;
         }
         

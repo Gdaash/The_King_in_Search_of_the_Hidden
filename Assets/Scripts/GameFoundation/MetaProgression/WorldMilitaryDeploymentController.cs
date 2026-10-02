@@ -81,6 +81,9 @@ namespace GameFoundation.MetaProgression
             }
         }
 
+        public bool IsMilitaryResource(ResourceType resource) => resource != null &&
+            (resource == swordsmen.resource || resource == archers.resource);
+
         // Deployment only moves a warrior out of storage; it is not a resource loss.
         // Include living deployed warriors in run/day snapshots, including before
         // scene teardown returns survivors to storage.

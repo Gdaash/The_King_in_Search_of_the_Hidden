@@ -1,188 +1,352 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
-using DG.Tweening;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
 namespace GameFoundation.MetaProgression
 {
+    /// <summary>One independent crystal cell owns each light and its single delivery/production cycle.</summary>
     public sealed class WorldFlashlightAvailability : MonoBehaviour
     {
         public const string LegacyUpgradeId = "world.flashlights";
         public const int MaximumCount = 6;
-
         [SerializeField] private GlobalStats flashlightStats;
         [SerializeField] private GameObject[] flashlights;
-        [SerializeField, Min(0f)] private float activationDelay = 0.1f;
-        [SerializeField, Min(0f)] private float lightWarmupDelay = 0.3f;
-        [Header("Activation button placement")]
-        [Tooltip("World-space offset from the first flashlight. It is not affected by the flashlight rotation.")]
-        [SerializeField] private Vector3 activationButtonWorldOffset = new(0f, -3f, 0f);
-
-        private float[] _initialLightIntensities;
-        private bool _escapeRequested;
-        private bool _lightsActivated;
-        private int _availableFlashlightCount;
-        private FlashlightActivationButton _activationButton;
-
+        [Header("Crystal charge")]
+        [Tooltip("Standard time to recharge one empty cell at base power 1, when no other cell is charging.")]
+        [SerializeField, Min(.1f)] private float rechargeSeconds = 30f;
+        [Tooltip("Shared charging power. 1 = one cell at its standard recharge speed. Laboratory bonuses add to this base.")]
+        [SerializeField, Min(0)] private float baseChargingPower = 1f;
+        [SerializeField, Range(0, 1)] private float initialCharge = 1f;
+        [SerializeField] private ResourceType rechargeResource;
+        [SerializeField, Min(0)] private int rechargeCost = 1;
+        [SerializeField, Min(.1f)] private float buildingSelectionRadius = 1.45f;
+        public enum CellState { Charging, Ready, WaitingForResources, Working }
+        public enum HoverState { None, Available, WaitingForResources, Working, NoEnergy, RecallOnly, CrystalBusy }
+        public readonly struct HoverTarget
+        {
+            public readonly Transform Anchor;
+            public readonly HoverState State;
+            public readonly LogisticFlag Flag;
+            internal readonly HexLightUnlocker Hex;
+            internal readonly ResourceRequester Requester;
+            internal readonly int CellIndex;
+            public bool CanRecallHumans => Requester != null && Requester.CanRecallHumans;
+            internal HoverTarget(Transform anchor, HoverState state, HexLightUnlocker hex = null,
+                ResourceRequester requester = null, int cellIndex = -1, LogisticFlag flag = null)
+            { Anchor = anchor; State = state; Hex = hex; Requester = requester; CellIndex = cellIndex; Flag = flag; }
+        }
+        public event Action<HoverTarget> TargetClicked;
+        private sealed class Cell
+        {
+            public CrystalLightBeam beam;
+            public float charge;
+            public bool occupied, working;
+            public HexLightUnlocker hex;
+            public ResourceRequester requester;
+            public TimerController[] timers;
+            public UnityAction completed;
+            public Action started;
+            public Vector2 position;
+        }
+        private Cell[] cells = Array.Empty<Cell>();
+        private bool escaped;
+        private Camera worldCamera;
+        private Vector2 pointerDown;
+        private bool pointerStartedInWorld;
+        private Vector2 rightPointerDown;
+        private bool rightPointerStartedInWorld;
+        private readonly List<RaycastResult> uiHits = new();
+        private readonly Dictionary<ResourceRequester, TimerController[]> productionTimers = new();
+        public int CellCount => cells.Length;
+        public ResourceType RechargeResource => rechargeResource;
+        public int RechargeCost => rechargeCost;
+        public bool Escaped => escaped;
+        public float ChargingPower => Mathf.Max(0, baseChargingPower) * (flashlightStats != null ? flashlightStats.CrystalChargingPowerMultiplier : 1f);
+        public int ChargingCellCount
+        {
+            get { int count = 0; foreach (var cell in cells) if (!cell.occupied && cell.charge < 1f) count++; return count; }
+        }
+        public float Charge(int index) => cells[index].charge;
+        public CellState State(int index) => cells[index].occupied
+            ? (cells[index].working ? CellState.Working : CellState.WaitingForResources)
+            : cells[index].charge >= 1 ? CellState.Ready : CellState.Charging;
+        public bool CanRecharge
+        {
+            get
+            {
+                if (escaped || rechargeResource == null || GlobalResourceManager.Instance == null ||
+                    GlobalResourceManager.Instance.GetResourceAmount(rechargeResource) < rechargeCost) return false;
+                foreach (var cell in cells) if (cell.charge < 1) return true;
+                return false;
+            }
+        }
         private void Awake()
         {
-            _availableFlashlightCount = flashlightStats != null ? flashlightStats.AvailableFlashlightCount : 1;
-            if (flashlights == null) return;
-            _initialLightIntensities = new float[flashlights.Length];
-
-            // Purchased flashlights are visible from the start. Their beams and ground
-            // markers stay off until the player deliberately turns the network on.
+            worldCamera = Camera.main;
+            // Disable the legacy drag/activation path before the first frame, including locked beams.
+            foreach (var root in flashlights)
+            {
+                if (root == null) continue;
+                var beam = root.GetComponent<CrystalLightBeam>();
+                if (beam != null) beam.Initialize();
+            }
+        }
+        private void Start()
+        {
+            int count = Mathf.Min(flashlights.Length, flashlightStats != null ? flashlightStats.AvailableFlashlightCount : 1);
+            var available = new List<Cell>();
             for (int i = 0; i < flashlights.Length; i++)
             {
-                GameObject flashlight = flashlights[i];
-                if (flashlight == null) continue;
-
-                bool isAvailable = i < Mathf.Min(_availableFlashlightCount, flashlights.Length);
-                if (flashlight != gameObject) flashlight.SetActive(isAvailable);
-                if (!isAvailable) continue;
-
-                FlashlightActivationButton button = flashlight.GetComponentInChildren<FlashlightActivationButton>(true);
-                if (button != null) button.gameObject.SetActive(false);
-
-                Transform light = flashlight.transform.Find("Light");
-                if (light != null && light.TryGetComponent(out Light2D light2D))
-                {
-                    _initialLightIntensities[i] = light2D.intensity;
-                    light2D.intensity = 0f;
-                }
-
-                LogisticFlag flag = flashlight.GetComponentInChildren<LogisticFlag>(true);
-                if (flag != null) flag.enabled = false;
-                Transform flagLight = flag != null ? flag.transform.Find("Light") : null;
-                if (flagLight != null) flagLight.gameObject.SetActive(false);
-
-                SetContentsActive(flashlight, false);
+                var root = flashlights[i];
+                if (root == null) continue;
+                if (root != gameObject) root.SetActive(i < count);
+                var beam = root.GetComponent<CrystalLightBeam>();
+                if (i < count && beam != null) available.Add(new Cell { beam = beam, charge = initialCharge });
             }
-            if (flashlights.Length > 0 && flashlights[0] != null)
+            cells = available.ToArray();
+        }
+        public bool IsPointerOverBlockingUI(Vector2 screenPosition)
+        {
+            if (EventSystem.current == null) return false;
+            uiHits.Clear();
+            EventSystem.current.RaycastAll(new PointerEventData(EventSystem.current) { position = screenPosition }, uiHits);
+            foreach (var hit in uiHits)
             {
-                _activationButton = flashlights[0].GetComponentInChildren<FlashlightActivationButton>(true);
-                if (_activationButton != null)
+                if (!(hit.module is UnityEngine.UI.GraphicRaycaster)) continue;
+                var canvas = hit.gameObject.GetComponentInParent<Canvas>();
+                // World progress bars are decorative and must not eat clicks on their hex.
+                if (canvas == null || canvas.renderMode != RenderMode.WorldSpace ||
+                    hit.gameObject.GetComponentInParent<UnityEngine.UI.Selectable>() != null) return true;
+            }
+            return false;
+        }
+        private void Update()
+        {
+            if (escaped) return;
+            float dt = Time.unscaledDeltaTime * GameSpeedControls.SimulationSpeed;
+            for (int i = 0; i < cells.Length; i++)
+            {
+                var cell = cells[i];
+                if (cell.occupied)
                 {
-                    // The editable source stays in the Flashlight prefab, but the
-                    // runtime button becomes an independent scene object. This keeps
-                    // it upright and prevents the flashlight's aiming rotation from
-                    // affecting its position or collider.
-                    _activationButton.transform.SetParent(null, true);
-                    _activationButton.transform.position = flashlights[0].transform.position + activationButtonWorldOffset;
-                    _activationButton.transform.rotation = Quaternion.identity;
-                    _activationButton.gameObject.SetActive(true);
+                    bool targetGone = cell.hex != null ? !cell.hex.isActiveAndEnabled || cell.hex.IsUnlocked()
+                        : cell.requester == null || !cell.requester.isActiveAndEnabled;
+                    if (targetGone) Release(i);
                 }
             }
-        }
-
-        public void ActivateAvailableLights()
-        {
-            if (_lightsActivated || _escapeRequested || flashlights == null) return;
-            _lightsActivated = true;
-            if (_activationButton != null) _activationButton.gameObject.SetActive(false);
-
-            var order = new List<int>();
-            int count = Mathf.Min(_availableFlashlightCount, flashlights.Length);
-            for (int i = 0; i < count; i++)
-                if (flashlights[i] != null)
-                    order.Add(i);
-
-            for (int i = order.Count - 1; i > 0; i--)
+            TickRecharge(dt);
+            if (Input.GetMouseButtonDown(0))
             {
-                int other = Random.Range(0, i + 1);
-                (order[i], order[other]) = (order[other], order[i]);
+                pointerDown = Input.mousePosition;
+                pointerStartedInWorld = !IsPointerOverBlockingUI(Input.mousePosition);
             }
-            StartCoroutine(ActivateInOrder(order));
-        }
-
-        private IEnumerator ActivateInOrder(List<int> order)
-        {
-            for (int i = 0; i < order.Count; i++)
+            if (Input.GetMouseButtonUp(0) && pointerStartedInWorld &&
+                Vector2.Distance(pointerDown, Input.mousePosition) < 8 && !IsPointerOverBlockingUI(Input.mousePosition) && worldCamera != null)
+                SelectAt(worldCamera.ScreenToWorldPoint(Input.mousePosition));
+            if (Input.GetMouseButtonDown(1))
             {
-                int flashlightIndex = order[i];
-                GameObject flashlight = flashlights[flashlightIndex];
-                LogisticFlag flag = flashlight.GetComponentInChildren<LogisticFlag>(true);
-                Transform light = flashlight.transform.Find("Light");
-                Transform flagLight = flag != null ? flag.transform.Find("Light") : null;
-                float initialIntensity = _initialLightIntensities[flashlightIndex];
-                if (flag != null)
-                    flag.transform.localScale = Vector3.one * 0.5f;
-
-                flashlight.SetActive(true);
-                if (flag != null) flag.gameObject.SetActive(true);
-
-                if (flag != null)
+                rightPointerDown = Input.mousePosition;
+                rightPointerStartedInWorld = !IsPointerOverBlockingUI(Input.mousePosition);
+            }
+            if (Input.GetMouseButtonUp(1) && rightPointerStartedInWorld &&
+                Vector2.Distance(rightPointerDown, Input.mousePosition) < 8 && !IsPointerOverBlockingUI(Input.mousePosition) && worldCamera != null)
+                RecallHumansAt(worldCamera.ScreenToWorldPoint(Input.mousePosition));
+        }
+        /// <summary>Distribute this simulation step's finite power budget equally among charging cells.</summary>
+        public void TickRecharge(float simulationSeconds)
+        {
+            if (escaped || simulationSeconds <= 0) return;
+            float budget = simulationSeconds * ChargingPower / Mathf.Max(.1f, rechargeSeconds);
+            // At most one pass per cell: every non-final pass finishes at least one cell.
+            // Redistribute the remainder immediately, so completion does not waste power at low frame rates.
+            for (int pass = 0; pass < cells.Length && budget > 0; pass++)
+            {
+                int count = 0;
+                float nearestFull = 1f;
+                foreach (var cell in cells)
+                    if (!cell.occupied && cell.charge < 1f)
+                    { count++; nearestFull = Mathf.Min(nearestFull, 1f - cell.charge); }
+                if (count == 0) break;
+                float share = Mathf.Min(budget / count, nearestFull);
+                foreach (var cell in cells)
+                    if (!cell.occupied && cell.charge < 1f)
+                        cell.charge = 1f - cell.charge <= share ? 1f : cell.charge + share;
+                budget = Mathf.Max(0, budget - share * count);
+            }
+        }
+        // Both input and the hover view resolve the same target and state.
+        public HoverTarget GetHoverTarget(Vector2 point)
+        {
+            if (escaped) return default;
+            for (int i = 0; i < cells.Length; i++)
+                if (cells[i].occupied && Vector2.Distance(point, cells[i].position) <= buildingSelectionRadius)
                 {
-                    Transform flagTransform = flag.transform;
-                    flagTransform.DOKill();
-                    DOTween.Sequence().SetTarget(flagTransform)
-                        .Append(flagTransform.DOScale(1.12f, 0.18f).SetEase(Ease.OutQuad))
-                        .Append(flagTransform.DOScale(0.95f, 0.1f).SetEase(Ease.InOutQuad))
-                        .Append(flagTransform.DOScale(1f, 0.1f).SetEase(Ease.OutQuad))
-                        .OnComplete(() => ActivateLight(light, flag, flagLight, initialIntensity));
+                    var c = cells[i];
+                    var target = c.hex != null ? c.hex.transform : c.requester != null ? c.requester.transform : null;
+                    if (target != null && target.gameObject.activeInHierarchy)
+                        return new HoverTarget(HexAnchor(target), c.working ? HoverState.Working : HoverState.WaitingForResources,
+                            c.hex, c.requester, i, c.beam != null ? c.beam.Flag : null);
                 }
-                else
-                    ActivateLight(light, flag, flagLight, initialIntensity);
-
-                if (i + 1 < order.Count)
-                    yield return new WaitForSeconds(activationDelay);
-            }
-        }
-
-        private void ActivateLight(Transform light, LogisticFlag flag, Transform flagLight, float initialIntensity)
-        {
-            if (_escapeRequested) return;
-            if (light == null)
+            HexLightUnlocker hex = null;
+            float nearest = float.MaxValue;
+            foreach (var candidate in HexLightUnlocker.ActiveInstances)
             {
-                EnableFlag(flag, flagLight);
-                return;
+                if (!candidate.isActiveAndEnabled || candidate.IsUnlocked() || !candidate.IsPointOverHex(point)) continue;
+                float distance = Vector2.SqrMagnitude(point - (Vector2)candidate.transform.position);
+                if (distance < nearest) { nearest = distance; hex = candidate; }
             }
-            light.gameObject.SetActive(true);
-            if (light.TryGetComponent(out Light2D light2D))
-                StartCoroutine(RestoreLightIntensity(light2D, flag, flagLight, initialIntensity));
-            else
-                EnableFlag(flag, flagLight);
+            int free = Array.FindIndex(cells, c => !c.occupied && c.charge >= 1f);
+            // Paid recharge can fill an occupied cell without releasing its beam.
+            var availability = free >= 0 ? HoverState.Available :
+                Array.Exists(cells, c => c.occupied && c.charge >= 1f) ? HoverState.CrystalBusy : HoverState.NoEnergy;
+            if (hex != null)
+            {
+                var blocker = hex.GetComponentInParent<HexBlocker>();
+                if (blocker != null && blocker.IsBlocked) return default;
+                return new HoverTarget(HexAnchor(hex.transform), hex.IsUnlocking() ? HoverState.Working :
+                    availability, hex: hex, cellIndex: free);
+            }
+            ResourceRequester requester = null;
+            nearest = buildingSelectionRadius * buildingSelectionRadius;
+            foreach (var candidate in ResourceRequester.ActiveInstances)
+            {
+                if (candidate == null || candidate.GetComponentInParent<HexBlocker>() != null ||
+                    (!candidate.CanRecallHumans && (!candidate.CanSelectCrystalCycle || !HasProductionTimer(candidate)))) continue;
+                float distance = Vector2.SqrMagnitude(point - (Vector2)candidate.transform.position);
+                if (distance <= nearest) { requester = candidate; nearest = distance; }
+            }
+            return requester != null ? new HoverTarget(HexAnchor(requester.transform),
+                !requester.CanSelectCrystalCycle || !HasProductionTimer(requester) ? HoverState.RecallOnly :
+                availability, requester: requester, cellIndex: free) : default;
         }
-
-        private IEnumerator RestoreLightIntensity(Light2D light, LogisticFlag flag, Transform flagLight, float initialIntensity)
+        private static Transform HexAnchor(Transform target)
         {
-            yield return new WaitForSeconds(lightWarmupDelay);
-            if (light != null) light.intensity = initialIntensity;
-            EnableFlag(flag, flagLight);
+            // HexMagnet belongs to the stationary tile, even when the building art is offset or animated.
+            Transform anchor = target;
+            float nearest = .75f * .75f;
+            foreach (var magnet in HexMagnet.ActiveInstances)
+            {
+                if (magnet == null) continue;
+                float distance = ((Vector2)(magnet.transform.position - target.position)).sqrMagnitude;
+                if (distance < nearest) { nearest = distance; anchor = magnet.transform; }
+            }
+            return anchor;
         }
-
-        private static void EnableFlag(LogisticFlag flag, Transform flagLight)
+        private bool HasProductionTimer(ResourceRequester requester) => ProductionTimers(requester).Length > 0;
+        private TimerController[] ProductionTimers(ResourceRequester requester)
         {
-            if (flag != null) flag.enabled = true;
-            if (flagLight != null) flagLight.gameObject.SetActive(true);
+            if (productionTimers.TryGetValue(requester, out var cached)) return cached;
+            var result = new List<TimerController>();
+            foreach (var timer in requester.GetComponentsInChildren<TimerController>(true))
+                for (int i = 0; i < timer.OnTimerEnd.GetPersistentEventCount(); i++)
+                    if (timer.OnTimerEnd.GetPersistentTarget(i) == requester && timer.OnTimerEnd.GetPersistentMethodName(i) == "FinishProcessing")
+                    { result.Add(timer); break; }
+            return productionTimers[requester] = result.ToArray();
         }
-
-        private static void SetContentsActive(GameObject flashlight, bool active)
+        public bool SelectAt(Vector2 point)
         {
-            Transform light = flashlight.transform.Find("Light");
-            if (light != null) light.gameObject.SetActive(active);
-
-            LogisticFlag flag = flashlight.GetComponentInChildren<LogisticFlag>(true);
-            if (flag != null) flag.gameObject.SetActive(active);
+            if (escaped || GameSpeedControls.SimulationSpeed <= 0) return false;
+            var target = GetHoverTarget(point);
+            if (target.State == HoverState.None) return false;
+            TargetClicked?.Invoke(target);
+            if (target.State == HoverState.WaitingForResources) { Release(target.CellIndex); return true; }
+            if (target.State != HoverState.Available) return false;
+            return target.Hex != null ? OpenHex(target.CellIndex, target.Hex) : ReserveBuilding(target.CellIndex, target.Requester);
         }
-
+        public bool RecallHumansAt(Vector2 point)
+        {
+            if (escaped || GameSpeedControls.SimulationSpeed <= 0 || Warehouse.Instance == null) return false;
+            var target = GetHoverTarget(point);
+            if (!target.CanRecallHumans) return false;
+            TargetClicked?.Invoke(target);
+            // Cancel the delivery order first, so no replacement worker is dispatched during recall.
+            if (target.State == HoverState.WaitingForResources) Release(target.CellIndex);
+            target.Requester.SetCrystalFlag(null);
+            int sent = target.Requester.RecallIdleHumans();
+            OrderManager.Instance?.ForceUpdateOrders();
+            return sent > 0;
+        }
+        private bool OpenHex(int index, HexLightUnlocker hex)
+        {
+            var cell = cells[index];
+            cell.occupied = cell.working = true;
+            cell.charge = 0;
+            cell.hex = hex;
+            cell.position = hex.transform.position;
+            cell.completed = () => Release(index);
+            hex.OnUnlockCompleteEvent.AddListener(cell.completed);
+            cell.beam.Show(cell.position, null, true);
+            hex.StartUnlockProcess(1);
+            return true;
+        }
+        private bool ReserveBuilding(int index, ResourceRequester requester)
+        {
+            // Mine construction also contains a separate timer used only for its visuals.
+            var timers = ProductionTimers(requester);
+            if (timers.Length == 0) return false;
+            var cell = cells[index];
+            cell.occupied = true;
+            cell.requester = requester;
+            cell.position = requester.transform.position;
+            cell.timers = timers;
+            cell.started = () => StartProduction(index);
+            cell.completed = () => Release(index);
+            foreach (var timer in cell.timers)
+            { timer.BindCrystalOwner(requester); timer.CrystalCycleStarted += cell.started; }
+            requester.OnActionExecuted.AddListener(cell.completed);
+            cell.beam.Show(cell.position, requester, false);
+            requester.SetCrystalFlag(cell.beam.Flag);
+            Physics2D.SyncTransforms();
+            requester.TryStartCrystalCycle();
+            if (requester.IsProcessing)
+                foreach (var timer in cell.timers) if (!timer.IsRunning) timer.ResetTimer();
+            OrderManager.Instance?.ForceUpdateOrders();
+            return true;
+        }
+        private void StartProduction(int index)
+        {
+            var cell = cells[index];
+            if (!cell.occupied || cell.working || escaped) return;
+            cell.charge = 0;
+            cell.working = true;
+            cell.beam.Show(cell.position, cell.requester, true);
+        }
+        private void Release(int index)
+        {
+            var cell = cells[index];
+            if (cell.hex != null && cell.completed != null)
+            {
+                cell.hex.OnUnlockCompleteEvent.RemoveListener(cell.completed);
+                if (!cell.hex.IsUnlocked()) cell.hex.CancelUnlockProcess();
+            }
+            if (cell.requester != null)
+            {
+                cell.requester.OnActionExecuted.RemoveListener(cell.completed);
+                cell.requester.SetCrystalFlag(null);
+            }
+            if (cell.timers != null)
+                foreach (var timer in cell.timers) if (timer != null) timer.CrystalCycleStarted -= cell.started;
+            if (cell.beam != null) cell.beam.Clear();
+            cell.hex = null; cell.requester = null; cell.timers = null;
+            cell.started = null; cell.completed = null;
+            cell.occupied = cell.working = false;
+            if (!escaped) OrderManager.Instance?.ForceUpdateOrders();
+        }
+        public bool RechargeAll()
+        {
+            if (!CanRecharge || !GlobalResourceManager.Instance.TrySpendResource(rechargeResource, rechargeCost)) return false;
+            foreach (var cell in cells) cell.charge = 1;
+            return true;
+        }
+        // Retain the old UnityEvent API; the obsolete button is removed from the prefab.
+        public void ActivateAvailableLights() { }
         public void DisableAllForEscape()
         {
-            _escapeRequested = true;
-            StopAllCoroutines();
-            if (_activationButton != null) _activationButton.gameObject.SetActive(false);
-            if (flashlights == null) return;
-
-            foreach (GameObject flashlight in flashlights)
-            {
-                if (flashlight == null) continue;
-                LogisticFlag flag = flashlight.GetComponentInChildren<LogisticFlag>(true);
-                if (flag != null) flag.transform.DOKill();
-                SetContentsActive(flashlight, false);
-                if (flashlight != gameObject)
-                    flashlight.SetActive(false);
-            }
+            escaped = true;
+            for (int i = 0; i < cells.Length; i++) Release(i);
         }
+        private void OnDisable() => DisableAllForEscape();
     }
 }

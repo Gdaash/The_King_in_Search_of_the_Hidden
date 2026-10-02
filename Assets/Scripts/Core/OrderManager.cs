@@ -112,7 +112,7 @@ public class OrderManager : MonoBehaviour
     private void DistributeOrders()
     {
         var freePorters = _allPorters.Where(p => !p.IsBusy() && !p.IsReturningToWarehouse()).ToList();
-        var returningHumans = _allHumanUnits.Where(h => h.IsReturningToWarehouse()).ToList();
+        var returningHumans = _allHumanUnits.Where(h => h.IsReturningToWarehouse() && h.CanBeReassigned).ToList();
         var freeHumans = _allHumanUnits.Where(h => !h.IsBusy() && !h.IsReturningToWarehouse()).ToList();
 
         var activeJobs = _internalOrders

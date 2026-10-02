@@ -50,7 +50,8 @@ internal static class ScientificUpgradeSetup
         AddIfMissing(table, ScientificUpgrades.WarriorBaseRegen, ScientificUpgrades.WarriorRetreat, "Полевой лазарет", "Воины у портала восстанавливают 1% здоровья в секунду.", ore, 5, 0.01f);
         for (int i = 0; i < ScientificUpgrades.Flashlights.Length; i++)
             AddIfMissing(table, ScientificUpgrades.Flashlights[i], i == 0 ? ScientificUpgrades.StrongWalls : ScientificUpgrades.Flashlights[i - 1],
-                "Фонарь " + (i + 2), "Открывает " + (i + 2) + "-й фонарь для работы с гексами.", ore, (i + 1) * 5, 1f);
+                "Ячейка кристалла " + (i + 2), "Добавляет ячейку энергии и ещё один луч света. Всего ячеек: " + (i + 2) + ".", ore, (i + 1) * 5, 1f);
+        CrystalPowerUpgradeSetup.EnsureDefinitions(table);
         EditorUtility.SetDirty(table);
     }
 
@@ -139,6 +140,7 @@ internal static class ScientificUpgradeSetup
             treeRect.pivot = new Vector2(.5f, .5f);
             treeRect.anchoredPosition = Vector2.zero;
             treeRect.sizeDelta = new Vector2(1900, 3300);
+            CrystalPowerUpgradeSetup.AddBranch(root, table);
             PrefabUtility.SaveAsPrefabAsset(root, TreePath);
         }
         finally { PrefabUtility.UnloadPrefabContents(root); }
