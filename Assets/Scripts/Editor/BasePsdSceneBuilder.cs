@@ -7,6 +7,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using GameFoundation.Base;
 
 public static class BasePsdSceneBuilder
 {
@@ -85,14 +86,19 @@ public static class BasePsdSceneBuilder
         Undo.RecordObject(data, "Configure base pixel art renderer");
         data.renderPostProcessing = false; data.antialiasing = AntialiasingMode.None;
         ConfigureRenderer(data);
-        var pp = camera.GetComponent<PixelPerfectCamera>() ?? Undo.AddComponent<PixelPerfectCamera>(camera.gameObject);
-        Undo.RecordObject(pp, "Configure PSD pixel grid");
-        pp.assetsPPU = doc.pixelsPerUnit; pp.refResolutionX = doc.width; pp.refResolutionY = doc.height;
-        pp.gridSnapping = PixelPerfectCamera.GridSnapping.UpscaleRenderTexture;
-        pp.cropFrame = PixelPerfectCamera.CropFrame.StretchFill;
-        var pixelSettings = new SerializedObject(pp);
-        pixelSettings.FindProperty("m_FilterMode").enumValueIndex = (int)PixelPerfectCamera.PixelPerfectFilterMode.Point;
-        pixelSettings.ApplyModifiedProperties();
+        // World-space button text must render at display resolution, not into
+        // the artwork's low-resolution pixel-perfect buffer.
+        var pp = camera.GetComponent<PixelPerfectCamera>();
+        if (pp != null)
+        {
+            Undo.RecordObject(pp, "Disable low-resolution Base rendering");
+            pp.enabled = false;
+        }
+        var framing = camera.GetComponent<BaseSceneCameraFraming>() ?? Undo.AddComponent<BaseSceneCameraFraming>(camera.gameObject);
+        var framingSettings = new SerializedObject(framing);
+        framingSettings.FindProperty("referenceResolution").vector2IntValue = new Vector2Int(doc.width, doc.height);
+        framingSettings.FindProperty("pixelsPerUnit").intValue = doc.pixelsPerUnit;
+        framingSettings.ApplyModifiedProperties();
 
         foreach (var image in UnityEngine.Object.FindObjectsByType<UnityEngine.UI.Image>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {

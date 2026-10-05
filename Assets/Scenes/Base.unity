@@ -1064,6 +1064,7 @@ GameObject:
   - component: {fileID: 1262482350}
   - component: {fileID: 1262482351}
   - component: {fileID: 1262482352}
+  - component: {fileID: 1262482353}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1106,9 +1107,9 @@ Camera:
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
-    x: 0.17500001
+    x: 0.125
     y: 0
-    width: 0.65000004
+    width: 0.75
     height: 1
   near clip plane: -10
   far clip plane: 1000
@@ -1212,7 +1213,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1262482346}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c88f5cead0c0b2a4eb05b5900433f8d1, type: 3}
   m_Name: 
@@ -1229,6 +1230,20 @@ MonoBehaviour:
   m_CropFrameX: 0
   m_CropFrameY: 0
   m_StretchFill: 0
+--- !u!114 &1262482353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1262482346}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a61fc92f4a5c514fbc2f8db03033df6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Base.BaseSceneCameraFraming
+  referenceResolution: {x: 640, y: 480}
+  pixelsPerUnit: 32
 --- !u!1001 &1507878720
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2153,7 +2168,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2525991653217331853, guid: 0c935003d81895049a0f92e86ac3e7b9, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.00012207031
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2818586483113297733, guid: 0c935003d81895049a0f92e86ac3e7b9, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2251,6 +2266,10 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3257370149285386631, guid: 0c935003d81895049a0f92e86ac3e7b9, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3304684944997620158, guid: 0c935003d81895049a0f92e86ac3e7b9, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -2275,6 +2294,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3415162717740226060, guid: 0c935003d81895049a0f92e86ac3e7b9, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3506226805755524975, guid: 0c935003d81895049a0f92e86ac3e7b9, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 3821007813048000346, guid: 0c935003d81895049a0f92e86ac3e7b9, type: 3}
       propertyPath: m_LocalScale.x
       value: 1
@@ -2287,6 +2314,10 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 1262482348}
+    - target: {fileID: 4093756875819987246, guid: 0c935003d81895049a0f92e86ac3e7b9, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 4113506496635336026, guid: 0c935003d81895049a0f92e86ac3e7b9, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -2339,6 +2370,10 @@ PrefabInstance:
       propertyPath: m_PresetInfoIsWorld
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5459233922480403190, guid: 0c935003d81895049a0f92e86ac3e7b9, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -55.99994
+      objectReference: {fileID: 0}
     - target: {fileID: 5581418214536867326, guid: 0c935003d81895049a0f92e86ac3e7b9, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -2434,6 +2469,10 @@ PrefabInstance:
     - target: {fileID: 7792353921390806243, guid: 0c935003d81895049a0f92e86ac3e7b9, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7806336239174325348, guid: 0c935003d81895049a0f92e86ac3e7b9, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 7986362968516377849, guid: 0c935003d81895049a0f92e86ac3e7b9, type: 3}
       propertyPath: m_AnchorMax.y
