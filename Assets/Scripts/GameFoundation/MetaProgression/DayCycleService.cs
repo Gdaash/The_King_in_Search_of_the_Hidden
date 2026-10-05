@@ -56,6 +56,7 @@ namespace GameFoundation.MetaProgression
             DontDestroyOnLoad(gameObject);
             Load();
             EnsureFixedPortals();
+            PortalProgression.MigrateLegacyAccess(Portals);
             Save();
         }
 
@@ -72,16 +73,9 @@ namespace GameFoundation.MetaProgression
 
         public bool Activate(PortalSite site)
         {
-            if (site == null || site.active) return false;
+            if (site == null || !Portals.Contains(site) || site.active) return false;
             PortalLocationDefinition location = GetPortalLocation(site.locationId);
-            if (location == null) return false;
-            int cost = location.ActivationCost;
-            if (cost > 0)
-            {
-                ResourceType ore = Find("MagicOre");
-                if (ore == null || GlobalResourceManager.Instance == null ||
-                    !GlobalResourceManager.Instance.TrySpendResource(ore, cost)) return false;
-            }
+            if (!PortalProgression.IsUnlocked(location)) return false;
             site.active = true;
             Save();
             Changed?.Invoke();
@@ -90,9 +84,10 @@ namespace GameFoundation.MetaProgression
 
         public bool Enter(PortalSite site)
         {
-            if (site == null || !site.active || EnteredToday) return false;
+            if (site == null || !Portals.Contains(site) || EnteredToday) return false;
             PortalLocationDefinition location = GetPortalLocation(site.locationId);
-            if (location == null) return false;
+            if (!PortalProgression.IsUnlocked(location)) return false;
+            site.active = true;
             EnteredToday = true;
             SelectedPortalLocationId = location.LocationId;
             SelectedPortalDifficulty = location.Difficulty;

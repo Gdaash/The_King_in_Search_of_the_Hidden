@@ -68,6 +68,8 @@ public class GlobalResourceManager : MonoBehaviour
     {
         if (type == null) return;
         amount = Mathf.Max(0, amount);
+        if (Application.isPlaying && Instance == this)
+            DayResourceLedger.RecordResourceChange(type, amount - GetResourceAmount(type));
         PlayerPrefs.SetInt(saveKeyPrefix + type.name, amount);
         PlayerPrefs.Save();
         if (Application.isPlaying && Instance == this)
@@ -125,7 +127,7 @@ public class GlobalResourceManager : MonoBehaviour
         if (type == null) return;
         if (!_resourceAmounts.ContainsKey(type)) _resourceAmounts[type] = 0;
 
-        DayResourceLedger.RecordBaseChange(type, amount);
+        DayResourceLedger.RecordResourceChange(type, amount);
         _resourceAmounts[type] += amount;
         SaveResource(type);
         OnResourceChanged?.Invoke(type, _resourceAmounts[type]);
@@ -139,7 +141,7 @@ public class GlobalResourceManager : MonoBehaviour
 
         if (_resourceAmounts[type] >= cost)
         {
-            DayResourceLedger.RecordBaseChange(type, -cost);
+            DayResourceLedger.RecordResourceChange(type, -cost);
             _resourceAmounts[type] -= cost;
             SaveResource(type);
             OnResourceChanged?.Invoke(type, _resourceAmounts[type]);
@@ -171,9 +173,9 @@ public class GlobalResourceManager : MonoBehaviour
             SetResourceAmountWithoutSaving(inputB, availableB - inputBAmount);
         SetResourceAmountWithoutSaving(output, GetResourceAmount(output) + outputAmount);
 
-        DayResourceLedger.RecordBaseChange(inputA, -inputAAmount);
-        DayResourceLedger.RecordBaseChange(inputB, -inputBAmount);
-        DayResourceLedger.RecordBaseChange(output, outputAmount);
+        DayResourceLedger.RecordResourceChange(inputA, -inputAAmount);
+        DayResourceLedger.RecordResourceChange(inputB, -inputBAmount);
+        DayResourceLedger.RecordResourceChange(output, outputAmount);
         PlayerPrefs.Save();
         RefreshDisplay();
         return true;

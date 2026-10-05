@@ -57,7 +57,9 @@ namespace GameFoundation.Base
                 sprites[i].sharedMaterial = !Built && unbuiltMaterial != null ? unbuiltMaterial : originalMaterials[i];
             }
             if (TryGetComponent<Image>(out var image)) { image.enabled = Built; image.raycastTarget = Built; }
-            var label = transform.Find("Label");
+            if (TryGetComponent<Button>(out var button) && button.targetGraphic != null)
+                button.targetGraphic.enabled = Built;
+            var label = transform.Find("Label") ?? transform.Find("Button Visual/Label");
             if (label != null) label.gameObject.SetActive(Built);
         }
         private void LateUpdate() => UpdatePosition();

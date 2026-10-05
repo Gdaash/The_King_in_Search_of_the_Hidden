@@ -78,6 +78,7 @@ public static class BuildingActionAvailabilityIndicatorSetup
         SerializedObject serialized = new SerializedObject(indicator);
         serialized.FindProperty("actionType").enumValueIndex = (int)BuildingActionAvailabilityIndicator.ActionType.LaboratoryUpgrade;
         serialized.FindProperty("construction").objectReferenceValue = laboratory.GetComponent<BaseBuildingConstruction>();
+        serialized.FindProperty("laboratoryStats").objectReferenceValue = Resources.Load<GlobalStats>("Global/globalHexStats");
         SerializedProperty skills = serialized.FindProperty("laboratorySkills");
         SkillButton[] values = popup.GetComponentsInChildren<SkillButton>(true);
         skills.arraySize = values.Length;

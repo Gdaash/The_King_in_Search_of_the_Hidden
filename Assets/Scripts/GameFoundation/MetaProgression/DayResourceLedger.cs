@@ -16,6 +16,9 @@ namespace GameFoundation.MetaProgression
             public int baseGained;
             public int baseSpent;
             public int end;
+            // Net-zero exchanges still belong in the report. Older saves fall back to their recorded totals.
+            public bool hadChanges;
+            public bool HasChanges => hadChanges || start != end || runChange != 0 || baseGained != 0 || baseSpent != 0;
         }
 
         [Serializable]
@@ -85,7 +88,9 @@ namespace GameFoundation.MetaProgression
             {
                 start.TryGetValue(name, out int before);
                 end.TryGetValue(name, out int after);
-                GetEntry(name).runChange += after - before;
+                Entry entry = GetEntry(name);
+                entry.runChange += after - before;
+                entry.hadChanges |= after != before;
             }
             _state.runDurationSeconds += durationSeconds >= 0 ? durationSeconds
                 : _runStartedAt > 0f ? Mathf.Max(0, Mathf.FloorToInt(Time.realtimeSinceStartup - _runStartedAt)) : 0;
@@ -94,12 +99,21 @@ namespace GameFoundation.MetaProgression
             Save();
         }
 
-        public static void RecordBaseChange(ResourceType type, int change)
+        public static void RecordResourceChange(ResourceType type, int change)
         {
-            if (type == null || change == 0 || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Base")
-                return;
+            if (type == null || change == 0) return;
+            bool atShelter = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Base";
+            if (!atShelter && (_state == null || !_state.runActive)) return;
             EnsureDay(DayCycleService.Instance != null ? DayCycleService.Instance.Day : 1);
             Entry entry = GetEntry(type.name);
+            if (_state.runActive)
+            {
+                // The run's net result is still calculated by EndRun, including deployed troops.
+                // Persist this flag only once per resource, rather than on every delivery.
+                if (!entry.hadChanges) { entry.hadChanges = true; Save(); }
+                return;
+            }
+            entry.hadChanges = true;
             if (change > 0) entry.baseGained += change;
             else entry.baseSpent -= change;
             Save();
@@ -126,7 +140,7 @@ namespace GameFoundation.MetaProgression
                 report.entries.Add(new Entry
                 {
                     resource = entry.resource, start = entry.start, runChange = entry.runChange,
-                    baseGained = entry.baseGained, baseSpent = entry.baseSpent, end = amount
+                    baseGained = entry.baseGained, baseSpent = entry.baseSpent, end = amount, hadChanges = entry.hadChanges
                 });
             }
             LastReport = report;

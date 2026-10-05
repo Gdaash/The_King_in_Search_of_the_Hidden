@@ -15,6 +15,7 @@ namespace GameFoundation.Base
         [SerializeField] private BlacksmithProductionView blacksmith;
         [SerializeField] private MilitaryTrainingView training;
         [SerializeField] private SkillButton[] laboratorySkills;
+        [SerializeField] private GlobalStats laboratoryStats;
 
         private bool daySubscribed;
 
@@ -26,6 +27,11 @@ namespace GameFoundation.Base
 
         private void OnEnable()
         {
+            if (actionType == ActionType.LaboratoryUpgrade)
+            {
+                if (laboratoryStats == null) laboratoryStats = Resources.Load<GlobalStats>("Global/globalHexStats");
+                if (laboratoryStats != null) laboratoryStats.OnStatsUpdated += Refresh;
+            }
             GlobalResourceManager.OnResourceChanged += OnResourceChanged;
             BuildingUpgradeService.Changed += Refresh;
             SubscribeDay();
@@ -40,6 +46,7 @@ namespace GameFoundation.Base
 
         private void OnDisable()
         {
+            if (laboratoryStats != null) laboratoryStats.OnStatsUpdated -= Refresh;
             GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
             BuildingUpgradeService.Changed -= Refresh;
             if (daySubscribed && DayCycleService.Instance != null) DayCycleService.Instance.Changed -= Refresh;
@@ -74,6 +81,12 @@ namespace GameFoundation.Base
 
         private bool HasAvailableLaboratoryUpgrade()
         {
+            if (laboratoryStats != null && laboratoryStats.UpgradeTable != null)
+            {
+                foreach (var entry in laboratoryStats.UpgradeTable.entries)
+                    if (laboratoryStats.CanPurchaseUpgrade(entry)) return true;
+                return false;
+            }
             if (laboratorySkills == null) return false;
             foreach (SkillButton skill in laboratorySkills)
                 if (skill != null && skill.CanPurchaseNow) return true;

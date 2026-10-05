@@ -42,6 +42,7 @@ namespace GameFoundation.Base
             if (priceLabel != null) priceLabel.text = price;
             SetResource(woodIcon, woodAmount, wood, woodCost);
             SetResource(stoneIcon, stoneAmount, stone, stoneCost);
+            CenterPrice(wood != null, stone != null);
             group.alpha = 1f;
             group.blocksRaycasts = false;
             transform.SetAsLastSibling();
@@ -67,7 +68,34 @@ namespace GameFoundation.Base
                 ResourceIconSizing.Apply(image, resource != null ? resource.resourceIcon : null);
                 image.enabled = image.sprite != null;
             }
-            if (amount != null) amount.text = cost.ToString();
+            if (amount != null) { amount.text = cost.ToString(); amount.enabled = resource != null; }
+        }
+
+        private void CenterPrice(bool first, bool second)
+        {
+            float Width(Image icon, Text amount) => icon != null && amount != null ? icon.rectTransform.rect.width + 12f + Mathf.Max(32f, amount.preferredWidth) : 0f;
+            float a = first ? Width(woodIcon, woodAmount) : 0f;
+            float b = second ? Width(stoneIcon, stoneAmount) : 0f;
+            float x = -(a + b + (first && second ? 36f : 0f)) * .5f;
+            void Place(Image icon, Text amount, float width)
+            {
+                if (icon == null || amount == null) return;
+                // Older tooltip prefabs anchor these fields to the left edge.
+                // Centre the whole price group relative to the panel, including single-resource prices.
+                foreach (var item in new[] { icon.rectTransform, amount.rectTransform })
+                {
+                    var anchor = item.anchorMin; anchor.x = .5f; item.anchorMin = anchor;
+                    anchor = item.anchorMax; anchor.x = .5f; item.anchorMax = anchor;
+                    var pivot = item.pivot; pivot.x = .5f; item.pivot = pivot;
+                }
+                amount.alignment = TextAnchor.MiddleCenter;
+                var p = icon.rectTransform.anchoredPosition; p.x = x + icon.rectTransform.rect.width * .5f; icon.rectTransform.anchoredPosition = p;
+                amount.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Max(32f, amount.preferredWidth));
+                p = amount.rectTransform.anchoredPosition; p.x = x + width - amount.rectTransform.rect.width * .5f; amount.rectTransform.anchoredPosition = p;
+                x += width + 36f;
+            }
+            if (first) Place(woodIcon, woodAmount, a);
+            if (second) Place(stoneIcon, stoneAmount, b);
         }
 
         private void UpdatePosition()

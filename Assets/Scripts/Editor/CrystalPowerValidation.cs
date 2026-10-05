@@ -91,25 +91,32 @@ public static class CrystalPowerValidation
         resources.SetResourceAmount(crystal.RechargeResource, 1000);
         Check(crystal.RechargeAll() && resources.GetResourceAmount(crystal.RechargeResource) == 999, "manual full recharge still costs exactly one ore");
 
-        var treeAsset = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Base/Laboratory Skill Tree.prefab");
-        var tree = UnityEngine.Object.Instantiate(treeAsset);
+        var laboratoryAsset = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Base/Laboratory Popup.prefab");
+        var laboratory = UnityEngine.Object.Instantiate(laboratoryAsset);
         stats.UnlockUpgrade(ScientificUpgrades.PortalArrows);
-        tree.GetComponentsInChildren<SkillButton>().Single(s => s.skillID == ScientificUpgrades.PortalArrows).RefreshStatus();
-        var buttons = ScientificUpgrades.CrystalPower.Select(id => tree.GetComponentsInChildren<SkillButton>().Single(s => s.skillID == id)).ToArray();
-        Check(!buttons[1].CanPurchaseNow, "next power tier is locked until the previous tier is purchased");
+        var definitions = ScientificUpgrades.CrystalPower.Select(stats.FindUpgradeDefinition).ToArray();
+        Check(!stats.CanPurchaseUpgrade(definitions[1]), "next power tier is locked until the previous tier is purchased");
         resources.SetResourceAmount(crystal.RechargeResource, 0);
-        buttons[0].uiButton.onClick.Invoke();
+        stats.TryPurchaseUpgrade(definitions[0].id);
         Check(!stats.HasUpgrade(ScientificUpgrades.CrystalPower[0]) && Near(crystal.ChargingPower, 1), "unaffordable upgrade grants no power");
         resources.SetResourceAmount(crystal.RechargeResource, 1000);
-        for (int i = 0; i < buttons.Length; i++)
+        for (int i = 0; i < definitions.Length; i++)
         {
+            while (stats.PurchasedUpgradeCount < definitions[i].requiredPurchases)
+            {
+                var other = stats.UpgradeTable.entries.FirstOrDefault(e => !ScientificUpgrades.CrystalPower.Contains(e.id) &&
+                    !stats.HasUpgrade(e.id) && stats.IsUpgradeUnlocked(e));
+                Check(other != null, "a supporting upgrade is available for the next power gate");
+                resources.SetResourceAmount(other.costResource, 1000);
+                Check(stats.TryPurchaseUpgrade(other.id), "supporting upgrade counts toward power gate");
+            }
             int balance = resources.GetResourceAmount(crystal.RechargeResource);
-            Check(buttons[i].CanPurchaseNow, "tier " + (i + 1) + " is purchasable");
-            buttons[i].uiButton.onClick.Invoke();
+            Check(stats.CanPurchaseUpgrade(definitions[i]), "tier " + (i + 1) + " is purchasable");
+            stats.TryPurchaseUpgrade(definitions[i].id);
             Check(Near(crystal.ChargingPower, 1 + .2f * (i + 1)), "tier " + (i + 1) + " adds 20% of base power");
-            Check(resources.GetResourceAmount(crystal.RechargeResource) == balance - buttons[i].cost, "tier cost deducted exactly once");
-            buttons[i].uiButton.onClick.Invoke();
-            Check(resources.GetResourceAmount(crystal.RechargeResource) == balance - buttons[i].cost, "purchased tier cannot charge twice");
+            Check(resources.GetResourceAmount(crystal.RechargeResource) == balance - definitions[i].cost, "tier cost deducted exactly once");
+            stats.TryPurchaseUpgrade(definitions[i].id);
+            Check(resources.GetResourceAmount(crystal.RechargeResource) == balance - definitions[i].cost, "purchased tier cannot charge twice");
         }
         Check(crystal.CellCount == 6, "power upgrades do not change cell count");
         d = Drain(2); while (d.MoveNext()) yield return null;
@@ -117,10 +124,10 @@ public static class CrystalPowerValidation
         Check(Near(crystal.Charge(0), 1) && Near(crystal.Charge(1), 1), "200% power recharges two cells in their standard 30 seconds");
         var envelope = UnityEngine.PlayerPrefs.GetString("foundation.slot.3.saveData");
         Check(ScientificUpgrades.CrystalPower.All(id => envelope.Contains(id + "_Purchased")), "all five purchases written to the existing player save envelope");
-        UnityEngine.Object.DestroyImmediate(tree);
-        tree = UnityEngine.Object.Instantiate(treeAsset);
-        Check(tree.GetComponentsInChildren<SkillButton>().Where(s => ScientificUpgrades.CrystalPower.Contains(s.skillID)).All(s => s.isPurchased), "new laboratory instance restores every purchased tier");
-        UnityEngine.Object.DestroyImmediate(tree);
+        UnityEngine.Object.DestroyImmediate(laboratory);
+        laboratory = UnityEngine.Object.Instantiate(laboratoryAsset);
+        Check(laboratory.GetComponentsInChildren<GameFoundation.Base.LaboratoryUpgradeRow>().Single(s => s.groupId == "crystal_power").IsComplete, "new laboratory instance restores every purchased tier");
+        UnityEngine.Object.DestroyImmediate(laboratory);
         d = Drain(1); while (d.MoveNext()) yield return null;
         crystal.DisableAllForEscape(); crystal.TickRecharge(300);
         Check(Near(crystal.Charge(0), 0), "escape stops charging");

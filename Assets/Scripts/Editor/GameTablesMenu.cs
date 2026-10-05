@@ -18,7 +18,7 @@ public static class GameTablesMenu
     private const string UpgradeReadUrl = "https://docs.google.com/spreadsheets/d/" + SheetId + "/export?format=csv&gid=0";
     private const string LocalizationGid = "412557074";
     private const string LocalizationReadUrl = "https://docs.google.com/spreadsheets/d/" + SheetId + "/export?format=csv&gid=" + LocalizationGid;
-    private const string UpgradeHeader = "id,parent,title_ru,description_ru,cost_resource,cost_amount,effect_value";
+    private const string UpgradeHeader = "id,parent,title_ru,description_ru,cost_resource,cost_amount,effect_value,group_id,group_title_ru,level,required_purchases";
 
     [MenuItem("Tools/Таблицы/Улучшения/Экспорт в Google Sheets")]
     private static void CopyUpgradesForGoogle()
@@ -29,7 +29,8 @@ public static class GameTablesMenu
         foreach (var entry in table.entries)
             rows.Add(string.Join("\t", new[] { entry.id, entry.parentId, entry.title, entry.description,
                 entry.costResource != null ? entry.costResource.name : "",
-                entry.cost.ToString(CultureInfo.InvariantCulture), entry.effectValue.ToString(CultureInfo.InvariantCulture) }));
+                entry.cost.ToString(CultureInfo.InvariantCulture), entry.effectValue.ToString(CultureInfo.InvariantCulture),
+                entry.GroupId, entry.groupTitle, entry.level.ToString(), entry.requiredPurchases.ToString() }));
         EditorGUIUtility.systemCopyBuffer = string.Join("\n", rows);
         OpenGoogleSheet(UpgradeSheet, "улучшений", "0");
     }
@@ -50,7 +51,7 @@ public static class GameTablesMenu
     private static void ImportUpgrades(string csv)
     {
         var rows = Parse(csv);
-        if (rows.Count == 0 || !rows[0].SequenceEqual(UpgradeHeader.Split(',')))
+        if (rows.Count == 0 || !rows[0].Take(7).SequenceEqual(UpgradeHeader.Split(',').Take(7)))
         { EditorUtility.DisplayDialog("Импорт улучшений", "Нужны столбцы: " + UpgradeHeader, "OK"); return; }
         var table = AssetDatabase.LoadAssetAtPath<ScientificUpgradeTable>(UpgradePath);
         if (table == null) throw new InvalidDataException("Таблица улучшений не найдена: " + UpgradePath);
@@ -58,16 +59,26 @@ public static class GameTablesMenu
         foreach (var cells in rows.Skip(1))
         {
             if (cells.Count < 7 || string.IsNullOrWhiteSpace(cells[0])) continue;
+            // Retreat is now a castle decree. Old sheets must not restore its laboratory entry.
+            if (cells[0] == ScientificUpgrades.WarriorRetreat) continue;
             var resource = AssetDatabase.FindAssets("t:ResourceType")
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Select(path => AssetDatabase.LoadAssetAtPath<ResourceType>(path))
                 .FirstOrDefault(item => item != null && item.name == cells[4]);
             if (resource == null) throw new InvalidDataException("Неизвестный ресурс: " + cells[4]);
+            var previous = table.Find(cells[0]);
+            string Column(string name, string fallback) { int i = rows[0].IndexOf(name); return i >= 0 && i < cells.Count && !string.IsNullOrWhiteSpace(cells[i]) ? cells[i] : fallback; }
             entries.Add(new ScientificUpgradeTable.Entry { id = cells[0], parentId = cells[1], title = cells[2],
                 description = cells[3], costResource = resource,
                 cost = int.Parse(cells[5], CultureInfo.InvariantCulture),
-                effectValue = float.Parse(cells[6], CultureInfo.InvariantCulture) });
+                effectValue = float.Parse(cells[6], CultureInfo.InvariantCulture),
+                groupId = Column("group_id", previous?.GroupId ?? cells[0]),
+                groupTitle = Column("group_title_ru", previous?.groupTitle ?? cells[2]),
+                level = int.Parse(Column("level", (previous?.level ?? 1).ToString()), CultureInfo.InvariantCulture),
+                requiredPurchases = int.Parse(Column("required_purchases", (previous?.requiredPurchases ?? 0).ToString()), CultureInfo.InvariantCulture),
+                icon = previous?.icon });
         }
+        LaboratoryListSetup.ValidateEntries(entries);
         Undo.RecordObject(table, "Import scientific upgrades");
         table.entries = entries;
         EditorUtility.SetDirty(table);

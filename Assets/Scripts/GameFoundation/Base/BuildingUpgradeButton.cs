@@ -1,5 +1,6 @@
 using GameFoundation.Audio;
 using GameFoundation.Localization;
+using GameFoundation.MetaProgression;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -66,8 +67,11 @@ namespace GameFoundation.Base
             var next = BuildingUpgradeService.Next(buildingId);
             if (definition == null || next == null) { BuildingConstructionTooltip.Instance?.Hide(); return; }
             int capacity = BuildingUpgradeService.Capacity(buildingId);
+            string effect = definition.effect == BuildingUpgradeCatalog.UpgradeEffect.PortalAccess
+                ? string.Format(Tr("base.portal.upgrade_effect", "Открывает локацию: {0}\nДоступ сохраняется между походами."), PortalProgression.DestinationsAt(BuildingUpgradeService.Level(buildingId) + 1))
+                : string.Format(Tr("base.upgrade.effect", "Дополнительные места: +{0}\nВместимость: {1} → {2}"), next.additionalCapacity, capacity, capacity + next.additionalCapacity);
             BuildingConstructionTooltip.Instance?.Show(Tr(definition.nameKey, definition.displayName),
-                string.Format(Tr("base.upgrade.effect", "Дополнительные места: +{0}\nВместимость: {1} → {2}"), next.additionalCapacity, capacity, capacity + next.additionalCapacity),
+                effect,
                 Tr("base.upgrade.price", "Цена улучшения"), next.resourceA, next.costA, next.resourceB, next.costB);
         }
         private static string Tr(string key, string fallback)

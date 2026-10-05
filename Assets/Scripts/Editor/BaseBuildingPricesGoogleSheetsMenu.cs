@@ -66,8 +66,8 @@ public static class BaseBuildingPricesGoogleSheetsMenu
                 for (int i = 0; i < building.levels.Count; i++)
                 {
                     var level = building.levels[i];
-                    rows.Add(Row(building.id, building.displayName, level.resourceA.name, level.costA.ToString(), (i + 1).ToString(), level.additionalCapacity.ToString()));
-                    rows.Add(Row(building.id, building.displayName, level.resourceB.name, level.costB.ToString(), (i + 1).ToString(), level.additionalCapacity.ToString()));
+                    if (level.resourceA != null) rows.Add(Row(building.id, building.displayName, level.resourceA.name, level.costA.ToString(), (i + 1).ToString(), level.additionalCapacity.ToString()));
+                    if (level.resourceB != null) rows.Add(Row(building.id, building.displayName, level.resourceB.name, level.costB.ToString(), (i + 1).ToString(), level.additionalCapacity.ToString()));
                 }
         return string.Join("\r\n", rows);
     }
@@ -118,19 +118,22 @@ public static class BaseBuildingPricesGoogleSheetsMenu
             if (pair.Value.Count != 2 || pair.Value[0].resource == pair.Value[1].resource)
                 throw new InvalidDataException("Нужны две разные цены: " + pair.Key);
         foreach (var pair in upgrades)
-            if (pair.Value.Count != 2 || pair.Value[0].resource == pair.Value[1].resource || pair.Value[0].bonus != pair.Value[1].bonus)
-                throw new InvalidDataException("Для улучшения нужны две строки с одинаковым capacity_bonus: " + pair.Key);
+            if (pair.Value.Count < 1 || pair.Value.Count > 2 || pair.Value.Count == 2 &&
+                (pair.Value[0].resource == pair.Value[1].resource || pair.Value[0].bonus != pair.Value[1].bonus))
+                throw new InvalidDataException("Для улучшения нужны одна или две строки с одинаковым capacity_bonus: " + pair.Key);
         if (rows[0].Count > 4)
             foreach (var building in BuildingUpgradeService.Catalog.buildings)
                 for (int i = 1; i <= building.levels.Count; i++)
-                    if (!upgrades.ContainsKey((building.id, i)))
+                    if (!upgrades.ContainsKey((building.id, i)) &&
+                        // Sheets exported before portal progression have no portal rows yet. Keep its Inspector prices.
+                        !(building.effect == BuildingUpgradeCatalog.UpgradeEffect.PortalAccess && !upgrades.Keys.Any(k => k.id == building.id)))
                         throw new InvalidDataException("Нет цены улучшения " + building.id + " / " + i);
         if (validateOnly) return;
         foreach (var pair in upgrades)
         {
             var target = BuildingUpgradeService.Catalog.Find(pair.Key.id).levels[pair.Key.level - 1];
             target.resourceA = pair.Value[0].resource; target.costA = pair.Value[0].amount;
-            target.resourceB = pair.Value[1].resource; target.costB = pair.Value[1].amount;
+            target.resourceB = pair.Value.Count > 1 ? pair.Value[1].resource : null; target.costB = pair.Value.Count > 1 ? pair.Value[1].amount : 0;
             target.additionalCapacity = pair.Value[0].bonus;
         }
         if (upgrades.Count > 0) EditorUtility.SetDirty(BuildingUpgradeService.Catalog);
@@ -170,7 +173,7 @@ public static class BaseBuildingPricesGoogleSheetsMenu
             EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
         }
         BaseBuildingConstruction[] buildings = UnityEngine.Object.FindObjectsByType<BaseBuildingConstruction>(
-            FindObjectsInactive.Include, FindObjectsSortMode.None);
+            FindObjectsInactive.Include, FindObjectsSortMode.None).Where(b => b.gameObject.activeInHierarchy).ToArray();
         if (buildings.Length == 0) throw new InvalidDataException("На сцене Base не найдены строения.");
         if (buildings.GroupBy(Id).Any(group => string.IsNullOrWhiteSpace(group.Key) || group.Count() != 1))
             throw new InvalidDataException("У каждого строения Base должен быть уникальный идентификатор.");

@@ -54,7 +54,7 @@ public static class BuildingUpgradeValidation
         var manager = GlobalResourceManager.Instance;
         Check(manager != null, "resource manager exists");
         Check(BuildingUpgradeService.Capacity("housing") == 3 && !BuildingUpgradeService.CanAdmitResident, "initial civilian limit");
-        foreach (var b in BuildingUpgradeService.Catalog.buildings)
+        foreach (var b in BuildingUpgradeService.Catalog.buildings.Where(b => b.effect == BuildingUpgradeCatalog.UpgradeEffect.Capacity))
         {
             Check(!BuildingUpgradeService.TryUpgrade(b.id), "cannot upgrade before construction");
             var construction = UnityEngine.Object.FindObjectsByType<BaseBuildingConstruction>(FindObjectsInactive.Include, FindObjectsSortMode.None).First(c => c.BuildingId == b.id);
@@ -91,6 +91,7 @@ public static class BuildingUpgradeValidation
         }
         foreach (var button in UnityEngine.Object.FindObjectsByType<BuildingUpgradeButton>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
+            if (new SerializedObject(button).FindProperty("buildingId").stringValue == "portal") continue;
             Check(button.GetComponent<CanvasGroup>().alpha == 0, "max upgrade hidden");
             Check(!button.GetComponent<Button>().interactable, "max upgrade disabled");
         }

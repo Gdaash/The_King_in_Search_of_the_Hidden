@@ -16,6 +16,8 @@ namespace GameFoundation.Base
         [SerializeField] private Transform content;
         [SerializeField] private DayReportRow rowTemplate;
         [SerializeField] private Button closeButton;
+        [Tooltip("Как в итогах побега: показывать имеющиеся войска, даже если их количество не изменилось.")]
+        [SerializeField] private ResourceType[] militaryResources;
 
         private void Awake()
         {
@@ -30,7 +32,7 @@ namespace GameFoundation.Base
         public void Open(DayResourceLedger.Report report)
         {
             if (report == null || panel == null || content == null || rowTemplate == null) return;
-            foreach (Transform child in content) Destroy(child.gameObject);
+            foreach (Transform child in content) { child.gameObject.SetActive(false); Destroy(child.gameObject); }
             if (title != null) title.text = $"Итоги дня {report.day}";
             if (runDuration != null)
             {
@@ -52,11 +54,25 @@ namespace GameFoundation.Base
             foreach (DayResourceLedger.Entry entry in report.entries)
             {
                 types.TryGetValue(entry.resource, out ResourceType type);
+                if (type == null) type = ResourceCatalog.Find(entry.resource);
+                if (!ShouldDisplay(entry, type)) continue;
                 DayReportRow row = Instantiate(rowTemplate, content);
                 row.gameObject.SetActive(true);
                 row.SetData(type, entry);
             }
             panel.SetActive(true);
+            var scroll = content.GetComponentInParent<ScrollRect>();
+            if (scroll != null) scroll.verticalNormalizedPosition = 1f;
+        }
+
+        public bool ShouldDisplay(DayResourceLedger.Entry entry, ResourceType type)
+        {
+            if (entry == null) return false;
+            if (type != null && type.isHumanResource) return true;
+            if (entry.HasChanges) return true;
+            if (type != null && (entry.start > 0 || entry.end > 0) && militaryResources != null)
+                foreach (var military in militaryResources) if (type == military) return true;
+            return false;
         }
 
         public void Close()

@@ -7,6 +7,7 @@ namespace GameFoundation.Base
     [CreateAssetMenu(menuName = "Those UnderHex/Building upgrades")]
     public sealed class BuildingUpgradeCatalog : ScriptableObject
     {
+        public enum UpgradeEffect { Capacity, PortalAccess }
         [Serializable] public sealed class Level
         {
             [Min(0)] public int additionalCapacity = 1;
@@ -20,6 +21,8 @@ namespace GameFoundation.Base
             public string id;
             public string nameKey;
             public string displayName;
+            public bool builtByDefault;
+            public UpgradeEffect effect;
             public ResourceType capacityResource;
             [Min(0)] public int capacityBeforeConstruction;
             [Min(0)] public int constructionCapacity = 3;

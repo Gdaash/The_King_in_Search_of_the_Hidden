@@ -163,7 +163,8 @@ public static class BaseBuildingConstructionSetup
         SetRect(title.rectTransform, new Vector2(24f, -22f), new Vector2(512f, 54f), new Vector2(0f, 1f));
         title.fontStyle = FontStyle.Bold;
         Text description = CreateText("Description", root.transform, font, 18, TextAnchor.UpperLeft);
-        SetRect(description.rectTransform, new Vector2(34f, -82f), new Vector2(492f, 98f), new Vector2(0f, 1f));
+        SetRect(description.rectTransform, new Vector2(34f, -82f), new Vector2(492f, 104f), new Vector2(0f, 1f));
+        description.lineSpacing = 1.5f;
         description.horizontalOverflow = HorizontalWrapMode.Wrap;
         description.verticalOverflow = VerticalWrapMode.Overflow;
         Text price = CreateText("Price", root.transform, font, 19, TextAnchor.MiddleLeft);

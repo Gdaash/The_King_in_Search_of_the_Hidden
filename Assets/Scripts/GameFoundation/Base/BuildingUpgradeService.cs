@@ -12,7 +12,7 @@ namespace GameFoundation.Base
         public static BuildingUpgradeCatalog Catalog => catalog != null ? catalog : catalog = Resources.Load<BuildingUpgradeCatalog>("Base/Building Upgrades");
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void Reset() { catalog = null; purchasing = false; Changed = null; }
-        public static bool IsBuilt(string id) => SaveSlotPrefs.GetInt("foundation.building." + id + ".built", 0) != 0;
+        public static bool IsBuilt(string id) => Catalog?.Find(id)?.builtByDefault == true || SaveSlotPrefs.GetInt("foundation.building." + id + ".built", 0) != 0;
         public static int Level(string id) => Mathf.Clamp(SaveSlotPrefs.GetInt("foundation.building." + id + ".upgradeLevel", 0), 0, Catalog?.Find(id)?.levels.Count ?? 0);
         public static int Capacity(string id) => Catalog?.Find(id)?.Capacity(IsBuilt(id), Level(id)) ?? 0;
         public static int MilitaryCapacity(ResourceType warrior)
@@ -41,10 +41,11 @@ namespace GameFoundation.Base
             var cost = Next(id);
             var manager = GlobalResourceManager.Instance;
             if (purchasing || !IsBuilt(id) || cost == null || manager == null) return false;
-            if (cost.resourceA == null || cost.resourceB == null) return false;
-            return cost.resourceA == cost.resourceB
+            if (cost.costA < 0 || cost.costB < 0 || cost.costA > 0 && cost.resourceA == null || cost.costB > 0 && cost.resourceB == null) return false;
+            return cost.resourceA != null && cost.resourceA == cost.resourceB
                 ? manager.GetResourceAmount(cost.resourceA) >= cost.costA + cost.costB
-                : manager.GetResourceAmount(cost.resourceA) >= cost.costA && manager.GetResourceAmount(cost.resourceB) >= cost.costB;
+                : (cost.costA == 0 || manager.GetResourceAmount(cost.resourceA) >= cost.costA) &&
+                  (cost.costB == 0 || manager.GetResourceAmount(cost.resourceB) >= cost.costB);
         }
         public static bool TryUpgrade(string id)
         {
@@ -54,10 +55,10 @@ namespace GameFoundation.Base
             purchasing = true;
             try
             {
-                if (!manager.TrySpendResource(next.resourceA, next.costA)) return false;
-                if (!manager.TrySpendResource(next.resourceB, next.costB))
+                if (next.costA > 0 && !manager.TrySpendResource(next.resourceA, next.costA)) return false;
+                if (next.costB > 0 && !manager.TrySpendResource(next.resourceB, next.costB))
                 {
-                    manager.AddResource(next.resourceA, next.costA);
+                    if (next.costA > 0) manager.AddResource(next.resourceA, next.costA);
                     return false;
                 }
                 SaveSlotPrefs.SetInt("foundation.building." + id + ".upgradeLevel", Level(id) + 1);

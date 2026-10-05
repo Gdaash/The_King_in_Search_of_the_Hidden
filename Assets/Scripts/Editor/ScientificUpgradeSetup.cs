@@ -13,7 +13,7 @@ internal static class ScientificUpgradeSetup
     private const string ButtonPath = "Assets/Prefabs/UI/SkillButton.prefab";
     private const string ArrowPath = "Assets/Prefabs/UI/ArrowSkills.prefab";
 
-    [MenuItem("Tools/Таблицы/Улучшения/Обновить дерево на сцене")]
+    [MenuItem("Tools/Таблицы/Улучшения/Обновить список лаборатории")]
     private static void RebuildFromMenu() => Run();
 
     private static void Run()
@@ -22,14 +22,9 @@ internal static class ScientificUpgradeSetup
         try
         {
             EnsureTable();
-            RebuildTree();
-            ConfigurePrefab("Assets/Prefabs/Buildings/PortalTower.prefab", root =>
-            {
-                root.name = "PortalTower";
-            });
-            RenamePortalPrefabAndSceneInstance();
+            LaboratoryListSetup.Install();
             AssetDatabase.SaveAssets();
-            Debug.Log("[ScientificUpgradeSetup] Scientific upgrade tree configured.");
+            Debug.Log("[ScientificUpgradeSetup] Scientific upgrade list configured.");
         }
         catch (Exception error) { Debug.LogException(error); }
     }
@@ -46,8 +41,7 @@ internal static class ScientificUpgradeSetup
         AddIfMissing(table, ScientificUpgrades.FastHex, ScientificUpgrades.PortalArrows, "Уменьшение времени на открытие гекса на 50%", "Уменьшает время открытия гекса на 50%.", ore, 5, 0.5f);
         AddIfMissing(table, ScientificUpgrades.SharpAxes, ScientificUpgrades.PortalArrows, "Заточить топоры", "Уменьшает время рубки леса на 20%.", stone, 2, 0.8f);
         AddIfMissing(table, ScientificUpgrades.QuietScouting, ScientificUpgrades.PortalArrows, "Бесшумная разведка", "Уменьшает на 1 количество тревоги при открытии гекса.", ore, 1, 1f);
-        AddIfMissing(table, ScientificUpgrades.WarriorRetreat, ScientificUpgrades.FastHex, "Тактическое отступление", "Воины возвращаются к порталу, когда их здоровье падает до 10%.", ore, 3, 0.1f);
-        AddIfMissing(table, ScientificUpgrades.WarriorBaseRegen, ScientificUpgrades.WarriorRetreat, "Полевой лазарет", "Воины у портала восстанавливают 1% здоровья в секунду.", ore, 5, 0.01f);
+        AddIfMissing(table, ScientificUpgrades.WarriorBaseRegen, "", "Полевой лазарет", "Воины у портала восстанавливают 1% здоровья в секунду.", ore, 5, 0.01f);
         for (int i = 0; i < ScientificUpgrades.Flashlights.Length; i++)
             AddIfMissing(table, ScientificUpgrades.Flashlights[i], i == 0 ? ScientificUpgrades.StrongWalls : ScientificUpgrades.Flashlights[i - 1],
                 "Ячейка кристалла " + (i + 2), "Добавляет ячейку энергии и ещё один луч света. Всего ячеек: " + (i + 2) + ".", ore, (i + 1) * 5, 1f);

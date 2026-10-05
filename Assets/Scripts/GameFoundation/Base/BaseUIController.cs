@@ -43,7 +43,7 @@ namespace GameFoundation.Base
             Bind("Base Panel/Settings", OpenSettings);
             Bind("Global Map/Search Portals", SearchPortals);
             Bind("Global Map/Close", CloseMap);
-            Bind("Laboratory Popup/Close", CloseLaboratory);
+            Bind("Laboratory Popup/Window/Close", CloseLaboratory);
             Bind("Warehouse Popup/Close", CloseWarehouse);
             Bind("Warehouse Popup/Buy Cart", BuyCart);
             Bind("Housing Popup/Close", CloseHousing);
@@ -154,7 +154,7 @@ namespace GameFoundation.Base
         {
             var day = DayCycleService.Instance;
             if (day == null) return;
-            if (!site.active) { Message(day.Activate(site) ? "Портал активирован" : "Недостаточно магической руды"); return; }
+            if (!PortalProgression.IsUnlocked(DayCycleService.GetPortalLocation(site.locationId))) { Message("Улучшите портал для доступа к этой локации"); return; }
             if (!day.Enter(site)) { Message("Сегодня уже был поход"); return; }
             FindFirstObjectByType<RunSceneRouter>()?.EnterRun();
         }

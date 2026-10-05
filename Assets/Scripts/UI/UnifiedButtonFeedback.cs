@@ -11,6 +11,8 @@ namespace GameFoundation.UI
     {
         [SerializeField] private ButtonVisualTheme theme;
         [SerializeField] private bool animateScale = true;
+        [Tooltip("Optional visual container to animate without scaling nested, independently clickable buttons.")]
+        [SerializeField] private RectTransform scaleTarget;
         [SerializeField] private bool useButtonPalette;
         [SerializeField, Min(1f)] private float hoverScaleMultiplier = 1f;
 
@@ -22,6 +24,8 @@ namespace GameFoundation.UI
         private bool hovered;
         private bool focused;
         private bool pressed;
+        private Transform animatedTransform;
+        private PointerEventData hoverPointer;
 
         public float ExternalScaleMultiplier { get; set; } = 1f;
 
@@ -30,15 +34,27 @@ namespace GameFoundation.UI
             button = GetComponent<Button>();
             graphic = button.targetGraphic;
             if (graphic != null) outline = graphic.GetComponent<Outline>();
-            originalScale = transform.localScale;
+            animatedTransform = scaleTarget != null ? scaleTarget : transform;
+            originalScale = animatedTransform.localScale;
             if (graphic != null) originalColor = graphic.color;
         }
 
         private void Update()
         {
             if (button == null || theme == null) return;
+            // uGUI sends enter/exit to ancestors too. The shared parent does not get
+            // another enter/exit when the pointer moves between its child buttons.
+            // Keep reading the event's current hit so those transitions stay correct.
+            bool overChildButton = false;
+            if (hoverPointer != null)
+            {
+                var hit = hoverPointer.pointerCurrentRaycast.gameObject;
+                var nearest = hit != null ? hit.GetComponentInParent<Button>() : null;
+                hovered = nearest == button;
+                overChildButton = nearest != null && nearest != button && nearest.transform.IsChildOf(transform);
+            }
             bool enabledButton = button.IsActive() && button.interactable;
-            bool highlighted = enabledButton && (hovered || focused);
+            bool highlighted = enabledButton && !overChildButton && (hovered || focused);
             float scale = pressed && enabledButton ? theme.pressedScale :
                 highlighted ? theme.hoverScale * hoverScaleMultiplier : 1f;
             float step = 1f - Mathf.Exp(-theme.transitionSpeed * Time.unscaledDeltaTime);
@@ -46,8 +62,8 @@ namespace GameFoundation.UI
             if (animateScale)
             {
                 var targetScale = originalScale * scale * Mathf.Max(0.01f, ExternalScaleMultiplier);
-                if ((transform.localScale - targetScale).sqrMagnitude > 0.000001f)
-                    transform.localScale = Vector3.Lerp(transform.localScale, targetScale, step);
+                if ((animatedTransform.localScale - targetScale).sqrMagnitude > 0.000001f)
+                    animatedTransform.localScale = Vector3.Lerp(animatedTransform.localScale, targetScale, step);
             }
 
             if (graphic == null) return;
@@ -79,8 +95,8 @@ namespace GameFoundation.UI
             }
         }
 
-        public void OnPointerEnter(PointerEventData eventData) => hovered = true;
-        public void OnPointerExit(PointerEventData eventData) { hovered = false; pressed = false; }
+        public void OnPointerEnter(PointerEventData eventData) { hoverPointer = eventData; hovered = true; }
+        public void OnPointerExit(PointerEventData eventData) { hoverPointer = null; hovered = false; pressed = false; }
         public void OnPointerDown(PointerEventData eventData) => pressed = button != null && button.interactable;
         public void OnPointerUp(PointerEventData eventData) => pressed = false;
         public void OnSelect(BaseEventData eventData) => focused = true;
@@ -89,8 +105,9 @@ namespace GameFoundation.UI
         private void OnDisable()
         {
             hovered = focused = pressed = false;
+            hoverPointer = null;
             ExternalScaleMultiplier = 1f;
-            if (animateScale) transform.localScale = originalScale;
+            if (animateScale && animatedTransform != null) animatedTransform.localScale = originalScale;
             if (graphic != null) graphic.color = originalColor;
             if (outline != null)
             {

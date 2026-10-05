@@ -14,9 +14,7 @@ public static class CrystalPowerUpgradeSetup
         var table = Resources.Load<ScientificUpgradeTable>("ScientificUpgradeTable");
         EnsureDefinitions(table);
         EditorUtility.SetDirty(table); AssetDatabase.SaveAssetIfDirty(table);
-        var tree = PrefabUtility.LoadPrefabContents(TreePath);
-        try { AddBranch(tree, table); PrefabUtility.SaveAsPrefabAsset(tree, TreePath); }
-        finally { PrefabUtility.UnloadPrefabContents(tree); }
+        LaboratoryListSetup.Install();
         var localization = Resources.Load<LocalizationTable>("Localization/Base Localization");
         for (int i = 0; i < ScientificUpgrades.CrystalPower.Length; i++)
         {
@@ -26,7 +24,7 @@ public static class CrystalPowerUpgradeSetup
                 "Adds 20% of base crystal charging power. Power is shared equally by cells that are currently recharging. Bonuses add together; five upgrades give +100% power.");
         }
         EditorUtility.SetDirty(localization); AssetDatabase.SaveAssetIfDirty(localization);
-        Debug.Log("Installed five crystal charging power upgrades and their shared laboratory prefab branch.");
+        Debug.Log("Installed five crystal charging power upgrades in the shared laboratory list.");
     }
     public static void EnsureDefinitions(ScientificUpgradeTable table)
     {

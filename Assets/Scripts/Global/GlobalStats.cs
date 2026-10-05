@@ -66,6 +66,28 @@ public class GlobalStats : ScriptableObject
     [SerializeField] private bool applyQuietScouting;
 
     private GlobalStats ScientificSource => scientificProgressStats != null ? scientificProgressStats : this;
+    public ScientificUpgradeTable UpgradeTable => ScientificSource.scientificUpgradeTable;
+    public int PurchasedUpgradeCount => UpgradeTable == null ? 0 :
+        UpgradeTable.entries.Where(e => e != null && HasUpgrade(e.id)).Select(e => e.id).Distinct().Count();
+
+    public bool IsUpgradeUnlocked(ScientificUpgradeTable.Entry entry)
+    {
+        if (entry == null || UpgradeTable == null || PurchasedUpgradeCount < entry.requiredPurchases) return false;
+        return UpgradeTable.entries.All(e => e.GroupId != entry.GroupId || e.level >= entry.level || HasUpgrade(e.id));
+    }
+
+    public bool CanPurchaseUpgrade(ScientificUpgradeTable.Entry entry) => entry != null && !HasUpgrade(entry.id) &&
+        IsUpgradeUnlocked(entry) && (entry.cost <= 0 || (entry.costResource != null && GlobalResourceManager.Instance != null &&
+        GlobalResourceManager.Instance.GetResourceAmount(entry.costResource) >= entry.cost));
+
+    public bool TryPurchaseUpgrade(string id)
+    {
+        var entry = FindUpgradeDefinition(id);
+        if (!CanPurchaseUpgrade(entry)) return false;
+        if (entry.cost > 0 && !GlobalResourceManager.Instance.TrySpendResource(entry.costResource, entry.cost)) return false;
+        UnlockUpgrade(id);
+        return true;
+    }
     public ScientificUpgradeTable.Entry FindUpgradeDefinition(string id) =>
         ScientificSource.scientificUpgradeTable != null ? ScientificSource.scientificUpgradeTable.Find(id) : null;
     public bool CanAttack => !requiresPortalArrows || HasUpgrade(ScientificUpgrades.PortalArrows);
