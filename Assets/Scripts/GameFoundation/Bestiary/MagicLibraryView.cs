@@ -77,7 +77,7 @@ namespace GameFoundation.Bestiary
             int discovered = 0;
             foreach (string id in BestiaryService.EncounteredIds)
             {
-                UnitDescriptionDefinition definition = enemyDescriptions != null ? enemyDescriptions.FindPrefabName(id) : null;
+                UnitDescriptionDefinition definition = enemyDescriptions != null ? enemyDescriptions.FindEnemyId(id) : null;
                 if (definition == null || entryTemplate == null || entriesRoot == null) continue;
                 BestiaryEntryView entry = Instantiate(entryTemplate, entriesRoot);
                 entry.name = "Discovered " + definition.Title;

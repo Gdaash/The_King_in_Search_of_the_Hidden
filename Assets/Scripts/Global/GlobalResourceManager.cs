@@ -61,7 +61,7 @@ public class GlobalResourceManager : MonoBehaviour
 
     private int GetSavedAmount(ResourceType type)
     {
-        return PlayerPrefs.GetInt(saveKeyPrefix + type.name, GetInitialAmount(type));
+        return PlayerPrefs.GetInt(saveKeyPrefix + type.Id, GetInitialAmount(type));
     }
 
     public void SetResourceAmount(ResourceType type, int amount)
@@ -70,7 +70,7 @@ public class GlobalResourceManager : MonoBehaviour
         amount = Mathf.Max(0, amount);
         if (Application.isPlaying && Instance == this)
             DayResourceLedger.RecordResourceChange(type, amount - GetResourceAmount(type));
-        PlayerPrefs.SetInt(saveKeyPrefix + type.name, amount);
+        PlayerPrefs.SetInt(saveKeyPrefix + type.Id, amount);
         PlayerPrefs.Save();
         if (Application.isPlaying && Instance == this)
         {
@@ -185,14 +185,14 @@ public class GlobalResourceManager : MonoBehaviour
     {
         amount = Mathf.Max(0, amount);
         _resourceAmounts[type] = amount;
-        PlayerPrefs.SetInt(saveKeyPrefix + type.name, amount);
+        PlayerPrefs.SetInt(saveKeyPrefix + type.Id, amount);
         OnResourceChanged?.Invoke(type, amount);
     }
 
     private void SaveResource(ResourceType type)
     {
         if (type == null) return;
-        string key = saveKeyPrefix + type.name; 
+        string key = saveKeyPrefix + type.Id;
         PlayerPrefs.SetInt(key, _resourceAmounts[type]);
         PlayerPrefs.Save();
     }
@@ -203,7 +203,7 @@ public class GlobalResourceManager : MonoBehaviour
         
         foreach (var res in keys)
         {
-            string key = saveKeyPrefix + res.name;
+            string key = saveKeyPrefix + res.Id;
             
             _resourceAmounts[res] = GetSavedAmount(res);
             if (!PlayerPrefs.HasKey(key))
@@ -265,7 +265,7 @@ public class GlobalResourceManager : MonoBehaviour
         foreach (var res in availableResources)
         {
             if (res == null) continue;
-            string key = saveKeyPrefix + res.name;
+            string key = saveKeyPrefix + res.Id;
             PlayerPrefs.DeleteKey(key);
             if (Application.isPlaying && Instance == this)
             {

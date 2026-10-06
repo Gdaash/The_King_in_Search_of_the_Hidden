@@ -48,7 +48,7 @@ namespace GameFoundation.Base
             var types = new Dictionary<string, ResourceType>();
             if (GlobalResourceManager.Instance?.AvailableResources != null)
                 foreach (ResourceType type in GlobalResourceManager.Instance.AvailableResources)
-                    if (type != null) types[type.name] = type;
+                    if (type != null) types[type.Id] = type;
 
             report.entries.Sort((a, b) => string.Compare(a.resource, b.resource, StringComparison.CurrentCultureIgnoreCase));
             foreach (DayResourceLedger.Entry entry in report.entries)

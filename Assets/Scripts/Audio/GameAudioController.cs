@@ -40,7 +40,7 @@ namespace GameFoundation.Audio
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            if (library == null) library = Resources.Load<GameAudioLibrary>("GameAudioLibrary");
+            if (library == null && ProjectReferences.Instance != null) library = ProjectReferences.Instance.audioLibrary;
             musicSource = CreateSource("Music", 0f, true);
             uiSource = CreateSource("UI SFX", 0f, false);
             for (int i = 0; i < worldVoiceCount; i++) worldSources.Add(CreateSource($"World SFX {i + 1}", 0.68f, false));
@@ -106,19 +106,6 @@ namespace GameFoundation.Audio
             resourceAmounts.Clear();
             nextDiscoveryTime = 0f;
             PlaySceneMusic(scene.name);
-            StartCoroutine(DisableLegacyMusicAtEndOfFrame());
-        }
-
-        private IEnumerator DisableLegacyMusicAtEndOfFrame()
-        {
-            yield return null;
-            foreach (AudioSource source in FindObjectsByType<AudioSource>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-            {
-                if (source == musicSource || source.transform.IsChildOf(transform)) continue;
-                if (!source.name.Equals("BackgroundMusic", System.StringComparison.OrdinalIgnoreCase)) continue;
-                source.Stop();
-                source.enabled = false;
-            }
         }
 
         private void PlaySceneMusic(string sceneName)

@@ -61,7 +61,7 @@ namespace GameFoundation.MetaProgression
         }
 
         public static IReadOnlyList<PortalLocationDefinition> GetPortalLocations() =>
-            Resources.LoadAll<PortalLocationDefinition>("PortalLocations")
+            (ProjectReferences.Instance != null ? ProjectReferences.Instance.portalLocations : Array.Empty<PortalLocationDefinition>())
                 .Where(item => item != null && !string.IsNullOrWhiteSpace(item.LocationId))
                 .OrderBy(item => item.Difficulty)
                 .ToArray();

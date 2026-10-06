@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 public static class ResourcePanelPsdSetup
 {
-    const string Art = "Assets/Art/ResourcePanel/";
+    const string Art = "Assets/Sprites/UI/ResourcePanel/";
     const string Panel = "Assets/Prefabs/UI/ResourcesUI.prefab";
     static readonly string[] Names = { "Crown", "Berry", "Human", "Stone", "Wood", "Cart", "MagicOre", "Sword", "Bow", "IronOre" };
 

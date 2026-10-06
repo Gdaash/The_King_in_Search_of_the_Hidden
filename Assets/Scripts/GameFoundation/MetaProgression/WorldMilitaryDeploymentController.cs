@@ -32,11 +32,6 @@ namespace GameFoundation.MetaProgression
 
         private void Awake()
         {
-            if (portal == null)
-            {
-                var tower = GameObject.Find("PortalTower");
-                if (tower != null) portal = tower.transform;
-            }
             Bind(swordsmen);
             Bind(archers);
         }

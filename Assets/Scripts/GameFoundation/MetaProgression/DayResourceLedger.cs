@@ -105,7 +105,7 @@ namespace GameFoundation.MetaProgression
             bool atShelter = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Base";
             if (!atShelter && (_state == null || !_state.runActive)) return;
             EnsureDay(DayCycleService.Instance != null ? DayCycleService.Instance.Day : 1);
-            Entry entry = GetEntry(type.name);
+            Entry entry = GetEntry(type.Id);
             if (_state.runActive)
             {
                 // The run's net result is still calculated by EndRun, including deployed troops.
@@ -166,7 +166,7 @@ namespace GameFoundation.MetaProgression
         {
             var result = new Dictionary<string, int>();
             foreach (var pair in CaptureOwnedResources())
-                result[pair.Key.name] = pair.Value;
+                result[pair.Key.Id] = pair.Value;
             return result;
         }
 

@@ -109,11 +109,6 @@ namespace GameFoundation.MetaProgression
 
         private void ResolvePortalTowerHealth()
         {
-            if (portalTowerHealth == null)
-            {
-                GameObject tower = GameObject.Find("PortalTower");
-                if (tower != null) portalTowerHealth = tower.GetComponent<Health>() ?? tower.GetComponentInChildren<Health>(true);
-            }
             if (portalTowerHealth == null) return;
             _portalHealthNormalized = portalTowerHealth.NormalizedHealth;
             portalTowerHealth.OnHealthChanged.RemoveListener(OnPortalHealthChanged);

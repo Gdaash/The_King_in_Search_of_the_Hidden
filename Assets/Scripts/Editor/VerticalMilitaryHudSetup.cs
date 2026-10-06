@@ -132,7 +132,7 @@ public static class VerticalMilitaryHudSetup
                 var go = iconTransform != null ? iconTransform.gameObject : new GameObject("Gear Icon", typeof(RectTransform), typeof(UnityEngine.UI.Image));
                 go.transform.SetParent(button.transform, false);
                 var image = go.GetComponent<UnityEngine.UI.Image>();
-                image.sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Evolution adventure/Sprites/UI/Sprites/IconSettings.png");
+                image.sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/UI/Evolution/IconSettings.png");
                 ResourceIconSizing.Apply(image, image.sprite); image.raycastTarget = false;
                 image.rectTransform.anchorMin = image.rectTransform.anchorMax = image.rectTransform.pivot = new Vector2(.5f,.5f);
                 image.rectTransform.anchoredPosition = Vector2.zero;

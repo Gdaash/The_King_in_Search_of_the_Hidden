@@ -31,8 +31,8 @@ public static class BaseBuildingButtonLayoutSetup
         Record(image);Record(b);
     }
     public static void Configure(GameObject root) {
-        var background=AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Evolution adventure/Sprites/UI/Sprites/Popups/Sprites/Shared/PopupButton9Slice.png");
-        var icon=AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/BaseScene/Construction Icon.png");
+        var background=AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/UI/Evolution/Popups/Sprites/Shared/PopupButton9Slice.png");
+        var icon=AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/UI/Icons/Construction Icon.png");
         foreach(var view in root.GetComponentsInChildren<WorldBuildingButton>(true)) {
             var so=new SerializedObject(view);so.FindProperty("constructionPixelPosition").vector2Value=Position(view.name);
             so.FindProperty("buttonSize").vector2Value=new Vector2(236,64);

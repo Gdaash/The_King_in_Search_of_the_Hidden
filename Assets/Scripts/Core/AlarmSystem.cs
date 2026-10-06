@@ -653,7 +653,7 @@ public class AlarmSystem : MonoBehaviour
         for (int index = panel.childCount - 1; index >= 0; index--)
         {
             Transform child = panel.GetChild(index);
-            if (child.name.StartsWith("Threshold ")) Destroy(child.gameObject);
+            if (child.TryGetComponent<AlarmThresholdMarker>(out var mark) && mark.owner == this) Destroy(child.gameObject);
         }
 
         foreach (AlarmThreshold threshold in thresholds)
@@ -661,6 +661,7 @@ public class AlarmSystem : MonoBehaviour
             if (threshold == null) continue;
 
             GameObject marker = new($"Threshold {threshold.alarmValue:0}", typeof(RectTransform));
+            marker.AddComponent<AlarmThresholdMarker>().owner = this;
             marker.transform.SetParent(panel, false);
             RectTransform markerRect = marker.GetComponent<RectTransform>();
             float normalizedValue = Mathf.Clamp01(threshold.alarmValue / maximumAlarm);

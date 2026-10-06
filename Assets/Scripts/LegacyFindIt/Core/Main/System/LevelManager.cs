@@ -31,10 +31,6 @@ namespace DeskCat.FindIt.Scripts.Core.Main.System
         private HiddenScrollView CurrentScrollView;
         public UnityEvent UIClickEvent;
 
-        [Header("Sound Effect")] 
-        public AudioSource FoundFx;
-        public AudioSource ItemFx;
-
         [Header("Game End")] 
         public GameObject GameEndUI;
         public Button GameEndBtn;
@@ -59,12 +55,6 @@ namespace DeskCat.FindIt.Scripts.Core.Main.System
             _levelChange = levelChange;
         }
         
-        public static void PlayItemFx(AudioClip clip)
-        {
-            LevelManagerInstance.ItemFx.clip = clip;
-            LevelManagerInstance.ItemFx.Play();
-        }
-
         private void Start()
         {
             if (LevelManagerInstance == null)
@@ -183,9 +173,6 @@ namespace DeskCat.FindIt.Scripts.Core.Main.System
 
         private void FoundObjAction(Guid guid)
         {
-            if (TargetObjDic[guid].PlaySoundWhenFound)
-                FoundFx.Play();
-
             TargetObjDic.Remove(guid);
             CurrentScrollView.UpdateScrollView(TargetObjDic, TargetImagePrefab, TargetClick, RegionToggle, UIClick);
             DetectGameEnd();

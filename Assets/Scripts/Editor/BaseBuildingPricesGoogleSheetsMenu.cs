@@ -66,8 +66,8 @@ public static class BaseBuildingPricesGoogleSheetsMenu
                 for (int i = 0; i < building.levels.Count; i++)
                 {
                     var level = building.levels[i];
-                    if (level.resourceA != null) rows.Add(Row(building.id, building.displayName, level.resourceA.name, level.costA.ToString(), (i + 1).ToString(), level.additionalCapacity.ToString()));
-                    if (level.resourceB != null) rows.Add(Row(building.id, building.displayName, level.resourceB.name, level.costB.ToString(), (i + 1).ToString(), level.additionalCapacity.ToString()));
+                    if (level.resourceA != null) rows.Add(Row(building.id, building.displayName, level.resourceA.Id, level.costA.ToString(), (i + 1).ToString(), level.additionalCapacity.ToString()));
+                    if (level.resourceB != null) rows.Add(Row(building.id, building.displayName, level.resourceB.Id, level.costB.ToString(), (i + 1).ToString(), level.additionalCapacity.ToString()));
                 }
         return string.Join("\r\n", rows);
     }
@@ -186,9 +186,9 @@ public static class BaseBuildingPricesGoogleSheetsMenu
     private static ResourceType FindResource(string name) => AssetDatabase.FindAssets("t:ResourceType")
         .Select(AssetDatabase.GUIDToAssetPath)
         .Select(AssetDatabase.LoadAssetAtPath<ResourceType>)
-        .FirstOrDefault(resource => resource != null && string.Equals(resource.name, name, StringComparison.OrdinalIgnoreCase));
+        .FirstOrDefault(resource => resource != null && string.Equals(resource.Id, name, StringComparison.OrdinalIgnoreCase));
     private static void AddRow(List<string> rows, string id, string name, ResourceType resource, int amount) =>
-        rows.Add(Row(id, name, resource != null ? resource.name : "", amount.ToString(CultureInfo.InvariantCulture), "0", ""));
+        rows.Add(Row(id, name, resource != null ? resource.Id : "", amount.ToString(CultureInfo.InvariantCulture), "0", ""));
     private static string Row(params string[] cells) => string.Join(",", cells.Select(cell => "\"" + (cell ?? "").Replace("\"", "\"\"") + "\""));
     private static string ToTabSeparated(string csv) => string.Join("\n", Parse(csv).Select(row => string.Join("\t", row)));
 

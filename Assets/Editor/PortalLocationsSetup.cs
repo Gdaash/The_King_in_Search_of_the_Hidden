@@ -87,7 +87,7 @@ public static class PortalLocationsSetup
         GameObject root = PrefabUtility.LoadPrefabContents(MapPath);
         try
         {
-            Sprite portalSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Builds/PortalAnimation/PortalFrame_11.png");
+            Sprite portalSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/World/Buildings/PortalAnimation/PortalFrame_11.png");
             Transform sites = root.transform.Find("Portal Sites");
             Vector2[] positions =
             {
@@ -136,7 +136,7 @@ public static class PortalLocationsSetup
     {
         Font font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Fonts/Pixellari Cyrillic/Pixellari-Cyrillic.ttf");
         Sprite backgroundSprite = FindSprite("PopupPanel9Slice");
-        Sprite skull = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Ui/DangerSkull.png");
+        Sprite skull = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/UI/Common/DangerSkull.png");
         GameObject root = NewRect("Portal Location Tooltip", null, Vector2.zero, new Vector2(620f, 370f));
         Image background = root.AddComponent<Image>();
         background.sprite = backgroundSprite;

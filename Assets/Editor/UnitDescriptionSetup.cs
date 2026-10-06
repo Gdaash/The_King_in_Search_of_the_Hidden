@@ -16,7 +16,7 @@ public static class UnitDescriptionSetup
 {
     public const string Folder = "Assets/Prefabs/UI/Unit Details";
     public const string Data = "Assets/Resources/UI/Unit Details";
-    public const string Art = "Assets/Sprites/Ui/Unit Stats";
+    public const string Art = "Assets/Sprites/UI/UnitStats";
     public const string CardPath = Folder + "/Unit Description Card.prefab";
     public const string TooltipPath = Folder + "/Unit Description Tooltip.prefab";
     private static readonly Color Ink = new(.94f, .91f, .82f);
@@ -312,7 +312,7 @@ public static class UnitDescriptionSetup
         group.anchorMin=new Vector2(1,0); group.anchorMax=Vector2.one; group.pivot=new Vector2(1,.5f); group.sizeDelta=new Vector2(384,0); group.anchoredPosition=new Vector2(-12,0);
         var so=new SerializedObject(row);so.FindProperty("defenseGroup").objectReferenceValue=group;
         var cells=so.FindProperty("defenseCells");cells.arraySize=4;
-        string[] sprites={Art+"/Sword.png",Art+"/Fire.png","Assets/Sprites/Evolution adventure/Sprites/CharactersAndItems/IceState.png",Art+"/Magic.png"};
+        string[] sprites={Art+"/Sword.png",Art+"/Fire.png","Assets/Sprites/Units/Evolution/IceState.png",Art+"/Magic.png"};
         for(int i=0;i<4;i++)
         {
             string name=((DamageType)i).ToString();var cell=group.Find(name) as RectTransform;

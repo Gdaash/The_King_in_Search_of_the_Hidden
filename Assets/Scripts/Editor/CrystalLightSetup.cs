@@ -12,7 +12,7 @@ public static class CrystalLightSetup
 {
  static string HudPath="Assets/Prefabs/UI/Screens/World Screen HUD.prefab";
  static string PanelPath="Assets/Prefabs/UI/HUD/Crystal Charge Panel.prefab";
- static string SpritePath="Assets/Sprites/Evolution adventure/Sprites/UI/Sprites/Popups/Sprites/Shared/";
+ static string SpritePath="Assets/Sprites/UI/Evolution/Popups/Sprites/Shared/";
  static void Ref(Object target,string key,Object value){var s=new SerializedObject(target);s.FindProperty(key).objectReferenceValue=value;s.ApplyModifiedPropertiesWithoutUndo();}
  static RectTransform Rect(string name,Transform parent,Vector2 size,Vector2 position,Vector2 anchor,Vector2 pivot){var g=new GameObject(name,typeof(RectTransform));g.transform.SetParent(parent,false);var r=(RectTransform)g.transform;r.anchorMin=r.anchorMax=anchor;r.pivot=pivot;r.sizeDelta=size;r.anchoredPosition=position;return r;}
  static Image Image(RectTransform r,Sprite sprite,Color color){var im=r.gameObject.AddComponent<Image>();im.sprite=sprite;im.type=sprite!=null?UnityEngine.UI.Image.Type.Sliced:UnityEngine.UI.Image.Type.Simple;im.color=color;im.raycastTarget=false;return im;}

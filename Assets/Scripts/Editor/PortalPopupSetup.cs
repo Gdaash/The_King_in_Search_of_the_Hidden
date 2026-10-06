@@ -19,8 +19,8 @@ public static class PortalPopupSetup
     private const string UpgradePath = "Assets/Prefabs/Base/Building Upgrade Button.prefab";
     private static readonly Color Ink = new(.94f, .91f, .82f), Gold = new(.92f, .83f, .60f), Muted = new(.66f, .61f, .72f);
     private static Font Font => AssetDatabase.LoadAssetAtPath<Font>("Assets/Fonts/Pixellari Cyrillic/Pixellari-Cyrillic.ttf");
-    private static Sprite Panel => AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Evolution adventure/Sprites/UI/Sprites/Popups/Sprites/Shared/PopupPanel9Slice.png");
-    private static Sprite Lock => AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Evolution adventure/Sprites/UI/Sprites/Gameplay/Sprites/ConstructionPointLock.png");
+    private static Sprite Panel => AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/UI/Evolution/Popups/Sprites/Shared/PopupPanel9Slice.png");
+    private static Sprite Lock => AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/UI/Evolution/Gameplay/Sprites/ConstructionPointLock.png");
 
     public static void Install()
     {
@@ -127,7 +127,7 @@ public static class PortalPopupSetup
         view.title = Text("Location Name", detail, "Лес", 672, 46, 0, 236, 32); view.title.color = Gold;
         view.description = Text("Description", detail, "Базовая лесная локация.", 672, 88, 0, 158, 24, TextAnchor.UpperLeft); view.description.lineSpacing = 1.1f;
         var danger = Text("Danger Label", detail, "Опасность", 210, 50, -231, 81, 22); Translate(danger, "base.portal.tooltip.danger");
-        var skull = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Ui/DangerSkull.png");
+        var skull = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/UI/Common/DangerSkull.png");
         view.dangerSkulls = Enumerable.Range(0, 5).Select(i => Icon("Danger Skull " + (i + 1), detail, skull, -75 + i * (skull.rect.width * 2 + 12), 81)).ToArray();
         Image(Rect("Resources Divider", detail, 672, 2, 0, 47), new(.30f, .25f, .35f));
         var resources = Text("Resources Caption", detail, "РЕСУРСЫ ЛОКАЦИИ", 672, 30, 0, 21, 20); resources.color = Muted; Translate(resources, "base.portal.resources");

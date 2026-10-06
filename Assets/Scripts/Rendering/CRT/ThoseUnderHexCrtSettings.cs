@@ -12,7 +12,7 @@ public sealed class ThoseUnderHexCrtSettings : ScriptableObject
     {
         get
         {
-            ThoseUnderHexCrtSettings settings = Resources.Load<ThoseUnderHexCrtSettings>("CRT/ThoseUnderHex CRT Settings");
+            ThoseUnderHexCrtSettings settings = ProjectReferences.Instance != null ? ProjectReferences.Instance.crtSettings : null;
             return settings == null || settings.enabledEffect;
         }
     }

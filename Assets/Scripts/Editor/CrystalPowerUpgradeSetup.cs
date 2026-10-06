@@ -47,7 +47,7 @@ public static class CrystalPowerUpgradeSetup
         var arrowSource = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/UI/ArrowSkills.prefab");
         var stats = Resources.Load<GlobalStats>("Global/globalHexStats");
         var parent = tree.GetComponentsInChildren<SkillButton>(true).Single(s => s.skillID == ScientificUpgrades.PortalArrows);
-        var iconSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Evolution adventure/Sprites/UI/Sprites/Gameplay/Sprites/NewUi/iconEnergy.png");
+        var iconSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/UI/Evolution/Gameplay/Sprites/NewUi/iconEnergy.png");
         for (int i = 0; i < ScientificUpgrades.CrystalPower.Length; i++)
         {
             string id = ScientificUpgrades.CrystalPower[i];

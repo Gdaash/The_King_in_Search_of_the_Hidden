@@ -24,7 +24,7 @@ namespace GameFoundation.Bestiary
         public static IReadOnlyList<string> EncounteredIds => Data.encountered;
 
         public static bool HasEncountered(GameObject enemyPrefab) =>
-            enemyPrefab != null && Data.encountered.Contains(enemyPrefab.name);
+            enemyPrefab != null && enemyPrefab.TryGetComponent<EnemyIdentity>(out var identity) && Data.encountered.Contains(identity.Id);
 
         /// <summary>Records only combat enemies. Calling it more than once for a spawn is safe.</summary>
         public static void RegisterSpawn(GameObject enemyPrefab, GameObject instance)
@@ -32,7 +32,12 @@ namespace GameFoundation.Bestiary
             if (enemyPrefab == null || instance == null || !instance.CompareTag("Enemy1") || instance.GetComponent<Health>() == null)
                 return;
 
-            string id = enemyPrefab.name;
+            if (!enemyPrefab.TryGetComponent<EnemyIdentity>(out var identity) || string.IsNullOrEmpty(identity.Id))
+            {
+                Debug.LogError("Enemy prefab requires a persistent EnemyIdentity.", enemyPrefab);
+                return;
+            }
+            string id = identity.Id;
             if (Data.encountered.Contains(id))
                 return;
 

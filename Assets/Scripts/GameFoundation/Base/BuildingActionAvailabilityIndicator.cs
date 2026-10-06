@@ -29,7 +29,6 @@ namespace GameFoundation.Base
         {
             if (actionType == ActionType.LaboratoryUpgrade)
             {
-                if (laboratoryStats == null) laboratoryStats = Resources.Load<GlobalStats>("Global/globalHexStats");
                 if (laboratoryStats != null) laboratoryStats.OnStatsUpdated += Refresh;
             }
             GlobalResourceManager.OnResourceChanged += OnResourceChanged;

@@ -76,7 +76,7 @@ namespace GameFoundation.MetaProgression
         {
             SetIcon(resource != null ? resource.resourceIcon : null, MilitaryExperienceService.HealthPercent(profile), MilitaryExperienceService.Stars(profile));
             storedProfile = profile;
-            description = descriptions != null && resource != null ? descriptions.Find(resource.name) : null;
+            description = descriptions != null && resource != null ? descriptions.Find(resource) : null;
             if (icon != null && resource != null) ResourceIconSizing.Apply(icon, resource.resourceIcon);
         }
 

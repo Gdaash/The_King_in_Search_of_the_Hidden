@@ -70,7 +70,7 @@ public static class CrystalHexHoverSetup
             var cr = (RectTransform)cg.transform; cr.sizeDelta = new Vector2(288, 40);
             var canvas = cg.GetComponent<Canvas>(); canvas.renderMode = RenderMode.WorldSpace; canvas.sortingLayerName = "OverLight"; canvas.sortingOrder = 121;
             var group = cg.AddComponent<CanvasGroup>(); group.alpha = 0; group.blocksRaycasts = false; group.interactable = false;
-            var bg = cg.AddComponent<Image>(); bg.sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Evolution adventure/Sprites/UI/Sprites/Popups/Sprites/Shared/PopupPanel9Slice.png");
+            var bg = cg.AddComponent<Image>(); bg.sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/UI/Evolution/Popups/Sprites/Shared/PopupPanel9Slice.png");
             bg.type = Image.Type.Sliced; bg.color = new Color(1, 1, 1, .94f); bg.raycastTarget = false;
             var tg = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI)); tg.transform.SetParent(cg.transform, false);
             var tr = (RectTransform)tg.transform; tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one; tr.sizeDelta = Vector2.zero;

@@ -8,7 +8,7 @@ using UnityEngine.UI;
 public static class BuildingActionAvailabilityIndicatorSetup
 {
     private const string HudPath = "Assets/Prefabs/UI/Screens/Base Screen HUD.prefab";
-    private const string IconPath = "Assets/Sprites/UI/ActionAvailableIndicator.png";
+    private const string IconPath = "Assets/Sprites/UI/Common/ActionAvailableIndicator.png";
     private const string PrefabPath = "Assets/Prefabs/UI/Action Available Indicator.prefab";
     private const string ExclamationPrefabPath = "Assets/Prefabs/UI/Action Available Exclamation.prefab";
 

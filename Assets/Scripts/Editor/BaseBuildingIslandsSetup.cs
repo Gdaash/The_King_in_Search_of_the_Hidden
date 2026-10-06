@@ -18,12 +18,12 @@ public static class BaseBuildingIslandsSetup
         "Housing"=>new(-500 ,-175),"Portal"=>new(-60 ,-175),"Warehouse"=>new(380 ,-175),
         "Refugees"=>new(-720 ,-430),"Square"=>new(-280 ,-430),"Blacksmith"=>new(160 ,-430),"Laboratory"=>new(550 ,-430),_=>Vector2.zero};
     static string Art(string name) => name switch {
-        "Castle"=>"Assets/Art/BaseScene/Layers/07_Castle.png", "Housing"=>"Assets/Art/BaseScene/Layers/26_House_6.png",
-        "Portal"=>"Assets/Art/BaseScene/Layers/13_Portal.png", "Warehouse"=>"Assets/Art/BaseScene/Layers/19_Warehouse.png",
-        "Fort"=>"Assets/Art/BaseScene/Layers/32_Fort.png", "Archery Range"=>"Assets/Art/BaseScene/Layers/31_Archery_Range.png",
-        "Magic Library"=>"Assets/Art/BaseScene/Layers/22_Magic_Library.png", "Laboratory"=>"Assets/Art/BaseScene/Layers/23_Laboratory.png",
-        "Refugees"=>"Assets/Art/BaseScene/Layers/28_Refugee_Camp.png", "Square"=>"Assets/Art/BaseScene/Layers/29_Market.png",
-        "Blacksmith"=>"Assets/Art/BaseScene/Layers/25_Blacksmith.png", _=>throw new Exception(name)};
+        "Castle"=>"Assets/Sprites/World/Base/Layers/07_Castle.png", "Housing"=>"Assets/Sprites/World/Base/Layers/26_House_6.png",
+        "Portal"=>"Assets/Sprites/World/Base/Layers/13_Portal.png", "Warehouse"=>"Assets/Sprites/World/Base/Layers/19_Warehouse.png",
+        "Fort"=>"Assets/Sprites/World/Base/Layers/32_Fort.png", "Archery Range"=>"Assets/Sprites/World/Base/Layers/31_Archery_Range.png",
+        "Magic Library"=>"Assets/Sprites/World/Base/Layers/22_Magic_Library.png", "Laboratory"=>"Assets/Sprites/World/Base/Layers/23_Laboratory.png",
+        "Refugees"=>"Assets/Sprites/World/Base/Layers/28_Refugee_Camp.png", "Square"=>"Assets/Sprites/World/Base/Layers/29_Market.png",
+        "Blacksmith"=>"Assets/Sprites/World/Base/Layers/25_Blacksmith.png", _=>throw new Exception(name)};
     static List<Binding> ExternalBindings(GameObject root)
     {
         var list=new List<Binding>();
@@ -45,7 +45,7 @@ public static class BaseBuildingIslandsSetup
     }
     static Sprite Crop(string name,Sprite source,Rect rect)
     {
-        var path=Folder+"/"+name+" Sprite.asset";var existing=AssetDatabase.LoadAssetAtPath<Sprite>(path);if(existing!=null)return existing;
+        var path="Assets/Sprites/UI/Common/Islands/"+name+" Sprite.asset";var existing=AssetDatabase.LoadAssetAtPath<Sprite>(path);if(existing!=null)return existing;
         var sprite=Sprite.Create(source.texture,rect,new Vector2(.5f,.5f),32,0,SpriteMeshType.FullRect);sprite.name=name;
         AssetDatabase.CreateAsset(sprite,path);return sprite;
     }
@@ -79,7 +79,7 @@ public static class BaseBuildingIslandsSetup
             if(PrefabUtility.IsAnyPrefabInstanceRoot(panel.gameObject))PrefabUtility.UnpackPrefabInstance(panel.gameObject,PrefabUnpackMode.OutermostRoot,InteractionMode.AutomatedAction);
             var bg=panel.GetComponent<UnityEngine.UI.Image>();bg.enabled=true;bg.sprite=null;bg.type=UnityEngine.UI.Image.Type.Simple;bg.color=new Color32(16,16,22,255);bg.raycastTarget=false;
             var oldCastle=panel.Find("Castle Grounds");if(oldCastle!=null)oldCastle.gameObject.SetActive(false);
-            var hex=AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Builds/Hex 1.png");
+            var hex=AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/World/Hexes/Hex 1.png");
             foreach(var view in panel.GetComponentsInChildren<WorldBuildingButton>(true)){
                 var go=view.gameObject;var s=new SerializedObject(view);var tint=(Material)s.FindProperty("unbuiltMaterial").objectReferenceValue;
                 var art=AssetDatabase.LoadAssetAtPath<Sprite>(Art(go.name));if(art==null)throw new Exception("Missing sprite: "+Art(go.name));

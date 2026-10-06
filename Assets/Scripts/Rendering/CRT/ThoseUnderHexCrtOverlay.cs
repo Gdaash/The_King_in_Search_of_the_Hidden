@@ -4,15 +4,13 @@ using UnityEngine.UI;
 /// <summary>Places scanlines and the CRT vignette above Screen Space Overlay UI.</summary>
 public static class ThoseUnderHexCrtOverlay
 {
-    private const string MaterialPath = "CRT/ThoseUnderHex CRT Overlay";
-
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void CreateOverlay()
     {
         if (Object.FindFirstObjectByType<ThoseUnderHexCrtOverlayMarker>() != null)
             return;
 
-        Material material = Resources.Load<Material>(MaterialPath);
+        Material material = ProjectReferences.Instance != null ? ProjectReferences.Instance.crtOverlayMaterial : null;
         if (material == null)
             return;
 

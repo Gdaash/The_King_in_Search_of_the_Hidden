@@ -26,7 +26,7 @@ public static class WorldBuildingButtonsSetup
     public static void Run()
     {
         if (EditorApplication.isPlaying) throw new System.InvalidOperationException("Stop Play Mode first.");
-        const string iconPath = "Assets/Art/BaseScene/Construction Icon.png";
+        const string iconPath = "Assets/Sprites/UI/Icons/Construction Icon.png";
         if (!System.IO.File.Exists(iconPath)) throw new System.IO.FileNotFoundException("Construction icon is missing", iconPath);
         var importer = (TextureImporter)AssetImporter.GetAtPath(iconPath);
         importer.textureType = TextureImporterType.Sprite; importer.spriteImportMode = SpriteImportMode.Single;

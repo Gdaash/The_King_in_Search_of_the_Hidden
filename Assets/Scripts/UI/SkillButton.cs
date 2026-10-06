@@ -126,10 +126,6 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         description = entry.description;
         purchaseResourceType = entry.costResource;
         cost = entry.cost;
-        if (costResourceIconImage == null)
-            costResourceIconImage = transform.Find("CostIconBacking/CostResourceIcon")?.GetComponent<Image>();
-        if (upgradeIconImage == null)
-            upgradeIconImage = transform.Find("UpgradeIcon")?.GetComponent<Image>();
         if (costResourceIconImage != null && purchaseResourceType != null)
         {
             ResourceIconSizing.Apply(costResourceIconImage, purchaseResourceType.resourceIcon);

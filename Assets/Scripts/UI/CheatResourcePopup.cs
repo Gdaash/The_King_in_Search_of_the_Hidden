@@ -132,7 +132,7 @@ public sealed class CheatResourcePopup : MonoBehaviour
                 row.amountText.text = available ? amount.ToString() : "—";
             if (row.nameText != null && row.resource != null)
             {
-                string key = "resource." + row.resource.name + ".name";
+                string key = "resource." + row.resource.Id + ".name";
                 string translated = LocalizationService.Instance != null ? LocalizationService.Instance.Get(key) : key;
                 row.nameText.text = translated != key ? translated : row.resource.resourceName;
             }

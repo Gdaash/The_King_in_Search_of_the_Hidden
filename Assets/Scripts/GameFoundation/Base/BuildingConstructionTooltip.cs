@@ -17,6 +17,8 @@ namespace GameFoundation.Base
         [SerializeField] private Text stoneAmount;
         [SerializeField] private Vector2 cursorOffset = new Vector2(24f, -24f);
         [SerializeField] private float screenMargin = 12f;
+        [SerializeField, Min(0f)] private float bottomPadding = 24f;
+        [SerializeField, Min(0f)] private float resourceRowGap = 12f;
 
         private CanvasGroup group;
         private RectTransform rect;
@@ -43,6 +45,7 @@ namespace GameFoundation.Base
             SetResource(woodIcon, woodAmount, wood, woodCost);
             SetResource(stoneIcon, stoneAmount, stone, stoneCost);
             CenterPrice(wood != null, stone != null);
+            FitContent(wood != null, stone != null);
             group.alpha = 1f;
             group.blocksRaycasts = false;
             transform.SetAsLastSibling();
@@ -96,6 +99,42 @@ namespace GameFoundation.Base
             }
             if (first) Place(woodIcon, woodAmount, a);
             if (second) Place(stoneIcon, stoneAmount, b);
+        }
+
+        private void FitContent(bool first, bool second)
+        {
+            if (rect == null) rect = transform as RectTransform;
+            if (rect == null || description == null || priceLabel == null) return;
+
+            // Icons retain their native pixel-art size. The background grows to contain them.
+            float descriptionHeight = Mathf.Max(104f, description.preferredHeight);
+            description.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, descriptionHeight);
+            float priceTop = -description.rectTransform.anchoredPosition.y + descriptionHeight + 10f;
+            var pricePosition = priceLabel.rectTransform.anchoredPosition;
+            pricePosition.y = -priceTop;
+            priceLabel.rectTransform.anchoredPosition = pricePosition;
+            float rowHeight = 0f;
+            void Measure(Image icon, Text amount, bool visible)
+            {
+                if (!visible) return;
+                if (icon != null) rowHeight = Mathf.Max(rowHeight, icon.rectTransform.rect.height);
+                if (amount != null) rowHeight = Mathf.Max(rowHeight, amount.rectTransform.rect.height, amount.preferredHeight);
+            }
+            Measure(woodIcon, woodAmount, first);
+            Measure(stoneIcon, stoneAmount, second);
+            float rowTop = priceTop + priceLabel.rectTransform.rect.height + resourceRowGap;
+            void Align(RectTransform item)
+            {
+                if (item == null) return;
+                item.anchorMin = item.anchorMax = new Vector2(.5f, 1f);
+                item.pivot = new Vector2(.5f, .5f);
+                var position = item.anchoredPosition;
+                position.y = -(rowTop + rowHeight * .5f);
+                item.anchoredPosition = position;
+            }
+            if (first) { Align(woodIcon != null ? woodIcon.rectTransform : null); Align(woodAmount != null ? woodAmount.rectTransform : null); }
+            if (second) { Align(stoneIcon != null ? stoneIcon.rectTransform : null); Align(stoneAmount != null ? stoneAmount.rectTransform : null); }
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, rowTop + rowHeight + bottomPadding);
         }
 
         private void UpdatePosition()

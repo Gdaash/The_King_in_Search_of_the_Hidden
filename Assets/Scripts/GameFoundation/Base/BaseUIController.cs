@@ -10,6 +10,31 @@ namespace GameFoundation.Base
     public sealed class BaseUIController : MonoBehaviour
     {
         [SerializeField] private Transform worldBuildingButtons;
+        [SerializeField] private Button portalButton;
+        [SerializeField] private Button laboratoryButton;
+        [SerializeField] private Button nextDayButton;
+        [SerializeField] private Button confirmDayButton;
+        [SerializeField] private Button cancelDayButton;
+        [SerializeField] private Button closeDayButton;
+        [SerializeField] private Button warehouseButton;
+        [SerializeField] private Button housingButton;
+        [SerializeField] private Button refugeesButton;
+        [SerializeField] private Button squareButton;
+        [SerializeField] private Button blacksmithButton;
+        [SerializeField] private Button libraryButton;
+        [SerializeField] private Button settingsButton;
+        [SerializeField] private Button searchPortalsButton;
+        [SerializeField] private Button closeMapButton;
+        [SerializeField] private Button closeLaboratoryButton;
+        [SerializeField] private Button closeWarehouseButton;
+        [SerializeField] private Button buyCartButton;
+        [SerializeField] private Button closeHousingButton;
+        [SerializeField] private Button closeRefugeesButton;
+        [SerializeField] private Button admitRefugeeButton;
+        [SerializeField] private Button closeSquareButton;
+        [SerializeField] private Button closeBlacksmithButton;
+        [SerializeField] private Button closeLibraryButton;
+        [SerializeField] private Text refugeesAvailableText;
         [SerializeField] private GameObject globalMap, laboratory, settings, warehouse, housing, refugees, square, blacksmith, magicLibrary;
         [SerializeField] private GameObject nextDayConfirmation;
         [SerializeField] private FoodForecastView nextDayForecast, housingForecast;
@@ -28,31 +53,31 @@ namespace GameFoundation.Base
 
         private void Awake()
         {
-            Bind("Base Panel/Portal", OpenMap);
-            Bind("Base Panel/Laboratory", OpenLaboratory);
-            Bind("Base Panel/Next Day", NextDay);
-            Bind("Next Day Confirmation/Confirm", ConfirmNextDay);
-            Bind("Next Day Confirmation/Cancel", CancelNextDay);
-            Bind("Next Day Confirmation/Close", CancelNextDay);
-            Bind("Base Panel/Warehouse", OpenWarehouse);
-            Bind("Base Panel/Housing", OpenHousing);
-            Bind("Base Panel/Refugees", OpenRefugees);
-            Bind("Base Panel/Square", OpenSquare);
-            Bind("Base Panel/Blacksmith", OpenBlacksmith);
-            Bind("Base Panel/Magic Library", OpenMagicLibrary);
-            Bind("Base Panel/Settings", OpenSettings);
-            Bind("Global Map/Search Portals", SearchPortals);
-            Bind("Global Map/Close", CloseMap);
-            Bind("Laboratory Popup/Window/Close", CloseLaboratory);
-            Bind("Warehouse Popup/Close", CloseWarehouse);
-            Bind("Warehouse Popup/Buy Cart", BuyCart);
-            Bind("Housing Popup/Close", CloseHousing);
-            Bind("Refugees Popup/Close", CloseRefugees);
-            Bind("Refugees Popup/Admit", AdmitRefugee);
-            Bind("Square Popup/Close", CloseSquare);
-            Bind("Blacksmith Popup/Close", CloseBlacksmith);
+            Bind(portalButton, OpenMap);
+            Bind(laboratoryButton, OpenLaboratory);
+            Bind(nextDayButton, NextDay);
+            Bind(confirmDayButton, ConfirmNextDay);
+            Bind(cancelDayButton, CancelNextDay);
+            Bind(closeDayButton, CancelNextDay);
+            Bind(warehouseButton, OpenWarehouse);
+            Bind(housingButton, OpenHousing);
+            Bind(refugeesButton, OpenRefugees);
+            Bind(squareButton, OpenSquare);
+            Bind(blacksmithButton, OpenBlacksmith);
+            Bind(libraryButton, OpenMagicLibrary);
+            Bind(settingsButton, OpenSettings);
+            Bind(searchPortalsButton, SearchPortals);
+            Bind(closeMapButton, CloseMap);
+            Bind(closeLaboratoryButton, CloseLaboratory);
+            Bind(closeWarehouseButton, CloseWarehouse);
+            Bind(buyCartButton, BuyCart);
+            Bind(closeHousingButton, CloseHousing);
+            Bind(closeRefugeesButton, CloseRefugees);
+            Bind(admitRefugeeButton, AdmitRefugee);
+            Bind(closeSquareButton, CloseSquare);
+            Bind(closeBlacksmithButton, CloseBlacksmith);
             // The library close icon is part of its window, unlike several older popups.
-            Bind("Magic Library Popup/Window/Close", CloseMagicLibrary);
+            Bind(closeLibraryButton, CloseMagicLibrary);
         }
         private void OnEnable()
         {
@@ -115,11 +140,11 @@ namespace GameFoundation.Base
                 portalTravelUsedNotice.gameObject.SetActive(day != null && day.EnteredToday);
             }
             if (dayText) dayText.text = Tr("base.day", "День") + " " + (day?.Day ?? 1);
-            var search = transform.Find("Global Map/Search Portals")?.GetComponent<Button>();
+            var search = searchPortalsButton;
             if (search) search.gameObject.SetActive(false);
-            var available = transform.Find("Refugees Popup/Available")?.GetComponent<Text>();
+            var available = refugeesAvailableText;
             if (available) available.text = Tr("base.waiting", "Ожидают:") + " " + (day?.RefugeesAvailable ?? 0);
-            var admit = transform.Find("Refugees Popup/Admit")?.GetComponent<Button>();
+            var admit = admitRefugeeButton;
             if (admit) admit.interactable = day != null && day.RefugeesAvailable > 0 && BuildingUpgradeService.CanAdmitResident;
             for (var i = 0; portalButtons != null && i < portalButtons.Length; i++)
             {
@@ -192,16 +217,8 @@ namespace GameFoundation.Base
             return string.IsNullOrEmpty(value) || value == key ? fallback : value;
         }
         private void Show(GameObject panel, bool visible) { if (panel) panel.SetActive(visible); }
-        private void Bind(string path, UnityEngine.Events.UnityAction action)
+        private void Bind(Button button, UnityEngine.Events.UnityAction action)
         {
-            var target = transform.Find(path);
-            if (!target && worldBuildingButtons != null && path.StartsWith("Base Panel/"))
-                target = worldBuildingButtons.Find(path.Substring("Base Panel/".Length));
-            if (!target) return;
-
-            // Popup Close Icon is a shared visual prefab.  Older instances may not
-            // yet contain a Button, so make the visual clickable while loading.
-            var button = target.GetComponent<Button>() ?? target.gameObject.AddComponent<Button>();
             if (!button) return;
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(action);

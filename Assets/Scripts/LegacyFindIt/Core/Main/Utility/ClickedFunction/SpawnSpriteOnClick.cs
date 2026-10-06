@@ -10,7 +10,6 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.ClickedFunction
     {
         public GameObject spawnedPrefab;
         public float lifespan = 0.35f;
-        public AudioClip spawnSound;
 
         private float timer;
         private Camera _camera;
@@ -36,7 +35,6 @@ namespace DeskCat.FindIt.Scripts.Core.Main.Utility.ClickedFunction
 
                 var spawnedObject = Instantiate(spawnedPrefab);
                 spawnedObject.transform.position = hitPoint;
-                LevelManager.PlayItemFx(spawnSound);
                 Destroy(spawnedObject, lifespan);
             }
         }

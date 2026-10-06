@@ -8,7 +8,7 @@ from psd_tools import PSDImage
 
 SOURCE = Path(r"C:/Users/schar/Desktop/Base.psd")
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "Assets/Art/BaseScene/Layers"
+OUT = ROOT / "Assets/Sprites/World/Base/Layers"
 NAMES = [
     "Background", "Roads", "Ravine", "Forest", "Trees Back", "Fields", "Rocks",
     "Castle", "Castle Road", "Bridge", "House 1", "House 2", "Castle Bridge and Fir",

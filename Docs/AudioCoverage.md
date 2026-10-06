@@ -5,7 +5,7 @@
 - `MainMenu`: `MainMenu_BirthOfMagic`
 - `Base`: `Base_ViridiNemus`
 - `World`: `World_AmbientDrums`
-- Legacy `BackgroundMusic` sources are stopped so tracks do not overlap.
+- Legacy audio files, music services and volume trackers were removed. Only the current audio library supplies game audio.
 
 ## Automatically covered events
 

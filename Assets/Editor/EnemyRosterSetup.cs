@@ -90,7 +90,7 @@ public static class EnemyRosterSetup
         Sprite source = prefab.GetComponentInChildren<SpriteRenderer>(true)?.sprite;
         if (source == null || (source.rect.width <= 32 && source.rect.height <= 32)) return source;
         // Separate importer for UI: keep the original combat artwork and its import settings untouched.
-        const string folder = "Assets/Sprites/Ui/Enemy Portraits";
+        const string folder = "Assets/Sprites/UI/Portraits/Enemies";
         Directory.CreateDirectory(folder); AssetDatabase.Refresh();
         string destination = folder + "/" + prefab.name + ".png";
         if (!File.Exists(destination)) AssetDatabase.CopyAsset(AssetDatabase.GetAssetPath(source), destination);
@@ -154,7 +154,7 @@ public static class EnemyRosterSetup
             tooltip.GetComponentInChildren<UnitDescriptionView>(true).Show(catalog.units[0]);
             Set(view,"descriptions",catalog); Set(view,"visibility",visibility); Set(view,"panel",rect); Set(view,"rows",cr);
             Set(view,"itemTemplate",template.GetComponent<EnemyRosterItemView>()); Set(view,"detailsTooltip",tooltip.GetComponent<UnitDescriptionTooltip>());
-            Set(view,"fallbackPortrait",AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Ui/Unit Stats/Eye.png"));
+            Set(view,"fallbackPortrait",AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/UI/UnitStats/Eye.png"));
             PrefabUtility.SaveAsPrefabAsset(root,PanelPath);
         }
         finally { Object.DestroyImmediate(root); }

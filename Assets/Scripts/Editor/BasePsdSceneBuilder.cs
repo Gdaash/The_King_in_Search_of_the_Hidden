@@ -15,7 +15,7 @@ public static class BasePsdSceneBuilder
     [Serializable] public class Document { public int width, height, pixelsPerUnit; public Layer[] layers; }
     private const string Folder = "Assets/Art/BaseScene";
     private const string PrefabPath = Folder + "/Base Scene Artwork.prefab";
-    public static Document Read() => JsonUtility.FromJson<Document>(File.ReadAllText(Folder + "/BaseSceneLayers.json"));
+    public static Document Read() => JsonUtility.FromJson<Document>(File.ReadAllText("Assets/Sprites/World/Base/BaseSceneLayers.json"));
 
     public static void Build()
     {

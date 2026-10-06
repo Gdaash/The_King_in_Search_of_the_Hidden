@@ -13,7 +13,7 @@ public static class UnifiedButtonStyleSetup
 {
     private const string ThemePath = "Assets/Resources/UI/ButtonVisualTheme.asset";
     private const string ButtonSpritePath =
-        "Assets/Sprites/Evolution adventure/Sprites/UI/Sprites/Popups/Sprites/Shared/PopupButton9Slice.png";
+        "Assets/Sprites/UI/Evolution/Popups/Sprites/Shared/PopupButton9Slice.png";
 
     [MenuItem("Game/UI/Apply Unified Button Style")]
     public static void ApplyAll()

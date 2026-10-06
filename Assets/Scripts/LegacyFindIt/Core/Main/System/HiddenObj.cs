@@ -42,11 +42,6 @@ namespace DeskCat.FindIt.Scripts.Core.Main.System
         [Tooltip("Hide The Object When Found")]
         public bool HideWhenFound = true;
 
-        [Tooltip("Play Sound Effect When Found")]
-        public bool PlaySoundWhenFound = true;
-
-        public AudioClip AudioWhenClick;
-
         [Tooltip("Action When Target Is Clicked")]
         public Action TargetClickAction;
 
@@ -128,11 +123,6 @@ namespace DeskCat.FindIt.Scripts.Core.Main.System
         private void HitHiddenObject()
         {
             if (!isClickActionTrigger) return;
-
-            if (AudioWhenClick != null)
-            {
-                LevelManager.PlayItemFx(AudioWhenClick);
-            }
 
             if (EnableBGAnimation)
             {

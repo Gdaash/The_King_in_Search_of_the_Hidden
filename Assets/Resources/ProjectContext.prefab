@@ -59,6 +59,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
+  m_UseReflectionProbes: 0
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
@@ -1526,8 +1527,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7138285745528972357}
-  - component: {fileID: 6105755969335789407}
-  - component: {fileID: 7164848973211878935}
   m_Layer: 0
   m_Name: LevelMusicInstaller
   m_TagString: Untagged
@@ -1550,39 +1549,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1537593312609899396}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6105755969335789407
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6901440276532949081}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 183b21b2ad434b8eb9d32c379e6cbcba, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _musicService: {fileID: 7164848973211878935}
---- !u!114 &7164848973211878935
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6901440276532949081}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 654707607fad4a1cb0bb2ed691aa3c87, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _levelClips:
-  - {fileID: 8300000, guid: 8151ca60b9a84344fb4e9e2348cb84a6, type: 3}
-  - {fileID: 8300000, guid: 0b52dd58ca29c8c4ba3de4312f4038fa, type: 3}
-  - {fileID: 8300000, guid: a50ac2fa2cd908646b353404eb4ed19a, type: 3}
-  - {fileID: 8300000, guid: 878ebd3413ba9544ba32094d75a60f12, type: 3}
-  - {fileID: 8300000, guid: 5e23865ad32dcce478a2668250f83241, type: 3}
-  - {fileID: 8300000, guid: 47662e2dfa105e143a3cc691565201db, type: 3}
-  - {fileID: 8300000, guid: d7e8657de99e5b2439efadccd33d6e4a, type: 3}
 --- !u!1 &7400460513807924047
 GameObject:
   m_ObjectHideFlags: 0
@@ -1639,7 +1605,6 @@ MonoBehaviour:
   - {fileID: 3823514522940057980}
   - {fileID: 5983753306512092536}
   - {fileID: 5503351599800544749}
-  - {fileID: 6105755969335789407}
   _installerPrefabs: []
   _parentNewObjectsUnderContext: 1
   _editorReflectionBakingCoverageMode: 0

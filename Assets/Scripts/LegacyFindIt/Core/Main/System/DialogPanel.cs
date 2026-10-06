@@ -13,7 +13,6 @@ namespace DeskCat.FindIt.Scripts.Core.Main.System
         public Image BlurBackgroundImage;
         public Image CharacterImage;
         public Animator DialogAnimator;
-        public AudioSource DialogAudio;
         public Text DialogText;
         public Button DialogBtn;
         
@@ -50,7 +49,6 @@ namespace DeskCat.FindIt.Scripts.Core.Main.System
             MainDialogPanel.SetActive(true); 
             DialogAnimator.gameObject.SetActive(true);
             DialogAnimator.Play(0);
-            DialogAudio.Play();
             
             if (CurrentDialogIndex >= DialogContentDic[GlobalSetting.CurrentLanguage].Count)
             {

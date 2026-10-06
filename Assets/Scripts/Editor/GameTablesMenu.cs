@@ -28,7 +28,7 @@ public static class GameTablesMenu
         var rows = new List<string> { UpgradeHeader.Replace(',', '\t') };
         foreach (var entry in table.entries)
             rows.Add(string.Join("\t", new[] { entry.id, entry.parentId, entry.title, entry.description,
-                entry.costResource != null ? entry.costResource.name : "",
+                entry.costResource != null ? entry.costResource.Id : "",
                 entry.cost.ToString(CultureInfo.InvariantCulture), entry.effectValue.ToString(CultureInfo.InvariantCulture),
                 entry.GroupId, entry.groupTitle, entry.level.ToString(), entry.requiredPurchases.ToString() }));
         EditorGUIUtility.systemCopyBuffer = string.Join("\n", rows);
@@ -64,7 +64,7 @@ public static class GameTablesMenu
             var resource = AssetDatabase.FindAssets("t:ResourceType")
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Select(path => AssetDatabase.LoadAssetAtPath<ResourceType>(path))
-                .FirstOrDefault(item => item != null && item.name == cells[4]);
+                .FirstOrDefault(item => item != null && item.Id == cells[4]);
             if (resource == null) throw new InvalidDataException("Неизвестный ресурс: " + cells[4]);
             var previous = table.Find(cells[0]);
             string Column(string name, string fallback) { int i = rows[0].IndexOf(name); return i >= 0 && i < cells.Count && !string.IsNullOrWhiteSpace(cells[i]) ? cells[i] : fallback; }

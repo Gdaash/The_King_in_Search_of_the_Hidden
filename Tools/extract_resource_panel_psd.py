@@ -5,7 +5,7 @@ from PIL import Image
 from psd_tools import PSDImage
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / 'Assets/Art/ResourcePanel'
+OUT = ROOT / 'Assets/Sprites/UI/ResourcePanel'
 PSD = PSDImage.open('C:/Users/schar/Desktop/панель ресурсов.psd')
 LAYERS = list(PSD.descendants())
 

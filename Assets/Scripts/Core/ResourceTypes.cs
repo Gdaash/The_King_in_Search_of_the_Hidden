@@ -3,6 +3,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewResourceType", menuName = "Resources/Resource Type")]
 public class ResourceType : ScriptableObject
 {
+    [SerializeField, Tooltip("Постоянный ключ сохранений и локализации. Не меняется при переименовании ассета.")]
+    private string persistentId;
+    public string Id => persistentId;
     [Header("Общие настройки")]
     public string resourceName;
 

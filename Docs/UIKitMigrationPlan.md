@@ -2,7 +2,7 @@
 
 ## Prepared source set
 
-The UI PSD contains nine interface compositions: Battle HUD, Dialog, Evolution popup, compact Evolution popup, Field popup, two Tavern variants, Monster Battle popup and Tower popup. The complete layer export is stored in `Assets/Sprites/UI Kit`; reusable uGUI prefabs are stored in `Assets/Prefabs/UI Kit`.
+The UI PSD contains nine interface compositions: Battle HUD, Dialog, Evolution popup, compact Evolution popup, Field popup, two Tavern variants, Monster Battle popup and Tower popup. The complete layer export is stored in `Assets/Sprites/UI/Kit`; reusable uGUI prefabs are stored in `Assets/Prefabs/UI Kit`.
 
 The migration must preserve existing scripts, localization keys, button events and save logic. Only presentation objects and layout are replaced.
 

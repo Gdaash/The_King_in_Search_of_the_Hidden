@@ -7,10 +7,13 @@ namespace GameFoundation.Base
     /// <summary>Positions visible building buttons beside the PSD artwork and applies the unbuilt material.</summary>
     public sealed class WorldBuildingButton : MonoBehaviour
     {
-        [SerializeField] private string artworkRoot = "Base Scene Artwork";
+        [SerializeField, HideInInspector] private string artworkRoot = "Base Scene Artwork";
         [Tooltip("Keep the position authored in the scene for World Space buttons.")]
         [SerializeField] private bool manuallyPositioned;
-        [SerializeField] private string[] artworkLayers;
+        [SerializeField, HideInInspector] private string[] artworkLayers;
+        [SerializeField] private Transform artworkReference;
+        [SerializeField] private SpriteRenderer[] artworkSprites;
+        [SerializeField] private GameObject buildingLabel;
         [SerializeField] private Vector2 constructionPixelPosition;
         [SerializeField] private Vector2 buttonSize = new(236, 64);
         [SerializeField] private Vector2 documentSize = new(640, 480);
@@ -35,16 +38,12 @@ namespace GameFoundation.Base
         public void Resolve()
         {
             rect = (RectTransform)transform;
-            var root = GameObject.Find(artworkRoot);
-            if (root == null) return;
-            artwork = root.transform;
+            artwork = artworkReference;
             sprites.Clear(); originalMaterials.Clear();
-            foreach (string layer in artworkLayers)
+            foreach (var sprite in artworkSprites ?? System.Array.Empty<SpriteRenderer>())
             {
-                var child = artwork.Find(layer);
-                var sprite = child != null ? child.GetComponent<SpriteRenderer>() : null;
-                if (sprite == null) { Debug.LogError("Missing building artwork: " + layer, this); continue; }
-                var hit = child.GetComponent<WorldBuildingHitArea>();
+                if (sprite == null) continue;
+                var hit = sprite.GetComponent<WorldBuildingHitArea>();
                 if (hit != null) hit.Owner = null;
                 sprites.Add(sprite); originalMaterials.Add(sprite.sharedMaterial);
             }
@@ -59,8 +58,7 @@ namespace GameFoundation.Base
             if (TryGetComponent<Image>(out var image)) { image.enabled = Built; image.raycastTarget = Built; }
             if (TryGetComponent<Button>(out var button) && button.targetGraphic != null)
                 button.targetGraphic.enabled = Built;
-            var label = transform.Find("Label") ?? transform.Find("Button Visual/Label");
-            if (label != null) label.gameObject.SetActive(Built);
+            if (buildingLabel != null) buildingLabel.SetActive(Built);
         }
         private void LateUpdate() => UpdatePosition();
         private float ScreenScale => Mathf.Min(Screen.width / documentSize.x, Screen.height / documentSize.y);

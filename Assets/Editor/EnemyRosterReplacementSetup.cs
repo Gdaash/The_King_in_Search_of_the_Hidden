@@ -14,7 +14,7 @@ public static class EnemyRosterReplacementSetup
 {
     private const string Units = "Assets/Prefabs/Units/";
     private const string Stats = "Assets/Resources/Units/";
-    private const string Sprites = "Assets/Sprites/Enemies/";
+    private const string Sprites = "Assets/Sprites/Units/Enemies/";
     private const string Projectile = "Assets/Prefabs/Projectiles/CursedMageProjectile.prefab";
     private static readonly string[] ReferencingPrefabs =
     {
@@ -291,12 +291,12 @@ public static class EnemyRosterReplacementSetup
         // words such as "Goblin" and "Snake" in their names.
         string[] candidates =
         {
-            "Assets/Sprites/Monsters/Goblin.png",
-            "Assets/Sprites/GreenHuman/GreenHuman3.png",
-            "Assets/Sprites/Monsters/Orc.png",
-            "Assets/Sprites/Monsters/Skeleton.png",
-            "Assets/Sprites/Monsters/Snake.png",
-            "Assets/Sprites/Monsters/Troll.png"
+            "Assets/Sprites/Units/Enemies/Legacy/Goblin.png",
+            "Assets/Sprites/Units/NPCs/Green/GreenHuman3.png",
+            "Assets/Sprites/Units/Enemies/Legacy/Orc.png",
+            "Assets/Sprites/Units/Enemies/Legacy/Skeleton.png",
+            "Assets/Sprites/Units/Enemies/Legacy/Snake.png",
+            "Assets/Sprites/Units/Enemies/Legacy/Troll.png"
         };
         var referencedAssets = new HashSet<string>(
             ReferencingPrefabs.Where(File.Exists).SelectMany(path => AssetDatabase.GetDependencies(path, true)));
@@ -314,7 +314,7 @@ public static class EnemyRosterReplacementSetup
     {
         foreach (string path in AssetDatabase.FindAssets("Enemy t:UnitDescriptionDefinition")
                      .Select(AssetDatabase.GUIDToAssetPath).ToArray()) AssetDatabase.DeleteAsset(path);
-        const string portraits = "Assets/Sprites/Ui/Enemy Portraits";
+        const string portraits = "Assets/Sprites/UI/Portraits/Enemies";
         if (AssetDatabase.IsValidFolder(portraits)) AssetDatabase.DeleteAsset(portraits);
     }
 

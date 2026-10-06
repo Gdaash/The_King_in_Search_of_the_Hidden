@@ -18,8 +18,8 @@ public static class LaboratoryListSetup
     public const string RowPath = "Assets/Prefabs/UI/Laboratory Upgrade Row.prefab";
     private static readonly Color Ink = new(.94f, .91f, .82f), Gold = new(.92f, .83f, .60f), Muted = new(.66f, .61f, .72f);
     private static Font Font => AssetDatabase.LoadAssetAtPath<Font>("Assets/Fonts/Pixellari Cyrillic/Pixellari-Cyrillic.ttf");
-    private static Sprite Panel => AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Evolution adventure/Sprites/UI/Sprites/Popups/Sprites/Shared/PopupPanel9Slice.png");
-    private static Sprite Lock => AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Evolution adventure/Sprites/UI/Sprites/Gameplay/Sprites/ConstructionPointLock.png");
+    private static Sprite Panel => AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/UI/Evolution/Popups/Sprites/Shared/PopupPanel9Slice.png");
+    private static Sprite Lock => AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/UI/Evolution/Gameplay/Sprites/ConstructionPointLock.png");
     private static GlobalStats Stats => Resources.Load<GlobalStats>("Global/globalHexStats");
 
     public static void Install()
@@ -54,7 +54,7 @@ public static class LaboratoryListSetup
         {
             Assign(table.Find(ScientificUpgrades.Flashlights[i]), "crystal_cells", "Ячейки кристалла", i + 1, 1 + 3 * i, Icon("Magic"));
             Assign(table.Find(ScientificUpgrades.CrystalPower[i]), "crystal_power", "Мощность кристалла", i + 1, 2 + 3 * i,
-                AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Evolution adventure/Sprites/UI/Sprites/Gameplay/Sprites/NewUi/iconEnergy.png"));
+                AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/UI/Evolution/Gameplay/Sprites/NewUi/iconEnergy.png"));
         }
         EditorUtility.SetDirty(table);
     }
@@ -72,7 +72,7 @@ public static class LaboratoryListSetup
         }
         finally { PrefabUtility.UnloadPrefabContents(root); }
     }
-    private static Sprite Icon(string name) => AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Ui/Unit Stats/" + name + ".png");
+    private static Sprite Icon(string name) => AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/UI/UnitStats/" + name + ".png");
     private static void Assign(ScientificUpgradeTable.Entry e, string group, string title, int level, int gate, Sprite icon)
     {
         if (e == null || !string.IsNullOrEmpty(e.groupId)) return;

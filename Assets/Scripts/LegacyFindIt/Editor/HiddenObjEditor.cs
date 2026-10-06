@@ -94,14 +94,6 @@ namespace DeskCat.FindIt.Scripts.Editor
                     HiddenObjTarget.HideWhenFound =
                         EditorGUILayout.ToggleLeft("Hide Object When Found", HiddenObjTarget.HideWhenFound);
 
-                    HiddenObjTarget.PlaySoundWhenFound = EditorGUILayout.ToggleLeft("Play Sound When Found",
-                        HiddenObjTarget.PlaySoundWhenFound);
-
-                    if (HiddenObjTarget.PlaySoundWhenFound)
-                    {
-                        HiddenObjTarget.AudioWhenClick = (AudioClip)EditorGUILayout.ObjectField("Specified Sound",
-                            HiddenObjTarget.AudioWhenClick, typeof(AudioClip), true);
-                    }
                 }
                 EditorGUI.indentLevel--;
             }

@@ -9,7 +9,7 @@ namespace GameFoundation.Base
         public static event Action Changed;
         private static BuildingUpgradeCatalog catalog;
         private static bool purchasing;
-        public static BuildingUpgradeCatalog Catalog => catalog != null ? catalog : catalog = Resources.Load<BuildingUpgradeCatalog>("Base/Building Upgrades");
+        public static BuildingUpgradeCatalog Catalog => catalog != null ? catalog : catalog = ProjectReferences.Instance != null ? ProjectReferences.Instance.buildingUpgrades : null;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void Reset() { catalog = null; purchasing = false; Changed = null; }
         public static bool IsBuilt(string id) => Catalog?.Find(id)?.builtByDefault == true || SaveSlotPrefs.GetInt("foundation.building." + id + ".built", 0) != 0;
