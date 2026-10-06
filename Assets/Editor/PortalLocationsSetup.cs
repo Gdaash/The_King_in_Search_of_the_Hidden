@@ -23,15 +23,15 @@ public static class PortalLocationsSetup
     private static readonly Definition[] Definitions =
     {
         New("forest", 1, 0, "Лес", "Forest", "Базовая лесная локация.", "The basic forest location.",
-            ("Wood", "many"), ("Berry", "many"), ("Stone", "few"), ("MagicOre", "almost_none")),
+            ("Wood", "many"), ("Berry", "many"), ("Stone", "few"), ("IronOre", "absent"), ("MagicOre", "rare")),
         New("mountains", 2, 10, "Горы", "Mountains", "Каменистая горная локация с залежами руды.", "A rocky mountain location rich in ore.",
-            ("Stone", "many"), ("IronOre", "many"), ("Wood", "few"), ("MagicOre", "rare")),
+            ("Wood", "few"), ("Berry", "absent"), ("Stone", "many"), ("IronOre", "few"), ("MagicOre", "rare")),
         New("steppes", 3, 15, "Степи", "Steppes", "Открытая степная локация с редкими рощами.", "An open steppe with sparse groves.",
-            ("Berry", "many"), ("Wood", "average"), ("Stone", "few"), ("MagicOre", "rare")),
+            ("Wood", "average"), ("Berry", "many"), ("Stone", "few"), ("IronOre", "absent"), ("MagicOre", "rare")),
         New("swamps", 4, 20, "Болота", "Swamps", "Опасная болотистая локация с вязкими тропами.", "A dangerous swamp crossed by treacherous paths.",
-            ("Berry", "many"), ("Wood", "average"), ("Stone", "few"), ("MagicOre", "sometimes")),
+            ("Wood", "average"), ("Berry", "many"), ("Stone", "few"), ("IronOre", "many"), ("MagicOre", "sometimes")),
         New("magic_mountains", 5, 25, "Магические горы", "Magic Mountains", "Самая опасная локация, насыщенная магической рудой.", "The most dangerous location, rich in magic ore.",
-            ("MagicOre", "many"), ("Stone", "many"), ("IronOre", "average"), ("Wood", "almost_none"))
+            ("Wood", "rare"), ("Berry", "absent"), ("Stone", "many"), ("IronOre", "average"), ("MagicOre", "many"))
     };
 
     [MenuItem("Tools/Game Setup/Rebuild Fixed Portal Locations")]
@@ -208,11 +208,11 @@ public static class PortalLocationsSetup
         SetEntry(table, "base.portal.free", "Бесплатно", "Free");
         SetEntry(table, "base.portal.tooltip.danger", "Опасность", "Danger");
         SetEntry(table, "base.portal.abundance.many", "Много", "Plentiful");
+        SetEntry(table, "base.portal.abundance.absent", "Отсутствует", "Absent");
         SetEntry(table, "base.portal.abundance.average", "Средне", "Average");
         SetEntry(table, "base.portal.abundance.few", "Мало", "Scarce");
         SetEntry(table, "base.portal.abundance.rare", "Редко", "Rare");
         SetEntry(table, "base.portal.abundance.sometimes", "Иногда", "Occasional");
-        SetEntry(table, "base.portal.abundance.almost_none", "Почти не встречается", "Almost never found");
         foreach (Definition definition in Definitions)
         {
             SetEntry(table, $"base.portal.location.{definition.id}.name", definition.ruName, definition.enName);
@@ -223,8 +223,8 @@ public static class PortalLocationsSetup
 
     private static string AbundanceRu(string key) => key switch
     {
-        "many" => "Много", "average" => "Средне", "few" => "Мало", "rare" => "Редко",
-        "sometimes" => "Иногда", _ => "Почти не встречается"
+        "absent" => "Отсутствует", "many" => "Много", "average" => "Средне", "few" => "Мало", "rare" => "Редко",
+        "sometimes" => "Иногда", _ => "Редко"
     };
 
     private static void SetEntry(LocalizationTable table, string key, string ru, string en)

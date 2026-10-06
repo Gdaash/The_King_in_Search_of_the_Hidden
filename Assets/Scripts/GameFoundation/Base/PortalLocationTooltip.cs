@@ -98,7 +98,10 @@ namespace GameFoundation.Base
                 PortalLocationDefinition.ResourceHint hint = current.Resources[i];
                 ResourceIconSizing.Apply(row.icon, hint.resource.resourceIcon);
                 if (row.abundance != null)
+                {
                     row.abundance.text = Tr(hint.abundanceKey, hint.fallbackAbundance);
+                    row.abundance.color = PortalResourceAbundance.ColorFor(hint.abundanceKey);
+                }
             }
 
             PositionNearAnchor();

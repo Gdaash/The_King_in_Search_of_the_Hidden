@@ -129,7 +129,7 @@ public class AlarmSystem : MonoBehaviour
     public IReadOnlyList<AlarmThreshold> ConfiguredThresholds => thresholds;
     public AlarmDifficultyTable DifficultyTable => difficultyTable;
     public Sprite OrbSprite => orbSettings != null && orbSettings.Image != null ? orbSettings.Image.sprite : alarmOrbSprite != null ? alarmOrbSprite : uiSprite;
-    public Color OrbColor => orbSettings != null && orbSettings.Image != null ? orbSettings.Image.color : new Color(1f, .22f, .16f, 1f);
+    public Color OrbColor => orbSettings != null && orbSettings.Image != null ? orbSettings.Image.color : Color.white;
     public Sprite SkullSprite => thresholdSkullSprite;
 
     public int PreviewOrbCount(float amount)
@@ -544,7 +544,7 @@ public class AlarmSystem : MonoBehaviour
         if (spawnedSettings == null)
         {
             orbImage.sprite = alarmOrbSprite != null ? alarmOrbSprite : uiSprite;
-            orbImage.color = new Color(1f, 0.22f, 0.16f, 1f);
+            orbImage.color = Color.white;
         }
         orbImage.raycastTarget = false;
         RectTransform orbRect = orb.GetComponent<RectTransform>();

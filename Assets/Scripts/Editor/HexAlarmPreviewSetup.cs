@@ -21,7 +21,7 @@ public static class HexAlarmPreviewSetup
             if (existing == null) row.transform.SetParent(energy.transform, false);
             var rect = (RectTransform)row.transform;
             rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
-            rect.anchoredPosition = new Vector2(0, 56);
+            rect.anchoredPosition = new Vector2(0, 42);
             rect.sizeDelta = new Vector2(282, 52);
             var orb = row.transform.Find("Orb Template");
             if (orb == null)
@@ -38,6 +38,7 @@ public static class HexAlarmPreviewSetup
             image.preserveAspect = true;
             var preview = row.GetComponent<HexAlarmPreview>();
             var binding = new SerializedObject(preview);
+            binding.FindProperty("orbScale").floatValue = 1f;
             var alarm = Object.FindFirstObjectByType<AlarmSystem>();
             if (alarm != null)
             {

@@ -81,6 +81,7 @@ namespace GameFoundation.Base
                 var resource = Selected.Resources[i];
                 ResourceIconSizing.Apply(row.icon, resource.resource.resourceIcon);
                 row.abundance.text = Tr(resource.abundanceKey, resource.fallbackAbundance);
+                row.abundance.color = PortalResourceAbundance.ColorFor(resource.abundanceKey);
             }
             bool unlocked = PortalProgression.IsUnlocked(Selected);
             bool entered = DayCycleService.Instance != null && DayCycleService.Instance.EnteredToday;

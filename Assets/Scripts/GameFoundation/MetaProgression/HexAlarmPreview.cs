@@ -8,7 +8,7 @@ namespace GameFoundation.MetaProgression
     public sealed class HexAlarmPreview : MonoBehaviour
     {
         [SerializeField] private Image orbTemplate;
-        [SerializeField, Min(.01f)] private float orbScale = .5f;
+        [SerializeField, Min(.01f)] private float orbScale = 1f;
         [SerializeField, Min(0f)] private float gap = 2f;
         [SerializeField, Min(1)] private int columns = 5;
         [SerializeField, Min(0f)] private float rowGap = 4f;
