@@ -11,36 +11,55 @@ namespace GameFoundation.UI
         public readonly string Text;
         public readonly NotificationKind Kind;
         public readonly Sprite Icon;
+        public readonly ResourceType Resource;
+        public readonly int Delta;
         public NotificationPart(string text, NotificationKind kind, Sprite icon)
-        { Text = text; Kind = kind; Icon = icon; }
+        { Text = text; Kind = kind; Icon = icon; Resource = null; Delta = 0; }
+        public NotificationPart(ResourceType resource, int delta)
+        {
+            Resource = resource; Delta = delta; Icon = resource.resourceIcon;
+            Text = (delta > 0 ? "+" : "") + delta;
+            Kind = delta > 0 ? NotificationKind.Positive : NotificationKind.Negative;
+        }
     }
 
     public static class GameNotifications
     {
         public static event Action<IReadOnlyList<NotificationPart>> Posted;
+        public static event Action<string, float, IReadOnlyList<NotificationPart>> CoalescedPosted;
         public static event Action<Health> UnitDied;
         private static ActionScope current;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void Reset() { Posted = null; UnitDied = null; current = null; }
+        private static void Reset() { Posted = null; CoalescedPosted = null; UnitDied = null; current = null; }
 
         // Explicit synchronous action boundaries keep unrelated events separate, even in the same frame.
         public static IDisposable BeginAction() => new ActionScope();
+        public static IDisposable BeginPorterSpawn() => new ActionScope("porter.spawn", 1f);
 
         private sealed class ActionScope : IDisposable
         {
             private readonly ActionScope parent;
             private readonly List<NotificationPart> parts = new();
             private bool disposed;
-            public ActionScope() { parent = current; current = this; }
+            private readonly string mergeKey;
+            private readonly float mergeWindow;
+            public ActionScope(string key = null, float window = 0)
+            { parent = current; current = this; mergeKey = key; mergeWindow = window; }
             public void Add(NotificationPart part) => parts.Add(part);
             public void Dispose()
             {
                 if (disposed) return;
                 disposed = true;
                 current = parent;
-                if (parent != null) parent.parts.AddRange(parts);
-                else if (parts.Count > 0) Posted?.Invoke(parts.ToArray());
+                if (mergeKey != null && parts.Count > 0) CoalescedPosted?.Invoke(mergeKey, mergeWindow, parts.ToArray());
+                else if (parent != null) parent.parts.AddRange(parts);
+                else if (parts.Count > 0)
+                {
+                    if (parts.TrueForAll(part => part.Resource != null))
+                        CoalescedPosted?.Invoke("resources", 1f, parts.ToArray());
+                    else Posted?.Invoke(parts.ToArray());
+                }
             }
         }
 
@@ -55,8 +74,9 @@ namespace GameFoundation.UI
         public static void Resource(ResourceType resource, int delta)
         {
             if (resource == null || delta == 0) return;
-            Post((delta > 0 ? "+" : "") + delta,
-                delta > 0 ? NotificationKind.Positive : NotificationKind.Negative, resource.resourceIcon);
+            var part = new NotificationPart(resource, delta);
+            if (current != null) current.Add(part);
+            else CoalescedPosted?.Invoke("resources", 1f, new[] { part });
         }
 
         public static void Death(Health health) => UnitDied?.Invoke(health);

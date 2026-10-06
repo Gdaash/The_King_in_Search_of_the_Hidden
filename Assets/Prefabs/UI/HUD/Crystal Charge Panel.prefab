@@ -108,10 +108,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 327397695893087394}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 1}
-  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: -12}
-  m_SizeDelta: {x: 282, y: 24}
+  m_SizeDelta: {x: 0, y: 24}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4679735918862979864
 CanvasRenderer:
@@ -399,7 +399,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 510, y: 76}
+  m_SizeDelta: {x: 408, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &8067021477883081592
 MonoBehaviour:
@@ -419,6 +419,7 @@ MonoBehaviour:
   rechargeButton: {fileID: 7886405442131703158}
   resourceIcon: {fileID: 449582887028769852}
   price: {fileID: 5769658685189582113}
+  minimumCellsWidth: 112
 --- !u!1 &4865424151990749210
 GameObject:
   m_ObjectHideFlags: 0
@@ -454,7 +455,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 282, y: 76}
+  m_SizeDelta: {x: 152, y: 60}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!1 &7336619796324527388
 GameObject:
@@ -646,7 +647,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 300, y: 0}
+  m_AnchoredPosition: {x: 170, y: 0}
   m_SizeDelta: {x: 238, y: 56}
   m_Pivot: {x: 0, y: 0}
 --- !u!222 &2909579199396386808
@@ -745,6 +746,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.UnifiedButtonFeedback
   theme: {fileID: 0}
   animateScale: 1
+  scaleTarget: {fileID: 0}
   useButtonPalette: 0
   hoverScaleMultiplier: 1
 --- !u!1001 &3438692568873089848
@@ -785,7 +787,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1264002870706394676, guid: 5198270742bdadf439ed71ca25f09f09, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 44
+      value: 36
       objectReference: {fileID: 0}
     - target: {fileID: 1264002870706394676, guid: 5198270742bdadf439ed71ca25f09f09, type: 3}
       propertyPath: m_LocalPosition.x

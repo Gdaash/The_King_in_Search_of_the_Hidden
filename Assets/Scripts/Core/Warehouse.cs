@@ -82,6 +82,7 @@ public class Warehouse : MonoBehaviour
     public Porter SpawnPorter()
     {
         if (!CanSpawnPorter()) return null;
+        using var notification = GameFoundation.UI.GameNotifications.BeginPorterSpawn();
         
         if (!GlobalResourceManager.Instance.TrySpendResource(humanResourceType, 1)) return null;
         if (!GlobalResourceManager.Instance.TrySpendResource(cartResourceType, 1))

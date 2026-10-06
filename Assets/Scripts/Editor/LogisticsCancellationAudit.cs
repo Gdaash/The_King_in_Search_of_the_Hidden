@@ -93,6 +93,7 @@ public static class LogisticsCancellationAudit
             orders = new GameObject("Audit orders").AddComponent<OrderManager>(); orders.enabled = false;
             flag = new GameObject("Audit flag").AddComponent<LogisticFlag>();
             await Task.Delay(100);
+            await CheckNotifications();
             for (int cycle = 0; cycle < 5; cycle++)
             {
                 var job = Job(2);
@@ -174,5 +175,54 @@ public static class LogisticsCancellationAudit
         }
         catch(Exception e) { File.AppendAllText(Report, "FAIL " + e + "\n"); }
         finally { EditorApplication.ExitPlaymode(); }
+    }
+
+    static async Task CheckNotifications()
+    {
+        var canvas = new GameObject("Audit notification canvas", typeof(Canvas));
+        var feed = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/UI/HUD/Notification Feed.prefab"), canvas.transform)
+            .GetComponent<GameFoundation.UI.NotificationFeed>();
+        Action spawn = () =>
+        {
+            using var scope = GameFoundation.UI.GameNotifications.BeginPorterSpawn();
+            GameFoundation.UI.GameNotifications.Resource(human, -1);
+            GameFoundation.UI.GameNotifications.Resource(cart, -1);
+        };
+        Func<int> rowCount = () => feed.GetComponentsInChildren<GameFoundation.UI.NotificationRow>().Length;
+        spawn(); Check(rowCount()==1,"porter costs produce one notification immediately");
+        await Task.Delay(650); spawn();
+        GameFoundation.UI.GameNotifications.Post("Unrelated event");
+        await Task.Delay(650); spawn();
+        Check(rowCount()==2,"rolling one-second chain merges across unrelated event");
+        int totals=0, icons=0;
+        foreach(var text in feed.GetComponentsInChildren<UnityEngine.UI.Text>()) if(text.text=="-3") totals++;
+        foreach(var icon in feed.GetComponentsInChildren<UnityEngine.UI.Image>())
+            if(icon.sprite==human.resourceIcon || icon.sprite==cart.resourceIcon)
+            { icons++; Check(icon.rectTransform.sizeDelta==icon.sprite.rect.size*2,"resource notification icon uses x2 scale"); }
+        Check(totals==2 && icons==2,"human and cart totals are -3 without duplicate visuals");
+        await Task.Delay(1100); spawn();
+        Check(rowCount()==3,"gap over one second starts new notification");
+        GameFoundation.UI.GameNotifications.Resource(berry, 2);
+        await Task.Delay(650);
+        GameFoundation.UI.GameNotifications.Resource(berry, 3);
+        GameFoundation.UI.GameNotifications.Resource(cart, 1);
+        await Task.Delay(650);
+        GameFoundation.UI.GameNotifications.Resource(berry, 4);
+        GameFoundation.UI.GameNotifications.Resource(berry, -2);
+        Check(rowCount()==4,"all resource changes share a rolling one-second row");
+        bool gain=false, spend=false;
+        foreach(var text in feed.GetComponentsInChildren<UnityEngine.UI.Text>())
+        { if(text.text=="+9")gain=true; if(text.text=="-2")spend=true; }
+        Check(gain && spend,"resource gains sum while spending remains visible");
+        using(GameFoundation.UI.GameNotifications.BeginAction())
+        {
+            GameFoundation.UI.GameNotifications.Resource(berry,-1);
+            GameFoundation.UI.GameNotifications.Post("Named action");
+        }
+        Check(rowCount()==5,"named action keeps its own resource costs");
+        await Task.Delay(1100);
+        GameFoundation.UI.GameNotifications.Resource(berry,1);
+        Check(rowCount()==6,"resource chain restarts after one-second gap");
+        Object.Destroy(canvas); await Task.Delay(50);
     }
 }

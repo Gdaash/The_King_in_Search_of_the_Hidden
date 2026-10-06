@@ -22,20 +22,30 @@ namespace GameFoundation.UI
         [SerializeField] private UnitDescriptionCatalog unitCatalog;
         [SerializeField] private UnitDescriptionCatalog enemyCatalog;
         private readonly List<NotificationRow> rows = new();
+        private sealed class MergedEvent
+        {
+            public NotificationRow row;
+            public float lastPosted;
+            public readonly List<NotificationPart> parts = new();
+        }
+        private readonly Dictionary<string, MergedEvent> mergedEvents = new();
 
         private void OnEnable()
         {
             if (rowPrefab != null && rowPrefab.transform.IsChildOf(transform)) rowPrefab.gameObject.SetActive(false);
             GameNotifications.Posted += AddEvent;
+            GameNotifications.CoalescedPosted += AddCoalescedEvent;
             GameNotifications.UnitDied += Death;
         }
 
         private void OnDisable()
         {
             GameNotifications.Posted -= AddEvent;
+            GameNotifications.CoalescedPosted -= AddCoalescedEvent;
             GameNotifications.UnitDied -= Death;
             foreach (var row in rows) if (row != null) RemoveRow(row);
             rows.Clear();
+            mergedEvents.Clear();
         }
 
         private void Death(Health health)
@@ -53,8 +63,32 @@ namespace GameFoundation.UI
             => AddEvent(new[] { new NotificationPart(text, kind, icon) });
 
         public void AddEvent(IReadOnlyList<NotificationPart> parts)
+            => CreateRow(parts);
+
+        public void AddCoalescedEvent(string key, float window, IReadOnlyList<NotificationPart> parts)
         {
-            if (rowPrefab == null) return;
+            if (!mergedEvents.TryGetValue(key, out var entry) || entry.row == null ||
+                !rows.Contains(entry.row) || Time.unscaledTime - entry.lastPosted > window)
+            {
+                entry = new MergedEvent();
+                mergedEvents[key] = entry;
+            }
+            foreach (var part in parts)
+            {
+                // Keep gains and spending visible instead of cancelling each other to zero.
+                int index = part.Resource == null ? -1 : entry.parts.FindIndex(p =>
+                    p.Resource == part.Resource && (p.Delta > 0) == (part.Delta > 0));
+                if (index < 0) entry.parts.Add(part);
+                else entry.parts[index] = new NotificationPart(part.Resource, entry.parts[index].Delta + part.Delta);
+            }
+            entry.lastPosted = Time.unscaledTime;
+            if (entry.row == null) entry.row = CreateRow(entry.parts);
+            else entry.row.Configure(entry.parts, normalColor, positiveColor, negativeColor, ((RectTransform)transform).rect.width);
+        }
+
+        private NotificationRow CreateRow(IReadOnlyList<NotificationPart> parts)
+        {
+            if (rowPrefab == null) return null;
             while (rows.Count >= Mathf.Max(1, maximumRows)) RemoveFirst();
             var row = Instantiate(rowPrefab, transform, false);
             row.gameObject.SetActive(true);
@@ -63,6 +97,7 @@ namespace GameFoundation.UI
             float y = growUpwards || rows.Count == 0 ? 0 : rows[^1].Rect.anchoredPosition.y - rows[^1].Height - rowSpacing;
             row.Rect.anchoredPosition = new Vector2(0, y);
             rows.Add(row);
+            return row;
         }
 
         private void RemoveFirst()
@@ -81,8 +116,10 @@ namespace GameFoundation.UI
 
         private void Update()
         {
-            while (rows.Count > Mathf.Max(1, maximumRows) || rows.Count > 0 &&
-                Time.unscaledTime - rows[0].CreatedAt >= visibleSeconds + fadeSeconds) RemoveFirst();
+            while (rows.Count > Mathf.Max(1, maximumRows)) RemoveFirst();
+            for (int i = rows.Count - 1; i >= 0; i--)
+                if (Time.unscaledTime - rows[i].CreatedAt >= visibleSeconds + fadeSeconds)
+                { RemoveRow(rows[i]); rows.RemoveAt(i); }
             float y = 0;
             for (int index = 0; index < rows.Count; index++)
             {

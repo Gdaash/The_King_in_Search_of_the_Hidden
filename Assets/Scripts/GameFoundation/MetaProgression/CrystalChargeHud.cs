@@ -12,6 +12,7 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private Button rechargeButton;
         [SerializeField] private Image resourceIcon;
         [SerializeField] private TMP_Text price;
+        [SerializeField, Min(0)] private float minimumCellsWidth = 112;
         private int lastCount = -1;
         private void Start()
         {
@@ -32,10 +33,10 @@ namespace GameFoundation.MetaProgression
             if (lastCount != crystal.CellCount)
             {
                 lastCount = crystal.CellCount;
-                float width = Mathf.Max(144, lastCount * 48 - 6);
+                float width = Mathf.Max(minimumCellsWidth, cellBar.WidthForCount(lastCount));
                 cellsRect.sizeDelta = new Vector2(width, cellsRect.sizeDelta.y);
                 ((RectTransform)rechargeButton.transform).anchoredPosition = new Vector2(width + 18, 0);
-                ((RectTransform)transform).sizeDelta = new Vector2(width + 18 + 238, 76);
+                ((RectTransform)transform).sizeDelta = new Vector2(width + 18 + 238, 60);
                 LayoutRebuilder.MarkLayoutForRebuild((RectTransform)transform.parent);
             }
             rechargeButton.interactable = crystal.CanRecharge;

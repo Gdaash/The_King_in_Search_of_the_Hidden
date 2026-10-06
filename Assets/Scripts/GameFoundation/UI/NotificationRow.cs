@@ -26,6 +26,9 @@ namespace GameFoundation.UI
         public RectTransform Rect => (RectTransform)transform;
         public float Height => Rect.rect.height;
         public float CreatedAt { get; private set; }
+        private float appearedAt;
+        private bool configured;
+        private readonly List<GameObject> generated = new();
 
         private sealed class PartView
         {
@@ -40,6 +43,14 @@ namespace GameFoundation.UI
         public void Configure(IReadOnlyList<NotificationPart> parts, Color normal, Color positive, Color negative, float width)
         {
             CreatedAt = Time.unscaledTime;
+            if (!configured) appearedAt = CreatedAt;
+            foreach (var child in generated)
+            {
+                if (child == null) continue;
+                child.SetActive(false);
+                if (Application.isPlaying) Destroy(child); else DestroyImmediate(child);
+            }
+            generated.Clear();
             Rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
             label.gameObject.SetActive(false);
             icon.gameObject.SetActive(false);
@@ -49,6 +60,7 @@ namespace GameFoundation.UI
             {
                 var view = new PartView();
                 view.text = Instantiate(label, transform, false);
+                generated.Add(view.text.gameObject);
                 view.text.gameObject.SetActive(true);
                 view.text.text = part.Text;
                 view.text.color = part.Kind == NotificationKind.Positive ? positive : part.Kind == NotificationKind.Negative ? negative : normal;
@@ -60,6 +72,7 @@ namespace GameFoundation.UI
                         foreach (var padding in iconPadding)
                             if (padding.sprite == part.Icon) { view.left = padding.left * 2; right = padding.right * 2; break; }
                     view.image = Instantiate(icon, transform, false);
+                    generated.Add(view.image.gameObject);
                     view.image.sprite = part.Icon;
                     view.image.gameObject.SetActive(true);
                     view.image.rectTransform.sizeDelta = size;
@@ -82,7 +95,8 @@ namespace GameFoundation.UI
             }
             PlaceLine(line, lineWidth, lineHeight, y, width);
             Rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, y + lineHeight);
-            group.alpha = 0;
+            if (!configured) group.alpha = 0;
+            configured = true;
             group.blocksRaycasts = false;
             group.interactable = false;
         }
@@ -109,7 +123,7 @@ namespace GameFoundation.UI
         public void Animate(float y, float lifetime, float fade, float movement)
         {
             float age = Time.unscaledTime - CreatedAt;
-            group.alpha = Mathf.Min(Mathf.Clamp01(age / fade), Mathf.Clamp01((lifetime + fade - age) / fade));
+            group.alpha = Mathf.Min(Mathf.Clamp01((Time.unscaledTime - appearedAt) / fade), Mathf.Clamp01((lifetime + fade - age) / fade));
             Rect.anchoredPosition = Vector2.Lerp(Rect.anchoredPosition, new Vector2(0, y),
                 1 - Mathf.Exp(-Time.unscaledDeltaTime * 5 / movement));
         }

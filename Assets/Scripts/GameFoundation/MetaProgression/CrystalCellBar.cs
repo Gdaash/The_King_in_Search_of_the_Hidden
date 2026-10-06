@@ -18,6 +18,14 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private Color activeColor = new(1f, .8f, .25f, 1f);
         [SerializeField] private Color waitingColor = new(.72f, .5f, 1f, 1f);
         private WorldFlashlightAvailability crystal;
+        public float WidthForCount(int count)
+        {
+            var layout = GetComponent<HorizontalLayoutGroup>();
+            float width = layout != null ? layout.padding.horizontal : 0;
+            int visible = Mathf.Min(count, cells.Length);
+            for (int i = 0; i < visible; i++) width += ((RectTransform)cells[i].root.transform).rect.width;
+            return width + Mathf.Max(0, visible - 1) * (layout != null ? layout.spacing : 0);
+        }
         public void Bind(WorldFlashlightAvailability owner) { crystal = owner; Refresh(); }
         private void LateUpdate() => Refresh();
         public void Refresh()
@@ -30,8 +38,13 @@ namespace GameFoundation.MetaProgression
                 if (view.root.activeSelf != visible) view.root.SetActive(visible);
                 if (!visible) continue;
                 var state = crystal.State(i);
-                view.frame.color = state == WorldFlashlightAvailability.CellState.WaitingForResources ? waitingColor :
-                    state == WorldFlashlightAvailability.CellState.Ready ? readyColor : activeColor;
+                view.frame.color = state switch
+                {
+                    WorldFlashlightAvailability.CellState.Ready => readyColor,
+                    WorldFlashlightAvailability.CellState.Charging => chargingColor,
+                    WorldFlashlightAvailability.CellState.WaitingForResources => waitingColor,
+                    _ => activeColor
+                };
                 view.fill.color = state == WorldFlashlightAvailability.CellState.Ready ? Color.white : chargingColor;
                 view.fill.fillAmount = crystal.Charge(i);
             }
