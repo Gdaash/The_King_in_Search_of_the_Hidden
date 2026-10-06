@@ -258,7 +258,11 @@ public class Health : MonoBehaviour
                 yield return null;
             }
         }
-        OnDeath?.Invoke();
+        using (GameFoundation.UI.GameNotifications.BeginAction())
+        {
+            GameFoundation.UI.GameNotifications.Death(this);
+            OnDeath?.Invoke();
+        }
         gameObject.SetActive(false);
     }
 }

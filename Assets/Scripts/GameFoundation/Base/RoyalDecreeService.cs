@@ -21,6 +21,8 @@ namespace GameFoundation.Base
             if (IsEnabled(decreeId) == enabled) return;
             SaveSlotPrefs.SetInt(Prefix + decreeId, enabled ? 1 : 0);
             SaveSlotPrefs.Save();
+            string title = decreeId == CautiousWarriors ? "Не трус, а осторожный" : decreeId == FinishOffEnemies ? "Бей раненых" : "Указ";
+            GameFoundation.UI.GameNotifications.Post((enabled ? "Указ включён: " : "Указ выключен: ") + title);
             Changed?.Invoke(decreeId, enabled);
         }
 

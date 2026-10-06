@@ -69,6 +69,16 @@ public class OrderManager : MonoBehaviour
     public void RegisterHumanUnit(HumanUnit h) { if (h != null && !_allHumanUnits.Contains(h)) _allHumanUnits.Add(h); }
     public void UnregisterHumanUnit(HumanUnit h) => _allHumanUnits.Remove(h);
     public void ForceUpdateOrders() => _nextUpdateTime = 0;
+    public void CancelDeliveries(ResourceRequester requester)
+    {
+        foreach (var porter in _allPorters)
+            if (porter != null && porter.GetCurrentJob() == requester)
+                porter.ResetTask();
+        foreach (var human in _allHumanUnits)
+            if (human != null && human.GetCurrentJob() == requester)
+                human.ReturnToPortal();
+        ForceUpdateOrders();
+    }
     public List<HumanUnit> GetHumanUnitsForRequester(ResourceRequester r) => _allHumanUnits.Where(h => h.GetCurrentJob() == r && h.IsBusy()).ToList();
 
     void Update()
@@ -152,7 +162,6 @@ public class OrderManager : MonoBehaviour
                         {
                             freePorter.AssignTask(order.requester, bestResource);
                             bestResource.isReserved = true;
-                            order.requester.ReserveResource(bestResource.type);
                             allResources.Remove(bestResource);
                             freePorters.Remove(freePorter);
                             assigned = true;
@@ -165,7 +174,6 @@ public class OrderManager : MonoBehaviour
                                 RegisterPorter(spawnedPorter);
                                 spawnedPorter.AssignTask(order.requester, bestResource);
                                 bestResource.isReserved = true;
-                                order.requester.ReserveResource(bestResource.type);
                                 allResources.Remove(bestResource);
                                 assigned = true;
                             }
@@ -182,7 +190,6 @@ public class OrderManager : MonoBehaviour
                             {
                                 // Назначаем свободного носильщика идти на склад
                                 freePorter.AssignWarehouseTask(order.requester, neededType);
-                                order.requester.ReserveResource(neededType);
                                 freePorters.Remove(freePorter);
                                 assigned = true;
                                 Debug.Log($"[OrderManager] Свободный носильщик отправлен на склад за {neededType.resourceName} для {order.requester.gameObject.name}", this);
@@ -195,7 +202,6 @@ public class OrderManager : MonoBehaviour
                                 {
                                     RegisterPorter(spawnedPorter);
                                     spawnedPorter.AssignWarehouseTask(order.requester, neededType);
-                                    order.requester.ReserveResource(neededType);
                                     assigned = true;
                                     Debug.Log($"[OrderManager] Заспаунен носильщик для похода на склад за {neededType.resourceName} для {order.requester.gameObject.name}", this);
                                 }

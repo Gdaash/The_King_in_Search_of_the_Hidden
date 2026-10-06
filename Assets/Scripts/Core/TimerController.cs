@@ -108,6 +108,7 @@ public class TimerController : MonoBehaviour
 
     private void TimerFinished()
     {
+        using var notification = GameFoundation.UI.GameNotifications.BeginAction();
         OnTimerEnd?.Invoke();
 
         // A crystal activation pays for exactly one production cycle, regardless of legacy repeats.

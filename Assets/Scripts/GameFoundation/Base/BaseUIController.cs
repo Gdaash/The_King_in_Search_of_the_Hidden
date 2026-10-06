@@ -1,6 +1,5 @@
 using GameFoundation.Localization;
 using GameFoundation.MetaProgression;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -42,17 +41,15 @@ namespace GameFoundation.Base
         [SerializeField] private Text statusText, dayText;
         [SerializeField] private Text portalTravelNotice;
         [SerializeField] private Text portalTravelUsedNotice;
-        [SerializeField, Min(0f)] private float notificationVisibleSeconds = 3f;
-        [SerializeField, Min(0f)] private float notificationFadeSeconds = 2f;
         [SerializeField] private ResourceType human;
         [SerializeField] private ResourceType magicOre;
         [SerializeField] private DayReportPopup dayReportPopup;
         private bool daySubscribed;
         private bool languageSubscribed;
-        private Coroutine notificationFade;
 
         private void Awake()
         {
+            if (statusText != null) statusText.gameObject.SetActive(false);
             Bind(portalButton, OpenMap);
             Bind(laboratoryButton, OpenLaboratory);
             Bind(nextDayButton, NextDay);
@@ -89,11 +86,6 @@ namespace GameFoundation.Base
         }
         private void OnDisable()
         {
-            if (notificationFade != null)
-            {
-                StopCoroutine(notificationFade);
-                notificationFade = null;
-            }
             if (daySubscribed && DayCycleService.Instance != null) DayCycleService.Instance.Changed -= Refresh;
             daySubscribed = false;
             if (languageSubscribed && LocalizationService.Instance != null) LocalizationService.Instance.LanguageChanged -= Refresh;
@@ -179,37 +171,13 @@ namespace GameFoundation.Base
         {
             var day = DayCycleService.Instance;
             if (day == null) return;
-            if (!PortalProgression.IsUnlocked(DayCycleService.GetPortalLocation(site.locationId))) { Message("Улучшите портал для доступа к этой локации"); return; }
-            if (!day.Enter(site)) { Message("Сегодня уже был поход"); return; }
+            if (!PortalProgression.IsUnlocked(DayCycleService.GetPortalLocation(site.locationId))) { Message("Улучшите портал для доступа к этой локации", GameFoundation.UI.NotificationKind.Negative); return; }
+            if (!day.Enter(site)) { Message("Сегодня уже был поход", GameFoundation.UI.NotificationKind.Negative); return; }
             FindFirstObjectByType<RunSceneRouter>()?.EnterRun();
         }
-        private void Message(string value)
+        private void Message(string value, GameFoundation.UI.NotificationKind kind = GameFoundation.UI.NotificationKind.Normal)
         {
-            if (statusText == null) return;
-            if (notificationFade != null) StopCoroutine(notificationFade);
-            statusText.text = value;
-            var color = statusText.color;
-            color.a = 1f;
-            statusText.color = color;
-            notificationFade = StartCoroutine(FadeNotification());
-        }
-
-        private IEnumerator FadeNotification()
-        {
-            yield return new WaitForSecondsRealtime(notificationVisibleSeconds);
-            float elapsed = 0f;
-            while (elapsed < notificationFadeSeconds)
-            {
-                elapsed += Time.unscaledDeltaTime;
-                var color = statusText.color;
-                color.a = notificationFadeSeconds <= 0f ? 0f : 1f - Mathf.Clamp01(elapsed / notificationFadeSeconds);
-                statusText.color = color;
-                yield return null;
-            }
-            var finalColor = statusText.color;
-            finalColor.a = 0f;
-            statusText.color = finalColor;
-            notificationFade = null;
+            GameFoundation.UI.GameNotifications.Post(value, kind);
         }
         private static string Tr(string key, string fallback)
         {
@@ -245,6 +213,7 @@ namespace GameFoundation.Base
         public void CancelNextDay() => Show(nextDayConfirmation, false);
         public void ConfirmNextDay()
         {
+            using var notification = GameFoundation.UI.GameNotifications.BeginAction();
             if (DayCycleService.Instance == null) return;
             Show(nextDayConfirmation, false);
             DayCycleService.Instance.NextDay();
@@ -254,10 +223,11 @@ namespace GameFoundation.Base
         public void SearchPortals() { DayCycleService.Instance?.Search(); Refresh(); }
         public void BuyCart()
         {
+            using var notification = GameFoundation.UI.GameNotifications.BeginAction();
             var purchase = warehouse != null ? warehouse.GetComponent<WarehouseCartPurchaseView>() : null;
-            if (purchase == null || !purchase.TryBuy()) { Message("Недостаточно дерева для телеги"); return; }
-            Message("Телега куплена");
+            if (purchase == null || !purchase.TryBuy()) { Message("Недостаточно дерева для телеги", GameFoundation.UI.NotificationKind.Negative); return; }
+            Message("Телега куплена", GameFoundation.UI.NotificationKind.Positive);
         }
-        public void AdmitRefugee() { if (GlobalResourceManager.Instance && human && DayCycleService.Instance?.AdmitRefugee() == true) { GlobalResourceManager.Instance.AddResource(human, 1); Message("Новый житель принят"); } }
+        public void AdmitRefugee() { using var notification = GameFoundation.UI.GameNotifications.BeginAction(); if (GlobalResourceManager.Instance && human && DayCycleService.Instance?.AdmitRefugee() == true) { GlobalResourceManager.Instance.AddResource(human, 1); Message("Новый житель принят", GameFoundation.UI.NotificationKind.Positive); } }
     }
 }

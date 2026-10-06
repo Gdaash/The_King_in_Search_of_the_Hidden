@@ -101,6 +101,7 @@ public class ResourceRequester : MonoBehaviour {
     {
         _crystalControlled = true;
         _crystalFlag = flag;
+        if (flag == null) OrderManager.Instance?.CancelDeliveries(this);
         UpdateIndicator();
     }
     public void TryStartCrystalCycle() => CheckCompletion();

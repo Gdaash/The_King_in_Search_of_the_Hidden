@@ -102,6 +102,7 @@ namespace GameFoundation.MetaProgression
         public static void RecordResourceChange(ResourceType type, int change)
         {
             if (type == null || change == 0) return;
+            GameFoundation.UI.GameNotifications.Resource(type, change);
             bool atShelter = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Base";
             if (!atShelter && (_state == null || !_state.runActive)) return;
             EnsureDay(DayCycleService.Instance != null ? DayCycleService.Instance.Day : 1);
@@ -122,6 +123,7 @@ namespace GameFoundation.MetaProgression
         public static void RecordStarvation(int deaths)
         {
             if (deaths <= 0) return;
+            GameFoundation.UI.GameNotifications.Post("Умерли от голода: " + deaths, GameFoundation.UI.NotificationKind.Negative);
             EnsureDay(DayCycleService.Instance != null ? DayCycleService.Instance.Day : 1);
             _state.starved += deaths;
             Save();

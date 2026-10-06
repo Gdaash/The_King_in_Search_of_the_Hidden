@@ -147,23 +147,26 @@ namespace GameFoundation.MetaProgression
                 text = view.state == WorldFlashlightAvailability.HoverState.WaitingForResources ? "отменить действие" :
                     view.state == WorldFlashlightAvailability.HoverState.CrystalBusy ? "кристалл занят" : "нет энергии";
             if (view.caption.text != text) view.caption.text = text;
-            bool hasCaption = !string.IsNullOrEmpty(text);
+            bool canCancel = view.state == WorldFlashlightAvailability.HoverState.WaitingForResources;
+            bool showMouseRow = canCancel || view.canRecall;
+            bool hasCaption = !string.IsNullOrEmpty(text) && !canCancel;
             view.caption.gameObject.SetActive(hasCaption);
             view.caption.alpha = view.captionGroup != null ? 1 : alpha;
-            if (view.recallRow != null) view.recallRow.SetActive(view.canRecall);
+            if (view.recallRow != null) view.recallRow.SetActive(showMouseRow);
             if (view.recallCaption != null)
             {
                 const string recallKey = "world.crystal.recall_humans";
                 string recall = LocalizationService.Instance?.Get(recallKey);
                 if (string.IsNullOrEmpty(recall) || recall == recallKey) recall = "Вернуть людей в портал";
+                if (canCancel) recall = text;
                 if (view.recallCaption.text != recall) view.recallCaption.text = recall;
             }
             if (view.captionGroup != null)
             {
-                view.captionGroup.alpha = hasCaption || view.canRecall ? alpha : 0;
+                view.captionGroup.alpha = hasCaption || showMouseRow ? alpha : 0;
                 // Width is fitted to the visible text/icon rows by the prefab's layout.
                 ((RectTransform)view.captionGroup.transform).SetSizeWithCurrentAnchors(
-                    RectTransform.Axis.Vertical, view.canRecall ? (hasCaption ? 98 : 66) : 48);
+                    RectTransform.Axis.Vertical, showMouseRow ? (hasCaption ? 98 : 66) : 48);
             }
             if (view.energyGroup != null)
                 view.energyGroup.alpha = view.state == WorldFlashlightAvailability.HoverState.Available ||

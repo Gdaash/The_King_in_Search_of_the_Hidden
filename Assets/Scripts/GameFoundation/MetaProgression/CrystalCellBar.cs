@@ -32,8 +32,8 @@ namespace GameFoundation.MetaProgression
                 var state = crystal.State(i);
                 view.frame.color = state == WorldFlashlightAvailability.CellState.WaitingForResources ? waitingColor :
                     state == WorldFlashlightAvailability.CellState.Ready ? readyColor : activeColor;
-                view.fill.color = state == WorldFlashlightAvailability.CellState.Ready ? readyColor : chargingColor;
-                view.fill.rectTransform.anchorMax = new Vector2(1, crystal.Charge(i));
+                view.fill.color = state == WorldFlashlightAvailability.CellState.Ready ? Color.white : chargingColor;
+                view.fill.fillAmount = crystal.Charge(i);
             }
         }
     }

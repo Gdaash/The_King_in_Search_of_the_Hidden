@@ -49,6 +49,7 @@ namespace GameFoundation.Base
         }
         public static bool TryUpgrade(string id)
         {
+            using var notification = GameFoundation.UI.GameNotifications.BeginAction();
             if (!CanUpgrade(id)) return false;
             var next = Next(id);
             var manager = GlobalResourceManager.Instance;
@@ -63,6 +64,8 @@ namespace GameFoundation.Base
                 }
                 SaveSlotPrefs.SetInt("foundation.building." + id + ".upgradeLevel", Level(id) + 1);
                 SaveSlotPrefs.Save();
+                var definition = Catalog.Find(id);
+                GameFoundation.UI.GameNotifications.Post("Улучшено: " + definition.displayName + " · ур. " + Level(id), GameFoundation.UI.NotificationKind.Positive);
             }
             finally { purchasing = false; NotifyChanged(); }
             return true;

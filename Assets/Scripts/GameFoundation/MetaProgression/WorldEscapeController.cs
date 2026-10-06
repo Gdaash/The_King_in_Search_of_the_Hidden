@@ -60,6 +60,7 @@ namespace GameFoundation.MetaProgression
         private void Start()
         {
             DayResourceLedger.BeginRun();
+            GameFoundation.UI.GameNotifications.Post("Поход начался");
             _runStartedAt = Time.realtimeSinceStartup;
             if (humanResource == null && GlobalResourceManager.Instance != null)
                 foreach (ResourceType resource in GlobalResourceManager.Instance.AvailableResources)
@@ -176,6 +177,7 @@ namespace GameFoundation.MetaProgression
             }
 
             _escaping = true;
+            GameFoundation.UI.GameNotifications.Post("Отступление: возвращаемся в портал");
             GameAudioController.PlayUI(GameAudioCue.Portal, 0.9f, 0.98f, 1.02f, 0.2f);
             StopWorldForEscape();
 
@@ -199,6 +201,7 @@ namespace GameFoundation.MetaProgression
         {
             if (_loading || _showingStatistics) return;
             DayCycleService.Instance?.DeactivateSelectedPortal();
+            GameFoundation.UI.GameNotifications.Post("Портал уничтожен", GameFoundation.UI.NotificationKind.Negative);
             _escaping = true;
             StopWorldForEscape();
             if (defeatMessage != null)

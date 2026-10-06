@@ -58,6 +58,7 @@ public class Warehouse : MonoBehaviour
     public void ReturnHuman(HumanUnit human)
     {
         if (human == null || GlobalResourceManager.Instance == null || humanResourceType == null) return;
+        if (!human.TryCompletePortalReturn()) return;
         GlobalResourceManager.Instance.AddResource(humanResourceType, 1);
     }
 
@@ -100,6 +101,8 @@ public class Warehouse : MonoBehaviour
     public void DespawnPorter(Porter porter)
     {
         if (porter == null || humanResourceType == null || cartResourceType == null || GlobalResourceManager.Instance == null) return;
+        if (!porter.TryCompletePortalReturn()) return;
+        porter.gameObject.SetActive(false);
         
         GlobalResourceManager.Instance.AddResource(humanResourceType, 1);
         GlobalResourceManager.Instance.AddResource(cartResourceType, 1);

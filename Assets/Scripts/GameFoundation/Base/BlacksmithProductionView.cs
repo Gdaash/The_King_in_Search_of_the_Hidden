@@ -62,12 +62,14 @@ namespace GameFoundation.Base
 
         private void Produce(RecipeView recipe)
         {
+            using var notification = GameFoundation.UI.GameNotifications.BeginAction();
             GlobalResourceManager manager = GlobalResourceManager.Instance;
             if (manager == null || recipe?.input == null || recipe.output == null ||
                 !manager.TrySpendResource(recipe.input, recipe.inputAmount))
                 return;
 
             manager.AddResource(recipe.output, recipe.outputAmount);
+            GameFoundation.UI.GameNotifications.Post("Оружие изготовлено", GameFoundation.UI.NotificationKind.Positive, recipe.output.resourceIcon);
             GameAudioController.PlayUI(GameAudioCue.ProductionComplete, 0.85f, 0.96f, 1.04f, 0.08f);
             Refresh();
         }

@@ -74,14 +74,19 @@ namespace GameFoundation.Base
 
         public void Arm()
         {
+            using var notification = GameNotifications.BeginAction();
             if (!CanArmWarrior) return;
             if (GlobalResourceManager.Instance?.TryExchangeResources(human, 1, weapon, 1, warrior, 1) == true)
+            {
                 MilitaryExperienceService.GetStored(warrior, GlobalResourceManager.Instance.GetResourceAmount(warrior));
+                GameNotifications.Post("Вооружён: " + (unitDescription != null ? unitDescription.Title : "Воин"), NotificationKind.Positive, warrior.resourceIcon);
+            }
             Refresh();
         }
 
         public void Disarm()
         {
+            using var notification = GameNotifications.BeginAction();
             var manager = GlobalResourceManager.Instance;
             if (manager != null && warrior != null && human != null && weapon != null &&
                 manager.TrySpendResource(warrior, 1))
@@ -89,6 +94,7 @@ namespace GameFoundation.Base
                 manager.AddResource(human, 1);
                 manager.AddResource(weapon, 1);
                 MilitaryExperienceService.RemoveStored(warrior);
+                GameNotifications.Post("Воин разоружён", NotificationKind.Normal, warrior.resourceIcon);
             }
             Refresh();
         }

@@ -269,20 +269,33 @@ namespace GameFoundation.MetaProgression
             var target = GetHoverTarget(point);
             if (target.State == HoverState.None) return false;
             TargetClicked?.Invoke(target);
-            if (target.State == HoverState.WaitingForResources) { Release(target.CellIndex); return true; }
+            if (target.State == HoverState.WaitingForResources) { Release(target.CellIndex); GameFoundation.UI.GameNotifications.Post("Действие отменено"); return true; }
             if (target.State != HoverState.Available) return false;
             return target.Hex != null ? OpenHex(target.CellIndex, target.Hex) : ReserveBuilding(target.CellIndex, target.Requester);
         }
         public bool RecallHumansAt(Vector2 point)
         {
-            if (escaped || GameSpeedControls.SimulationSpeed <= 0 || Warehouse.Instance == null) return false;
+            if (escaped || GameSpeedControls.SimulationSpeed <= 0) return false;
             var target = GetHoverTarget(point);
+            if (target.State == HoverState.WaitingForResources)
+            {
+                TargetClicked?.Invoke(target);
+                Release(target.CellIndex);
+                if (target.CanRecallHumans && Warehouse.Instance != null)
+                {
+                    target.Requester.SetCrystalFlag(null);
+                    target.Requester.RecallIdleHumans();
+                }
+                OrderManager.Instance?.ForceUpdateOrders();
+                GameFoundation.UI.GameNotifications.Post("Действие отменено");
+                return true;
+            }
+            if (Warehouse.Instance == null) return false;
             if (!target.CanRecallHumans) return false;
             TargetClicked?.Invoke(target);
-            // Cancel the delivery order first, so no replacement worker is dispatched during recall.
-            if (target.State == HoverState.WaitingForResources) Release(target.CellIndex);
             target.Requester.SetCrystalFlag(null);
             int sent = target.Requester.RecallIdleHumans();
+            if (sent > 0) GameFoundation.UI.GameNotifications.Post("Люди возвращаются в портал");
             OrderManager.Instance?.ForceUpdateOrders();
             return sent > 0;
         }
@@ -301,6 +314,7 @@ namespace GameFoundation.MetaProgression
             hex.OnUnlockCompleteEvent.AddListener(cell.completed);
             cell.beam.Show(cell.position, null, true);
             hex.StartUnlockProcess(1);
+            GameFoundation.UI.GameNotifications.Post("Начато открытие гекса");
             return true;
         }
         private bool ReserveBuilding(int index, ResourceRequester requester)
@@ -324,6 +338,7 @@ namespace GameFoundation.MetaProgression
             { timer.BindCrystalOwner(requester); timer.CrystalCycleStarted += cell.started; }
             requester.OnActionExecuted.AddListener(cell.completed);
             cell.beam.Show(cell.position, requester, false);
+            GameFoundation.UI.GameNotifications.Post("Здание ожидает доставку ресурсов");
             requester.SetCrystalFlag(cell.beam.Flag);
             Physics2D.SyncTransforms();
             requester.TryStartCrystalCycle();
@@ -338,6 +353,7 @@ namespace GameFoundation.MetaProgression
             if (!cell.occupied || cell.working || escaped) return;
             cell.charge = 0;
             cell.working = true;
+            GameFoundation.UI.GameNotifications.Post("Здание начало работу");
             cell.beam.Show(cell.position, cell.requester, true);
         }
         private static void CollectAlarmSources(Cell cell, UnityEvent action)
@@ -359,6 +375,7 @@ namespace GameFoundation.MetaProgression
         private void Release(int index, bool completed = false)
         {
             var cell = cells[index];
+            if (completed && cell.occupied) GameFoundation.UI.GameNotifications.Post(cell.hex != null ? "Гекс открыт" : "Работа здания завершена", GameFoundation.UI.NotificationKind.Positive);
             // Completion callbacks can precede the persistent alarm callback in the same event.
             // Keep its reservation until the emitter atomically transfers it into flying orbs.
             if (!completed && cell.alarm != null)
@@ -385,7 +402,9 @@ namespace GameFoundation.MetaProgression
         }
         public bool RechargeAll()
         {
+            using var notification = GameFoundation.UI.GameNotifications.BeginAction();
             if (!CanRecharge || !GlobalResourceManager.Instance.TrySpendResource(rechargeResource, rechargeCost)) return false;
+            GameFoundation.UI.GameNotifications.Post("Кристалл заряжен", GameFoundation.UI.NotificationKind.Positive);
             foreach (var cell in cells) cell.charge = 1;
             return true;
         }

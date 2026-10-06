@@ -19,6 +19,14 @@ public class Porter : MonoBehaviour, IEnemyAI
     private bool _isReturningToWarehouse = false;
     private bool _isDeliveringToWarehouse = false;
     private bool _isGoingToResource = false;
+    private bool _portalReturnCompleted;
+
+    public bool TryCompletePortalReturn()
+    {
+        if (_portalReturnCompleted) return false;
+        _portalReturnCompleted = true;
+        return true;
+    }
 
     public bool IsBusy() => _currentTarget != null || _hasResourceInHands;
     public Transform GetTarget() => _currentTarget;
@@ -94,7 +102,7 @@ public class Porter : MonoBehaviour, IEnemyAI
             ResetTask();
             return;
         }
-        if (!_hasResourceInHands && _currentJob != null && !_currentJob.HasLogisticFlag())
+        if (_currentJob != null && !_currentJob.HasLogisticFlag())
         {
             ResetTask();
             return;
@@ -175,6 +183,7 @@ public class Porter : MonoBehaviour, IEnemyAI
         if (_hasResourceInHands && _targetResourceType != null)
         {
             Warehouse.Instance.DepositResource(_targetResourceType);
+            if (_carriedResourceItem != null) Destroy(_carriedResourceItem.gameObject);
             ClearHands();
         }
 
@@ -232,8 +241,16 @@ public class Porter : MonoBehaviour, IEnemyAI
             _currentJob.ForceCancelReservation(_targetResourceType);
             _currentJob.UpdateIndicator();
         }
-        if (_hasResourceInHands && _carriedResourceItem != null) Destroy(_carriedResourceItem.gameObject);
-        ClearAll();
+        // Release an uncollected world item so another porter can collect it.
+        if (!_hasResourceInHands && _isGoingToResource && _currentTarget != null &&
+            _currentTarget.TryGetComponent<ResourceItem>(out var item))
+            item.isReserved = false;
+        _currentJob = null;
+        _currentTarget = null;
+        _isGoingToResource = false;
+        _isGoingToWarehouse = false;
+        _isDeliveringToWarehouse = false;
+        // Keep the cargo and its visual until it is deposited at the portal.
         TryReturnToWarehouse();
     }
 

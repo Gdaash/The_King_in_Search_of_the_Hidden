@@ -293,6 +293,7 @@ public class AlarmSystem : MonoBehaviour
 
     private void EnqueueDangerLevelNotification(int level)
     {
+        GameFoundation.UI.GameNotifications.Post("Уровень тревоги: " + level, GameFoundation.UI.NotificationKind.Negative);
         if (dangerLevelNotificationPrefab == null) return;
         _dangerNotificationQueue.Enqueue(level);
         if (_dangerNotificationRoutine == null)

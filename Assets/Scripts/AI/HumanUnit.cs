@@ -15,6 +15,13 @@ public class HumanUnit : MonoBehaviour, IEnemyAI
     private bool _isReserved = false;
     private bool _isReturningToWarehouse = false;
     private bool _mustReachPortal;
+    private bool _portalReturnCompleted;
+    public bool TryCompletePortalReturn()
+    {
+        if (_portalReturnCompleted) return false;
+        _portalReturnCompleted = true;
+        return true;
+    }
     public bool CanBeReassigned => !_mustReachPortal;
     public void ReturnToPortal()
     {
