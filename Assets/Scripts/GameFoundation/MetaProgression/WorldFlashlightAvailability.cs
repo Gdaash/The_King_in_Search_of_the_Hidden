@@ -49,6 +49,8 @@ namespace GameFoundation.MetaProgression
             public UnityAction completed;
             public Action started;
             public Vector2 position;
+            public AlarmSystem alarm;
+            public readonly Dictionary<UnityEngine.Object, float> alarmSources = new();
         }
         private Cell[] cells = Array.Empty<Cell>();
         private bool escaped;
@@ -235,6 +237,22 @@ namespace GameFoundation.MetaProgression
             return anchor;
         }
         private bool HasProductionTimer(ResourceRequester requester) => ProductionTimers(requester).Length > 0;
+        public float GetActionAlarm(HoverTarget target)
+        {
+            if (target.State != HoverState.Available && target.State != HoverState.NoEnergy &&
+                target.State != HoverState.CrystalBusy) return 0f;
+            if (target.Hex != null)
+            {
+                var blocker = target.Hex.GetComponentInParent<HexBlocker>();
+                return blocker != null ? blocker.UnlockAlarmAmount : 0f;
+            }
+            if (target.Requester == null) return 0f;
+            float amount = AlarmEmitter.Preview(target.Requester.OnAllResourcesReceived) +
+                AlarmEmitter.Preview(target.Requester.OnActionExecuted);
+            foreach (var timer in ProductionTimers(target.Requester))
+                amount += AlarmEmitter.Preview(timer.OnTimerEnd);
+            return amount;
+        }
         private TimerController[] ProductionTimers(ResourceRequester requester)
         {
             if (productionTimers.TryGetValue(requester, out var cached)) return cached;
@@ -275,7 +293,11 @@ namespace GameFoundation.MetaProgression
             cell.charge = 0;
             cell.hex = hex;
             cell.position = hex.transform.position;
-            cell.completed = () => Release(index);
+            cell.alarm = AlarmSystem.Instance;
+            var blocker = hex.GetComponentInParent<HexBlocker>();
+            if (blocker != null) cell.alarmSources[blocker] = blocker.UnlockAlarmAmount;
+            ReserveAlarm(cell);
+            cell.completed = () => Release(index, true);
             hex.OnUnlockCompleteEvent.AddListener(cell.completed);
             cell.beam.Show(cell.position, null, true);
             hex.StartUnlockProcess(1);
@@ -292,7 +314,12 @@ namespace GameFoundation.MetaProgression
             cell.position = requester.transform.position;
             cell.timers = timers;
             cell.started = () => StartProduction(index);
-            cell.completed = () => Release(index);
+            cell.alarm = AlarmSystem.Instance;
+            CollectAlarmSources(cell, requester.OnAllResourcesReceived);
+            CollectAlarmSources(cell, requester.OnActionExecuted);
+            foreach (var timer in timers) CollectAlarmSources(cell, timer.OnTimerEnd);
+            ReserveAlarm(cell);
+            cell.completed = () => Release(index, true);
             foreach (var timer in cell.timers)
             { timer.BindCrystalOwner(requester); timer.CrystalCycleStarted += cell.started; }
             requester.OnActionExecuted.AddListener(cell.completed);
@@ -313,9 +340,31 @@ namespace GameFoundation.MetaProgression
             cell.working = true;
             cell.beam.Show(cell.position, cell.requester, true);
         }
-        private void Release(int index)
+        private static void CollectAlarmSources(Cell cell, UnityEvent action)
+        {
+            if (action == null) return;
+            for (int i = 0; i < action.GetPersistentEventCount(); i++)
+            {
+                var source = AlarmEmitter.ConfiguredEmitter(action, i);
+                if (source == null) continue;
+                cell.alarmSources.TryGetValue(source, out float amount);
+                cell.alarmSources[source] = amount + source.ConfiguredAmount;
+            }
+        }
+        private static void ReserveAlarm(Cell cell)
+        {
+            if (cell.alarm == null) return;
+            foreach (var source in cell.alarmSources) cell.alarm.ReserveActionAlarm(source.Key, source.Value);
+        }
+        private void Release(int index, bool completed = false)
         {
             var cell = cells[index];
+            // Completion callbacks can precede the persistent alarm callback in the same event.
+            // Keep its reservation until the emitter atomically transfers it into flying orbs.
+            if (!completed && cell.alarm != null)
+                foreach (var source in cell.alarmSources) cell.alarm.CancelActionAlarm(source.Key);
+            cell.alarmSources.Clear();
+            cell.alarm = null;
             if (cell.hex != null && cell.completed != null)
             {
                 cell.hex.OnUnlockCompleteEvent.RemoveListener(cell.completed);

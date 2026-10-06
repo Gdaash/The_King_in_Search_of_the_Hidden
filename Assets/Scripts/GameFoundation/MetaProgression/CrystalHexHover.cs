@@ -19,6 +19,7 @@ namespace GameFoundation.MetaProgression
             public TMP_Text recallCaption;
             public CanvasGroup energyGroup;
             public CrystalCellBar energyBar;
+            public HexAlarmPreview alarmPreview;
             [NonSerialized] public Transform anchor;
             [NonSerialized] public LogisticFlag flag;
             [NonSerialized] public WorldFlashlightAvailability.HoverState state;
@@ -88,7 +89,11 @@ namespace GameFoundation.MetaProgression
                 // The visual stays at the tile origin without inheriting its destruction/bump animation.
                 view.root.rotation = Quaternion.identity;
                 if (show && view.flag != desired.Flag) { ReleaseFlag(view); view.flag = desired.Flag; }
-                if (show) view.canRecall = desired.CanRecallHumans;
+                if (show)
+                {
+                    view.canRecall = desired.CanRecallHumans;
+                    if (view.alarmPreview != null) view.alarmPreview.Show(crystal.GetActionAlarm(desired));
+                }
                 if (view.flag != null) view.flag.SetCrystalHoverVisible(true);
                 if (view.clickTime >= 0)
                 {

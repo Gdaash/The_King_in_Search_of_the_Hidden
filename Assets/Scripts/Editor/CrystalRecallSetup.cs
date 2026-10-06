@@ -164,6 +164,7 @@ public static class CrystalRecallSetup
                 view.FindPropertyRelative("energyBar").objectReferenceValue = bar;
             }
             so.ApplyModifiedPropertiesWithoutUndo();
+            HexAlarmPreviewSetup.Configure(root);
             PrefabUtility.SaveAsPrefabAsset(root, CrystalHexHoverSetup.PrefabPath);
         }
         finally { PrefabUtility.UnloadPrefabContents(root); }

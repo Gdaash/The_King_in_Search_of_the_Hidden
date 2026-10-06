@@ -50,7 +50,12 @@ public class FlashlightController : MonoBehaviour
         StopAllCoroutines();
         if (marker != null) marker.transform.position = position;
         if (spotLight == null) spotLight = GetComponent<Light2D>();
-        if (spotLight != null) spotLight.enabled = lit;
+        if (spotLight != null)
+        {
+            spotLight.enabled = false;
+            ApplyLightGeometry(position, true);
+            spotLight.enabled = lit;
+        }
     }
 
     private void Awake()
@@ -113,9 +118,13 @@ public class FlashlightController : MonoBehaviour
             return;
         }
 
+        ApplyLightGeometry(marker.transform.position, false);
         spotLight.enabled = true;
+    }
 
-        Vector2 direction = (Vector2)marker.transform.position - (Vector2)transform.position;
+    private void ApplyLightGeometry(Vector2 position, bool immediate)
+    {
+        Vector2 direction = position - (Vector2)transform.position;
         float distance = direction.magnitude;
         
         if (distance < 0.01f) distance = 0.01f;
@@ -123,24 +132,24 @@ public class FlashlightController : MonoBehaviour
         // === ПОВОРОТ ===
         float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
         float currentAngle = transform.eulerAngles.z;
-        float newAngle = Mathf.LerpAngle(currentAngle, targetAngle, Time.deltaTime * rotationSpeed);
+        float newAngle = immediate ? targetAngle : Mathf.LerpAngle(currentAngle, targetAngle, Time.deltaTime * rotationSpeed);
         transform.rotation = Quaternion.Euler(0, 0, newAngle);
         
         // === РАДИУС ===
         float targetRadius = distance;
-        _currentRadius = Mathf.Lerp(_currentRadius, targetRadius, Time.deltaTime * radiusSpeed);
+        _currentRadius = immediate ? targetRadius : Mathf.Lerp(_currentRadius, targetRadius, Time.deltaTime * radiusSpeed);
         spotLight.pointLightOuterRadius = _currentRadius;
 
         // === ВНЕШНИЙ УГОЛ КОНУСА ===
         float targetSpotAngle = 2f * Mathf.Atan(targetBeamWidth / (2f * distance)) * Mathf.Rad2Deg;
         targetSpotAngle = Mathf.Clamp(targetSpotAngle, minSpotAngle, maxSpotAngle);
-        _currentSpotAngle = Mathf.Lerp(_currentSpotAngle, targetSpotAngle, Time.deltaTime * radiusSpeed);
+        _currentSpotAngle = immediate ? targetSpotAngle : Mathf.Lerp(_currentSpotAngle, targetSpotAngle, Time.deltaTime * radiusSpeed);
         spotLight.pointLightOuterAngle = _currentSpotAngle;
 
         // === ВНУТРЕННИЙ УГОЛ КОНУСА (НОВОЕ) ===
         // Внутренний угол всегда равен половине внешнего
         float targetInnerAngle = _currentSpotAngle / 2f;
-        _currentInnerAngle = Mathf.Lerp(_currentInnerAngle, targetInnerAngle, Time.deltaTime * radiusSpeed);
+        _currentInnerAngle = immediate ? targetInnerAngle : Mathf.Lerp(_currentInnerAngle, targetInnerAngle, Time.deltaTime * radiusSpeed);
         spotLight.pointLightInnerAngle = _currentInnerAngle;
     }
 

@@ -49,6 +49,8 @@ public class HexBlocker : MonoBehaviour
     private AlarmSystem _alarmSystem;
 
     public bool IsBlocked => !_isRemoved && gameObject.activeInHierarchy && !_isCurrentlyUnlocked;
+    public float UnlockAlarmAmount => _alarmRaised ? 0f : Mathf.Max(0f,
+        alarmOnUnlock - (_hexManager != null && _hexManager.Stats != null ? _hexManager.Stats.HexAlarmReduction : 0f));
     private bool StartsUnlocked => unlockedAtStart ||
         (GetComponentInParent<HexMapGenerator>() is HexMapGenerator generator && generator.IsFirstRingHex(transform));
 
@@ -274,10 +276,9 @@ public class HexBlocker : MonoBehaviour
         _alarmSystem ??= Object.FindFirstObjectByType<AlarmSystem>();
         if (_alarmSystem == null) return;
 
+        float amount = UnlockAlarmAmount;
         _alarmRaised = true;
-        GlobalStats stats = _hexManager != null ? _hexManager.Stats : null;
-        float amount = alarmOnUnlock - (stats != null ? stats.HexAlarmReduction : 0f);
-        if (amount > 0f) _alarmSystem.AddAlarmFromWorldPosition(amount, transform.position);
+        _alarmSystem.AddAlarmFromAction(amount, transform.position, this);
     }
 
     private void OnDrawGizmosSelected()

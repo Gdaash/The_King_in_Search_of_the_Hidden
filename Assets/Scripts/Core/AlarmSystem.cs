@@ -88,6 +88,7 @@ public class AlarmSystem : MonoBehaviour
     private readonly List<Image> _thresholdSkulls = new();
     private float _displayedFill;
     private float _pendingAlarm;
+    private readonly Dictionary<UnityEngine.Object, float> _actionAlarmReservations = new();
     private Canvas _canvas;
     private RectTransform _canvasRect;
 
@@ -127,6 +128,72 @@ public class AlarmSystem : MonoBehaviour
 
     public IReadOnlyList<AlarmThreshold> ConfiguredThresholds => thresholds;
     public AlarmDifficultyTable DifficultyTable => difficultyTable;
+    public Sprite OrbSprite => orbSettings != null && orbSettings.Image != null ? orbSettings.Image.sprite : alarmOrbSprite != null ? alarmOrbSprite : uiSprite;
+    public Color OrbColor => orbSettings != null && orbSettings.Image != null ? orbSettings.Image.color : new Color(1f, .22f, .16f, 1f);
+    public Sprite SkullSprite => thresholdSkullSprite;
+
+    public int PreviewOrbCount(float amount)
+    {
+        return OrbCount(AcceptedPreviewAlarm(amount));
+    }
+
+    private int OrbCount(float accepted)
+    {
+        if (accepted <= 0f) return 0;
+        float units = orbSettings != null ? orbSettings.AlarmUnitsPerOrb : 1f;
+        int limit = orbSettings != null ? orbSettings.MaximumOrbsPerAddition : maximumOrbsPerAddition;
+        return Mathf.Clamp(Mathf.CeilToInt(accepted / units), 1, limit);
+    }
+
+    private float AcceptedAlarm(float amount) => Mathf.Min(Mathf.Max(0f, amount),
+        Mathf.Max(0f, maximumAlarm - currentAlarm - _pendingAlarm));
+
+    public float ReservedActionAlarm
+    {
+        get
+        {
+            float total = 0f;
+            foreach (var reservation in _actionAlarmReservations)
+                if (reservation.Key != null) total += reservation.Value;
+            return total;
+        }
+    }
+
+    public void ReserveActionAlarm(UnityEngine.Object source, float amount)
+    {
+        if (source == null) return;
+        if (amount > 0f) _actionAlarmReservations[source] = amount;
+        else _actionAlarmReservations.Remove(source);
+    }
+
+    public void CancelActionAlarm(UnityEngine.Object source)
+    {
+        if (!ReferenceEquals(source, null)) _actionAlarmReservations.Remove(source);
+    }
+
+    public void AddAlarmFromAction(float amount, Vector3 position, UnityEngine.Object source)
+    {
+        // Transfer the forecast into incoming orbs in the same call, without counting both.
+        CancelActionAlarm(source);
+        AddAlarmFromWorldPosition(amount, position);
+    }
+
+    private float AcceptedPreviewAlarm(float amount) => Mathf.Min(Mathf.Max(0f, amount),
+        Mathf.Max(0f, maximumAlarm - currentAlarm - _pendingAlarm - ReservedActionAlarm));
+
+    public bool PreviewOrbRaisesLevel(float amount, int index)
+    {
+        int count = PreviewOrbCount(amount);
+        if (index < 0 || index >= count) return false;
+        float start = currentAlarm + _pendingAlarm + ReservedActionAlarm;
+        float step = AcceptedPreviewAlarm(amount) / count;
+        float before = start + step * index;
+        float after = start + step * (index + 1);
+        foreach (var threshold in thresholds)
+            if (threshold != null && threshold.alarmValue > before && threshold.alarmValue <= after &&
+                !_activatedThresholds.Contains(threshold)) return true;
+        return false;
+    }
 
     private void OnDestroy()
     {
@@ -151,6 +218,7 @@ public class AlarmSystem : MonoBehaviour
 
     private void OnDisable()
     {
+        _actionAlarmReservations.Clear();
         foreach (Coroutine routine in _waveRoutines)
             if (routine != null) StopCoroutine(routine);
         _waveRoutines.Clear();
@@ -175,16 +243,13 @@ public class AlarmSystem : MonoBehaviour
     {
         if (amount <= 0f) return;
 
-        float available = maximumAlarm - currentAlarm - _pendingAlarm;
-        float acceptedAmount = Mathf.Min(amount, Mathf.Max(0f, available));
+        float acceptedAmount = AcceptedAlarm(amount);
         if (acceptedAmount <= 0f) return;
 
+        int orbCount = OrbCount(acceptedAmount);
         _pendingAlarm += acceptedAmount;
         ApplyPreview(Mathf.Clamp01((currentAlarm + _pendingAlarm) / maximumAlarm));
 
-        float alarmUnitsPerOrb = orbSettings != null ? orbSettings.AlarmUnitsPerOrb : 1f;
-        int maximumOrbs = orbSettings != null ? orbSettings.MaximumOrbsPerAddition : maximumOrbsPerAddition;
-        int orbCount = Mathf.Clamp(Mathf.CeilToInt(acceptedAmount / alarmUnitsPerOrb), 1, maximumOrbs);
         float amountPerOrb = acceptedAmount / orbCount;
         float targetFill = Mathf.Clamp01((currentAlarm + _pendingAlarm * 0.5f) / maximumAlarm);
         for (int i = 0; i < orbCount; i++)
@@ -204,6 +269,7 @@ public class AlarmSystem : MonoBehaviour
 
     public void ResetAlarm()
     {
+        _actionAlarmReservations.Clear();
         currentAlarm = 0f;
         _pendingAlarm = 0f;
         ApplyFill(0f);
