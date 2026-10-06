@@ -97,9 +97,16 @@ namespace GameFoundation.UI
 
         public void OnPointerEnter(PointerEventData eventData) { hoverPointer = eventData; hovered = true; }
         public void OnPointerExit(PointerEventData eventData) { hoverPointer = null; hovered = false; pressed = false; }
-        public void OnPointerDown(PointerEventData eventData) => pressed = button != null && button.interactable;
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            if (eventData.button != PointerEventData.InputButton.Left) return;
+            focused = false;
+            pressed = button != null && button.interactable;
+        }
         public void OnPointerUp(PointerEventData eventData) => pressed = false;
-        public void OnSelect(BaseEventData eventData) => focused = true;
+        // Mouse clicks select uGUI buttons too, but must not leave a permanent hover
+        // highlight. Keyboard/controller selection still needs a visible focus state.
+        public void OnSelect(BaseEventData eventData) => focused = eventData is not PointerEventData;
         public void OnDeselect(BaseEventData eventData) => focused = false;
 
         private void OnDisable()
