@@ -43,6 +43,8 @@ public static class LogisticsCancellationAudit
     }
 
     public static void RunForaging() { SessionState.SetBool(Key + "foraging", true); Run(); }
+    public static void RunEnemyLevels() { SessionState.SetBool(Key + "enemyLevels", true); Run(); }
+    public static void RunQuestRewards() { SessionState.SetBool(Key + "questRewards", true); Run(); }
     public static void RunAnimals()
     {
         SessionState.SetBool(Key + "animals", true);
@@ -111,6 +113,8 @@ public static class LogisticsCancellationAudit
     {
         try
         {
+            if (SessionState.GetBool(Key + "questRewards", false)) { SessionState.SetBool(Key + "questRewards", false); await QuestRewardAudit.RunPlay(); return; }
+            if (SessionState.GetBool(Key + "enemyLevels", false)) { SessionState.SetBool(Key + "enemyLevels", false); await EnemyLevelAudit.RunPlay(); return; }
             if (SessionState.GetBool(Key + "foraging", false)) { SessionState.SetBool(Key + "foraging", false); await ForestForagingAudit.RunPlay(); return; }
             if (SessionState.GetBool(Key + "animals", false))
             {

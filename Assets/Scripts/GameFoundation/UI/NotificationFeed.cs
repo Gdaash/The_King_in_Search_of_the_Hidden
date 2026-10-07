@@ -17,6 +17,8 @@ namespace GameFoundation.UI
         [SerializeField] private Color normalColor = Color.white;
         [SerializeField] private Color positiveColor = new(.43f, .86f, .46f);
         [SerializeField] private Color negativeColor = new(1f, .36f, .38f);
+        public Color PositiveColor => positiveColor;
+        public Color NegativeColor => negativeColor;
         [Tooltip("Образец строки внутри префаба. Настройте его Text: шрифт, размер, выравнивание и интервалы. В игре образец скрыт.")]
         [SerializeField] private NotificationRow rowPrefab;
         [SerializeField] private UnitDescriptionCatalog unitCatalog;

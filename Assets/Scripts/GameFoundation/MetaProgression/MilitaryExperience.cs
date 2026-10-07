@@ -123,6 +123,6 @@ namespace GameFoundation.MetaProgression
         }
         public void ReturnToBase() => MilitaryExperienceService.Return(profile);
         public void Die() => MilitaryExperienceService.Remove(profile);
-        public static float Multiplier(Component component) => component != null ? component.GetComponent<MilitaryExperience>()?.StatMultiplier ?? 1f : 1f;
+        public static float Multiplier(Component component) => component != null ? component.GetComponent<EnemyLevel>()?.StatMultiplier ?? component.GetComponent<MilitaryExperience>()?.StatMultiplier ?? 1f : 1f;
     }
 }

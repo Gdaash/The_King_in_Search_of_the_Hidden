@@ -19,6 +19,15 @@ namespace GameFoundation.Quests
         public string title;
         [TextArea] public string description;
         public List<Requirement> requirements = new();
+        [Serializable]
+        public sealed class ResourceReward
+        {
+            public ResourceType resource;
+            [Min(1)] public int amount = 1;
+        }
+        [Header("Награда — выдаётся только по кнопке")]
+        public List<ResourceReward> resourceRewards = new();
+        public List<ContentUnlockDefinition> unlockRewards = new();
         private void OnValidate()
         {
             if (string.IsNullOrWhiteSpace(id)) id = System.Guid.NewGuid().ToString("N");

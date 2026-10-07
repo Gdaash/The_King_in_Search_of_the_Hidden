@@ -72,7 +72,7 @@ public class GlobalStats : ScriptableObject
 
     public bool IsUpgradeUnlocked(ScientificUpgradeTable.Entry entry)
     {
-        if (entry == null || UpgradeTable == null || PurchasedUpgradeCount < entry.requiredPurchases) return false;
+        if (entry == null || !entry.IsAvailable || UpgradeTable == null || PurchasedUpgradeCount < entry.requiredPurchases) return false;
         return UpgradeTable.entries.All(e => e.GroupId != entry.GroupId || e.level >= entry.level || HasUpgrade(e.id));
     }
 

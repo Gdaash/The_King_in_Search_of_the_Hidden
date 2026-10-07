@@ -9,8 +9,8 @@ namespace GameFoundation.Quests
         [SerializeField] private QuestCatalog catalog;
         private GlobalResourceManager resources;
         private void Awake() => resources = GetComponent<GlobalResourceManager>();
-        private void OnEnable() => GlobalResourceManager.OnResourceChanged += OnResourceChanged;
-        private void OnDisable() => GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
+        private void OnEnable() { GlobalResourceManager.OnResourceChanged += OnResourceChanged; QuestProgress.Changed += Evaluate; }
+        private void OnDisable() { GlobalResourceManager.OnResourceChanged -= OnResourceChanged; QuestProgress.Changed -= Evaluate; }
         private void Start() => Evaluate();
         private void OnResourceChanged(ResourceType _, int __) => Evaluate();
         private void Evaluate()

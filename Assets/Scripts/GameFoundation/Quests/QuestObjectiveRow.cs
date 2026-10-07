@@ -11,6 +11,14 @@ namespace GameFoundation.Quests
         [SerializeField] private Color incompleteColor = new(.95f, .91f, .8f);
         [SerializeField] private Color completeColor = new(.5f, .85f, .5f);
 
+        public void PresentReward(Sprite icon, string value, string caption)
+        {
+            ResourceIconSizing.Apply(resourceIcon, icon);
+            resourceIcon.enabled = icon != null;
+            amount.text = value; amount.color = completeColor;
+            purpose.text = caption;
+            GetComponent<LayoutElement>().preferredHeight = Mathf.Max(44, icon != null ? icon.rect.height * 2 + 8 : 44);
+        }
         public void Present(QuestDefinition.Requirement goal, int stock, bool completed)
         {
             ResourceIconSizing.Apply(resourceIcon, goal.resource != null ? goal.resource.resourceIcon : null);

@@ -15,12 +15,20 @@ namespace GameFoundation.Base
             confirmDisableButton.onClick.RemoveListener(DisableSelected); confirmDisableButton.onClick.AddListener(DisableSelected);
             cancelDisableButton.onClick.RemoveListener(CancelDisable); cancelDisableButton.onClick.AddListener(CancelDisable);
             CancelDisable();
+            GameFoundation.Quests.ContentUnlocks.Changed += RefreshUnlocks;
+            RefreshUnlocks();
         }
         private void OnDisable()
         {
+            GameFoundation.Quests.ContentUnlocks.Changed -= RefreshUnlocks;
             if(closeButton)closeButton.onClick.RemoveListener(Close);
             if(confirmDisableButton)confirmDisableButton.onClick.RemoveListener(DisableSelected);
             if(cancelDisableButton)cancelDisableButton.onClick.RemoveListener(CancelDisable);
+        }
+        private void RefreshUnlocks()
+        {
+            foreach (var row in GetComponentsInChildren<RoyalDecreeRow>(true))
+                row.gameObject.SetActive(row.decree != null && row.decree.IsAvailable);
         }
         public void Open() => gameObject.SetActive(true);
         public void Close() { if (!ForestForagingService.IsPending) gameObject.SetActive(false); }

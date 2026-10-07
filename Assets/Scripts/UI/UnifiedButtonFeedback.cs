@@ -11,6 +11,8 @@ namespace GameFoundation.UI
     {
         [SerializeField] private ButtonVisualTheme theme;
         [SerializeField] private bool animateScale = true;
+        [SerializeField] private bool animateGraphic = true;
+        [SerializeField, Min(0f)] private float hoverScaleOverride;
         [Tooltip("Optional visual container to animate without scaling nested, independently clickable buttons.")]
         [SerializeField] private RectTransform scaleTarget;
         [SerializeField] private bool useButtonPalette;
@@ -56,7 +58,7 @@ namespace GameFoundation.UI
             bool enabledButton = button.IsActive() && button.interactable;
             bool highlighted = enabledButton && !overChildButton && (hovered || focused);
             float scale = pressed && enabledButton ? theme.pressedScale :
-                highlighted ? theme.hoverScale * hoverScaleMultiplier : 1f;
+                highlighted ? (hoverScaleOverride > 0f ? hoverScaleOverride : theme.hoverScale) * hoverScaleMultiplier : 1f;
             float step = 1f - Mathf.Exp(-theme.transitionSpeed * Time.unscaledDeltaTime);
 
             if (animateScale)
@@ -66,7 +68,7 @@ namespace GameFoundation.UI
                     animatedTransform.localScale = Vector3.Lerp(animatedTransform.localScale, targetScale, step);
             }
 
-            if (graphic == null) return;
+            if (graphic == null || !animateGraphic) return;
             var palette = button.colors;
             Color target;
             if (!enabledButton)
@@ -115,7 +117,7 @@ namespace GameFoundation.UI
             hoverPointer = null;
             ExternalScaleMultiplier = 1f;
             if (animateScale && animatedTransform != null) animatedTransform.localScale = originalScale;
-            if (graphic != null) graphic.color = originalColor;
+            if (graphic != null && animateGraphic) graphic.color = originalColor;
             if (outline != null)
             {
                 var color = outline.effectColor;

@@ -153,7 +153,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 0.94, g: 0.91, b: 0.82, a: 1}
+  m_fontColor: {r: 0.56, g: 0.69, b: 0.53, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -2542,6 +2542,7 @@ GameObject:
   - component: {fileID: 7257400857719109940}
   - component: {fileID: 8384052178922999399}
   - component: {fileID: 6944256304838221495}
+  - component: {fileID: 5888395119926087797}
   m_Layer: 0
   m_Name: ReturnButton
   m_TagString: Untagged
@@ -2665,6 +2666,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.UnifiedButtonFeedback
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
+  animateGraphic: 1
+  hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
   hoverScaleMultiplier: 1
@@ -2683,6 +2686,23 @@ MonoBehaviour:
   m_EffectColor: {r: 1, g: 0.95, b: 0.5, a: 0}
   m_EffectDistance: {x: 4, y: -4}
   m_UseGraphicAlpha: 0
+--- !u!114 &5888395119926087797
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6013814280668016437}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d680a50b6ec86d4d99f1c58e00dd399, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.ActionButtonLabelColor
+  label: {fileID: 0}
+  tmpLabel: {fileID: 2442856139906954272}
+  theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
+  negative: 0
+  neutral: 0
 --- !u!1 &6208583270211551454
 GameObject:
   m_ObjectHideFlags: 0

@@ -22,6 +22,7 @@ namespace GameFoundation.Base
         private void OnEnable()
         {
             GlobalResourceManager.OnResourceChanged += ResourceChanged;
+            GameFoundation.Quests.ContentUnlocks.Changed += Refresh;
             if (stats != null) stats.OnStatsUpdated += Refresh;
             language = LocalizationService.Instance;
             if (language != null) language.LanguageChanged += Refresh;
@@ -31,6 +32,7 @@ namespace GameFoundation.Base
         private void OnDisable()
         {
             GlobalResourceManager.OnResourceChanged -= ResourceChanged;
+            GameFoundation.Quests.ContentUnlocks.Changed -= Refresh;
             if (stats != null) stats.OnStatsUpdated -= Refresh;
             if (language != null) language.LanguageChanged -= Refresh;
             language = null;
@@ -40,7 +42,7 @@ namespace GameFoundation.Base
         {
             if (stats == null || stats.UpgradeTable == null || content == null) return;
             rows ??= content.GetComponentsInChildren<LaboratoryUpgradeRow>(true);
-            var groups = stats.UpgradeTable.entries.GroupBy(e => e.GroupId).ToArray();
+            var groups = stats.UpgradeTable.entries.Where(e => e != null && e.IsAvailable).GroupBy(e => e.GroupId).ToArray();
             foreach (var row in rows) row.gameObject.SetActive(groups.Any(g => g.Key == row.groupId));
             foreach (var group in groups)
             {
@@ -55,6 +57,7 @@ namespace GameFoundation.Base
                 if (row == null) continue;
                 var levels = group.OrderBy(e => e.level).ToArray();
                 var next = levels.FirstOrDefault(e => !stats.HasUpgrade(e.id)) ?? levels.Last();
+                row.gameObject.SetActive(true);
                 row.Bind(this);
                 row.Refresh(next, levels.Count(e => stats.HasUpgrade(e.id)), levels.Length, stats);
             }
@@ -62,10 +65,16 @@ namespace GameFoundation.Base
             foreach (var row in rows.Where(r => r.gameObject.activeSelf && r.Entry != null)
                          .OrderBy(r => r.Entry.requiredPurchases).ThenBy(r => r.groupId, System.StringComparer.Ordinal))
                 row.transform.SetSiblingIndex(index++);
-            totalLabel.text = Tr("laboratory.total", "Изучено улучшений") + ": " + stats.PurchasedUpgradeCount + " / " + stats.UpgradeTable.entries.Count;
+            totalLabel.text = Tr("laboratory.total", "Изучено улучшений") + ": " + stats.PurchasedUpgradeCount + " / " + stats.UpgradeTable.entries.Count(e => e.IsAvailable);
             if (selected == null || !selected.gameObject.activeSelf)
                 selected = rows.Where(r => r.gameObject.activeSelf).OrderBy(r => r.transform.GetSiblingIndex()).FirstOrDefault();
             if (selected != null) Select(selected);
+            else
+            {
+                detailTitle.text = "Исследования пока не открыты";
+                detailLevel.text = detailDescription.text = detailRequirement.text = detailStatus.text = "";
+                detailPrice.SetActive(false); detailIcon.enabled = false;
+            }
         }
         public string Title(ScientificUpgradeTable.Entry entry) => Tr("laboratory.group." + entry.GroupId,
             string.IsNullOrEmpty(entry.groupTitle) ? entry.title : entry.groupTitle);
@@ -75,7 +84,7 @@ namespace GameFoundation.Base
             selected = row;
             foreach (var item in rows) item.SetSelected(item == row);
             var entry = row.Entry;
-            var levels = stats.UpgradeTable.entries.Where(e => e.GroupId == entry.GroupId).ToArray();
+            var levels = stats.UpgradeTable.entries.Where(e => e.GroupId == entry.GroupId && e.IsAvailable).ToArray();
             detailTitle.text = Title(entry);
             detailLevel.text = Tr("laboratory.learned_levels", "Изучено уровней") + ": " + levels.Count(e => stats.HasUpgrade(e.id)) + " / " + levels.Length;
             detailDescription.text = Tr("skill." + entry.id + ".description", entry.description);

@@ -9,6 +9,8 @@ public sealed class ScientificUpgradeTable : ScriptableObject
     public sealed class Entry
     {
         public string id;
+        public GameFoundation.Quests.ContentUnlockDefinition requiredUnlock;
+        public bool IsAvailable => GameFoundation.Quests.ContentUnlocks.IsUnlocked(requiredUnlock);
         // Kept for backwards-compatible Google Sheets imports; no longer used for unlocking.
         [HideInInspector] public string parentId;
         [Tooltip("Общий ID серии. Уровни одной серии занимают одну строку лаборатории.")]

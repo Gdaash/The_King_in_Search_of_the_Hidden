@@ -48,6 +48,8 @@ namespace GameFoundation.Base
             costLabel.color = IsComplete ? new Color(.64f, .59f, .68f) : new Color(.94f, .91f, .82f);
             // A locked row still receives hover for its explanation.
             purchaseButton.interactable = !IsComplete && unlocked;
+            var actionColor = purchaseButton.GetComponent<GameFoundation.UI.ActionButtonLabelColor>();
+            if (actionColor != null) actionColor.ActionAvailable = !IsComplete && affordable && unlocked;
         }
         public void SetSelected(bool selected)
         {

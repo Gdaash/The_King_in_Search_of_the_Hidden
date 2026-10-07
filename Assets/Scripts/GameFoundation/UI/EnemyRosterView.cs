@@ -20,6 +20,7 @@ namespace GameFoundation.UI
         [SerializeField, Min(32f)] private float rowHeight = 76f;
         [SerializeField, Min(0f)] private float rowSpacing = 4f;
         [SerializeField, Min(0f)] private float headerAndPadding = 84f;
+        [SerializeField] private GameFoundation.MetaProgression.MilitaryStarsView levelStars;
         private readonly Dictionary<GameObject, EnemyRosterItemView> entries = new();
         private readonly List<UnitDescriptionDefinition> generatedDescriptions = new();
         private AlarmSystem boundAlarm;
@@ -32,7 +33,7 @@ namespace GameFoundation.UI
         private void Start() { started = true; Bind(); }
         private void OnDisable()
         {
-            if (boundAlarm != null && subscribed) boundAlarm.EnemyCountChanged -= OnCountChanged;
+            if (boundAlarm != null && subscribed) { boundAlarm.EnemyCountChanged -= OnCountChanged; boundAlarm.EnemyLevelChanged -= RefreshLevel; }
             subscribed = false;
             if (detailsTooltip != null) detailsTooltip.Hide(null);
         }
@@ -45,7 +46,7 @@ namespace GameFoundation.UI
         {
             AlarmSystem source = alarm != null ? alarm : AlarmSystem.Instance;
             if (source == null || itemTemplate == null || rows == null) return;
-            if (boundAlarm != null && subscribed) boundAlarm.EnemyCountChanged -= OnCountChanged;
+            if (boundAlarm != null && subscribed) { boundAlarm.EnemyCountChanged -= OnCountChanged; boundAlarm.EnemyLevelChanged -= RefreshLevel; }
             boundAlarm = source;
             itemTemplate.gameObject.SetActive(false);
             foreach (var threshold in source.ConfiguredThresholds)
@@ -57,9 +58,13 @@ namespace GameFoundation.UI
             foreach (var prefab in source.SpawnedEnemyTypes) EnsureEntry(prefab);
             foreach (var entry in entries) entry.Value.SetCount(source.GetAliveEnemyCount(entry.Key));
             source.EnemyCountChanged += OnCountChanged;
+            source.EnemyLevelChanged += RefreshLevel;
+            RefreshLevel(source.EnemyLevel);
             subscribed = true;
             SetVisible(source.HasSpawnedEnemies);
         }
+
+        private void RefreshLevel(int level) { if (levelStars != null) levelStars.SetStars(level, AlarmSystem.MaximumEnemyLevel); }
 
         private void OnCountChanged(GameObject prefab, int count)
         {

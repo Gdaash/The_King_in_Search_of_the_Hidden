@@ -88,6 +88,26 @@ public class AlarmSystem : MonoBehaviour
     private readonly List<Image> _thresholdSkulls = new();
     private float _displayedFill;
     private float _pendingAlarm;
+    private int alarmRevision;
+    private int reportedEnemyLevel = 1;
+    public const int MaximumEnemyLevel = 50;
+    public const float AlarmPerEnemyLevel = 10f;
+    public int EnemyLevel => LevelForAlarm(currentAlarm, maximumAlarm);
+    public static int LevelForAlarm(float alarm, float maximum) => Mathf.Clamp(
+        1 + Mathf.FloorToInt((Mathf.Max(0f, alarm - maximum) + .0001f) / AlarmPerEnemyLevel), 1, MaximumEnemyLevel);
+    public event Action<int> EnemyLevelChanged;
+    private float MaximumTotalAlarm => maximumAlarm + (MaximumEnemyLevel - 1) * AlarmPerEnemyLevel;
+    private void RefreshEnemyLevel(bool notify = true)
+    {
+        int level = EnemyLevel;
+        if (reportedEnemyLevel == level) return;
+        bool increased = level > reportedEnemyLevel;
+        reportedEnemyLevel = level;
+        EnemyLevelChanged?.Invoke(level);
+        if (notify && increased) GameFoundation.UI.GameNotifications.Post(
+            string.Format(GameFoundation.UI.UnitDescriptionText.Get("enemy.level.notification", "Враги достигли уровня {0}"), level),
+            GameFoundation.UI.NotificationKind.Negative);
+    }
     private readonly Dictionary<UnityEngine.Object, float> _actionAlarmReservations = new();
     private Canvas _canvas;
     private RectTransform _canvasRect;
@@ -102,6 +122,9 @@ public class AlarmSystem : MonoBehaviour
     public void RegisterSpawnedEnemy(GameObject prefab, GameObject instance)
     {
         if (prefab == null || instance == null || !instance.CompareTag("Enemy1") || instance.GetComponent<Health>() == null) return;
+        var rank = instance.GetComponent<GameFoundation.MetaProgression.EnemyLevel>();
+        if (rank == null) rank = instance.AddComponent<GameFoundation.MetaProgression.EnemyLevel>();
+        rank.Initialize(EnemyLevel);
         BestiaryService.RegisterSpawn(prefab, instance);
         var member = instance.GetComponent<AlarmSpawnedEnemy>();
         if (member == null) member = instance.AddComponent<AlarmSpawnedEnemy>();
@@ -146,7 +169,7 @@ public class AlarmSystem : MonoBehaviour
     }
 
     private float AcceptedAlarm(float amount) => Mathf.Min(Mathf.Max(0f, amount),
-        Mathf.Max(0f, maximumAlarm - currentAlarm - _pendingAlarm));
+        Mathf.Max(0f, MaximumTotalAlarm - currentAlarm - _pendingAlarm));
 
     public float ReservedActionAlarm
     {
@@ -179,7 +202,7 @@ public class AlarmSystem : MonoBehaviour
     }
 
     private float AcceptedPreviewAlarm(float amount) => Mathf.Min(Mathf.Max(0f, amount),
-        Mathf.Max(0f, maximumAlarm - currentAlarm - _pendingAlarm - ReservedActionAlarm));
+        Mathf.Max(0f, MaximumTotalAlarm - currentAlarm - _pendingAlarm - ReservedActionAlarm));
 
     public bool PreviewOrbRaisesLevel(float amount, int index)
     {
@@ -192,7 +215,7 @@ public class AlarmSystem : MonoBehaviour
         foreach (var threshold in thresholds)
             if (threshold != null && threshold.alarmValue > before && threshold.alarmValue <= after &&
                 !_activatedThresholds.Contains(threshold)) return true;
-        return false;
+        return LevelForAlarm(after, maximumAlarm) > LevelForAlarm(before, maximumAlarm);
     }
 
     private void OnDestroy()
@@ -218,6 +241,8 @@ public class AlarmSystem : MonoBehaviour
 
     private void OnDisable()
     {
+        alarmRevision++;
+        _pendingAlarm = 0f;
         _actionAlarmReservations.Clear();
         foreach (Coroutine routine in _waveRoutines)
             if (routine != null) StopCoroutine(routine);
@@ -253,13 +278,15 @@ public class AlarmSystem : MonoBehaviour
         float amountPerOrb = acceptedAmount / orbCount;
         float targetFill = Mathf.Clamp01((currentAlarm + _pendingAlarm * 0.5f) / maximumAlarm);
         for (int i = 0; i < orbCount; i++)
-            StartCoroutine(FlyOrb(worldPosition, amountPerOrb, targetFill));
+            StartCoroutine(FlyOrb(worldPosition, amountPerOrb, targetFill, alarmRevision));
     }
 
     /// <summary>Устанавливает абсолютное значение тревоги.</summary>
     public void SetAlarm(float value)
     {
-        currentAlarm = Mathf.Clamp(value, 0f, maximumAlarm);
+        alarmRevision++;
+        currentAlarm = Mathf.Clamp(value, 0f, MaximumTotalAlarm);
+        RefreshEnemyLevel();
         _pendingAlarm = 0f;
         ApplyFill(Mathf.Clamp01(currentAlarm / maximumAlarm));
         ApplyPreview(Mathf.Clamp01(currentAlarm / maximumAlarm));
@@ -270,7 +297,9 @@ public class AlarmSystem : MonoBehaviour
     public void ResetAlarm()
     {
         _actionAlarmReservations.Clear();
+        alarmRevision++;
         currentAlarm = 0f;
+        RefreshEnemyLevel(false);
         _pendingAlarm = 0f;
         ApplyFill(0f);
         ApplyPreview(0f);
@@ -519,11 +548,11 @@ public class AlarmSystem : MonoBehaviour
         if (previewImage != null) previewImage.fillAmount = value;
     }
 
-    private IEnumerator FlyOrb(Vector3 worldPosition, float amount, float targetFill)
+    private IEnumerator FlyOrb(Vector3 worldPosition, float amount, float targetFill, int revision)
     {
         if (_canvasRect == null || fillImage == null)
         {
-            CommitIncomingAlarm(amount);
+            if (revision == alarmRevision) CommitIncomingAlarm(amount);
             yield break;
         }
 
@@ -594,13 +623,14 @@ public class AlarmSystem : MonoBehaviour
         }
 
         Destroy(orb);
-        CommitIncomingAlarm(amount);
+        if (revision == alarmRevision) CommitIncomingAlarm(amount);
     }
 
     private void CommitIncomingAlarm(float amount)
     {
         _pendingAlarm = Mathf.Max(0f, _pendingAlarm - amount);
-        currentAlarm = Mathf.Clamp(currentAlarm + amount, 0f, maximumAlarm);
+        currentAlarm = Mathf.Clamp(currentAlarm + amount, 0f, MaximumTotalAlarm);
+        RefreshEnemyLevel();
         float value = Mathf.Clamp01(currentAlarm / maximumAlarm);
         ApplyFill(value);
         ApplyPreview(Mathf.Clamp01((currentAlarm + _pendingAlarm) / maximumAlarm));

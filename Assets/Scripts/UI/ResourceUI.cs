@@ -19,8 +19,13 @@ public partial class ResourceUI : MonoBehaviour
     [Header("Настройки анимации")]
     [SerializeField] private float bumpScale = 1.2f;
     [SerializeField] private float duration = 0.3f;
+    [SerializeField, Min(0f)] private float highlightDuration = 1f;
     [SerializeField] private Color addColor = Color.green;
     [SerializeField] private Color errorColor = Color.red;
+    [Tooltip("Общий источник цветов увеличения и уменьшения ресурсов.")]
+    [SerializeField] private GameFoundation.UI.NotificationFeed notificationColors;
+    private Color IncreaseColor => notificationColors != null ? notificationColors.PositiveColor : addColor;
+    private Color DecreaseColor => notificationColors != null ? notificationColors.NegativeColor : errorColor;
 
     private Vector3 _originalScale;
     private Color _originalColor;
@@ -65,6 +70,9 @@ public partial class ResourceUI : MonoBehaviour
             return;
         }
 
+        if (_activeRoutine != null) StopCoroutine(_activeRoutine);
+        _activeRoutine = null;
+        if (resourceText != null) { resourceText.transform.localScale = _originalScale; resourceText.color = _originalColor; }
         if (resourceType != null)
         {
             GlobalResourceManager.OnResourceChanged -= HandleValueChange;
@@ -85,7 +93,8 @@ public partial class ResourceUI : MonoBehaviour
         }
 
         // Определяем цвет: зеленый если добавили, стандартный если потратили
-        Color targetColor = (newValue > _lastValue) ? addColor : _originalColor;
+        if (newValue == _lastValue) return;
+        Color targetColor = (newValue > _lastValue) ? IncreaseColor : DecreaseColor;
         
         _lastValue = newValue;
         UpdateText(newValue);
@@ -101,21 +110,21 @@ public partial class ResourceUI : MonoBehaviour
         _activeRoutine = StartCoroutine(BumpRoutine(color));
     }
 
-    private IEnumerator BumpRoutine(Color targetColor)
-    {
-        float elapsed = 0;
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / duration;
-            float curve = Mathf.Sin(t * Mathf.PI); 
+    private IEnumerator BumpRoutine(Color targetColor) => AnimateCount(resourceText, _originalScale, _originalColor, targetColor);
 
-            resourceText.transform.localScale = _originalScale * Mathf.Lerp(1f, bumpScale, curve);
-            resourceText.color = Color.Lerp(_originalColor, targetColor, curve);
+    private IEnumerator AnimateCount(TextMeshProUGUI text, Vector3 baseScale, Color baseColor, Color targetColor)
+    {
+        float elapsed = 0f;
+        float total = Mathf.Max(duration, highlightDuration);
+        while (text != null && elapsed < total)
+        {
+            float t = duration > 0f ? Mathf.Clamp01(elapsed / duration) : 1f;
+            text.transform.localScale = baseScale * (1f + (bumpScale - 1f) * Mathf.Sin(t * Mathf.PI));
+            text.color = elapsed < highlightDuration ? targetColor : baseColor;
             yield return null;
+            elapsed += Time.unscaledDeltaTime;
         }
-        resourceText.transform.localScale = _originalScale;
-        resourceText.color = _originalColor;
+        if (text != null) { text.transform.localScale = baseScale; text.color = baseColor; }
     }
 
     private void UpdateText(int val) 

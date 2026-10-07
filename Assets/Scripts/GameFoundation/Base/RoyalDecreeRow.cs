@@ -40,6 +40,8 @@ namespace GameFoundation.Base
                 GlobalResourceManager.Instance.GetResourceAmount(decree.influence) >= decree.activationCost;
             priceAmount.color = affordable ? new Color(.38f,.9f,.48f) : new Color(1,.38f,.38f);
             toggle.interactable = !ForestForagingService.IsPending && (active || affordable);
+            var tint = toggle.GetComponent<GameFoundation.UI.ActionButtonLabelColor>();
+            if (tint != null) tint.Negative = active;
         }
         public void Click()
         {

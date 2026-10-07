@@ -51,6 +51,7 @@ namespace GameFoundation.UI
         [SerializeField, Min(.05f)] private float refreshInterval = .2f;
 
         [SerializeField, HideInInspector] private List<UnitStatRowView> rowViews = new();
+        [SerializeField] private MilitaryStarsView enemyLevelStars;
         private MilitaryProfile profile;
         private GameObject liveUnit;
         private Health health;
@@ -107,7 +108,9 @@ namespace GameFoundation.UI
         {
             if (definition == null || rows == null || rowTemplate == null || stats == null) return;
             int stars = MilitaryExperienceService.Stars(profile);
-            float multiplier = 1f + stars * .1f;
+            int enemyLevel = liveUnit != null ? liveUnit.GetComponent<EnemyLevel>()?.Level ?? 1 : AlarmSystem.Instance != null ? AlarmSystem.Instance.EnemyLevel : 1;
+            float multiplier = definition.isEnemy ? EnemyLevel.MultiplierForLevel(enemyLevel) : 1f + stars * .1f;
+            if (enemyLevelStars != null) { enemyLevelStars.gameObject.SetActive(definition.isEnemy); enemyLevelStars.SetStars(enemyLevel, AlarmSystem.MaximumEnemyLevel); }
             if (title != null) title.text = definition.Title;
             if (role != null) role.text = definition.Role;
             if (description != null) description.text = definition.Description;
@@ -120,12 +123,12 @@ namespace GameFoundation.UI
             {
                 int earned = 0;
                 for (int level = 0; level < stars; level++) earned += MilitaryExperienceService.ExperienceForNextStar(level);
-                progress.text = definition.isEnemy ? T("enemy_type", "Характеристики типа врага") : profile == null ? T("recruit", "Новобранец · без звёзд") :
+                progress.text = definition.isEnemy ? string.Format(UnitDescriptionText.Get("enemy.level.detail", "Уровень {0}/50 · без опыта"), enemyLevel) : profile == null ? T("recruit", "Новобранец · без звёзд") :
                     string.Format(T("progress", "Уровень {0}/10 · опыт {1}"), stars,
                         stars >= 10 ? T("maximum", "максимум") : (profile.experience - earned) + " / " + MilitaryExperienceService.ExperienceForNextStar(stars));
             }
             if (footer != null) footer.text = definition.isEnemy
-                ? T("enemy_footer", "Базовые характеристики этого типа врагов.\nКолесо мыши — прокрутка характеристик.")
+                ? UnitDescriptionText.Get("enemy.level.footer", "Уровень фиксируется при появлении врага.\nВ панели показаны характеристики новых врагов.")
                 : string.Format(T("footer", "За убийство: {0} опыта · за помощь: {1}\nНовый день полностью восстанавливает здоровье.\nКолесо мыши — прокрутка характеристик."), MilitaryExperience.KillExperience, MilitaryExperience.AssistExperience);
 
             int visible = 0;
@@ -185,7 +188,7 @@ namespace GameFoundation.UI
                 case UnitStat.MovementSpeed:
                     float speed = movementStats != null ? movementStats.TotalSpeed : 3f;
                     float spread = movement != null ? movement.SpeedVariation : 0f;
-                    value = (liveUnit != null && movement != null ? N(movement.CombatSpeed) : Range(speed - spread, speed + spread)) + T("speed_unit", " ед./с"); return true;
+                    value = (liveUnit != null && movement != null ? N(movement.CombatSpeed) : Range((speed - spread) * multiplier, (speed + spread) * multiplier)) + T("speed_unit", " ед./с"); return true;
                 case UnitStat.DetectionRange:
                     number = ranged != null ? ranged.DetectionRange : melee != null ? melee.DetectionRange : 0f;
                     value = N(number) + T("distance", " ед."); break;

@@ -5,6 +5,8 @@ namespace GameFoundation.Base
     public sealed class RoyalDecreeDefinition : ScriptableObject
     {
         public string id;
+        public GameFoundation.Quests.ContentUnlockDefinition requiredUnlock;
+        public bool IsAvailable => GameFoundation.Quests.ContentUnlocks.IsUnlocked(requiredUnlock);
         public string title;
         [TextArea] public string description;
         public ResourceType influence;
