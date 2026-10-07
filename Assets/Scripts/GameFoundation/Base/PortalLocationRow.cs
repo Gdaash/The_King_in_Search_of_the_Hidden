@@ -17,13 +17,17 @@ namespace GameFoundation.Base
         private bool hovering;
         private bool selected;
 
-        private void Awake() => button.onClick.AddListener(Choose);
+        private void OnEnable()
+        {
+            button.onClick.RemoveListener(Choose);
+            button.onClick.AddListener(Choose);
+        }
         public void Bind(PortalPopupView view) => owner = view;
         private void Choose() => owner?.Select(location);
         public void OnSelect(BaseEventData _) => Choose();
         public void OnPointerEnter(PointerEventData _) { hovering = true; UpdateColor(); }
         public void OnPointerExit(PointerEventData _) { hovering = false; UpdateColor(); }
-        private void OnDisable() { hovering = false; }
+        private void OnDisable() { button.onClick.RemoveListener(Choose); hovering = false; }
 
         public void Refresh(PortalLocationDefinition current)
         {

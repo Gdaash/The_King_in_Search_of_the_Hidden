@@ -11,7 +11,7 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [SerializeField] private GlobalStats upgradeStats;
 
     [Header("Настройки покупки")]
-    [Tooltip("Ресурс, который тратится на покупку этого навыка (например, Короны)")]
+    [Tooltip("Ресурс, который тратится на покупку этого навыка (например, Влияние)")]
     [SerializeField] private ResourceType purchaseResourceType;
     
     public int cost = 50;

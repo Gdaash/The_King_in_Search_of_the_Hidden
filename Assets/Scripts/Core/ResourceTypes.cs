@@ -8,12 +8,25 @@ public class ResourceType : ScriptableObject
     public string Id => persistentId;
     [Header("Общие настройки")]
     public string resourceName;
+    public string DisplayName
+    {
+        get
+        {
+            string key = "resource." + Id + ".name";
+            string value = GameFoundation.Localization.LocalizationService.Instance?.Get(key);
+            return !string.IsNullOrEmpty(value) && value != key ? value : resourceName;
+        }
+    }
 
     [Header("Специальные настройки")]
     [Tooltip("Если отмечено, этот ресурс не носят портеры, а приходит самостоятельно (например, Люди)")]
     public bool isHumanResource = false; // <--- ДОБАВИТЬ ЭТУ СТРОКУ
 
     [Header("Визуал")]
+    [Tooltip("Иконка интерфейса без обводки. Canvas: размер спрайта × 2.")]
     public Sprite resourceIcon;
+    [Tooltip("Предмет на земле с обводкой.")]
+    public Sprite groundSprite;
+    [Tooltip("Груз в телеге. Прозрачные поля задают положение относительно CarrySlot.")]
     public Sprite defaultCarrySprite;
 }

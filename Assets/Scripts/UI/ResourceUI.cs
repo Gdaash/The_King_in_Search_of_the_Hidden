@@ -131,7 +131,7 @@ public partial class ResourceUI : MonoBehaviour
         if (resourceType != null)
         {
             // Если префикс не задан вручную, используем имя ресурса из ScriptableObject
-            return resourceType.resourceName + " "; 
+            return resourceType.DisplayName + " "; 
         }
         return "";
     }

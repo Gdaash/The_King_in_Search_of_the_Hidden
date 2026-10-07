@@ -210,9 +210,10 @@ namespace GameFoundation.Base
         public void CloseBlacksmith() => Show(blacksmith, false);
         public void CloseMagicLibrary() => Show(magicLibrary, false);
         public void NextDay() { if (DayCycleService.Instance == null) return; RefreshForecasts(); Show(nextDayConfirmation, true); }
-        public void CancelNextDay() => Show(nextDayConfirmation, false);
+        public void CancelNextDay() { if (!ForestForagingService.IsPending) Show(nextDayConfirmation, false); }
         public void ConfirmNextDay()
         {
+            if (ForestForagingService.IsPending) return;
             using var notification = GameFoundation.UI.GameNotifications.BeginAction();
             if (DayCycleService.Instance == null) return;
             Show(nextDayConfirmation, false);

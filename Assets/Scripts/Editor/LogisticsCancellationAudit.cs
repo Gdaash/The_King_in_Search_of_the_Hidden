@@ -42,6 +42,36 @@ public static class LogisticsCancellationAudit
         SessionState.SetBool(Key, true); EditorApplication.EnterPlaymode();
     }
 
+    public static void RunForaging() { SessionState.SetBool(Key + "foraging", true); Run(); }
+    public static void RunAnimals()
+    {
+        SessionState.SetBool(Key + "animals", true);
+        Run();
+    }
+
+    public static void RunPortal()
+    {
+        SessionState.SetBool(Key + "portal", true);
+        Run();
+    }
+
+    public static void RunResourceVisuals()
+    {
+        SessionState.SetBool(Key + "resourceVisuals", true);
+        Run();
+    }
+
+    public static void RunRecoil()
+    {
+        SessionState.SetBool(Key + "recoil", true);
+        Run();
+    }
+    public static void RunQuests()
+    {
+        SessionState.SetBool(Key + "quests", true);
+        Run();
+    }
+
     static void Changed(PlayModeStateChange state)
     {
         if (!SessionState.GetBool(Key, false)) return;
@@ -81,6 +111,33 @@ public static class LogisticsCancellationAudit
     {
         try
         {
+            if (SessionState.GetBool(Key + "foraging", false)) { SessionState.SetBool(Key + "foraging", false); await ForestForagingAudit.RunPlay(); return; }
+            if (SessionState.GetBool(Key + "animals", false))
+            {
+                SessionState.SetBool(Key + "animals", false);
+                await AnimalFoodAudit.RunPlay();
+                return;
+            }
+            if (SessionState.GetBool(Key + "portal", false))
+            {
+                SessionState.SetBool(Key + "portal", false);
+                await CheckPortal();
+                return;
+            }
+            if (SessionState.GetBool(Key + "quests", false))
+            {
+                SessionState.SetBool(Key + "quests", false);
+                await CheckQuests();
+                File.AppendAllText(Report, "QUESTS PASSED: " + checks + " checks\n");
+                return;
+            }
+            if (SessionState.GetBool(Key + "recoil", false))
+            {
+                SessionState.SetBool(Key + "recoil", false);
+                await CheckCombatRecoil();
+                File.AppendAllText(Report, "COMBAT RECOIL PASSED: " + checks + " checks\n");
+                return;
+            }
             human = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/Human.asset");
             cart = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/Cart.asset");
             berry = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/Berry.asset");
@@ -93,6 +150,13 @@ public static class LogisticsCancellationAudit
             orders = new GameObject("Audit orders").AddComponent<OrderManager>(); orders.enabled = false;
             flag = new GameObject("Audit flag").AddComponent<LogisticFlag>();
             await Task.Delay(100);
+            if (SessionState.GetBool(Key + "resourceVisuals", false))
+            {
+                SessionState.SetBool(Key + "resourceVisuals", false);
+                await CheckResourceVisuals();
+                File.AppendAllText(Report, "RESOURCE VISUALS PASSED: " + checks + " checks\n");
+                return;
+            }
             await CheckNotifications();
             for (int cycle = 0; cycle < 5; cycle++)
             {
@@ -177,6 +241,88 @@ public static class LogisticsCancellationAudit
         finally { EditorApplication.ExitPlaymode(); }
     }
 
+    static async Task CheckPortal()
+    {
+        // Reproduce a cold catalog: preloaded assets are not guaranteed to be loaded in Editor Play Mode.
+        var oldCatalog = ProjectReferences.Instance;
+        if (oldCatalog != null) Resources.UnloadAsset(oldCatalog);
+        Check(ProjectReferences.Instance == null, "catalog absent before scene load");
+        GameFoundation.Saves.SaveSlotPrefs.DeleteKey("foundation.daycycle");
+        SceneManager.LoadScene("Base");
+        await Task.Delay(1200);
+        Check(ProjectReferences.Instance != null, "scene loads its catalog dependency");
+        var unload = Resources.UnloadUnusedAssets();
+        await Until(() => unload.isDone, "unused asset cleanup");
+        Check(ProjectReferences.Instance != null, "catalog survives unused asset cleanup");
+        var day=GameFoundation.MetaProgression.DayCycleService.Instance;
+        var router=Object.FindFirstObjectByType<GameFoundation.MetaProgression.RunSceneRouter>();
+        File.AppendAllText(Report,"BASE refs="+(ProjectReferences.Instance!=null)+" sites="+day.Portals.Count+" router="+(router!=null)+" entered="+day.EnteredToday+"\n");
+        var views=Object.FindObjectsByType<GameFoundation.Base.PortalPopupView>(FindObjectsInactive.Include,FindObjectsSortMode.None);
+        GameFoundation.Base.PortalPopupView view=null;
+        foreach(var v in views)if(v.transform.parent.gameObject.activeInHierarchy){view=v;break;}
+        Check(view!=null,"portal popup in active canvas");
+        view.gameObject.SetActive(true);await Task.Delay(100);
+        view.Select(view.locations[0].location);
+        File.AppendAllText(Report,"SELECTED="+view.Selected.LocationId+" enabled="+view.travelButton.interactable+"\n");
+        Check(view.travelButton.interactable,"travel available");
+        Canvas.ForceUpdateCanvases();
+        var canvas=view.travelButton.GetComponentInParent<Canvas>();
+        var position=RectTransformUtility.WorldToScreenPoint(canvas.renderMode==RenderMode.ScreenSpaceOverlay?null:canvas.worldCamera,view.travelButton.transform.position);
+        var pointer=new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current){position=position,button=UnityEngine.EventSystems.PointerEventData.InputButton.Left};
+        var hits=new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();
+        UnityEngine.EventSystems.EventSystem.current.RaycastAll(pointer,hits);
+        foreach(var hit in hits)File.AppendAllText(Report,"RAYCAST "+hit.gameObject.name+" parent="+hit.gameObject.transform.parent.name+"\n");
+        Check(hits.Count>0 && UnityEngine.EventSystems.ExecuteEvents.GetEventHandler<UnityEngine.EventSystems.IPointerClickHandler>(hits[0].gameObject)==view.travelButton.gameObject,"travel button receives pointer click");
+        UnityEngine.EventSystems.ExecuteEvents.Execute(view.travelButton.gameObject,pointer,UnityEngine.EventSystems.ExecuteEvents.pointerClickHandler);
+        await Task.Delay(1200);
+        Check(SceneManager.GetActiveScene().name=="World","travel button loads World");
+        Object.FindFirstObjectByType<GameFoundation.MetaProgression.RunSceneRouter>().ReturnToBase();
+        await Task.Delay(1200);
+        day.NextDay();
+        views=Object.FindObjectsByType<GameFoundation.Base.PortalPopupView>(FindObjectsInactive.Include,FindObjectsSortMode.None);
+        foreach(var v in views)if(v.transform.parent.gameObject.activeInHierarchy){view=v;break;}
+        view.gameObject.SetActive(true);await Task.Delay(100);
+        Check(view.travelButton.interactable,"travel available after return and next day");
+        view.travelButton.onClick.Invoke();await Task.Delay(1200);
+        Check(SceneManager.GetActiveScene().name=="World","second expedition loads World");
+        File.AppendAllText(Report,"PORTAL PASSED\n");
+    }
+
+    static async Task CheckResourceVisuals()
+    {
+        resources.SetResourceAmount(human, 40); resources.SetResourceAmount(cart, 40);
+        foreach (var id in new[]{"Berry","Wood","Stone","MagicOre","IronOre","Sword","Bow"})
+        {
+            berry = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/"+id+".asset");
+            resources.SetResourceAmount(berry, 10);
+            for(int source=0;source<2;source++)
+            {
+                var job=Job(1); var p=warehouse.SpawnPorter();
+                ResourceItem item=null;
+                if(source==0)p.AssignWarehouseTask(job,berry);
+                else
+                {
+                    item=Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Map Resources/D_"+id+".prefab"),p.transform.position,Quaternion.identity).GetComponent<ResourceItem>();
+                    Check(item.GetComponent<SpriteRenderer>().sprite==berry.groundSprite,id+" ground outline sprite");
+                    p.AssignTask(job,item);
+                }
+                await Until(()=>p.IsCarryingResource(),id+" pickup");
+                var cargo=(SpriteRenderer)new SerializedObject(p).FindProperty("carrySlotRenderer").objectReferenceValue;
+                Check(cargo.sprite==berry.defaultCarrySprite,id+" cargo source="+source);
+                var body=cargo.transform.parent.GetComponent<SpriteRenderer>();
+                Check(body!=null,id+" cargo follows body");
+                foreach(float sign in new[]{-1f,1f})
+                {
+                    p.transform.localScale=new Vector3(sign,1,1);
+                    var local=body.transform.InverseTransformPoint(cargo.transform.position)*32;
+                    Check(Mathf.Abs(local.x-(18-body.sprite.pivot.x))<.001f && Mathf.Abs(local.y-(17-body.sprite.pivot.y))<.001f,id+" cart alignment direction="+sign);
+                }
+                Object.Destroy(p.gameObject);Object.Destroy(job.gameObject);if(item)Object.Destroy(item.gameObject);
+                await Task.Delay(50);
+            }
+        }
+    }
+
     static async Task CheckNotifications()
     {
         var canvas = new GameObject("Audit notification canvas", typeof(Canvas));
@@ -224,5 +370,95 @@ public static class LogisticsCancellationAudit
         GameFoundation.UI.GameNotifications.Resource(berry,1);
         Check(rowCount()==6,"resource chain restarts after one-second gap");
         Object.Destroy(canvas); await Task.Delay(50);
+    }
+
+    static async Task CheckCombatRecoil()
+    {
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Units/CursedMage.prefab");
+        for (int trial = 0; trial < 9; trial++)
+        {
+            var target = new GameObject("Combat audit target"); target.tag = "Player";
+            float angle = trial % 8 * 45f;
+            target.transform.position = Quaternion.Euler(0, 0, angle) * Vector3.right * 2.5f;
+            var health = target.AddComponent<Health>(); target.AddComponent<BoxCollider2D>().size = Vector2.one * .3f;
+            var mage = Object.Instantiate(prefab, Vector3.zero, Quaternion.identity);
+            var ai = mage.GetComponent<EnemyAI_Ranged>();
+            var visual = mage.GetComponent<EnemyVisuals_Ranged>();
+            var sprite = (Transform)new SerializedObject(visual).FindProperty("spriteParent").objectReferenceValue;
+            var baseline = sprite.localPosition;
+            var scale = sprite.localScale;
+            EnemyProjectile projectile = null;
+            await Until(() => { projectile = Object.FindFirstObjectByType<EnemyProjectile>(); return projectile != null; }, "natural AI shot " + trial);
+            Vector3 direction = projectile.transform.right;
+            if (trial == 8) target.transform.position = -target.transform.position;
+            int samples = 0; float peak = 0;
+            double timeout = EditorApplication.timeSinceStartup + 4;
+            do
+            {
+                Vector3 displacement = sprite.position - sprite.parent.TransformPoint(baseline);
+                peak = Mathf.Max(peak, displacement.magnitude);
+                if (displacement.magnitude > .002f)
+                {
+                    if (Vector3.Dot(displacement, direction) > .001f || Vector3.Cross(displacement, direction).magnitude > .002f)
+                        throw new Exception("Combat recoil changed direction, trial " + trial + ": " + displacement);
+                    samples++;
+                }
+                if (EditorApplication.timeSinceStartup > timeout) throw new Exception("Attack did not finish");
+                await Task.Delay(10);
+            } while (ai.GetIsAttacking());
+            Check(samples > 0 && peak > .1f, "natural shot recoil sampled, angle " + angle + (trial == 8 ? " with target crossing" : ""));
+            Check(Vector3.Distance(sprite.localPosition, baseline) < .002f && Vector3.Distance(sprite.localScale, scale) < .002f,
+                "sprite returns to original pose, trial " + trial);
+            File.AppendAllText(Report, "  recoil samples=" + samples + " peak=" + peak.ToString("F3") + "\n");
+            Object.Destroy(mage); Object.Destroy(target);
+            foreach (var p in Object.FindObjectsByType<EnemyProjectile>(FindObjectsSortMode.None)) Object.Destroy(p.gameObject);
+            await Task.Delay(100);
+        }
+    }
+
+    static async Task CheckQuests()
+    {
+        var quest=AssetDatabase.LoadAssetAtPath<GameFoundation.Quests.QuestDefinition>(QuestSetup.QuestPath);
+        var catalog=AssetDatabase.LoadAssetAtPath<GameFoundation.Quests.QuestCatalog>(QuestSetup.CatalogPath);
+        string key="foundation.quest."+quest.id+".completed";
+        GameFoundation.Saves.SaveSlotPrefs.DeleteKey(key);
+        var manager=new GameObject("Quest test inventory").AddComponent<GlobalResourceManager>();
+        foreach(var requirement in quest.requirements) manager.SetResourceAmount(requirement.resource,0);
+        var tracker=manager.gameObject.AddComponent<GameFoundation.Quests.QuestTracker>();Set(tracker,"catalog",catalog);
+        var canvas=new GameObject("Quest test UI",typeof(Canvas));
+        var panel=Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(QuestSetup.PanelPath),canvas.transform).GetComponent<GameFoundation.Quests.QuestPanel>();
+        await Task.Delay(100);
+        Check(!GameFoundation.Quests.QuestProgress.IsComplete(quest),"quest starts incomplete at zero stock");
+        Check(panel.GetComponentsInChildren<GameFoundation.Quests.QuestObjectiveRow>().Length==6,"three compact and three detailed objectives authored");
+        Canvas.ForceUpdateCanvases();
+        float collapsedHeight=((RectTransform)panel.transform).rect.height;
+        var events=new GameObject("Quest pointer test",typeof(UnityEngine.EventSystems.EventSystem)).GetComponent<UnityEngine.EventSystems.EventSystem>();
+        var pointer=new UnityEngine.EventSystems.PointerEventData(events);
+        Time.timeScale=0;
+        UnityEngine.EventSystems.ExecuteEvents.Execute(panel.gameObject,pointer,UnityEngine.EventSystems.ExecuteEvents.pointerEnterHandler);
+        await Task.Delay(400);Canvas.ForceUpdateCanvases();
+        Check(((RectTransform)panel.transform).rect.height>collapsedHeight+150,"hover expands details even while paused");
+        UnityEngine.EventSystems.ExecuteEvents.Execute(panel.gameObject,pointer,UnityEngine.EventSystems.ExecuteEvents.pointerExitHandler);
+        await Task.Delay(400);Canvas.ForceUpdateCanvases();
+        Check(Mathf.Abs(((RectTransform)panel.transform).rect.height-collapsedHeight)<1,"pointer exit restores compact height");
+        Time.timeScale=1;Object.Destroy(events.gameObject);
+        foreach(var requirement in quest.requirements) manager.SetResourceAmount(requirement.resource,requirement.amount-1);
+        Check(!GameFoundation.Quests.QuestProgress.IsComplete(quest),"partial stock cannot complete quest");
+        panel.gameObject.SetActive(false);
+        foreach(var requirement in quest.requirements) manager.AddResource(requirement.resource,1);
+        Check(GameFoundation.Quests.QuestProgress.IsComplete(quest),"quest completes independently of hidden UI");
+        Check(GameFoundation.Saves.SaveSlotPrefs.GetInt(key,0)==1,"completion stored in active save slot");
+        foreach(var requirement in quest.requirements)manager.TrySpendResource(requirement.resource,requirement.amount);
+        Check(GameFoundation.Quests.QuestProgress.IsComplete(quest),"spending after completion does not reset quest");
+        panel.gameObject.SetActive(true);await Task.Delay(50);
+        bool completed=false;foreach(var t in panel.GetComponentsInChildren<UnityEngine.UI.Text>())if(t.text=="Р вЂ”Р В°Р Т‘Р В°Р Р…Р С‘Р Вµ Р Р†РЎвЂ№Р С—Р С•Р В»Р Р…Р ВµР Р…Р С•")completed=true;
+        Check(completed,"reenabled panel displays saved completion");
+        Object.Destroy(panel.gameObject);await Task.Delay(50);
+        panel=Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(QuestSetup.PanelPath),canvas.transform).GetComponent<GameFoundation.Quests.QuestPanel>();
+        await Task.Delay(50);
+        completed=false;foreach(var t in panel.GetComponentsInChildren<UnityEngine.UI.Text>())if(t.text=="Р вЂ”Р В°Р Т‘Р В°Р Р…Р С‘Р Вµ Р Р†РЎвЂ№Р С—Р С•Р В»Р Р…Р ВµР Р…Р С•")completed=true;
+        Check(completed,"new scene UI instance preserves completed state");
+        Check(!GameFoundation.Quests.QuestProgress.TryComplete(quest,manager),"completion cannot fire twice");
+        Object.Destroy(canvas);
     }
 }

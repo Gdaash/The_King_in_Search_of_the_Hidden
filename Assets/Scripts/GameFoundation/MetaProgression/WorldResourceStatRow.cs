@@ -16,11 +16,11 @@ namespace GameFoundation.MetaProgression
         {
             if (icon != null)
             {
-                ResourceIconSizing.Apply(icon, resource.defaultCarrySprite);
+                ResourceIconSizing.Apply(icon, resource.resourceIcon);
                 icon.enabled = icon.sprite != null;
             }
             if (resourceLabel != null)
-                resourceLabel.text = string.IsNullOrWhiteSpace(resource.resourceName) ? resource.name : resource.resourceName;
+                resourceLabel.text = string.IsNullOrWhiteSpace(resource.DisplayName) ? resource.name : resource.DisplayName;
             if (amountLabel != null) amountLabel.text = before.ToString();
             if (afterLabel != null) afterLabel.text = after.ToString();
             if (changeLabel == null) return;

@@ -1,88 +1,40 @@
-using GameFoundation.Localization;
 using UnityEngine;
 using UnityEngine.UI;
-
 namespace GameFoundation.Base
 {
-    /// <summary>One decree entry for the initial Castle popup. More entries can be added as children later.</summary>
     public sealed class RoyalDecreePopupView : MonoBehaviour
     {
         [SerializeField] private Button closeButton;
-        [SerializeField] private Button cautiousWarriorsButton;
-        [SerializeField] private Text cautiousWarriorsButtonLabel;
-        [SerializeField] private Text cautiousWarriorsState;
-        [SerializeField] private Button finishOffEnemiesButton;
-        [SerializeField] private Text finishOffEnemiesButtonLabel;
-        [SerializeField] private Text finishOffEnemiesState;
-
-        private void Awake()
-        {
-            if (closeButton != null) closeButton.onClick.AddListener(Close);
-            if (cautiousWarriorsButton != null) cautiousWarriorsButton.onClick.AddListener(ToggleCautiousWarriors);
-            if (finishOffEnemiesButton != null) finishOffEnemiesButton.onClick.AddListener(ToggleFinishOffEnemies);
-        }
-
+        public GameObject disableConfirmation;
+        public Text disableMessage;
+        public Button confirmDisableButton, cancelDisableButton;
+        private RoyalDecreeRow selected;
         private void OnEnable()
         {
-            RoyalDecreeService.Changed += OnDecreeChanged;
-            if (LocalizationService.Instance != null) LocalizationService.Instance.LanguageChanged += Refresh;
-            Refresh();
+            closeButton.onClick.RemoveListener(Close); closeButton.onClick.AddListener(Close);
+            confirmDisableButton.onClick.RemoveListener(DisableSelected); confirmDisableButton.onClick.AddListener(DisableSelected);
+            cancelDisableButton.onClick.RemoveListener(CancelDisable); cancelDisableButton.onClick.AddListener(CancelDisable);
+            CancelDisable();
         }
-
         private void OnDisable()
         {
-            RoyalDecreeService.Changed -= OnDecreeChanged;
-            if (LocalizationService.Instance != null) LocalizationService.Instance.LanguageChanged -= Refresh;
+            if(closeButton)closeButton.onClick.RemoveListener(Close);
+            if(confirmDisableButton)confirmDisableButton.onClick.RemoveListener(DisableSelected);
+            if(cancelDisableButton)cancelDisableButton.onClick.RemoveListener(CancelDisable);
         }
-
-        private void OnDestroy()
+        public void Open() => gameObject.SetActive(true);
+        public void Close() { if (!ForestForagingService.IsPending) gameObject.SetActive(false); }
+        public void ConfirmDisable(RoyalDecreeRow row)
         {
-            if (closeButton != null) closeButton.onClick.RemoveListener(Close);
-            if (cautiousWarriorsButton != null) cautiousWarriorsButton.onClick.RemoveListener(ToggleCautiousWarriors);
-            if (finishOffEnemiesButton != null) finishOffEnemiesButton.onClick.RemoveListener(ToggleFinishOffEnemies);
+            selected = row;
+            disableMessage.text = "Отключить указ «" + row.decree.title + "»?\n\nПотраченное влияние не вернётся.\nПовторное включение снова потребует оплаты.";
+            disableConfirmation.SetActive(true);
         }
-
-        public void Open()
+        public void CancelDisable() { selected = null; if(disableConfirmation)disableConfirmation.SetActive(false); }
+        private void DisableSelected()
         {
-            gameObject.SetActive(true);
-            Refresh();
-        }
-
-        public void Close() => gameObject.SetActive(false);
-
-        public void ToggleCautiousWarriors() => RoyalDecreeService.Toggle(RoyalDecreeService.CautiousWarriors);
-        public void ToggleFinishOffEnemies() => RoyalDecreeService.Toggle(RoyalDecreeService.FinishOffEnemies);
-
-        private void OnDecreeChanged(string decreeId, bool _)
-        {
-            if (decreeId == RoyalDecreeService.CautiousWarriors || decreeId == RoyalDecreeService.FinishOffEnemies)
-                Refresh();
-        }
-
-        private void Refresh()
-        {
-            RefreshDecree(RoyalDecreeService.CautiousWarriors, cautiousWarriorsState, cautiousWarriorsButtonLabel);
-            RefreshDecree(RoyalDecreeService.FinishOffEnemies, finishOffEnemiesState, finishOffEnemiesButtonLabel);
-        }
-
-        private static void RefreshDecree(string decreeId, Text state, Text buttonLabel)
-        {
-            bool enabled = RoyalDecreeService.IsEnabled(decreeId);
-            if (state != null)
-            {
-                state.text = Tr(enabled ? "base.castle.decree.enabled" : "base.castle.decree.disabled",
-                    enabled ? "Указ включён" : "Указ выключен");
-                state.color = enabled ? new Color(0.4f, 0.95f, 0.45f) : new Color(0.95f, 0.35f, 0.32f);
-            }
-            if (buttonLabel != null)
-                buttonLabel.text = Tr(enabled ? "base.castle.decree.turn_off" : "base.castle.decree.turn_on",
-                    enabled ? "Выключить" : "Включить");
-        }
-
-        private static string Tr(string key, string fallback)
-        {
-            string value = LocalizationService.Instance?.Get(key);
-            return string.IsNullOrEmpty(value) || value == key ? fallback : value;
+            if (selected != null && !ForestForagingService.IsPending) RoyalDecreeService.SetEnabled(selected.decree.id, false);
+            CancelDisable();
         }
     }
 }

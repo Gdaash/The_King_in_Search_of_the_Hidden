@@ -14,7 +14,7 @@ public class ResourceTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPoin
     public void Initialize(ResourceType resourceType, RectTransform target)
     {
         _resourceType = resourceType;
-        _resourceName = resourceType != null ? resourceType.resourceName : string.Empty;
+        _resourceName = resourceType != null ? resourceType.DisplayName : string.Empty;
         _target = target;
     }
 
@@ -72,7 +72,7 @@ public class ResourceTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPoin
 
     private string LocalizedName()
     {
-        var id = _resourceType != null ? _resourceType.name : _resourceName;
+        var id = _resourceType != null ? _resourceType.Id : _resourceName;
         var key = "resource." + id + ".name";
         var translated = LocalizationService.Instance != null ? LocalizationService.Instance.Get(key) : key;
         return translated != key ? translated : _resourceName;

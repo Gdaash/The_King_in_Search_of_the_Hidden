@@ -6,6 +6,14 @@ public class ResourceItem : MonoBehaviour
     public Sprite carrySprite;
     public float weight = 0.2f;
 
+    private void Awake()
+    {
+        if (type == null) return;
+        if (type.groundSprite != null && TryGetComponent<SpriteRenderer>(out var visual))
+            visual.sprite = type.groundSprite;
+        if (type.defaultCarrySprite != null) carrySprite = type.defaultCarrySprite;
+    }
+
     [HideInInspector] public bool isReserved = false; // Кем-то уже выбран как цель
 
     private void OnDisable()

@@ -15,8 +15,15 @@ namespace GameFoundation.MetaProgression
         [HideInInspector] public float x;
         [HideInInspector] public float y;
     }
+    [DefaultExecutionOrder(-100)]
     public sealed class DayCycleService : MonoBehaviour
     {
+        [SerializeField] private GameFoundation.Base.ForestForagingSettings forestForaging;
+        private void Update()
+        {
+            GameFoundation.Base.ForestForagingService.CompleteIfReady(forestForaging);
+            GameFoundation.Base.ForagingInputLock.SetLocked(GameFoundation.Base.ForestForagingService.IsPending);
+        }
         public readonly struct FoodForecast
         {
             public readonly int Humans;
@@ -49,6 +56,16 @@ namespace GameFoundation.MetaProgression
         public List<PortalSite> Portals { get; private set; } = new(); public event Action Changed;
         public const int MaxPortals = 5;
         private const string Key="foundation.daycycle";
+        private void OnEnable()
+        {
+            // Awake does not run again after a Play Mode script reload.
+            if (Instance == null) Instance = this;
+        }
+        private void OnDestroy()
+        {
+            GameFoundation.Base.ForagingInputLock.SetLocked(false);
+            if (Instance == this) Instance = null;
+        }
         private void Awake()
         {
             if (Instance != null) { Destroy(gameObject); return; }
@@ -84,6 +101,7 @@ namespace GameFoundation.MetaProgression
 
         public bool Enter(PortalSite site)
         {
+            if (GameFoundation.Base.ForestForagingService.IsPending) return false;
             if (site == null || !Portals.Contains(site) || EnteredToday) return false;
             PortalLocationDefinition location = GetPortalLocation(site.locationId);
             if (!PortalProgression.IsUnlocked(location)) return false;
@@ -104,7 +122,7 @@ namespace GameFoundation.MetaProgression
             Save();
             Changed?.Invoke();
         }
-        public void NextDay(){DayResourceLedger.EnsureDay(Day);int starved=ConsumeFood();MilitaryExperienceService.HealAll();UpdateCrowns(starved);DayResourceLedger.FinishDay(Day);Day++;SearchedToday=false;EnteredToday=false;RefugeesAvailable=UnityEngine.Random.Range(1,4);Save();DayResourceLedger.StartNextDay(Day);Changed?.Invoke();}
+        public void NextDay(){if(GameFoundation.Base.ForestForagingService.IsPending)return;DayResourceLedger.EnsureDay(Day);int starved=ConsumeFood();MilitaryExperienceService.HealAll();UpdateCrowns(starved);DayResourceLedger.FinishDay(Day);Day++;SearchedToday=false;EnteredToday=false;RefugeesAvailable=UnityEngine.Random.Range(1,4);Save();DayResourceLedger.StartNextDay(Day);Changed?.Invoke();}
         public bool AdmitRefugee(){if(RefugeesAvailable<=0 || !GameFoundation.Base.BuildingUpgradeService.CanAdmitResident)return false;RefugeesAvailable--;Save();Changed?.Invoke();return true;}
         public FoodForecast GetFoodForecast()
         {

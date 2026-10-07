@@ -203,7 +203,8 @@ public class Porter : MonoBehaviour, IEnemyAI
         {
             _hasResourceInHands = true;
             _carriedResourceItem = item;
-            if (carrySlotRenderer != null) carrySlotRenderer.sprite = item.carrySprite;
+            if (carrySlotRenderer != null) carrySlotRenderer.sprite = item.type != null && item.type.defaultCarrySprite != null
+                ? item.type.defaultCarrySprite : item.carrySprite;
             
             if (_currentJob != null) _currentJob.StartPhysicalDelivery();
             item.gameObject.SetActive(false); 

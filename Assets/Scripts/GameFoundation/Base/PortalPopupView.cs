@@ -27,14 +27,14 @@ namespace GameFoundation.Base
         private DayCycleService day;
         private LocalizationService localization;
 
-        private void Awake()
-        {
-            closeButton.onClick.AddListener(Close);
-            travelButton.onClick.AddListener(Travel);
-            foreach (var row in locations) if (row != null) row.Bind(this);
-        }
         private void OnEnable()
         {
+            // Runtime UnityEvent listeners are lost when scripts reload in Play Mode.
+            closeButton.onClick.RemoveListener(Close);
+            closeButton.onClick.AddListener(Close);
+            travelButton.onClick.RemoveListener(Travel);
+            travelButton.onClick.AddListener(Travel);
+            foreach (var row in locations) if (row != null) row.Bind(this);
             BuildingUpgradeService.Changed += Refresh;
             Subscribe();
             Refresh();
@@ -47,6 +47,8 @@ namespace GameFoundation.Base
         }
         private void OnDisable()
         {
+            closeButton.onClick.RemoveListener(Close);
+            travelButton.onClick.RemoveListener(Travel);
             BuildingUpgradeService.Changed -= Refresh;
             if (day != null) day.Changed -= Refresh;
             if (localization != null) localization.LanguageChanged -= Refresh;

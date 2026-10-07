@@ -70,6 +70,7 @@ public sealed class CheatResourcePopup : MonoBehaviour
 
     private void Update()
     {
+        if (GameFoundation.Base.ForestForagingService.IsPending) return;
         if (Input.GetKeyDown(KeyCode.L) && !IsEditingText())
         {
             if (window != null) window.SetActive(!window.activeSelf);

@@ -43,7 +43,7 @@ public class ResourceGlobalMonitor : MonoBehaviour
     {
         if (_uiRows.ContainsKey(type))
         {
-            _uiRows[type].UpdateRow(type.resourceIcon, type.resourceName, newAmount);
+            _uiRows[type].UpdateRow(type.resourceIcon, type.DisplayName, newAmount);
         }
         else
         {
@@ -67,13 +67,13 @@ public class ResourceGlobalMonitor : MonoBehaviour
                 GameObject newRow = Instantiate(rowPrefab, container);
                 UIResourceRow rowScript = newRow.GetComponent<UIResourceRow>();
                 
-                rowScript.UpdateRow(type.resourceIcon, type.resourceName, count);
+                rowScript.UpdateRow(type.resourceIcon, type.DisplayName, count);
                 
                 _uiRows.Add(type, rowScript);
             }
             else
             {
-                _uiRows[type].UpdateRow(type.resourceIcon, type.resourceName, count);
+                _uiRows[type].UpdateRow(type.resourceIcon, type.DisplayName, count);
             }
         }
     }

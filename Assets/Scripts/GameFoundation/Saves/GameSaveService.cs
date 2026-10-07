@@ -10,6 +10,22 @@ namespace GameFoundation.Saves
     {
         private const int CurrentVersion = 1;
         private static readonly Dictionary<int, SlotData> LoadedSlots = new();
+        private static int batchDepth;
+        private static readonly HashSet<int> pendingSaves = new();
+        internal static IDisposable Batch() { batchDepth++; return new SaveBatch(); }
+        private sealed class SaveBatch : IDisposable
+        {
+            private bool disposed;
+            public void Dispose()
+            {
+                if (disposed) return;
+                disposed = true;
+                if (--batchDepth != 0) return;
+                var slots = new List<int>(pendingSaves);
+                pendingSaves.Clear();
+                foreach (int slot in slots) Save(slot);
+            }
+        }
         [Serializable] private sealed class Entry { public string key; public string type; public string value; }
         [Serializable] private sealed class SlotData { public int version = CurrentVersion; public List<Entry> entries = new(); }
         private static string Prefix(int slot) => $"foundation.slot.{slot}.";
@@ -40,7 +56,7 @@ namespace GameFoundation.Saves
         internal static string GetString(int slot, string key, string fallback) => GetOrMigrate(slot, key, "string", fallback).value ?? fallback;
         internal static void Set(int slot, string key, string type, string value) { Entry entry = Find(slot, key); if (entry == null) { entry = new Entry { key = key }; Data(slot).entries.Add(entry); } entry.type = type; entry.value = value; }
         internal static void Delete(int slot, string key) { Data(slot).entries.RemoveAll(item => item != null && item.key == key); UnityEngine.PlayerPrefs.DeleteKey(Prefix(slot) + key); if (slot == 1) UnityEngine.PlayerPrefs.DeleteKey(key); }
-        internal static void Save(int slot) { UnityEngine.PlayerPrefs.SetString(EnvelopeKey(slot), JsonUtility.ToJson(Data(slot))); UnityEngine.PlayerPrefs.Save(); }
+        internal static void Save(int slot) { if (batchDepth > 0) { pendingSaves.Add(slot); return; } UnityEngine.PlayerPrefs.SetString(EnvelopeKey(slot), JsonUtility.ToJson(Data(slot))); UnityEngine.PlayerPrefs.Save(); }
         internal static void ResetCache() => LoadedSlots.Clear();
     }
 }

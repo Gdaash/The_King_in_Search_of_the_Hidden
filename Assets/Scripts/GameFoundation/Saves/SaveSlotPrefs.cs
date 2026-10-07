@@ -23,6 +23,7 @@ namespace GameFoundation.Saves
         public static void SetString(string key, string value) => GameSaveService.Set(SelectedSlot, key, "string", value ?? string.Empty);
         public static void DeleteKey(string key) => GameSaveService.Delete(SelectedSlot, key);
         public static void Save() => GameSaveService.Save(SelectedSlot);
+        public static System.IDisposable Batch() => GameSaveService.Batch();
         public static void ResetAll()
         {
             UnityEngine.PlayerPrefs.DeleteAll();

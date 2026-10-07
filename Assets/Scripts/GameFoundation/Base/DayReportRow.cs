@@ -22,7 +22,7 @@ namespace GameFoundation.Base
                 ResourceIconSizing.Apply(icon, type != null ? type.resourceIcon : null);
                 icon.enabled = icon.sprite != null;
             }
-            if (nameLabel != null) nameLabel.text = type != null && !string.IsNullOrWhiteSpace(type.resourceName) ? type.resourceName : entry.resource;
+            if (nameLabel != null) nameLabel.text = type != null && !string.IsNullOrWhiteSpace(type.DisplayName) ? type.DisplayName : entry.resource;
             if (startLabel != null) startLabel.text = entry.start.ToString();
             if (runLabel != null)
             {
@@ -31,7 +31,17 @@ namespace GameFoundation.Base
             }
             if (gainedLabel != null) gainedLabel.text = entry.baseGained > 0 ? $"+{entry.baseGained}" : "0";
             if (spentLabel != null) spentLabel.text = entry.baseSpent > 0 ? $"−{entry.baseSpent}" : "0";
-            if (endLabel != null) endLabel.text = entry.end.ToString();
+            if (gainedLabel != null) gainedLabel.color = entry.baseGained > 0 ? new Color(.38f, .9f, .48f) : new Color(.66f, .61f, .72f);
+            if (spentLabel != null) spentLabel.color = entry.baseSpent > 0 ? new Color(1f, .38f, .38f) : new Color(.66f, .61f, .72f);
+            if (endLabel != null)
+            {
+                long change = (long)entry.end - entry.start;
+                string delta = change > 0 ? $"+{change}" : change < 0 ? $"−{-change}" : "0";
+                Color tint = change > 0 ? new Color(.38f, .9f, .48f)
+                    : change < 0 ? new Color(1f, .38f, .38f) : new Color(.66f, .61f, .72f);
+                endLabel.richText = true;
+                endLabel.text = $"{entry.end} <color=#{ColorUtility.ToHtmlStringRGB(tint)}>({delta})</color>";
+            }
         }
     }
 }

@@ -17,6 +17,7 @@ public class ConstructionPanelController : MonoBehaviour
 
     void Update()
     {
+        if (GameFoundation.Base.ForestForagingService.IsPending) return;
         if (Input.GetKeyDown(toggleKey))
         {
             TogglePanel();

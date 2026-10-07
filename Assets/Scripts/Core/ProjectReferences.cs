@@ -24,5 +24,6 @@ public sealed class ProjectReferences : ScriptableObject
             return instance;
         }
     }
-    private void OnEnable() => instance = this;
+    public void Activate() => instance = this;
+    private void OnEnable() => Activate();
 }

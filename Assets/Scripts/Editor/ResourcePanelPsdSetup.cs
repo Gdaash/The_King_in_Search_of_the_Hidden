@@ -31,7 +31,7 @@ public static class ResourcePanelPsdSetup
         foreach (string name in new[] { "Crown", "Cart", "Sword", "Bow", "IronOre" })
         {
             var resource = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/" + name + ".asset");
-            var replacement = AssetDatabase.LoadAssetAtPath<Sprite>(Art + name + ".png");
+            var replacement = resource.resourceIcon;
             if (resource.resourceIcon != replacement) replacements[resource.resourceIcon] = replacement;
             resource.resourceIcon = replacement; EditorUtility.SetDirty(resource);
         }

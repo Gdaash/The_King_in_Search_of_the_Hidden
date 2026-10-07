@@ -26,6 +26,8 @@ public class EnemyVisuals_Ranged : MonoBehaviour
     private Vector3 _startPos;
     private bool _isMoving;
     private Rigidbody2D _rb;
+    private bool _isShooting;
+    private Vector3 _shootBaseScale;
 
     void Awake()
     {
@@ -45,6 +47,7 @@ public class EnemyVisuals_Ranged : MonoBehaviour
 
     private void HandleBounce()
     {
+        if (_isShooting) return;
         // Если реальная скорость почти нулевая, выключаем анимацию прыжков
         if (_rb != null && _rb.linearVelocity.magnitude < 0.1f)
         {
@@ -83,15 +86,40 @@ public class EnemyVisuals_Ranged : MonoBehaviour
 
     public void StartShoot() 
     {
+        if (_isShooting || !isActiveAndEnabled || ai == null) return;
+        _isShooting = true;
+        _shootBaseScale = spriteParent != null ? spriteParent.localScale : Vector3.one;
         _isMoving = false; // Прекращаем прыжки во время стрельбы
         StartCoroutine(ShootRoutine());
+    }
+
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+        bool wasShooting = _isShooting;
+        if (_isShooting && spriteParent != null)
+        {
+            spriteParent.localPosition = _startPos;
+            spriteParent.localScale = _shootBaseScale;
+        }
+        _isShooting = false;
+        if (wasShooting && ai != null) ai.FinishAttack();
+    }
+
+    private void SetRecoilOffset(Vector3 worldOffset)
+    {
+        // localPosition belongs to the sprite's parent. InverseTransformVector
+        // includes mirrored/non-uniform scale; InverseTransformDirection does not.
+        var parent = spriteParent.parent;
+        spriteParent.localPosition = _startPos +
+            (parent != null ? parent.InverseTransformVector(worldOffset) : worldOffset);
     }
 
     private IEnumerator ShootRoutine() 
     {
         if (ai == null) yield break;
         Transform target = ai.GetTarget();
-        if (target == null) { ai.FinishAttack(); yield break; }
+        if (target == null) { _isShooting = false; ai.FinishAttack(); yield break; }
 
         Vector3 baseScale = spriteParent != null ? spriteParent.localScale : Vector3.one;
         if (spriteParent != null)
@@ -112,6 +140,7 @@ public class EnemyVisuals_Ranged : MonoBehaviour
         if (target == null)
         {
             if (spriteParent != null) spriteParent.localScale = baseScale;
+            _isShooting = false;
             ai.FinishAttack();
             yield break;
         }
@@ -141,23 +170,24 @@ public class EnemyVisuals_Ranged : MonoBehaviour
         // --- АНИМАЦИЯ ОТДАЧИ ---
         if (spriteParent)
         {
-            Vector3 kickbackPos = _startPos + transform.InverseTransformDirection(-worldDir * kickbackDist);
+            Vector3 kickbackOffset = -worldDir * kickbackDist;
             float p = 0;
             while (p < 1f) {
                 p += Time.deltaTime * shootSpeed;
-                spriteParent.localPosition = Vector3.Lerp(_startPos, kickbackPos, p);
+                SetRecoilOffset(Vector3.Lerp(Vector3.zero, kickbackOffset, p));
                 yield return null;
             }
             p = 0;
             while (p < 1f) {
                 p += Time.deltaTime * shootSpeed * 0.5f;
-                spriteParent.localPosition = Vector3.Lerp(kickbackPos, _startPos, p);
+                SetRecoilOffset(Vector3.Lerp(kickbackOffset, Vector3.zero, p));
                 yield return null;
             }
             spriteParent.localPosition = _startPos;
             spriteParent.localScale = baseScale;
         }
 
+        _isShooting = false;
         ai.FinishAttack(); 
     }
 }

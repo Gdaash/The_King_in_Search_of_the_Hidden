@@ -29,7 +29,8 @@ Transform:
   m_LocalPosition: {x: 0.0156, y: -0.0554, z: 0}
   m_LocalScale: {x: -1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 2174208819518778123}
   m_Father: {fileID: 8363119106905301973}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &8194969665800234999
@@ -118,11 +119,11 @@ Transform:
   m_GameObject: {fileID: 6044832411877863454}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.1475, y: 0.2559, z: 0}
+  m_LocalPosition: {x: 0.17341691, y: 0.30632457, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 8363119106905301973}
+  m_Father: {fileID: 381307187869425209}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &3288836915530101141
 SpriteRenderer:
@@ -219,7 +220,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 381307187869425209}
-  - {fileID: 2174208819518778123}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7681267318585874855
@@ -313,6 +313,9 @@ MonoBehaviour:
   targetSprite: {fileID: 8194969665800234999}
   damageTextPrefab: {fileID: 0}
   _cur: 0
+  hitFlashDuration: 0.16
+  hitScaleAmount: 0.12
+  deathDuration: 0.3
   OnHealthChanged:
     m_PersistentCalls:
       m_Calls: []
