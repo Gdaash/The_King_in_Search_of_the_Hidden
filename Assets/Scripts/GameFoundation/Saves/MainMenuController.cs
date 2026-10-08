@@ -1,3 +1,4 @@
+using GameFoundation.Intro;
 using GameFoundation.MetaProgression;
 using GameFoundation.Settings;
 using TMPro;
@@ -67,9 +68,10 @@ namespace GameFoundation.Saves
 
         private void PlaySlot(int slot)
         {
+            bool isNewSlot = !SaveSlotPrefs.SlotExists(slot);
             SaveSlotPrefs.Select(slot);
             DayResourceLedger.ResetForSlot();
-            SceneManager.LoadScene(gameScene);
+            SceneManager.LoadScene(IntroComicFlow.Prepare(isNewSlot, gameScene));
         }
 
         private static void Exit() => Application.Quit();

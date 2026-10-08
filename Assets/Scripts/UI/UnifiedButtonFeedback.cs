@@ -12,6 +12,12 @@ namespace GameFoundation.UI
         [SerializeField] private ButtonVisualTheme theme;
         [SerializeField] private bool animateScale = true;
         [SerializeField] private bool animateGraphic = true;
+        [Tooltip("Keep the Image's authored opacity when highlighting, pressing or disabling this button.")]
+        [SerializeField] private bool preserveGraphicAlpha;
+        [Header("Background opacity / Прозрачность подложки")]
+        [SerializeField] private bool useHoverGraphicAlpha;
+        [SerializeField, Range(0, 255)] private int idleGraphicAlpha;
+        [SerializeField, Range(0, 255)] private int hoverGraphicAlpha = 150;
         [SerializeField, Min(0f)] private float hoverScaleOverride;
         [Tooltip("Optional visual container to animate without scaling nested, independently clickable buttons.")]
         [SerializeField] private RectTransform scaleTarget;
@@ -38,7 +44,15 @@ namespace GameFoundation.UI
             if (graphic != null) outline = graphic.GetComponent<Outline>();
             animatedTransform = scaleTarget != null ? scaleTarget : transform;
             originalScale = animatedTransform.localScale;
-            if (graphic != null) originalColor = graphic.color;
+            if (graphic != null)
+            {
+                originalColor = graphic.color;
+                if (useHoverGraphicAlpha)
+                {
+                    originalColor.a = idleGraphicAlpha / 255f;
+                    graphic.color = originalColor;
+                }
+            }
         }
 
         private void Update()
@@ -84,8 +98,17 @@ namespace GameFoundation.UI
             else
                 target = originalColor;
 
+            if (preserveGraphicAlpha) target.a = originalColor.a;
+            // Unavailable building actions still show their cost tooltip on hover.
+            // Only the background fades in; their disabled tint and scale stay intact.
+            if (useHoverGraphicAlpha)
+                target.a = button.IsActive() && !overChildButton && (hovered || focused)
+                    ? hoverGraphicAlpha / 255f : idleGraphicAlpha / 255f;
+
             if (((Vector4)(graphic.color - target)).sqrMagnitude > 0.000001f)
                 graphic.color = Color.Lerp(graphic.color, target, step);
+            else if (graphic.color != target)
+                graphic.color = target;
 
             if (outline != null)
             {

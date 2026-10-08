@@ -43,6 +43,9 @@ public static class LogisticsCancellationAudit
     }
 
     public static void RunForaging() { SessionState.SetBool(Key + "foraging", true); Run(); }
+    public static void RunShelterFog() { SessionState.SetBool(Key + "shelterFog", true); Run(); }
+    public static void RunShelterButtons() { SessionState.SetBool(Key + "shelterButtons", true); Run(); }
+    public static void RunProductionFragments() { SessionState.SetBool(Key + "productionFragments", true); Run(); }
     public static void RunEnemyLevels() { SessionState.SetBool(Key + "enemyLevels", true); Run(); }
     public static void RunQuestRewards() { SessionState.SetBool(Key + "questRewards", true); Run(); }
     public static void RunAnimals()
@@ -113,6 +116,9 @@ public static class LogisticsCancellationAudit
     {
         try
         {
+            if (SessionState.GetBool(Key + "shelterButtons", false)) { SessionState.SetBool(Key + "shelterButtons", false); await ShelterButtonsAudit.RunPlay(); return; }
+            if (SessionState.GetBool(Key + "shelterFog", false)) { SessionState.SetBool(Key + "shelterFog", false); await ShelterFogAudit.RunPlay(); return; }
+            if (SessionState.GetBool(Key + "productionFragments", false)) { SessionState.SetBool(Key + "productionFragments", false); await ProductionFragmentsAudit.RunPlay(); return; }
             if (SessionState.GetBool(Key + "questRewards", false)) { SessionState.SetBool(Key + "questRewards", false); await QuestRewardAudit.RunPlay(); return; }
             if (SessionState.GetBool(Key + "enemyLevels", false)) { SessionState.SetBool(Key + "enemyLevels", false); await EnemyLevelAudit.RunPlay(); return; }
             if (SessionState.GetBool(Key + "foraging", false)) { SessionState.SetBool(Key + "foraging", false); await ForestForagingAudit.RunPlay(); return; }

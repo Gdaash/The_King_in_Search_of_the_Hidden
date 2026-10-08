@@ -352,6 +352,7 @@ GameObject:
   - component: {fileID: 6665941105661971411}
   - component: {fileID: 2525657674283831391}
   - component: {fileID: 4526789299577028728}
+  - component: {fileID: 8888564348933949213}
   m_Layer: 0
   m_Name: Timer
   m_TagString: Untagged
@@ -444,6 +445,56 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AlarmEmitter
   alarmAmount: 5
+--- !u!114 &8888564348933949213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1990875573242488302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38a120552f27f2a43aca71bbcaf5c789, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProductionFragments
+  timer: {fileID: 2525657674283831391}
+  fragments:
+  - {fileID: 21300000, guid: 904ffb371594fb345bfab7e793336c8c, type: 3}
+  - {fileID: 21300000, guid: f25a65ec2ff45634a9d7c2c219409b63, type: 3}
+  - {fileID: 21300000, guid: cc1e4758a116a3b47bd8724400f7baf7, type: 3}
+  - {fileID: 21300000, guid: 5525092db1aa5c74497b648b0579cc57, type: 3}
+  dustSprites:
+  - {fileID: 21300000, guid: 9349059fc81046c41a9f4fa072294891, type: 3}
+  - {fileID: 21300000, guid: 994c803aedf209d4a9687cbf32fa78a3, type: 3}
+  - {fileID: 21300000, guid: 87b268246226cc249a5afc456b732987, type: 3}
+  dustPerSecond: 3
+  surfaces:
+  - renderer: {fileID: 3701009036943332873}
+    points:
+    - {x: 0.015625, y: 0.078125}
+    - {x: -0.078125, y: 0.171875}
+    - {x: 0.015625, y: 0.171875}
+    - {x: 0.109375, y: 0.171875}
+    - {x: -0.078125, y: 0.265625}
+  - renderer: {fileID: 7007002412908601315}
+    points:
+    - {x: 0.015625, y: 0.078125}
+    - {x: -0.078125, y: 0.171875}
+    - {x: 0.015625, y: 0.171875}
+    - {x: 0.109375, y: 0.171875}
+    - {x: -0.078125, y: 0.265625}
+  - renderer: {fileID: 3891918373363760962}
+    points:
+    - {x: 0.015625, y: 0.078125}
+    - {x: -0.078125, y: 0.171875}
+    - {x: 0.015625, y: 0.171875}
+    - {x: 0.109375, y: 0.171875}
+    - {x: -0.078125, y: 0.265625}
+  particlesPerSecond: 5
+  lifetime: {x: 0.45, y: 0.8}
+  upwardSpeed: {x: 0.45, y: 0.9}
+  sidewaysSpeed: 0.5
+  capacity: 12
 --- !u!1 &2893270367790798431
 GameObject:
   m_ObjectHideFlags: 0
@@ -775,6 +826,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d648a9e9e7b67fd4ebc463975de53ef7, type: 3}
+--- !u!212 &7007002412908601315 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 7483509994632275211, guid: d648a9e9e7b67fd4ebc463975de53ef7, type: 3}
+  m_PrefabInstance: {fileID: 497396113311841000}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &9172392551317995178 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8767938157177193538, guid: d648a9e9e7b67fd4ebc463975de53ef7, type: 3}
@@ -842,6 +898,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8767938157177193538, guid: d648a9e9e7b67fd4ebc463975de53ef7, type: 3}
   m_PrefabInstance: {fileID: 5897494031223347785}
   m_PrefabAsset: {fileID: 0}
+--- !u!212 &3891918373363760962 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 7483509994632275211, guid: d648a9e9e7b67fd4ebc463975de53ef7, type: 3}
+  m_PrefabInstance: {fileID: 5897494031223347785}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &6090666239898743554
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -902,5 +963,10 @@ PrefabInstance:
 --- !u!4 &3254868742403995456 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8767938157177193538, guid: d648a9e9e7b67fd4ebc463975de53ef7, type: 3}
+  m_PrefabInstance: {fileID: 6090666239898743554}
+  m_PrefabAsset: {fileID: 0}
+--- !u!212 &3701009036943332873 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 7483509994632275211, guid: d648a9e9e7b67fd4ebc463975de53ef7, type: 3}
   m_PrefabInstance: {fileID: 6090666239898743554}
   m_PrefabAsset: {fileID: 0}

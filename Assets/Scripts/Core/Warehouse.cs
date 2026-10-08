@@ -46,6 +46,7 @@ public class Warehouse : MonoBehaviour
     {
         if (humanPrefab == null || resourceType == null || GlobalResourceManager.Instance == null) return null;
         if (GlobalResourceManager.Instance.GetResourceAmount(resourceType) <= 0) return null;
+        using var notification = GameFoundation.UI.GameNotifications.BeginTransfer(resourceType);
         if (!GlobalResourceManager.Instance.TrySpendResource(resourceType, 1)) return null;
 
         Vector3 spawnPos = GetSpawnPoint() + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0);
@@ -59,6 +60,7 @@ public class Warehouse : MonoBehaviour
     {
         if (human == null || GlobalResourceManager.Instance == null || humanResourceType == null) return;
         if (!human.TryCompletePortalReturn()) return;
+        using var notification = GameFoundation.UI.GameNotifications.BeginTransfer(humanResourceType);
         GlobalResourceManager.Instance.AddResource(humanResourceType, 1);
     }
 
@@ -82,7 +84,7 @@ public class Warehouse : MonoBehaviour
     public Porter SpawnPorter()
     {
         if (!CanSpawnPorter()) return null;
-        using var notification = GameFoundation.UI.GameNotifications.BeginPorterSpawn();
+        using var notification = GameFoundation.UI.GameNotifications.BeginTransfer(humanResourceType, cartResourceType);
         
         if (!GlobalResourceManager.Instance.TrySpendResource(humanResourceType, 1)) return null;
         if (!GlobalResourceManager.Instance.TrySpendResource(cartResourceType, 1))
@@ -104,6 +106,7 @@ public class Warehouse : MonoBehaviour
         if (porter == null || humanResourceType == null || cartResourceType == null || GlobalResourceManager.Instance == null) return;
         if (!porter.TryCompletePortalReturn()) return;
         porter.gameObject.SetActive(false);
+        using var notification = GameFoundation.UI.GameNotifications.BeginTransfer(humanResourceType, cartResourceType);
         
         GlobalResourceManager.Instance.AddResource(humanResourceType, 1);
         GlobalResourceManager.Instance.AddResource(cartResourceType, 1);

@@ -22,6 +22,9 @@ public class ResourceType : ScriptableObject
     [Tooltip("Если отмечено, этот ресурс не носят портеры, а приходит самостоятельно (например, Люди)")]
     public bool isHumanResource = false; // <--- ДОБАВИТЬ ЭТУ СТРОКУ
 
+    [Tooltip("Показывать изменения запаса в уведомлениях. Для воинов отключено: их гибель отображается отдельным событием.")]
+    public bool notifyResourceChanges = true;
+
     [Header("Визуал")]
     [Tooltip("Иконка интерфейса без обводки. Canvas: размер спрайта × 2.")]
     public Sprite resourceIcon;

@@ -367,7 +367,7 @@ public class ResourceRequester : MonoBehaviour {
             newIcon.transform.localPosition = new Vector3(startX + (i * iconSpacing), 0, 0);
             
             if (newIcon.TryGetComponent(out SpriteRenderer sr)) {
-                sr.sprite = type.defaultCarrySprite;
+                sr.sprite = type.resourceIcon;
             }
             
             _activeIcons.Add(newIcon);

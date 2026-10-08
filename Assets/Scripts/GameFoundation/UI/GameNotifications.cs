@@ -29,9 +29,24 @@ namespace GameFoundation.UI
         public static event Action<string, float, IReadOnlyList<NotificationPart>> CoalescedPosted;
         public static event Action<Health> UnitDied;
         private static ActionScope current;
+        private static TransferScope transfer;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void Reset() { Posted = null; CoalescedPosted = null; UnitDied = null; current = null; }
+        private static void Reset() { Posted = null; CoalescedPosted = null; UnitDied = null; current = null; transfer = null; }
+
+        // Moving an existing worker/cart out of storage is not a gain or loss.
+        public static IDisposable BeginTransfer(ResourceType first, ResourceType second = null) => new TransferScope(first, second);
+
+        private sealed class TransferScope : IDisposable
+        {
+            private readonly TransferScope parent;
+            private readonly ResourceType first, second;
+            private bool disposed;
+            public TransferScope(ResourceType first, ResourceType second)
+            { this.first = first; this.second = second; parent = transfer; transfer = this; }
+            public bool Contains(ResourceType type) => type == first || type == second || (parent != null && parent.Contains(type));
+            public void Dispose() { if (disposed) return; disposed = true; transfer = parent; }
+        }
 
         // Explicit synchronous action boundaries keep unrelated events separate, even in the same frame.
         public static IDisposable BeginAction() => new ActionScope();
@@ -73,7 +88,8 @@ namespace GameFoundation.UI
 
         public static void Resource(ResourceType resource, int delta)
         {
-            if (resource == null || delta == 0) return;
+            if (resource == null || delta == 0 || !resource.notifyResourceChanges) return;
+            if (transfer != null && transfer.Contains(resource)) return;
             var part = new NotificationPart(resource, delta);
             if (current != null) current.Add(part);
             else CoalescedPosted?.Invoke("resources", 1f, new[] { part });
