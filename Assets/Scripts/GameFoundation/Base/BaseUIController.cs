@@ -97,7 +97,7 @@ namespace GameFoundation.Base
         }
         private void Start()
         {
-            DayResourceLedger.EnsureDay(DayCycleService.Instance != null ? DayCycleService.Instance.Day : 1);
+            DayResourceLedger.EnterShelter();
             SubscribeDay();
             SubscribeLanguage();
             Refresh();

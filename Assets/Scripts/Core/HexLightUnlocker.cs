@@ -32,6 +32,7 @@ public class HexLightUnlocker : MonoBehaviour
 
     public float ActiveDuration => _duration;
     public float TimeRemaining => Mathf.Max(0f, _currentTime);
+    public bool IsPaused => _isUnlocking && !_isActive && !_isUnlocked;
 
     private void Awake()
     {
@@ -56,7 +57,7 @@ public class HexLightUnlocker : MonoBehaviour
 
     private void OnDisable()
     {
-        if (_isActive)
+        if (_isUnlocking)
         {
             CancelUnlockProcess();
         }
@@ -89,6 +90,12 @@ public class HexLightUnlocker : MonoBehaviour
 
     public void StartUnlockProcess(float dangerLevel)
     {
+        if (IsPaused)
+        {
+            _isActive = true;
+            if (progressBar != null) progressBar.Show();
+            return;
+        }
         if (_isUnlocked || _isUnlocking || _isActive) return;
         
         _isUnlocking = true;
@@ -107,6 +114,17 @@ public class HexLightUnlocker : MonoBehaviour
         
         if (progressBar != null)
         {
+            progressBar.Show();
+        }
+    }
+
+    public void PauseUnlockProcess()
+    {
+        if (!_isUnlocking || _isUnlocked) return;
+        _isActive = false;
+        if (progressBar != null)
+        {
+            progressBar.SetProgress(1f - Mathf.Clamp01(_currentTime / _duration));
             progressBar.Show();
         }
     }

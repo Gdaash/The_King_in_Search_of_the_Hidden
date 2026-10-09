@@ -166,6 +166,10 @@ public class GlobalResourceManager : MonoBehaviour
         if (availableA < requiredA || (inputA != inputB && availableB < inputBAmount))
             return false;
 
+        // Record the boundary before mutating balances, as AddResource and TrySpendResource do.
+        DayResourceLedger.RecordResourceChange(inputA, -inputAAmount);
+        DayResourceLedger.RecordResourceChange(inputB, -inputBAmount);
+        DayResourceLedger.RecordResourceChange(output, outputAmount);
         SetResourceAmountWithoutSaving(inputA, availableA - inputAAmount);
         if (inputA == inputB)
             SetResourceAmountWithoutSaving(inputA, availableA - inputAAmount - inputBAmount);
@@ -173,9 +177,6 @@ public class GlobalResourceManager : MonoBehaviour
             SetResourceAmountWithoutSaving(inputB, availableB - inputBAmount);
         SetResourceAmountWithoutSaving(output, GetResourceAmount(output) + outputAmount);
 
-        DayResourceLedger.RecordResourceChange(inputA, -inputAAmount);
-        DayResourceLedger.RecordResourceChange(inputB, -inputBAmount);
-        DayResourceLedger.RecordResourceChange(output, outputAmount);
         PlayerPrefs.Save();
         RefreshDisplay();
         return true;

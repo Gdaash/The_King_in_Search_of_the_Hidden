@@ -52,9 +52,7 @@ public static class LaboratoryListSetup
         for (int i = 0; i < singles.Length; i++) Assign(table.Find(singles[i]), singles[i], titles[i], 1, gates[i], Icon(icons[i]));
         for (int i = 0; i < 5; i++)
         {
-            Assign(table.Find(ScientificUpgrades.Flashlights[i]), "crystal_cells", "Ячейки кристалла", i + 1, 1 + 3 * i, Icon("Magic"));
-            Assign(table.Find(ScientificUpgrades.CrystalPower[i]), "crystal_power", "Мощность кристалла", i + 1, 2 + 3 * i,
-                AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/UI/Evolution/Gameplay/Sprites/NewUi/iconEnergy.png"));
+            Assign(table.Find(ScientificUpgrades.Flashlights[i]), "light_beams", "Лучи света", i + 1, 1 + 2 * i, Icon("Magic"));
         }
         EditorUtility.SetDirty(table);
     }
@@ -268,7 +266,7 @@ public static class LaboratoryListSetup
         Add("laboratory.buy_hint", "Нажмите на улучшение слева, чтобы изучить", "Click the upgrade on the left to learn it");
         var enNames = new Dictionary<string, string> { [ScientificUpgrades.PortalArrows] = "Magic arrows", [ScientificUpgrades.SharpAxes] = "Sharp axes",
             [ScientificUpgrades.QuietScouting] = "Quiet scouting", [ScientificUpgrades.StrongWalls] = "Strong walls", [ScientificUpgrades.FastHex] = "Hex exploration",
-            [ScientificUpgrades.WarriorBaseRegen] = "Field infirmary", ["crystal_cells"] = "Crystal cells", ["crystal_power"] = "Crystal power" };
+            [ScientificUpgrades.WarriorBaseRegen] = "Field infirmary", ["light_beams"] = "Light beams" };
         foreach (var g in table.entries.GroupBy(e => e.GroupId)) Add("laboratory.group." + g.Key, g.First().groupTitle, enNames.TryGetValue(g.Key, out string en) ? en : g.First().groupTitle);
         EditorUtility.SetDirty(loc);
     }

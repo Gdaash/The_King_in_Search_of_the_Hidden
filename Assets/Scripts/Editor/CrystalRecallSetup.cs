@@ -10,15 +10,12 @@ using UnityEngine.UI;
 
 public static class CrystalRecallSetup
 {
-    public const string CellsPath = "Assets/Prefabs/UI/HUD/Crystal Cells.prefab";
-    const string HudPath = "Assets/Prefabs/UI/HUD/Crystal Charge Panel.prefab";
     const string MousePath = "Assets/Sprites/Resources/RBM.png";
 
     public static void Run()
     {
         if (Application.isPlaying) throw new System.InvalidOperationException("Stop Play Mode first.");
         CreateMouseIcon();
-        InstallHud();
         InstallHover();
         ConfigureMine();
         var table = AssetDatabase.LoadAssetAtPath<LocalizationTable>("Assets/Resources/Localization/Base Localization.asset");
@@ -27,7 +24,7 @@ public static class CrystalRecallSetup
         entry.values = new() { "Вернуть людей в портал", "Return people to the portal" };
         EditorUtility.SetDirty(table);
         AssetDatabase.SaveAssets();
-        Debug.Log("Resident mine worker, RBM icon and shared crystal cell views saved.");
+        Debug.Log("Resident mine worker, RBM icon and hover views saved.");
     }
 
     static void CreateMouseIcon()
@@ -55,54 +52,10 @@ public static class CrystalRecallSetup
         importer.SaveAndReimport();
     }
 
-    public static void InstallHud()
-    {
-        var hud = PrefabUtility.LoadPrefabContents(HudPath);
-        try
-        {
-            var view = hud.GetComponent<CrystalChargeHud>();
-            var row = hud.transform.Find("Cells/Cell Row");
-            var asset = AssetDatabase.LoadAssetAtPath<GameObject>(CellsPath);
-            if (asset == null)
-            {
-                var copy = Object.Instantiate(row.gameObject);
-                copy.name = "Crystal Cells";
-                var rt = (RectTransform)copy.transform;
-                rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(.5f, .5f);
-                rt.sizeDelta = new Vector2(282, 44); rt.anchoredPosition = Vector2.zero;
-                var bar = copy.GetComponent<CrystalCellBar>() ?? copy.AddComponent<CrystalCellBar>();
-                var so = new SerializedObject(bar); var cells = so.FindProperty("cells"); cells.arraySize = 6;
-                for (int i = 0; i < 6; i++)
-                {
-                    var cell = copy.transform.Find("Cell " + (i + 1));
-                    var binding = cells.GetArrayElementAtIndex(i);
-                    binding.FindPropertyRelative("root").objectReferenceValue = cell.gameObject;
-                    binding.FindPropertyRelative("frame").objectReferenceValue = cell.GetComponent<Image>();
-                    binding.FindPropertyRelative("fill").objectReferenceValue = cell.Find("Charge Area/Charge").GetComponent<Image>();
-                }
-                so.ApplyModifiedPropertiesWithoutUndo();
-                asset = PrefabUtility.SaveAsPrefabAsset(copy, CellsPath);
-                Object.DestroyImmediate(copy);
-            }
-            var nested = hud.transform.Find("Cells/Crystal Cells");
-            if (nested == null) nested = ((GameObject)PrefabUtility.InstantiatePrefab(asset, hud.transform.Find("Cells"))).transform;
-            var rect = (RectTransform)nested;
-            rect.anchorMin = new Vector2(0, 0); rect.anchorMax = new Vector2(1, 0);
-            rect.pivot = new Vector2(.5f, 0); rect.anchoredPosition = Vector2.zero; rect.sizeDelta = new Vector2(0, 44);
-            if (row != null) Object.DestroyImmediate(row.gameObject);
-            var bindingSo = new SerializedObject(view);
-            bindingSo.FindProperty("cellBar").objectReferenceValue = nested.GetComponent<CrystalCellBar>();
-            bindingSo.ApplyModifiedPropertiesWithoutUndo();
-            PrefabUtility.SaveAsPrefabAsset(hud, HudPath);
-        }
-        finally { PrefabUtility.UnloadPrefabContents(hud); }
-    }
-
     public static void InstallHover()
     {
-        var barAsset = AssetDatabase.LoadAssetAtPath<GameObject>(CellsPath);
         var mouse = AssetDatabase.LoadAssetAtPath<Sprite>(MousePath);
-        if (barAsset == null || mouse == null) return;
+        if (mouse == null) return;
         var root = PrefabUtility.LoadPrefabContents(CrystalHexHoverSetup.PrefabPath);
         try
         {
@@ -150,24 +103,26 @@ public static class CrystalRecallSetup
                 view.FindPropertyRelative("recallRow").objectReferenceValue = row;
                 view.FindPropertyRelative("recallCaption").objectReferenceValue = text;
 
-                var oldBar = visual.Find("Crystal Energy"); if (oldBar != null) Object.DestroyImmediate(oldBar.gameObject);
-                var energy = new GameObject("Crystal Energy", typeof(RectTransform), typeof(Canvas), typeof(CanvasGroup));
-                energy.transform.SetParent(visual, false); energy.transform.localScale = Vector3.one / 64;
-                energy.transform.localPosition = new Vector3(0, 1.95f, 0);
-                ((RectTransform)energy.transform).sizeDelta = new Vector2(282, 44);
-                var canvas = energy.GetComponent<Canvas>(); canvas.renderMode = RenderMode.WorldSpace;
-                canvas.sortingLayerName = "OverLight"; canvas.sortingOrder = 122;
-                var energyGroup = energy.GetComponent<CanvasGroup>(); energyGroup.alpha = 0;
-                energyGroup.blocksRaycasts = energyGroup.interactable = false;
-                var bar = ((GameObject)PrefabUtility.InstantiatePrefab(barAsset, energy.transform)).GetComponent<CrystalCellBar>();
-                view.FindPropertyRelative("energyGroup").objectReferenceValue = energyGroup;
-                view.FindPropertyRelative("energyBar").objectReferenceValue = bar;
+                var alarmGroup = (CanvasGroup)view.FindPropertyRelative("alarmGroup").objectReferenceValue;
+                if (alarmGroup == null)
+                {
+                    var alarm = new GameObject("Action Alarm", typeof(RectTransform), typeof(Canvas), typeof(CanvasGroup));
+                    alarm.transform.SetParent(visual, false); alarm.transform.localScale = Vector3.one / 64;
+                    alarm.transform.localPosition = new Vector3(0, 1.95f, 0);
+                    ((RectTransform)alarm.transform).sizeDelta = new Vector2(282, 52);
+                    var canvas = alarm.GetComponent<Canvas>(); canvas.renderMode = RenderMode.WorldSpace;
+                    canvas.sortingLayerName = "OverLight"; canvas.sortingOrder = 122;
+                    alarmGroup = alarm.GetComponent<CanvasGroup>(); alarmGroup.alpha = 0;
+                    alarmGroup.blocksRaycasts = alarmGroup.interactable = false;
+                    view.FindPropertyRelative("alarmGroup").objectReferenceValue = alarmGroup;
+                }
             }
             so.ApplyModifiedPropertiesWithoutUndo();
             HexAlarmPreviewSetup.Configure(root);
             PrefabUtility.SaveAsPrefabAsset(root, CrystalHexHoverSetup.PrefabPath);
         }
         finally { PrefabUtility.UnloadPrefabContents(root); }
+        DayReportAndLightHintSetup.InstallStartHint();
     }
 
     static void ConfigureMine()

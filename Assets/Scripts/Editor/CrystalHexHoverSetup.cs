@@ -56,7 +56,7 @@ public static class CrystalHexHoverSetup
         so.FindProperty("availableSprite").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Sprite>(SpriteFolder + "Flag D.png");
         so.FindProperty("workingSprite").objectReferenceValue = red;
         so.FindProperty("cancelSprite").objectReferenceValue = purple;
-        so.FindProperty("noEnergySprite").objectReferenceValue = gray;
+        so.FindProperty("busySprite").objectReferenceValue = gray;
         var views = so.FindProperty("views"); views.arraySize = 2;
         for (int i = 0; i < 2; i++)
         {
@@ -93,8 +93,6 @@ public static class CrystalHexHoverSetup
         live.ApplyModifiedProperties(); PrefabUtility.RecordPrefabInstancePropertyModifications(existing);
         var table = AssetDatabase.LoadAssetAtPath<LocalizationTable>("Assets/Resources/Localization/Base Localization.asset");
         Translate(table, "world.crystal.cancel", "отменить действие", "cancel action");
-        Translate(table, "world.crystal.no_energy", "нет энергии", "no energy");
-        Translate(table, "world.crystal.busy", "кристалл занят", "crystal is busy");
         EditorUtility.SetDirty(table); AssetDatabase.SaveAssetIfDirty(table);
         EditorSceneManager.MarkSceneDirty(existing.gameObject.scene); EditorSceneManager.SaveScene(existing.gameObject.scene);
         Selection.activeGameObject = existing.gameObject;

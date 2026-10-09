@@ -99,20 +99,6 @@ public class GlobalStats : ScriptableObject
     public float WarriorRetreatHealthThreshold => ScientificEffect(ScientificUpgrades.WarriorRetreat, -1f);
     /// <summary>Fraction of maximum warrior health restored each second while at the portal base.</summary>
     public float WarriorBaseRegenPerSecond => ScientificEffect(ScientificUpgrades.WarriorBaseRegen, 0f);
-    /// <summary>Each purchased tier adds a fraction of base power (0.2 = +20%), not a compound multiplier.</summary>
-    public float CrystalChargingPowerMultiplier
-    {
-        get
-        {
-            float multiplier = 1f;
-            foreach (string id in ScientificUpgrades.CrystalPower)
-            {
-                if (!HasUpgrade(id)) break;
-                multiplier += Mathf.Max(0, FindUpgradeDefinition(id)?.effectValue ?? .2f);
-            }
-            return multiplier;
-        }
-    }
     public int AvailableFlashlightCount
     {
         get

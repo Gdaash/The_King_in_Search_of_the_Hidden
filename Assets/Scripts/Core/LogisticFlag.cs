@@ -107,6 +107,7 @@ public class LogisticFlag : MonoBehaviour
     }
 
     private void OnTriggerEnter2D(Collider2D collision) {
+        if (CrystalControlled) return;
         if (collision.gameObject != gameObject && collision.GetComponent<ResourceRequester>() != null) {
             _buildingsUnderFlag++;
             UpdateState();
@@ -114,6 +115,7 @@ public class LogisticFlag : MonoBehaviour
     }
 
     private void OnTriggerExit2D(Collider2D collision) {
+        if (CrystalControlled) return;
         if (collision.gameObject != gameObject && collision.GetComponent<ResourceRequester>() != null) {
             _buildingsUnderFlag = Mathf.Max(0, _buildingsUnderFlag - 1);
             UpdateState();
@@ -121,6 +123,7 @@ public class LogisticFlag : MonoBehaviour
     }
 
     private void OnCollisionEnter2D(Collision2D collision) {
+        if (CrystalControlled) return;
         if (collision.gameObject != gameObject && collision.collider.GetComponent<ResourceRequester>() != null) {
             _buildingsUnderFlag++;
             UpdateState();
@@ -128,6 +131,7 @@ public class LogisticFlag : MonoBehaviour
     }
 
     private void OnCollisionExit2D(Collision2D collision) {
+        if (CrystalControlled) return;
         if (collision.gameObject != gameObject && collision.collider.GetComponent<ResourceRequester>() != null) {
             _buildingsUnderFlag = Mathf.Max(0, _buildingsUnderFlag - 1);
             UpdateState();

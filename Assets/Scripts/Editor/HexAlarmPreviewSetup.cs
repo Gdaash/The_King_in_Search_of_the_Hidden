@@ -13,15 +13,15 @@ public static class HexAlarmPreviewSetup
         for (int i = 0; i < views.arraySize; i++)
         {
             var view = views.GetArrayElementAtIndex(i);
-            var energy = (CanvasGroup)view.FindPropertyRelative("energyGroup").objectReferenceValue;
-            if (energy == null) continue;
-            var existing = energy.transform.Find("Action Alarm Preview");
+            var alarmGroup = (CanvasGroup)view.FindPropertyRelative("alarmGroup").objectReferenceValue;
+            if (alarmGroup == null) continue;
+            var existing = alarmGroup.transform.Find("Action Alarm Preview");
             var row = existing != null ? existing.gameObject :
                 new GameObject("Action Alarm Preview", typeof(RectTransform), typeof(HexAlarmPreview));
-            if (existing == null) row.transform.SetParent(energy.transform, false);
+            if (existing == null) row.transform.SetParent(alarmGroup.transform, false);
             var rect = (RectTransform)row.transform;
             rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
-            rect.anchoredPosition = new Vector2(0, 42);
+            rect.anchoredPosition = Vector2.zero;
             rect.sizeDelta = new Vector2(282, 52);
             var orb = row.transform.Find("Orb Template");
             if (orb == null)

@@ -56,6 +56,8 @@ public class ResourceRequester : MonoBehaviour {
     [SerializeField] protected float iconSpacing = 0.4f; 
     [SerializeField] protected float bobbingAmount = 0.1f;
     [SerializeField] protected float bobbingSpeed = 2f;
+    [Tooltip("Смещение иконок требований во время паузы: оставляет место для видимого прогрессбара.")]
+    [SerializeField] private Vector3 pausedRequestOffset = new Vector3(0, 1.1f, 0);
 
     [Header("Общие события")]
     public UnityEvent OnResourceReceived;
@@ -81,8 +83,10 @@ public class ResourceRequester : MonoBehaviour {
     private int _completedCycles = 0;
     private bool _crystalControlled;
     private LogisticFlag _crystalFlag;
+    private bool _crystalCyclePaused;
     public bool IsProcessing => _isProcessing;
-    public bool CanRecallHumans => isActiveAndEnabled && !_isProcessing &&
+    public bool IsCyclePaused => _isProcessing && _crystalCyclePaused;
+    public bool CanRecallHumans => isActiveAndEnabled && (!_isProcessing || (IsCyclePaused && !HasLogisticFlag())) &&
         requirements.Any(r => r.resourceType != null && r.resourceType.isHumanResource && r.currentAmount > 0);
     public int RecallIdleHumans()
     {
@@ -95,13 +99,22 @@ public class ResourceRequester : MonoBehaviour {
     }
     public bool CrystalResourcesReady => requirements.All(r => r.currentAmount >= r.requiredAmount);
     public bool CanSelectCrystalCycle => enabled && gameObject.activeInHierarchy && !ignoreFlag &&
-        requirements.Count > 0 && !_isProcessing && !IsStorageFull() &&
+        requirements.Count > 0 && (!_isProcessing || IsCyclePaused) && !IsStorageFull() &&
         (maxProductionCycles == 0 || _completedCycles < maxProductionCycles);
     public void SetCrystalFlag(LogisticFlag flag)
     {
         _crystalControlled = true;
         _crystalFlag = flag;
-        if (flag == null) OrderManager.Instance?.CancelDeliveries(this);
+        if (flag == null)
+        {
+            if (_isProcessing)
+            {
+                _crystalCyclePaused = true;
+                foreach (var timer in GetComponentsInChildren<TimerController>(true))
+                    if (timer.CrystalOwner == this) timer.PauseCrystalCycle();
+            }
+            OrderManager.Instance?.CancelDeliveries(this);
+        }
         UpdateIndicator();
     }
     public void TryStartCrystalCycle() => CheckCompletion();
@@ -128,8 +141,9 @@ public class ResourceRequester : MonoBehaviour {
 
     protected virtual void Update() {
         if (iconsContainer != null && iconsContainer.gameObject.activeSelf) {
-            float newY = _containerBasePos.y + Mathf.Sin((Time.time * bobbingSpeed) + _bobbingOffset) * bobbingAmount;
-            iconsContainer.localPosition = new Vector3(_containerBasePos.x, newY, _containerBasePos.z);
+            Vector3 origin = _containerBasePos + (IsCyclePaused ? pausedRequestOffset : Vector3.zero);
+            origin.y += Mathf.Sin((Time.time * bobbingSpeed) + _bobbingOffset) * bobbingAmount;
+            iconsContainer.localPosition = origin;
         }
 
         UpdateStorageStatus();
@@ -193,7 +207,7 @@ public class ResourceRequester : MonoBehaviour {
             return false;
         }
         
-        if (!gameObject.activeInHierarchy || _isProcessing || !HasLogisticFlag() || IsStorageFull()) return false;
+        if (!gameObject.activeInHierarchy || (_isProcessing && !IsCyclePaused) || !HasLogisticFlag() || IsStorageFull()) return false;
         return requirements.Any(r => (r.currentAmount + r.reservedAmount) < r.requiredAmount);
     }
 
@@ -228,9 +242,13 @@ public class ResourceRequester : MonoBehaviour {
             req.reservedAmount = Mathf.Max(0, req.reservedAmount - 1);
             _carryingToUs = Mathf.Max(0, _carryingToUs - 1);
             
-            OnResourceReceived?.Invoke();
-            req.OnOneUnitDelivered?.Invoke();
-            if (req.currentAmount >= req.requiredAmount) req.OnAllUnitsDelivered?.Invoke();
+            // A replacement worker continues a paid cycle; delivery hooks must not restart it.
+            if (!_isProcessing)
+            {
+                OnResourceReceived?.Invoke();
+                req.OnOneUnitDelivered?.Invoke();
+                if (req.currentAmount >= req.requiredAmount) req.OnAllUnitsDelivered?.Invoke();
+            }
 
             CheckCompletion();
             UpdateIndicator();
@@ -258,6 +276,15 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     protected virtual void CheckCompletion() {
+        if (_crystalControlled && IsCyclePaused)
+        {
+            if (!HasLogisticFlag() || !CrystalResourcesReady) return;
+            _crystalCyclePaused = false;
+            foreach (var timer in GetComponentsInChildren<TimerController>(true))
+                if (timer.CrystalOwner == this) timer.ResumeCrystalCycle();
+            UpdateIndicator();
+            return;
+        }
         if (_crystalControlled && (_isProcessing || !HasLogisticFlag() || !CanSelectCrystalCycle)) return;
         if (requirements.All(r => r.currentAmount >= r.requiredAmount)) {
             _isProcessing = true;
@@ -284,6 +311,7 @@ public class ResourceRequester : MonoBehaviour {
         }
         SpawnAllResults();
         _isProcessing = false;
+        _crystalCyclePaused = false;
         _carryingToUs = 0;
         foreach (var req in requirements) {
             if (!retainHumansBetweenCycles || req.resourceType == null || !req.resourceType.isHumanResource)
@@ -307,7 +335,7 @@ public class ResourceRequester : MonoBehaviour {
         foreach (var icon in _activeIcons) if(icon) Destroy(icon);
         _activeIcons.Clear();
 
-        if (_isProcessing || !gameObject.activeInHierarchy || IsStorageFull()) {
+        if ((_isProcessing && !IsCyclePaused) || !gameObject.activeInHierarchy || IsStorageFull()) {
             iconsContainer.gameObject.SetActive(false);
             return;
         }
@@ -353,6 +381,7 @@ public class ResourceRequester : MonoBehaviour {
         }
 
         iconsContainer.gameObject.SetActive(true);
+        iconsContainer.localPosition = _containerBasePos + (IsCyclePaused ? pausedRequestOffset : Vector3.zero);
         float totalWidth = (displayIcons.Count - 1) * iconSpacing;
         float startX = -totalWidth / 2f;
 
@@ -375,7 +404,7 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     private void ValidateReservations() {
-        if (_isProcessing || !gameObject.activeInHierarchy || IsStorageFull()) return;
+        if ((_isProcessing && !IsCyclePaused) || !gameObject.activeInHierarchy || IsStorageFull()) return;
 
         if (!HasLogisticFlag()) {
             bool changed = false;

@@ -46,14 +46,8 @@ public static class CrystalRecallValidation
     static void CheckBar(CrystalHexHover hover, bool visible, WorldFlashlightAvailability c)
     {
         var visual = hover.GetComponentsInChildren<SpriteRenderer>().First(s => s.color.a > .9f).transform.parent;
-        var bar = visual.Find("Crystal Energy");
-        Check(bar.GetComponent<CanvasGroup>().alpha == (visible ? 1 : 0), "hover charge bar visibility " + visible);
-        foreach (var cellBar in Object.FindObjectsByType<CrystalCellBar>(FindObjectsSortMode.None)) cellBar.Refresh();
-        for (int i = 0; i < c.CellCount; i++)
-        {
-            var fill = bar.Find("Crystal Cells/Cell " + (i + 1) + "/Charge Area/Charge").GetComponent<Image>();
-            Check(Mathf.Approximately(fill.rectTransform.anchorMax.y, c.Charge(i)), "hover cell " + (i + 1) + " matches charge");
-        }
+        var preview = visual.GetComponentInChildren<HexAlarmPreview>(true);
+        Check(preview.GetComponentInParent<CanvasGroup>().alpha == (visible ? 1 : 0), "hover alarm visibility " + visible);
         var icon = visual.Find("Caption/Recall People/RBM").GetComponent<Image>();
         Check(icon.rectTransform.rect.size == icon.sprite.rect.size * 2, "RBM uses exact double pixel size");
     }
@@ -63,7 +57,8 @@ public static class CrystalRecallValidation
         var hover = Object.FindFirstObjectByType<CrystalHexHover>(); hover.enabled = false;
         var resources = GlobalResourceManager.Instance;
         OrderManager.Instance.enabled = false;
-        Check(c.CellCount == 6, "six-cell configuration");
+        Check(c.LightCount == 6, "six-light configuration");
+        c.ActivateAvailableLights();
         var hex = HexLightUnlocker.ActiveInstances.Where(h => !h.IsUnlocked() && h.GetComponentInParent<HexBlocker>() != null && !h.GetComponentInParent<HexBlocker>().IsBlocked).OrderBy(h => h.transform.position.sqrMagnitude).First();
         Vector3 position = hex.transform.position;
         Check(c.SelectAt(position), "open a walkable test hex");
@@ -98,11 +93,11 @@ public static class CrystalRecallValidation
         ScreenCapture.CaptureScreenshot("Temp/crystal-recall-idle.png");
         wait = Wait(.25f); while (wait.MoveNext()) yield return null;
         GameSpeedControls.SetSimulationSpeed(1);
-        Check(c.SelectAt(position), "resident mine reserves production cell");
+        Check(c.SelectAt(position), "resident mine reserves a production beam");
         Check(c.GetHoverTarget(position).State == WorldFlashlightAvailability.HoverState.WaitingForResources && mine.CanRecallHumans, "waiting for berries permits recall");
         Show(hover, c, position); CheckBar(hover, false, c);
         var captions = hover.GetComponentsInChildren<TMP_Text>().Where(t => t.gameObject.activeInHierarchy).ToArray();
-        Check(captions.Any(t => t.text == "отменить действие") && captions.Any(t => t.text == "Вернуть людей в портал"), "cancel and recall hints share the visible block");
+        Check(captions.Any(t => t.text == "отменить действие"), "waiting action shows its right-click cancellation hint");
         ScreenCapture.CaptureScreenshot("Temp/crystal-recall-waiting.png");
         wait = Wait(.25f); while (wait.MoveNext()) yield return null;
         mine.DeliverResource(berry.resourceType);
@@ -110,17 +105,16 @@ public static class CrystalRecallValidation
         GameSpeedControls.SetSimulationSpeed(4);
         wait = Wait(1.7f); while (wait.MoveNext()) yield return null;
         Check(!mine.IsProcessing && human.currentAmount == 1 && berry.currentAmount == 0, "production consumes berries and retains worker");
-        c.RechargeAll();
         var drains = new List<GameObject>();
-        for (int i = 0; i < c.CellCount; i++)
+        for (int i = 0; i < c.LightCount; i++)
         {
             var drain = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Buildings/Stone 3.prefab"), new Vector3(50 + i * 4, 0), Quaternion.identity);
             drains.Add(drain);
-            Check(c.SelectAt(drain.transform.position), "reserve cell for busy-crystal preview " + i);
+            Check(c.SelectAt(drain.transform.position), "reserve beam for busy-lights preview " + i);
         }
-        Check(c.GetHoverTarget(position).State == WorldFlashlightAvailability.HoverState.CrystalBusy, "charged occupied cells show crystal busy");
+        Check(c.GetHoverTarget(position).State == WorldFlashlightAvailability.HoverState.LightsBusy, "all lights currently have assignments");
         Show(hover, c, position); CheckBar(hover, true, c);
-        Check(hover.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "кристалл занят"), "busy hint appears with return people hint");
+        Check(!hover.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "Нет свободных лучей"), "occupied lights do not show obsolete busy hint");
         ScreenCapture.CaptureScreenshot("Temp/crystal-recall-busy.png");
         wait = Wait(.25f); while (wait.MoveNext()) yield return null;
         foreach (var drain in drains) Object.Destroy(drain);

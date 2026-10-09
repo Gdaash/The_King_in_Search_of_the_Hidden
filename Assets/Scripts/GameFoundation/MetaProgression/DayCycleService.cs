@@ -122,7 +122,22 @@ namespace GameFoundation.MetaProgression
             Save();
             Changed?.Invoke();
         }
-        public void NextDay(){if(GameFoundation.Base.ForestForagingService.IsPending)return;DayResourceLedger.EnsureDay(Day);int starved=ConsumeFood();MilitaryExperienceService.HealAll();UpdateCrowns(starved);DayResourceLedger.FinishDay(Day);Day++;SearchedToday=false;EnteredToday=false;RefugeesAvailable=UnityEngine.Random.Range(1,4);Save();DayResourceLedger.StartNextDay(Day);Changed?.Invoke();}
+        public void NextDay()
+        {
+            if (GameFoundation.Base.ForestForagingService.IsPending) return;
+            DayResourceLedger.EnterShelter();
+            int starved = ConsumeFood();
+            MilitaryExperienceService.HealAll();
+            UpdateCrowns(starved);
+            DayResourceLedger.FinishDay(Day);
+            Day++;
+            SearchedToday = false;
+            EnteredToday = false;
+            RefugeesAvailable = UnityEngine.Random.Range(1, 4);
+            Save();
+            DayResourceLedger.StartNextDay(Day);
+            Changed?.Invoke();
+        }
         public bool AdmitRefugee(){if(RefugeesAvailable<=0 || !GameFoundation.Base.BuildingUpgradeService.CanAdmitResident)return false;RefugeesAvailable--;Save();Changed?.Invoke();return true;}
         public FoodForecast GetFoodForecast()
         {

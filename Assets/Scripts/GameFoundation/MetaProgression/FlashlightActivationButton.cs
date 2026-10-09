@@ -15,6 +15,15 @@ namespace GameFoundation.MetaProgression
         private WorldFlashlightAvailability availability;
         private Collider2D hitCollider;
         private bool isHovered;
+        private bool pointerPressed;
+        private Vector2 pointerDown;
+        private Camera worldCamera;
+
+        public void Bind(WorldFlashlightAvailability owner)
+        {
+            availability = owner;
+            worldCamera = Camera.main;
+        }
 
         private void Awake()
         {
@@ -31,25 +40,27 @@ namespace GameFoundation.MetaProgression
 
         private void Update()
         {
-            if (hitCollider == null || Camera.main == null) return;
-            Vector2 pointerPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            bool hovered = hitCollider.OverlapPoint(pointerPosition);
+            if (hitCollider == null || worldCamera == null || availability == null) return;
+            Vector2 pointerPosition = worldCamera.ScreenToWorldPoint(Input.mousePosition);
+            bool hovered = hitCollider.OverlapPoint(pointerPosition) &&
+                !availability.IsPointerOverBlockingUI(Input.mousePosition) && GameSpeedControls.SimulationSpeed > 0;
             if (hovered != isHovered)
             {
                 isHovered = hovered;
                 ApplyColor(isHovered ? hoverColor : normalColor);
             }
-            if (Input.GetMouseButtonUp(0) && hovered) Activate();
+            if (Input.GetMouseButtonDown(0))
+            { pointerPressed = hovered; pointerDown = Input.mousePosition; }
+            if (Input.GetMouseButtonUp(0))
+            {
+                if (pointerPressed && hovered && Vector2.Distance(pointerDown, Input.mousePosition) < 8) Activate();
+                pointerPressed = false;
+            }
         }
 
-        private void OnMouseUp() => Activate();
+        private void OnDisable() { pointerPressed = false; isHovered = false; ApplyColor(normalColor); }
 
-        private void Activate()
-        {
-            if (availability == null)
-                availability = UnityEngine.Object.FindFirstObjectByType<WorldFlashlightAvailability>(FindObjectsInactive.Include);
-            availability?.ActivateAvailableLights();
-        }
+        public void Activate() => availability?.ActivateAvailableLights();
 
         private void ApplyColor(Color color)
         {

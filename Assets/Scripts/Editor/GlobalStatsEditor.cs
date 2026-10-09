@@ -34,8 +34,7 @@ internal sealed class GlobalStatsEditor : Editor
             EditorGUILayout.FloatField("Множитель апгрейда открытия гекса", stats.HexOpeningTimeMultiplier);
             EditorGUILayout.FloatField("Снижение тревоги", stats.HexAlarmReduction);
             EditorGUILayout.Toggle("Может стрелять", stats.CanAttack);
-            EditorGUILayout.IntField("Доступно ячеек кристалла", stats.AvailableFlashlightCount);
-            EditorGUILayout.FloatField("Множитель мощности кристалла", stats.CrystalChargingPowerMultiplier);
+            EditorGUILayout.IntField("Доступно лучей света", stats.AvailableFlashlightCount);
         }
 
         var progress = serializedObject.FindProperty("scientificProgressStats").objectReferenceValue as GlobalStats;

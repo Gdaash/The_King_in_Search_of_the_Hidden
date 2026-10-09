@@ -2,6 +2,7 @@ using System;
 using GameFoundation.Localization;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace GameFoundation.MetaProgression
 {
@@ -17,14 +18,15 @@ namespace GameFoundation.MetaProgression
             public CanvasGroup captionGroup;
             public GameObject recallRow;
             public TMP_Text recallCaption;
-            public CanvasGroup energyGroup;
-            public CrystalCellBar energyBar;
+            public GameObject startRow;
+            public TMP_Text startCaption;
+            [FormerlySerializedAs("energyGroup")] public CanvasGroup alarmGroup;
             public HexAlarmPreview alarmPreview;
             [NonSerialized] public Transform anchor;
             [NonSerialized] public LogisticFlag flag;
             [NonSerialized] public WorldFlashlightAvailability.HoverState state;
             [NonSerialized] public float alpha, clickTime = -1, clickAlpha;
-            [NonSerialized] public bool canRecall;
+            [NonSerialized] public bool canRecall, canStart;
         }
         [SerializeField] private WorldFlashlightAvailability crystal;
         [SerializeField] private Camera worldCamera;
@@ -32,7 +34,7 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private Sprite availableSprite;
         [SerializeField] private Sprite workingSprite;
         [SerializeField] private Sprite cancelSprite;
-        [SerializeField] private Sprite noEnergySprite;
+        [FormerlySerializedAs("noEnergySprite")] [SerializeField] private Sprite busySprite;
         [Header("Animation (unscaled seconds)")]
         [SerializeField, Min(.01f)] private float fadeSeconds = .3f;
         [SerializeField, Min(.01f)] private float clickSeconds = .22f;
@@ -46,7 +48,7 @@ namespace GameFoundation.MetaProgression
             if (crystal == null) crystal = FindFirstObjectByType<WorldFlashlightAvailability>();
             if (worldCamera == null) worldCamera = Camera.main;
             foreach (var view in views)
-            { view.root.gameObject.SetActive(false); if (view.energyBar != null) view.energyBar.Bind(crystal); Paint(view, 0); }
+            { view.root.gameObject.SetActive(false); Paint(view, 0); }
         }
         private void OnEnable() { if (crystal != null) crystal.TargetClicked += AnimateClick; }
         private void OnDisable()
@@ -92,9 +94,10 @@ namespace GameFoundation.MetaProgression
                 if (show)
                 {
                     view.canRecall = desired.CanRecallHumans;
+                    view.canStart = crystal.CanStartManually(desired);
                     if (view.alarmPreview != null) view.alarmPreview.Show(crystal.GetActionAlarm(desired));
                 }
-                if (view.flag != null) view.flag.SetCrystalHoverVisible(true);
+                if (view.flag != null) view.flag.SetCrystalHoverVisible(!crystal.IsDraggingFlag(view.flag));
                 if (view.clickTime >= 0)
                 {
                     view.clickTime += dt;
@@ -131,21 +134,17 @@ namespace GameFoundation.MetaProgression
                 WorldFlashlightAvailability.HoverState.WaitingForResources => cancelSprite,
                 WorldFlashlightAvailability.HoverState.RecallOnly => cancelSprite,
                 WorldFlashlightAvailability.HoverState.Working => workingSprite,
-                WorldFlashlightAvailability.HoverState.NoEnergy => noEnergySprite,
-                WorldFlashlightAvailability.HoverState.CrystalBusy => noEnergySprite,
+                WorldFlashlightAvailability.HoverState.LightsBusy => busySprite,
                 _ => availableSprite
             };
         }
         private static void Paint(View view, float alpha)
         {
             view.frame.color = new Color(1, 1, 1, alpha);
-            string key = view.state == WorldFlashlightAvailability.HoverState.WaitingForResources ? "world.crystal.cancel" :
-                view.state == WorldFlashlightAvailability.HoverState.NoEnergy ? "world.crystal.no_energy" :
-                view.state == WorldFlashlightAvailability.HoverState.CrystalBusy ? "world.crystal.busy" : null;
+            string key = view.state == WorldFlashlightAvailability.HoverState.WaitingForResources ? "world.crystal.cancel" : null;
             string text = key == null ? "" : LocalizationService.Instance?.Get(key);
             if (key != null && (string.IsNullOrEmpty(text) || text == key))
-                text = view.state == WorldFlashlightAvailability.HoverState.WaitingForResources ? "отменить действие" :
-                    view.state == WorldFlashlightAvailability.HoverState.CrystalBusy ? "кристалл занят" : "нет энергии";
+                text = "отменить действие";
             if (view.caption.text != text) view.caption.text = text;
             bool canCancel = view.state == WorldFlashlightAvailability.HoverState.WaitingForResources;
             bool showMouseRow = canCancel || view.canRecall;
@@ -153,6 +152,14 @@ namespace GameFoundation.MetaProgression
             view.caption.gameObject.SetActive(hasCaption);
             view.caption.alpha = view.captionGroup != null ? 1 : alpha;
             if (view.recallRow != null) view.recallRow.SetActive(showMouseRow);
+            if (view.startRow != null) view.startRow.SetActive(view.canStart);
+            if (view.startCaption != null)
+            {
+                const string startKey = "world.lights.start_work";
+                string start = LocalizationService.Instance?.Get(startKey);
+                if (string.IsNullOrEmpty(start) || start == startKey) start = "Запустить работу";
+                view.startCaption.text = start;
+            }
             if (view.recallCaption != null)
             {
                 const string recallKey = "world.crystal.recall_humans";
@@ -163,15 +170,15 @@ namespace GameFoundation.MetaProgression
             }
             if (view.captionGroup != null)
             {
-                view.captionGroup.alpha = hasCaption || showMouseRow ? alpha : 0;
+                view.captionGroup.alpha = hasCaption || showMouseRow || view.canStart ? alpha : 0;
                 // Width is fitted to the visible text/icon rows by the prefab's layout.
                 ((RectTransform)view.captionGroup.transform).SetSizeWithCurrentAnchors(
-                    RectTransform.Axis.Vertical, showMouseRow ? (hasCaption ? 98 : 66) : 48);
+                    RectTransform.Axis.Vertical, 16 + (hasCaption ? 32 : 0) +
+                        (showMouseRow ? 50 : 0) + (view.canStart ? 50 : 0));
             }
-            if (view.energyGroup != null)
-                view.energyGroup.alpha = view.state == WorldFlashlightAvailability.HoverState.Available ||
-                    view.state == WorldFlashlightAvailability.HoverState.NoEnergy ||
-                    view.state == WorldFlashlightAvailability.HoverState.CrystalBusy ? alpha : 0;
+            if (view.alarmGroup != null)
+                view.alarmGroup.alpha = view.state == WorldFlashlightAvailability.HoverState.Available ||
+                    view.state == WorldFlashlightAvailability.HoverState.LightsBusy ? alpha : 0;
         }
         private static void ReleaseFlag(View view)
         { if (view.flag != null) view.flag.SetCrystalHoverVisible(false); view.flag = null; }

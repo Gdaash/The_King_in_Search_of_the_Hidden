@@ -27,12 +27,24 @@ public class TimerController : MonoBehaviour
     public event System.Action CrystalCycleStarted;
     public bool IsRunning => _isActive && !_stoppedForEscape;
     private bool _crystalPending;
+    private bool _crystalPaused;
+    public bool IsPaused => _crystalPaused && !_stoppedForEscape;
     public void BindCrystalOwner(ResourceRequester requester) => CrystalOwner = requester;
     private bool CrystalCanStart => CrystalOwner == null ||
         (CrystalOwner.HasLogisticFlag() && CrystalOwner.CrystalResourcesReady);
     public void ResumeCrystalCycle()
     {
-        if (_crystalPending && CrystalCanStart) StartTimer();
+        if ((_crystalPending || _crystalPaused) && CrystalCanStart) StartTimer();
+    }
+
+    public void PauseCrystalCycle()
+    {
+        if (!_isActive || _stoppedForEscape) return;
+        _isActive = false;
+        _crystalPaused = true;
+        SendProgressToBar();
+        if (progressBarObject != null)
+            progressBarObject.SendMessage("Show", SendMessageOptions.DontRequireReceiver);
     }
 
     // Логика: берем время из статов или из локальной переменной
@@ -63,6 +75,7 @@ public class TimerController : MonoBehaviour
     void Update()
     {
         if (!_isActive || _stoppedForEscape) return;
+        if (!CrystalCanStart) { PauseCrystalCycle(); return; }
 
         if (_currentTime > 0)
         {
@@ -81,6 +94,7 @@ public class TimerController : MonoBehaviour
     public void SetDurationAndStart(float newDuration)
     {
         if (_stoppedForEscape) return;
+        if (_crystalPaused) { ResumeCrystalCycle(); return; }
         // Не перезаписываем настроенную базовую Duration. newDuration — это
         // фактический цикл с уже применёнными игровыми улучшениями.
         _currentTime = newDuration;
@@ -89,6 +103,7 @@ public class TimerController : MonoBehaviour
         if (!CrystalCanStart) { _crystalPending = true; return; }
         _isActive = true;
         _crystalPending = false;
+        _crystalPaused = false;
         CrystalCycleStarted?.Invoke();
         
         if (progressBarObject != null) 
@@ -111,7 +126,7 @@ public class TimerController : MonoBehaviour
         using var notification = GameFoundation.UI.GameNotifications.BeginAction();
         OnTimerEnd?.Invoke();
 
-        // A crystal activation pays for exactly one production cycle, regardless of legacy repeats.
+        // The light owner schedules the next cycle after all completion callbacks, regardless of legacy repeats.
         if (CrystalOwner != null)
         {
             _isActive = false;
@@ -152,6 +167,7 @@ public class TimerController : MonoBehaviour
         if (_isActive && CrystalOwner != null) return;
         _isActive = true;
         _crystalPending = false;
+        _crystalPaused = false;
         CrystalCycleStarted?.Invoke();
         if (progressBarObject != null) 
             progressBarObject.SendMessage("Show", SendMessageOptions.DontRequireReceiver);
@@ -160,6 +176,7 @@ public class TimerController : MonoBehaviour
     public void ResetTimer()
     {
         if (_stoppedForEscape) return;
+        if (_crystalPaused) { ResumeCrystalCycle(); return; }
         _currentTime = CurrentDuration;
         _cycleDuration = _currentTime;
         _remainingRepeats = repeatCount;

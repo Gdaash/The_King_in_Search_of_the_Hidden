@@ -52,7 +52,7 @@ namespace GameFoundation.Base
                 var gates = view.content.GetComponentsInChildren<LaboratoryUpgradeRow>().Select(r => r.Entry.requiredPurchases).ToArray();
                 Check(gates.SequenceEqual(gates.OrderBy(x => x)), "rows remain sorted after level changes");
             }
-            Check(stats.AvailableFlashlightCount == 6 && Mathf.Abs(stats.CrystalChargingPowerMultiplier - 2) < .0001f, "crystal effects unchanged");
+            Check(stats.AvailableFlashlightCount == 6, "all five light upgrades unlock six beams");
             Check(view.content.GetComponentsInChildren<LaboratoryUpgradeRow>().All(r => r.IsComplete && !r.purchaseButton.interactable && r.price.activeSelf), "all rows have purchased state and a visible price");
             GameSaveService.ResetCache();
             Check(stats.PurchasedUpgradeCount == entries.Count && entries.All(e => stats.HasUpgrade(e.id)), "all levels reload from the save envelope");

@@ -3794,6 +3794,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -4579,6 +4583,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -4624,6 +4632,8 @@ MonoBehaviour:
   woodCost: 1
   stone: {fileID: 11400000, guid: 80528df5024cfad4d940509df98d860c, type: 2}
   stoneCost: 1
+  confirmation: {fileID: 0}
+  constructionEffect: {fileID: 0}
 --- !u!114 &8460383925038962939
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4644,6 +4654,8 @@ MonoBehaviour:
   training: {fileID: 0}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!114 &1262628965239861543
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5704,8 +5716,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -185, y: 0}
-  m_SizeDelta: {x: 120, y: 48}
+  m_AnchoredPosition: {x: -200, y: 0}
+  m_SizeDelta: {x: 140, y: 48}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8768241860985362541
 CanvasRenderer:
@@ -6996,6 +7008,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 7473050452054146355}
   useButtonPalette: 0
@@ -7041,6 +7057,8 @@ MonoBehaviour:
   woodCost: 1
   stone: {fileID: 11400000, guid: 80528df5024cfad4d940509df98d860c, type: 2}
   stoneCost: 1
+  confirmation: {fileID: 0}
+  constructionEffect: {fileID: 0}
 --- !u!114 &802134771533990977
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7061,6 +7079,8 @@ MonoBehaviour:
   training: {fileID: 894967556889580740}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!114 &7554547308908583471
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8943,6 +8963,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -8982,6 +9006,8 @@ MonoBehaviour:
   training: {fileID: 0}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!114 &2220436672211886368
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12427,6 +12453,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -12451,6 +12481,8 @@ MonoBehaviour:
   training: {fileID: 0}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!1 &792482787455816522
 GameObject:
   m_ObjectHideFlags: 0
@@ -13208,6 +13240,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.CanvasWindowFit
   margin: 80
+  footerSpace: 0
 --- !u!1 &825275861279018283
 GameObject:
   m_ObjectHideFlags: 0
@@ -14038,8 +14071,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -5, y: 0}
-  m_SizeDelta: {x: 135, y: 48}
+  m_AnchoredPosition: {x: 40, y: 0}
+  m_SizeDelta: {x: 190, y: 48}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1976374517295562482
 CanvasRenderer:
@@ -17715,6 +17748,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 5220380919805782625}
   useButtonPalette: 0
@@ -17754,6 +17791,8 @@ MonoBehaviour:
   training: {fileID: 0}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!114 &1504393201982704032
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19987,6 +20026,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -21126,6 +21169,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -21521,6 +21568,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -22215,6 +22266,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -23199,6 +23254,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -23243,6 +23302,8 @@ MonoBehaviour:
   woodCost: 1
   stone: {fileID: 11400000, guid: 80528df5024cfad4d940509df98d860c, type: 2}
   stoneCost: 1
+  confirmation: {fileID: 0}
+  constructionEffect: {fileID: 0}
 --- !u!114 &8910054008095150618
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24459,6 +24520,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -25567,6 +25632,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -25600,6 +25669,7 @@ MonoBehaviour:
   label: {fileID: 8389475423741031977}
   visibility: {fileID: 64765908451675625}
   availabilityMarker: {fileID: 4397027440208522875}
+  highlight: {fileID: 0}
 --- !u!1 &1745869805931057886
 GameObject:
   m_ObjectHideFlags: 0
@@ -30502,6 +30572,10 @@ MonoBehaviour:
   theme: {fileID: 0}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -31435,6 +31509,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -31459,6 +31537,8 @@ MonoBehaviour:
   training: {fileID: 0}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!1 &2113092159941746410
 GameObject:
   m_ObjectHideFlags: 0
@@ -31495,7 +31575,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 515, y: 0}
-  m_SizeDelta: {x: 210, y: 48}
+  m_SizeDelta: {x: 240, y: 48}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &207260672842826243
 CanvasRenderer:
@@ -32589,6 +32669,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -33881,6 +33965,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -34260,171 +34348,6 @@ RectTransform:
   m_AnchoredPosition: {x: -356, y: 90}
   m_SizeDelta: {x: 342, y: 64}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &2352849341014034577
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5125271960685991780}
-  - component: {fileID: 1858561989864738848}
-  - component: {fileID: 2121355245426944998}
-  - component: {fileID: 8652353713904575918}
-  - component: {fileID: 2933568495254619388}
-  m_Layer: 0
-  m_Name: BaseSpent
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &5125271960685991780
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2352849341014034577}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 940159156775306110}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 330, y: 0}
-  m_SizeDelta: {x: 130, y: 48}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!222 &1858561989864738848
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2352849341014034577}
-  m_CullTransparentMesh: 1
---- !u!114 &2121355245426944998
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2352849341014034577}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_text: "\u0423\u043A\u0440\u044B\u0442\u0438\u0435 \u2212"
-  m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 387e771be1b4b584b950e122972913ac, type: 2}
-  m_sharedMaterial: {fileID: -7823927974898194647, guid: 387e771be1b4b584b950e122972913ac, type: 2}
-  m_fontSharedMaterials: []
-  m_fontMaterial: {fileID: 0}
-  m_fontMaterials: []
-  m_fontColor32:
-    serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 0.92, g: 0.83, b: 0.6, a: 1}
-  m_enableVertexGradient: 0
-  m_colorMode: 3
-  m_fontColorGradient:
-    topLeft: {r: 1, g: 1, b: 1, a: 1}
-    topRight: {r: 1, g: 1, b: 1, a: 1}
-    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
-    bottomRight: {r: 1, g: 1, b: 1, a: 1}
-  m_fontColorGradientPreset: {fileID: 0}
-  m_spriteAsset: {fileID: 0}
-  m_tintAllSprites: 0
-  m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
-  m_overrideHtmlColors: 0
-  m_faceColor:
-    serializedVersion: 2
-    rgba: 4278979851
-  m_fontSize: 22
-  m_fontSizeBase: 22
-  m_fontWeight: 400
-  m_enableAutoSizing: 0
-  m_fontSizeMin: 18
-  m_fontSizeMax: 72
-  m_fontStyle: 0
-  m_HorizontalAlignment: 2
-  m_VerticalAlignment: 512
-  m_textAlignment: 65535
-  m_characterSpacing: 1
-  m_characterHorizontalScale: 1
-  m_wordSpacing: 0
-  m_lineSpacing: 0
-  m_lineSpacingMax: 0
-  m_paragraphSpacing: 0
-  m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
-  m_wordWrappingRatios: 0.4
-  m_overflowMode: 0
-  m_linkedTextComponent: {fileID: 0}
-  parentLinkedComponent: {fileID: 0}
-  m_enableKerning: 0
-  m_ActiveFontFeatures: 6e72656b
-  m_enableExtraPadding: 0
-  checkPaddingRequired: 0
-  m_isRichText: 1
-  m_EmojiFallbackSupport: 1
-  m_parseCtrlCharacters: 1
-  m_isOrthographic: 1
-  m_isCullingEnabled: 0
-  m_horizontalMapping: 0
-  m_verticalMapping: 0
-  m_uvLineOffset: 0
-  m_geometrySortingOrder: 0
-  m_IsTextObjectScaleStatic: 0
-  m_VertexBufferAutoSizeReduction: 0
-  m_useMaxVisibleDescender: 1
-  m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
-  m_isUsingLegacyAnimationComponent: 0
-  m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_baseMaterial: {fileID: 0}
-  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &8652353713904575918
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2352849341014034577}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 302424c1582bd1640b6e205c3dae3c1c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.TMPWordLetterSpacing
-  spacing: 1.5
---- !u!114 &2933568495254619388
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2352849341014034577}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a7db46876f0c3d47855c4f81156d06a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedText
-  key: day_report.shelter_spent
 --- !u!1 &2354335521955081366
 GameObject:
   m_ObjectHideFlags: 0
@@ -34824,6 +34747,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -34857,6 +34784,7 @@ MonoBehaviour:
   label: {fileID: 8915992991014247671}
   visibility: {fileID: 7854414430307867317}
   availabilityMarker: {fileID: 8248944158483713518}
+  highlight: {fileID: 0}
 --- !u!1 &2394038244475050772
 GameObject:
   m_ObjectHideFlags: 0
@@ -36067,6 +35995,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -37930,6 +37862,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -37954,6 +37890,8 @@ MonoBehaviour:
   training: {fileID: 0}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!1 &2656122785847104775
 GameObject:
   m_ObjectHideFlags: 0
@@ -39731,6 +39669,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -39776,6 +39718,8 @@ MonoBehaviour:
   woodCost: 1
   stone: {fileID: 11400000, guid: 80528df5024cfad4d940509df98d860c, type: 2}
   stoneCost: 1
+  confirmation: {fileID: 0}
+  constructionEffect: {fileID: 0}
 --- !u!114 &1480422233948251685
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -40177,6 +40121,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -42943,7 +42891,6 @@ RectTransform:
   - {fileID: 9062104234741762214}
   - {fileID: 6401728971366764208}
   - {fileID: 4525185100784663837}
-  - {fileID: 5554224502970039808}
   - {fileID: 3397190406780713850}
   m_Father: {fileID: 5743142429920403575}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -43026,8 +42973,7 @@ MonoBehaviour:
   nameLabel: {fileID: 2946748542233399522}
   startLabel: {fileID: 5439426464568051197}
   runLabel: {fileID: 8440481338174295060}
-  gainedLabel: {fileID: 2911763776569371071}
-  spentLabel: {fileID: 8991735526160990965}
+  shelterLabel: {fileID: 2911763776569371071}
   endLabel: {fileID: 6548831367193682915}
 --- !u!1 &3002225960387492649
 GameObject:
@@ -43711,6 +43657,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -44718,7 +44668,6 @@ MonoBehaviour:
   warehouseButton: {fileID: 7462445745733271866}
   housingButton: {fileID: 3202911939897787427}
   refugeesButton: {fileID: 8910659946300282302}
-  squareButton: {fileID: 5793689626520200014}
   blacksmithButton: {fileID: 7921142055985887505}
   libraryButton: {fileID: 4365894129469703425}
   settingsButton: {fileID: 6780770555871490687}
@@ -44730,7 +44679,6 @@ MonoBehaviour:
   closeHousingButton: {fileID: 949221480664966726}
   closeRefugeesButton: {fileID: 2084257330785368101}
   admitRefugeeButton: {fileID: 1009237163654575893}
-  closeSquareButton: {fileID: 6283192375572611205}
   closeBlacksmithButton: {fileID: 6662913146456884663}
   closeLibraryButton: {fileID: 5943271259071244630}
   refugeesAvailableText: {fileID: 8008441708348017196}
@@ -44740,9 +44688,9 @@ MonoBehaviour:
   warehouse: {fileID: 6797682898911553451}
   housing: {fileID: 1244262714245071422}
   refugees: {fileID: 9025804189887935517}
-  square: {fileID: 6813040385629894525}
   blacksmith: {fileID: 5174678958758638233}
   magicLibrary: {fileID: 6648665511895838840}
+  cartWorkshop: {fileID: 0}
   nextDayConfirmation: {fileID: 1038027078881899614}
   nextDayForecast: {fileID: 5277303913486706659}
   housingForecast: {fileID: 2481970888122641217}
@@ -45219,6 +45167,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -47166,6 +47118,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 1
@@ -48158,6 +48114,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -48641,6 +48601,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -51890,6 +51854,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -55698,6 +55666,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -58872,6 +58844,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -60411,6 +60387,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -61103,6 +61083,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -64477,6 +64461,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -64975,6 +64963,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -65008,6 +65000,7 @@ MonoBehaviour:
   label: {fileID: 8143027357104623441}
   visibility: {fileID: 6117636377708020695}
   availabilityMarker: {fileID: 7846744064208563139}
+  highlight: {fileID: 0}
 --- !u!1 &4502354213674890087
 GameObject:
   m_ObjectHideFlags: 0
@@ -66309,6 +66302,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 1313623559870921901}
   useButtonPalette: 0
@@ -66354,6 +66351,8 @@ MonoBehaviour:
   woodCost: 1
   stone: {fileID: 11400000, guid: 80528df5024cfad4d940509df98d860c, type: 2}
   stoneCost: 1
+  confirmation: {fileID: 0}
+  constructionEffect: {fileID: 0}
 --- !u!114 &6017251361529060406
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -66374,6 +66373,8 @@ MonoBehaviour:
   training: {fileID: 7929895689092529627}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!114 &885632210470695247
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -66606,6 +66607,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -68245,8 +68250,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -185, y: 0}
-  m_SizeDelta: {x: 120, y: 48}
+  m_AnchoredPosition: {x: -200, y: 0}
+  m_SizeDelta: {x: 140, y: 48}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2653732423206192838
 CanvasRenderer:
@@ -69674,6 +69679,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -70000,6 +70009,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -70300,8 +70313,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -5, y: 0}
-  m_SizeDelta: {x: 135, y: 48}
+  m_AnchoredPosition: {x: 40, y: 0}
+  m_SizeDelta: {x: 190, y: 48}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &410804931281645208
 CanvasRenderer:
@@ -73125,6 +73138,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -77934,157 +77951,6 @@ RectTransform:
   m_AnchoredPosition: {x: 288, y: 0}
   m_SizeDelta: {x: 96, y: 38}
   m_Pivot: {x: 0, y: 0.5}
---- !u!1 &5347415400904348817
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5554224502970039808}
-  - component: {fileID: 7111809627363874358}
-  - component: {fileID: 8991735526160990965}
-  - component: {fileID: 7826740941679500136}
-  m_Layer: 0
-  m_Name: BaseSpent
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &5554224502970039808
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5347415400904348817}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 515955010937514731}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 330, y: 0}
-  m_SizeDelta: {x: 130, y: 48}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!222 &7111809627363874358
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5347415400904348817}
-  m_CullTransparentMesh: 1
---- !u!114 &8991735526160990965
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5347415400904348817}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_text: 0
-  m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 387e771be1b4b584b950e122972913ac, type: 2}
-  m_sharedMaterial: {fileID: -7823927974898194647, guid: 387e771be1b4b584b950e122972913ac, type: 2}
-  m_fontSharedMaterials: []
-  m_fontMaterial: {fileID: 0}
-  m_fontMaterials: []
-  m_fontColor32:
-    serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 0.94, g: 0.91, b: 0.82, a: 1}
-  m_enableVertexGradient: 0
-  m_colorMode: 3
-  m_fontColorGradient:
-    topLeft: {r: 1, g: 1, b: 1, a: 1}
-    topRight: {r: 1, g: 1, b: 1, a: 1}
-    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
-    bottomRight: {r: 1, g: 1, b: 1, a: 1}
-  m_fontColorGradientPreset: {fileID: 0}
-  m_spriteAsset: {fileID: 0}
-  m_tintAllSprites: 0
-  m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
-  m_overrideHtmlColors: 0
-  m_faceColor:
-    serializedVersion: 2
-    rgba: 4278979851
-  m_fontSize: 22
-  m_fontSizeBase: 22
-  m_fontWeight: 400
-  m_enableAutoSizing: 0
-  m_fontSizeMin: 18
-  m_fontSizeMax: 72
-  m_fontStyle: 0
-  m_HorizontalAlignment: 2
-  m_VerticalAlignment: 512
-  m_textAlignment: 65535
-  m_characterSpacing: 1
-  m_characterHorizontalScale: 1
-  m_wordSpacing: 0
-  m_lineSpacing: 0
-  m_lineSpacingMax: 0
-  m_paragraphSpacing: 0
-  m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
-  m_wordWrappingRatios: 0.4
-  m_overflowMode: 0
-  m_linkedTextComponent: {fileID: 0}
-  parentLinkedComponent: {fileID: 0}
-  m_enableKerning: 0
-  m_ActiveFontFeatures: 6e72656b
-  m_enableExtraPadding: 0
-  checkPaddingRequired: 0
-  m_isRichText: 1
-  m_EmojiFallbackSupport: 1
-  m_parseCtrlCharacters: 1
-  m_isOrthographic: 1
-  m_isCullingEnabled: 0
-  m_horizontalMapping: 0
-  m_verticalMapping: 0
-  m_uvLineOffset: 0
-  m_geometrySortingOrder: 0
-  m_IsTextObjectScaleStatic: 0
-  m_VertexBufferAutoSizeReduction: 0
-  m_useMaxVisibleDescender: 1
-  m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
-  m_isUsingLegacyAnimationComponent: 0
-  m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_baseMaterial: {fileID: 0}
-  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &7826740941679500136
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5347415400904348817}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 302424c1582bd1640b6e205c3dae3c1c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.TMPWordLetterSpacing
-  spacing: 1.5
 --- !u!1 &5351906778739619026
 GameObject:
   m_ObjectHideFlags: 0
@@ -80986,7 +80852,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 515, y: 0}
-  m_SizeDelta: {x: 210, y: 48}
+  m_SizeDelta: {x: 240, y: 48}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3501225782269044175
 CanvasRenderer:
@@ -81288,7 +81154,6 @@ RectTransform:
   - {fileID: 6615519419506671856}
   - {fileID: 1944542221705370928}
   - {fileID: 7359644163581701318}
-  - {fileID: 5125271960685991780}
   - {fileID: 3800218229445978228}
   m_Father: {fileID: 5743142429920403575}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -81735,6 +81600,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -82507,6 +82376,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 8695515356497482028}
   useButtonPalette: 0
@@ -82553,6 +82426,8 @@ MonoBehaviour:
   woodCost: 1
   stone: {fileID: 11400000, guid: 80528df5024cfad4d940509df98d860c, type: 2}
   stoneCost: 1
+  confirmation: {fileID: 0}
+  constructionEffect: {fileID: 0}
 --- !u!114 &2737439618978756120
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -83156,6 +83031,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -83938,6 +83817,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -83962,6 +83845,8 @@ MonoBehaviour:
   training: {fileID: 0}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!1 &5788009288603996417
 GameObject:
   m_ObjectHideFlags: 0
@@ -86184,6 +86069,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -86208,6 +86097,8 @@ MonoBehaviour:
   training: {fileID: 0}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!1 &5926752803596016076
 GameObject:
   m_ObjectHideFlags: 0
@@ -89698,6 +89589,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -90890,6 +90785,11 @@ MonoBehaviour:
   screenMargin: 12
   bottomPadding: 24
   resourceRowGap: 12
+  minimumHeight: 362
+  titleTopPadding: 22
+  titleDescriptionGap: 24
+  titleHorizontalPadding: 48
+  descriptionHorizontalPadding: 68
 --- !u!1 &6243030304164090583
 GameObject:
   m_ObjectHideFlags: 0
@@ -104795,6 +104695,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.CanvasWindowFit
   margin: 20
+  footerSpace: 0
 --- !u!1 &7162934399754422430
 GameObject:
   m_ObjectHideFlags: 0
@@ -105265,6 +105166,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.CanvasWindowFit
   margin: 20
+  footerSpace: 0
 --- !u!1 &7181153853699815731
 GameObject:
   m_ObjectHideFlags: 0
@@ -106569,6 +106471,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.CanvasWindowFit
   margin: 20
+  footerSpace: 0
 --- !u!1 &7235889121314674223
 GameObject:
   m_ObjectHideFlags: 0
@@ -107906,6 +107809,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -107952,6 +107859,8 @@ MonoBehaviour:
   woodCost: 1
   stone: {fileID: 11400000, guid: 80528df5024cfad4d940509df98d860c, type: 2}
   stoneCost: 1
+  confirmation: {fileID: 0}
+  constructionEffect: {fileID: 0}
 --- !u!114 &7726549771641720079
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107972,6 +107881,8 @@ MonoBehaviour:
   training: {fileID: 0}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!114 &7992624074737305928
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -115080,6 +114991,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -115124,6 +115039,8 @@ MonoBehaviour:
   woodCost: 1
   stone: {fileID: 11400000, guid: 80528df5024cfad4d940509df98d860c, type: 2}
   stoneCost: 1
+  confirmation: {fileID: 0}
+  constructionEffect: {fileID: 0}
 --- !u!114 &8179172674266124537
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -115144,6 +115061,8 @@ MonoBehaviour:
   training: {fileID: 0}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!114 &4906162421569955612
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -115945,6 +115864,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -115969,6 +115892,8 @@ MonoBehaviour:
   training: {fileID: 0}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!1 &7920444500898731417
 GameObject:
   m_ObjectHideFlags: 0
@@ -118302,6 +118227,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -118326,6 +118255,8 @@ MonoBehaviour:
   training: {fileID: 0}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!1 &8068740203233211964
 GameObject:
   m_ObjectHideFlags: 0
@@ -119011,6 +118942,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -119056,6 +118991,8 @@ MonoBehaviour:
   woodCost: 1
   stone: {fileID: 11400000, guid: 80528df5024cfad4d940509df98d860c, type: 2}
   stoneCost: 1
+  confirmation: {fileID: 0}
+  constructionEffect: {fileID: 0}
 --- !u!114 &9127795035609151097
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -119288,6 +119225,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -119358,7 +119299,7 @@ GameObject:
   - component: {fileID: 961216574042981346}
   - component: {fileID: 6341709296819567328}
   m_Layer: 0
-  m_Name: BaseGain
+  m_Name: Shelter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -119380,8 +119321,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 190, y: 0}
-  m_SizeDelta: {x: 140, y: 48}
+  m_AnchoredPosition: {x: 260, y: 0}
+  m_SizeDelta: {x: 210, y: 48}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1178009016579932257
 CanvasRenderer:
@@ -119411,7 +119352,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u0423\u043A\u0440\u044B\u0442\u0438\u0435 +"
+  m_text: "\u0423\u043A\u0440\u044B\u0442\u0438\u0435"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 387e771be1b4b584b950e122972913ac, type: 2}
   m_sharedMaterial: {fileID: -7823927974898194647, guid: 387e771be1b4b584b950e122972913ac, type: 2}
@@ -119508,7 +119449,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a7db46876f0c3d47855c4f81156d06a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedText
-  key: day_report.shelter_gain
+  key: report.shelter
 --- !u!1 &8118517223502230838
 GameObject:
   m_ObjectHideFlags: 0
@@ -120207,6 +120148,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -121777,7 +121722,7 @@ GameObject:
   - component: {fileID: 2911763776569371071}
   - component: {fileID: 6780106597579197893}
   m_Layer: 0
-  m_Name: BaseGain
+  m_Name: Shelter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -121799,8 +121744,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 190, y: 0}
-  m_SizeDelta: {x: 140, y: 48}
+  m_AnchoredPosition: {x: 260, y: 0}
+  m_SizeDelta: {x: 210, y: 48}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &464881624912319042
 CanvasRenderer:
@@ -122842,6 +122787,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -122866,6 +122815,8 @@ MonoBehaviour:
   training: {fileID: 0}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!1 &8299610961394345495
 GameObject:
   m_ObjectHideFlags: 0
@@ -134840,6 +134791,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -134864,6 +134819,8 @@ MonoBehaviour:
   training: {fileID: 0}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!1 &9111030636993147943
 GameObject:
   m_ObjectHideFlags: 0
@@ -134928,6 +134885,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.CanvasWindowFit
   margin: 80
+  footerSpace: 0
 --- !u!1 &9117353410856370083
 GameObject:
   m_ObjectHideFlags: 0

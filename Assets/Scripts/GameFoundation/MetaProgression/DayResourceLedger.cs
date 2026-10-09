@@ -19,6 +19,7 @@ namespace GameFoundation.MetaProgression
             // Net-zero exchanges still belong in the report. Older saves fall back to their recorded totals.
             public bool hadChanges;
             public bool HasChanges => hadChanges || start != end || runChange != 0 || baseGained != 0 || baseSpent != 0;
+            public long ShelterChange => (long)baseGained - baseSpent;
         }
 
         [Serializable]
@@ -76,6 +77,14 @@ namespace GameFoundation.MetaProgression
             Save();
         }
 
+        public static void EnterShelter()
+        {
+            EnsureDay(DayCycleService.Instance != null ? DayCycleService.Instance.Day : 1);
+            // A restored save or a direct scene change may leave an unfinished run in the ledger.
+            // Close its snapshot before shelter purchases or the next day's upkeep change resources.
+            EndRun();
+        }
+
         public static void EndRun(int durationSeconds = -1)
         {
             if (_state == null || !_state.runActive) return;
@@ -106,6 +115,7 @@ namespace GameFoundation.MetaProgression
             bool atShelter = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Base";
             if (!atShelter && (_state == null || !_state.runActive)) return;
             EnsureDay(DayCycleService.Instance != null ? DayCycleService.Instance.Day : 1);
+            if (atShelter) EndRun();
             Entry entry = GetEntry(type.Id);
             if (_state.runActive)
             {

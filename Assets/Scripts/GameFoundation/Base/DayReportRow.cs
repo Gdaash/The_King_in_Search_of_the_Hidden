@@ -2,6 +2,7 @@ using GameFoundation.MetaProgression;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Serialization;
 
 namespace GameFoundation.Base
 {
@@ -11,8 +12,8 @@ namespace GameFoundation.Base
         [SerializeField] private TMP_Text nameLabel;
         [SerializeField] private TMP_Text startLabel;
         [SerializeField] private TMP_Text runLabel;
-        [SerializeField] private TMP_Text gainedLabel;
-        [SerializeField] private TMP_Text spentLabel;
+        [FormerlySerializedAs("gainedLabel")]
+        [SerializeField] private TMP_Text shelterLabel;
         [SerializeField] private TMP_Text endLabel;
 
         public void SetData(ResourceType type, DayResourceLedger.Entry entry)
@@ -29,10 +30,13 @@ namespace GameFoundation.Base
                 runLabel.text = entry.runChange > 0 ? $"+{entry.runChange}" : entry.runChange.ToString();
                 runLabel.color = entry.runChange > 0 ? new Color(.38f, .9f, .48f) : entry.runChange < 0 ? new Color(1f, .38f, .38f) : Color.white;
             }
-            if (gainedLabel != null) gainedLabel.text = entry.baseGained > 0 ? $"+{entry.baseGained}" : "0";
-            if (spentLabel != null) spentLabel.text = entry.baseSpent > 0 ? $"−{entry.baseSpent}" : "0";
-            if (gainedLabel != null) gainedLabel.color = entry.baseGained > 0 ? new Color(.38f, .9f, .48f) : new Color(.66f, .61f, .72f);
-            if (spentLabel != null) spentLabel.color = entry.baseSpent > 0 ? new Color(1f, .38f, .38f) : new Color(.66f, .61f, .72f);
+            if (shelterLabel != null)
+            {
+                long change = entry.ShelterChange;
+                shelterLabel.text = change > 0 ? $"+{change}" : change < 0 ? $"−{-change}" : "0";
+                shelterLabel.color = change > 0 ? new Color(.38f, .9f, .48f)
+                    : change < 0 ? new Color(1f, .38f, .38f) : new Color(.66f, .61f, .72f);
+            }
             if (endLabel != null)
             {
                 long change = (long)entry.end - entry.start;
