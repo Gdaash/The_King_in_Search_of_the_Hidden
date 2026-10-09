@@ -43,9 +43,9 @@ public class AlarmSystem : MonoBehaviour
     [SerializeField] private Transform tickContainer;
     [SerializeField] private Sprite uiSprite;
     [SerializeField] private Sprite thresholdSkullSprite;
-    [SerializeField] private Color lockedSkullColor = Color.black;
-    [SerializeField] private Color unlockedSkullColor = Color.white;
-    [SerializeField] private Vector2 thresholdSkullSize = new(32f, 32f);
+    [SerializeField] private Sprite inactiveThresholdSkullSprite;
+    [SerializeField] private Sprite[] thresholdDividerSprites = Array.Empty<Sprite>();
+    [SerializeField] private float thresholdDividerYOffset;
     [SerializeField] private float thresholdSkullYOffset = -30f;
     [SerializeField] private bool createRuntimeUiWhenMissing = true;
     [SerializeField] private Vector2 uiSize = new(360f, 24f);
@@ -109,6 +109,7 @@ public class AlarmSystem : MonoBehaviour
             GameFoundation.UI.NotificationKind.Negative);
     }
     private readonly Dictionary<UnityEngine.Object, float> _actionAlarmReservations = new();
+    private readonly HashSet<UnityEngine.Object> _pausedActionAlarmSources = new();
     private Canvas _canvas;
     private RectTransform _canvasRect;
 
@@ -154,10 +155,11 @@ public class AlarmSystem : MonoBehaviour
     public Sprite OrbSprite => orbSettings != null && orbSettings.Image != null ? orbSettings.Image.sprite : alarmOrbSprite != null ? alarmOrbSprite : uiSprite;
     public Color OrbColor => orbSettings != null && orbSettings.Image != null ? orbSettings.Image.color : Color.white;
     public Sprite SkullSprite => thresholdSkullSprite;
+    public Sprite InactiveSkullSprite => inactiveThresholdSkullSprite;
 
-    public int PreviewOrbCount(float amount)
+    public int PreviewOrbCount(float amount, float reservedForAction = 0f)
     {
-        return OrbCount(AcceptedPreviewAlarm(amount));
+        return OrbCount(AcceptedPreviewAlarm(amount, reservedForAction));
     }
 
     private int OrbCount(float accepted)
@@ -185,6 +187,7 @@ public class AlarmSystem : MonoBehaviour
     public void ReserveActionAlarm(UnityEngine.Object source, float amount)
     {
         if (source == null) return;
+        _pausedActionAlarmSources.Remove(source);
         if (amount > 0f) _actionAlarmReservations[source] = amount;
         else _actionAlarmReservations.Remove(source);
     }
@@ -192,6 +195,26 @@ public class AlarmSystem : MonoBehaviour
     public void CancelActionAlarm(UnityEngine.Object source)
     {
         if (!ReferenceEquals(source, null)) _actionAlarmReservations.Remove(source);
+        _pausedActionAlarmSources.Remove(source);
+    }
+
+    public void SetActionAlarmPaused(UnityEngine.Object source, bool paused)
+    {
+        if (source == null) return;
+        if (paused && _actionAlarmReservations.ContainsKey(source)) _pausedActionAlarmSources.Add(source);
+        else _pausedActionAlarmSources.Remove(source);
+    }
+
+    /// <summary>Paused cycles retain their reservation for resuming, but do not advance the forecast.</summary>
+    public float ActiveReservedActionAlarm
+    {
+        get
+        {
+            float total = 0f;
+            foreach (var reservation in _actionAlarmReservations)
+                if (reservation.Key != null && !_pausedActionAlarmSources.Contains(reservation.Key)) total += reservation.Value;
+            return total;
+        }
     }
 
     public void AddAlarmFromAction(float amount, Vector3 position, UnityEngine.Object source)
@@ -201,15 +224,20 @@ public class AlarmSystem : MonoBehaviour
         AddAlarmFromWorldPosition(amount, position);
     }
 
-    private float AcceptedPreviewAlarm(float amount) => Mathf.Min(Mathf.Max(0f, amount),
-        Mathf.Max(0f, MaximumTotalAlarm - currentAlarm - _pendingAlarm - ReservedActionAlarm));
+    public float GetReservedActionAlarm(UnityEngine.Object source) =>
+        source != null && _actionAlarmReservations.TryGetValue(source, out float amount) ? amount : 0f;
 
-    public bool PreviewOrbRaisesLevel(float amount, int index)
+    private float PreviewStartAlarm(float reservedForAction) => currentAlarm + _pendingAlarm +
+        Mathf.Max(0f, ActiveReservedActionAlarm - Mathf.Max(0f, reservedForAction));
+    private float AcceptedPreviewAlarm(float amount, float reservedForAction) => Mathf.Min(Mathf.Max(0f, amount),
+        Mathf.Max(0f, MaximumTotalAlarm - PreviewStartAlarm(reservedForAction)));
+
+    public bool PreviewOrbRaisesLevel(float amount, int index, float reservedForAction = 0f)
     {
-        int count = PreviewOrbCount(amount);
+        int count = PreviewOrbCount(amount, reservedForAction);
         if (index < 0 || index >= count) return false;
-        float start = currentAlarm + _pendingAlarm + ReservedActionAlarm;
-        float step = AcceptedPreviewAlarm(amount) / count;
+        float start = PreviewStartAlarm(reservedForAction);
+        float step = AcceptedPreviewAlarm(amount, reservedForAction) / count;
         float before = start + step * index;
         float after = start + step * (index + 1);
         foreach (var threshold in thresholds)
@@ -244,6 +272,7 @@ public class AlarmSystem : MonoBehaviour
         alarmRevision++;
         _pendingAlarm = 0f;
         _actionAlarmReservations.Clear();
+        _pausedActionAlarmSources.Clear();
         foreach (Coroutine routine in _waveRoutines)
             if (routine != null) StopCoroutine(routine);
         _waveRoutines.Clear();
@@ -297,6 +326,7 @@ public class AlarmSystem : MonoBehaviour
     public void ResetAlarm()
     {
         _actionAlarmReservations.Clear();
+        _pausedActionAlarmSources.Clear();
         alarmRevision++;
         currentAlarm = 0f;
         RefreshEnemyLevel(false);
@@ -584,7 +614,8 @@ public class AlarmSystem : MonoBehaviour
         float configuredLaunchDelay = spawnedSettings != null ? spawnedSettings.LaunchDelayMax : orbLaunchDelayMax;
         float configuredClusterRadius = spawnedSettings != null ? spawnedSettings.ClusterRadius : orbClusterRadius;
         float configuredArcHeight = spawnedSettings != null ? spawnedSettings.ArcHeight : orbArcHeight;
-        orbRect.sizeDelta = Vector2.one * configuredSize;
+        orbRect.sizeDelta = orbImage.sprite != null ? orbImage.sprite.rect.size * 2f : Vector2.one * configuredSize;
+        orbImage.preserveAspect = true;
 
         Camera cameraForCanvas = _canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : _canvas.worldCamera;
         Vector2 screenStart = Camera.main != null ? (Vector2)Camera.main.WorldToScreenPoint(worldPosition) : (Vector2)fillImage.rectTransform.position;
@@ -678,13 +709,23 @@ public class AlarmSystem : MonoBehaviour
         CreateThresholdTicks(panel.transform);
     }
 
+    [ContextMenu("Refresh Threshold Markers")]
+    public void RefreshThresholdMarkers()
+    {
+        if (tickContainer != null) CreateThresholdTicks(tickContainer);
+    }
+
     private void CreateThresholdTicks(Transform panel)
     {
         _thresholdSkulls.Clear();
         for (int index = panel.childCount - 1; index >= 0; index--)
         {
             Transform child = panel.GetChild(index);
-            if (child.TryGetComponent<AlarmThresholdMarker>(out var mark) && mark.owner == this) Destroy(child.gameObject);
+            if (!child.TryGetComponent<AlarmThresholdMarker>(out var mark) || mark.owner != this) continue;
+            // Authored markers make the prefab editable; replace them with the current difficulty's thresholds.
+            child.gameObject.SetActive(false);
+            if (Application.isPlaying) Destroy(child.gameObject);
+            else DestroyImmediate(child.gameObject);
         }
 
         foreach (AlarmThreshold threshold in thresholds)
@@ -704,10 +745,12 @@ public class AlarmSystem : MonoBehaviour
             GameObject tick = new("Tick", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             tick.transform.SetParent(marker.transform, false);
             RectTransform tickRect = tick.GetComponent<RectTransform>();
-            tickRect.sizeDelta = new Vector2(3f, uiSize.y + 6f);
-
             Image tickImage = tick.GetComponent<Image>();
-            tickImage.color = new Color(1f, 0.83f, 0.3f, 1f);
+            if (thresholdDividerSprites.Length > 0)
+                tickImage.sprite = thresholdDividerSprites[Mathf.Min(_thresholdSkulls.Count, thresholdDividerSprites.Length - 1)];
+            tickRect.sizeDelta = tickImage.sprite != null ? tickImage.sprite.rect.size * 2f : new Vector2(3f, uiSize.y + 6f);
+            tickRect.anchoredPosition = new Vector2(0f, thresholdDividerYOffset);
+            tickImage.color = Color.white;
             tickImage.raycastTarget = false;
 
             if (thresholdSkullSprite == null) continue;
@@ -717,7 +760,7 @@ public class AlarmSystem : MonoBehaviour
             skullRect.anchorMin = skullRect.anchorMax = new Vector2(0.5f, 0.5f);
             skullRect.pivot = new Vector2(0.5f, 0.5f);
             skullRect.anchoredPosition = new Vector2(0f, thresholdSkullYOffset);
-            skullRect.sizeDelta = thresholdSkullSize;
+            skullRect.sizeDelta = thresholdSkullSprite.rect.size * 2f;
             Image skullImage = skull.GetComponent<Image>();
             skullImage.sprite = thresholdSkullSprite;
             skullImage.preserveAspect = true;
@@ -735,7 +778,11 @@ public class AlarmSystem : MonoBehaviour
             if (threshold == null) continue;
             if (visualIndex >= _thresholdSkulls.Count) break;
             bool reached = currentAlarm >= threshold.alarmValue;
-            _thresholdSkulls[visualIndex].color = reached ? unlockedSkullColor : lockedSkullColor;
+            Image skull = _thresholdSkulls[visualIndex];
+            skull.sprite = reached ? thresholdSkullSprite : inactiveThresholdSkullSprite;
+            skull.color = Color.white;
+            skull.enabled = skull.sprite != null;
+            if (skull.sprite != null) skull.rectTransform.sizeDelta = skull.sprite.rect.size * 2f;
             visualIndex++;
         }
     }

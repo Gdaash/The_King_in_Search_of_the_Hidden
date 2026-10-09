@@ -28,27 +28,23 @@ public static class HexAlarmPreviewSetup
             {
                 orb = new GameObject("Orb Template", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image)).transform;
                 orb.SetParent(row.transform, false);
-                var skull = new GameObject("Threshold Skull", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-                skull.transform.SetParent(orb, false);
-                skull.GetComponent<Image>().raycastTarget = false;
-                skull.GetComponent<Image>().preserveAspect = true;
             }
+            // The threshold state is now the row icon itself, not an extra skull above it.
+            var oldMarker = orb.Find("Threshold Skull");
+            if (oldMarker != null) Object.DestroyImmediate(oldMarker.gameObject);
             var image = orb.GetComponent<Image>();
             image.raycastTarget = false;
             image.preserveAspect = true;
             var preview = row.GetComponent<HexAlarmPreview>();
             var binding = new SerializedObject(preview);
             binding.FindProperty("orbScale").floatValue = 1f;
-            var alarm = Object.FindFirstObjectByType<AlarmSystem>();
+            var alarm = AssetDatabase.LoadAssetAtPath<GameObject>(AlarmBarPsdSetup.Bar).GetComponent<AlarmSystem>();
             if (alarm != null)
             {
-                image.sprite = alarm.OrbSprite;
-                image.color = alarm.OrbColor;
+                image.sprite = alarm.InactiveSkullSprite;
+                image.color = Color.white;
                 image.rectTransform.sizeDelta = (image.sprite != null ? image.sprite.rect.size * 2 : new Vector2(52, 52)) *
                     binding.FindProperty("orbScale").floatValue;
-                var skull = orb.GetChild(0).GetComponent<Image>();
-                skull.sprite = alarm.SkullSprite;
-                skull.rectTransform.sizeDelta = skull.sprite != null ? skull.sprite.rect.size * 2 : Vector2.zero;
             }
             orb.gameObject.SetActive(false);
             binding.FindProperty("orbTemplate").objectReferenceValue = image;

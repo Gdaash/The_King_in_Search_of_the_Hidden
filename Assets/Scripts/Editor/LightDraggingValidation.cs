@@ -120,6 +120,7 @@ public static class LightDraggingValidation
         var wait = Wait(1); while (wait.MoveNext()) yield return null;
         crystal = Object.FindFirstObjectByType<WorldFlashlightAvailability>();
         Check(crystal != null && crystal.LightCount == 6, "World loads six upgraded lights");
+        CheckPausedAlarmPreview();
         // This long logistics/input audit opens enough hexes to summon real waves.
         // Protect only the test instance so combat cannot end the expedition halfway through it.
         var escapeView = Object.FindFirstObjectByType<WorldEscapeController>();
@@ -155,11 +156,16 @@ public static class LightDraggingValidation
         Check(beams.All(b => !b.ActivationButton.gameObject.activeInHierarchy), "activation button hides after use");
         Check(Enumerable.Range(0, 6).All(i => crystal.State(i) == WorldFlashlightAvailability.LightState.Ready), "initial actions finish once when auto-repeat is off");
         Check(!Place(0, Vector2.zero), "free light can be parked on empty portal ground");
+        CheckEdgeDragging(0, false);
         var hexes = HexLightUnlocker.ActiveInstances.Where(h => crystal.GetHoverTarget(h.transform.position).State == WorldFlashlightAvailability.HoverState.Available)
             .Where(h => Camera.main.pixelRect.Contains(ScreenPoint(h.transform.position)) && !crystal.IsPointerOverBlockingUI(ScreenPoint(h.transform.position)))
             .OrderBy(h => h.transform.position.sqrMagnitude).Take(3).ToArray();
         Check(hexes.Length >= 2, "visible actionable World hexes exist");
         Vector2 target = hexes[0].transform.position;
+        var alarm = AlarmSystem.Instance;
+        float expectedOpeningAlarm = crystal.GetActionAlarm(crystal.GetHoverTarget(target));
+        var expectedRed = Enumerable.Range(0, alarm.PreviewOrbCount(expectedOpeningAlarm))
+            .Select(i => alarm.PreviewOrbRaisesLevel(expectedOpeningAlarm, i)).ToArray();
         Pointer(ScreenPoint(target), true, true, false); Pointer(ScreenPoint(target), false, false, true);
         Check(!hexes[0].IsUnlocking() && crystal.State(0) == WorldFlashlightAvailability.LightState.Ready, "clicking a hex does not assign or spend a beam");
         CheckManualHint(target, false);
@@ -174,18 +180,28 @@ public static class LightDraggingValidation
         Check(crystal.IsDragging && Vector2.Distance(beams[0].MarkerPosition, target) < .01f && !hexes[0].IsUnlocking(), "pointer moves marker and beam without starting action on pass-over");
         Pointer(ScreenPoint(target), false, false, true);
         Check(!crystal.IsDragging && hexes[0].IsUnlocking() && crystal.State(0) == WorldFlashlightAvailability.LightState.Working, "drop starts opening with exactly the dragged beam");
+        CheckEdgeDragging(0, true);
+        CheckWorkingAlarm(target, expectedOpeningAlarm, expectedRed);
+        var openingHover = CaptureOpeningHover(target); while (openingHover.MoveNext()) yield return null;
         CheckManualHint(target, false);
         var light = beams[0].GetComponentInChildren<FlashlightController>(true).transform;
         Check(Vector2.Dot(light.up, (target - (Vector2)light.position).normalized) > .999f, "light points at marker on its first visible frame");
         wait = Wait(.35f); while (wait.MoveNext()) yield return null;
         float pausedOpening = hexes[0].TimeRemaining;
+        float openingActiveForecast = alarm.ActiveReservedActionAlarm;
+        float openingOwnForecast = crystal.GetActionAlarm(crystal.GetHoverTarget(target));
         Check(crystal.BeginDrag(0), "working opening beam can be moved");
         crystal.DragTo(Vector2.zero); crystal.DropAt(Vector2.zero);
         wait = Wait(.35f); while (wait.MoveNext()) yield return null;
         Check(hexes[0].IsPaused && Mathf.Approximately(pausedOpening, hexes[0].TimeRemaining), "unlit hex preserves opening progress");
+        Check(Mathf.Approximately(alarm.ActiveReservedActionAlarm, openingActiveForecast - openingOwnForecast),
+            "paused hex opening is excluded from the red-skull forecast");
         var openingBar = (RadialProgressBar)new SerializedObject(hexes[0]).FindProperty("progressBar").objectReferenceValue;
         Check(openingBar.GetComponent<CanvasGroup>().alpha == 1, "paused opening keeps its progress bar visible");
         Check(Place(0, target) && !hexes[0].IsPaused && Mathf.Approximately(pausedOpening, hexes[0].TimeRemaining), "returning light resumes opening without reset");
+        Check(Mathf.Approximately(alarm.ActiveReservedActionAlarm, openingActiveForecast),
+            "resumed hex opening returns to the forecast exactly once");
+        Check(Center(beams[0]).forceRenderingOff, "resuming opening hides the central sprite immediately");
         Check(crystal.BeginDrag(0), "active opening can be picked up again");
         crystal.CancelDrag();
         Check(!hexes[0].IsPaused && crystal.State(0) == WorldFlashlightAvailability.LightState.Working, "cancelled drag restores active opening");
@@ -200,6 +216,7 @@ public static class LightDraggingValidation
         Check(hexes.Take(2).All(h => h == null || h.IsUnlocked()), "both real World hexes finish opening");
         Check(crystal.State(0) == WorldFlashlightAvailability.LightState.Ready && beams[0].MarkerVisible,
             "completed beam is immediately available with no recharge delay");
+        Check(!Center(beams[0]).forceRenderingOff, "central marker returns after opening completes");
         ScreenCapture.CaptureScreenshot(Path.GetFullPath("Temp/light-dragging-world.png"));
         yield return null; yield return null;
         GameSpeedControls.SetSimulationSpeed(1);
@@ -233,6 +250,7 @@ public static class LightDraggingValidation
         Feed(stone);
         Check(!stone.IsProcessing, "late deliveries after cancellation cannot start production");
         Check(Place(2, stone.transform.position) && stone.IsProcessing && crystal.State(2) == WorldFlashlightAvailability.LightState.Working, "reassignment starts exactly one supplied production cycle");
+        CheckWorkingAlarm(stone.transform.position);
         Check(!Place(3, stone.transform.position), "second beam cannot duplicate working production");
         var pauses = PauseChecks(stone); while (pauses.MoveNext()) yield return null;
         GameSpeedControls.SetSimulationSpeed(4);
@@ -256,6 +274,10 @@ public static class LightDraggingValidation
         Check(crystal.IsPointerOverBlockingUI(ScreenPoint(origin)), "overlay raycaster covers the test marker");
         Pointer(ScreenPoint(origin), true, true, false); Pointer(ScreenPoint(origin) + new Vector2(25, 25), false, true, false); Pointer(ScreenPoint(origin), false, false, true);
         Check(!crystal.IsDragging && Vector2.Distance(origin, beams[3].MarkerPosition) < .01f, "UI consumes presses above beam markers");
+        Vector2 coveredEdge = ScreenPoint(origin + new Vector2(1.7f, 0));
+        Pointer(coveredEdge, true, true, false); Pointer(coveredEdge + new Vector2(25, 0), false, true, false);
+        Pointer(coveredEdge, false, false, true);
+        Check(!crystal.IsDragging && Vector2.Distance(origin, beams[3].MarkerPosition) < .01f, "HUD blocks dragging at the enlarged footprint edge too");
         Check(crystal.BeginDrag(3), "free beam can be picked up"); crystal.DragTo(origin + Vector2.one);
         Pointer(ScreenPoint(origin + Vector2.one), false, false, true);
         Check(!crystal.IsDragging && Vector2.Distance(origin, beams[3].MarkerPosition) < .01f, "dropping over UI restores marker without an action");
@@ -327,10 +349,10 @@ public static class LightDraggingValidation
         // Exercise the actual pointer adapter on the illuminated tile, away from the marker edge.
         var cameraOrigin = Camera.main.transform.position;
         Camera.main.transform.position = new Vector3(autoMine.transform.position.x, autoMine.transform.position.y, cameraOrigin.z);
-        Vector2 click = ScreenPoint(autoMine.transform.position) + new Vector2(10, 0);
+        Vector2 click = ScreenPoint(autoMine.transform.position + new Vector3(1.7f, 0));
         Pointer(click, true, true, false); Pointer(click, false, false, true);
         Check(autoMine.IsProcessing && crystal.State(5) == WorldFlashlightAvailability.LightState.Working,
-            "plain click on illuminated hex restarts work without dragging");
+            "plain click at illuminated hex edge restarts work without dragging");
         var currentTimer = autoMine.GetComponentsInChildren<TimerController>(true).First(t => t.IsRunning);
         float timeBefore = currentTimer.TimeRemaining;
         Pointer(click, true, true, false); Pointer(click, false, false, true);
@@ -361,6 +383,128 @@ public static class LightDraggingValidation
         Check(Object.FindObjectsByType<CrystalLightBeam>(FindObjectsInactive.Include, FindObjectsSortMode.None).Count(b => b.MarkerVisible) == 1,
             "locked lights stay hidden after activation");
         Check(errors.Count == 0, "no runtime errors during World audit");
+    }
+
+    static void CheckPausedAlarmPreview()
+    {
+        var alarm = AlarmSystem.Instance;
+        var preview = Object.FindObjectsByType<HexAlarmPreview>(FindObjectsInactive.Include, FindObjectsSortMode.None).First();
+        var source = new GameObject("Paused alarm audit source");
+        alarm.SetAlarm(20);
+        alarm.ReserveActionAlarm(source, 4);
+        CheckPreviewSprite(preview, true, "active 4 danger makes the next skull red at 20 + 4 + 1");
+        alarm.SetActionAlarmPaused(source, true);
+        CheckPreviewSprite(preview, false, "paused 4 danger no longer makes another hex's skull red");
+        Check(alarm.GetReservedActionAlarm(source) == 4 && alarm.ActiveReservedActionAlarm == 0,
+            "pause preserves the amount for resuming while excluding it from the forecast");
+        alarm.SetActionAlarmPaused(source, false);
+        alarm.SetActionAlarmPaused(source, false);
+        CheckPreviewSprite(preview, true, "resuming restores the red skull without doubling danger");
+        Check(alarm.ActiveReservedActionAlarm == 4, "repeated resume keeps one reservation");
+        alarm.SetActionAlarmPaused(source, true);
+        alarm.CancelActionAlarm(source);
+        alarm.ReserveActionAlarm(source, 4);
+        CheckPreviewSprite(preview, true, "a new cycle does not inherit the cancelled cycle's paused flag");
+        alarm.CancelActionAlarm(source);
+        alarm.SetAlarm(0);
+        preview.Show(0);
+        Object.DestroyImmediate(source);
+    }
+    static void CheckPreviewSprite(HexAlarmPreview preview, bool red, string message)
+    {
+        preview.Show(1);
+        var image = preview.GetComponentsInChildren<Image>(true)
+            .Single(i => i.transform.parent == preview.transform && i.gameObject.activeSelf);
+        Check(image.sprite == (red ? AlarmSystem.Instance.SkullSprite : AlarmSystem.Instance.InactiveSkullSprite) &&
+            image.color == Color.white, message);
+    }
+
+    static SpriteRenderer Center(CrystalLightBeam beam) =>
+        (SpriteRenderer)new SerializedObject(beam.Flag).FindProperty("idleRenderer").objectReferenceValue;
+
+    static void CheckEdgeDragging(int index, bool opening)
+    {
+        var beam = beams[index];
+        var frame = beam.Flag.FrameRenderer;
+        var collider = (BoxCollider2D)new SerializedObject(beam).FindProperty("markerCollider").objectReferenceValue;
+        var size = collider.size;
+        var origin = beam.MarkerPosition;
+        var state = crystal.State(index);
+        // Isolate this footprint: neighbouring decorative frames can overlap at their tips.
+        // The runtime picker resolves such overlap by the nearest beam centre.
+        var parked = new Dictionary<CrystalLightBeam, Vector2>();
+        for (int i = 0; i < beams.Length; i++)
+            if (i != index && crystal.State(i) == WorldFlashlightAvailability.LightState.Ready)
+            { parked[beams[i]] = beams[i].MarkerPosition; beams[i].ShowIdle(new Vector2(200 + i * 8, 100)); }
+        var edgePoints = new[] { new Vector2(-1.78f, 0), new Vector2(1.78f, 0),
+            new Vector2(-.5f, 1.55f), new Vector2(.5f, 1.55f), new Vector2(-.5f, -1.53f), new Vector2(.5f, -1.53f),
+            new Vector2(-1.3f, .83f), new Vector2(1.3f, .83f), new Vector2(-1.25f, -.95f), new Vector2(1.25f, -.95f) };
+        Physics2D.SyncTransforms();
+        Check(!beam.ContainsMarkerPoint(frame.transform.TransformPoint(new Vector2(1.8f, 1.5f))),
+            "transparent square corner outside the hex does not grab the beam");
+        foreach (var edge in edgePoints)
+        {
+            Vector2 point = frame.transform.TransformPoint(edge);
+            Check(!collider.OverlapPoint(point) && beam.ContainsMarkerPoint(point),
+                "frame edge is selectable beyond the delivery collider: " + edge);
+            Vector2 screen = ScreenPoint(point);
+            Check(Camera.main.pixelRect.Contains(screen) && !crystal.IsPointerOverBlockingUI(screen),
+                "frame edge is not blocked by the working progress bar or hover UI: " + edge);
+            Pointer(screen, true, true, false);
+            Vector2 moved = screen + new Vector2(18, 10);
+            Pointer(moved, false, true, false);
+            Vector2 delta = (Vector2)Camera.main.ScreenToWorldPoint(moved) - point;
+            Check(crystal.IsDragging && Vector2.Distance(beam.MarkerPosition, origin + delta) < .02f,
+                "mouse drag starts at frame edge without snapping marker to cursor: " + edge);
+            Check(!Center(beam).forceRenderingOff, "dragging restores central marker");
+            crystal.CancelDrag();
+            Check(!crystal.IsDragging && crystal.State(index) == state && Vector2.Distance(beam.MarkerPosition, origin) < .01f,
+                "edge drag cancellation restores original beam and action");
+            Check(Center(beam).forceRenderingOff == opening, "central marker visibility matches opening state");
+        }
+        Check(collider.size == size && size == new Vector2(1.75f, 1.75f), "delivery collider retains its original size");
+        foreach (var other in parked) other.Key.ShowIdle(other.Value);
+    }
+
+    static void CheckWorkingAlarm(Vector2 point, float expectedAmount = -1, bool[] expectedRed = null)
+    {
+        var hover = Object.FindFirstObjectByType<CrystalHexHover>();
+        hover.enabled = false;
+        var target = crystal.GetHoverTarget(point);
+        float amount = crystal.GetActionAlarm(target, out float reserved);
+        Check(target.State == WorldFlashlightAvailability.HoverState.Working && amount > 0 && Mathf.Approximately(amount, reserved),
+            "working action exposes its remaining reserved danger");
+        if (expectedAmount >= 0) Check(Mathf.Approximately(amount, expectedAmount), "opening preserves the previewed danger amount");
+        hover.Present(target, 1); hover.Present(target, 1);
+        var views = new SerializedObject(hover).FindProperty("views");
+        bool shown = false;
+        for (int i = 0; i < views.arraySize; i++)
+        {
+            var view = views.GetArrayElementAtIndex(i);
+            var root = (Transform)view.FindPropertyRelative("root").objectReferenceValue;
+            if (!root.gameObject.activeSelf) continue;
+            var group = (CanvasGroup)view.FindPropertyRelative("alarmGroup").objectReferenceValue;
+            var preview = (HexAlarmPreview)view.FindPropertyRelative("alarmPreview").objectReferenceValue;
+            var icons = preview.GetComponentsInChildren<Image>().Where(image => image.transform.parent == preview.transform).ToArray();
+            Check(group.alpha == 1 && icons.Length == Mathf.CeilToInt(amount), "working hex shows all danger skulls on hover");
+            if (expectedRed != null)
+                Check(icons.Select(icon => icon.sprite == AlarmSystem.Instance.SkullSprite).SequenceEqual(expectedRed),
+                    "red threshold skull does not shift after reserving the action");
+            shown = true;
+        }
+        Check(shown, "active hover view is present for working action");
+        hover.enabled = true;
+    }
+
+    static IEnumerator CaptureOpeningHover(Vector2 point)
+    {
+        var hover = Object.FindFirstObjectByType<CrystalHexHover>();
+        hover.enabled = false;
+        hover.Present(crystal.GetHoverTarget(point), 1); hover.Present(crystal.GetHoverTarget(point), 1);
+        yield return null; yield return null;
+        ScreenCapture.CaptureScreenshot(Path.GetFullPath("Temp/light-working-hover.png"));
+        yield return null; yield return null;
+        hover.enabled = true;
     }
 
     static void CheckManualHint(Vector2 point, bool expected)
@@ -413,6 +557,8 @@ public static class LightDraggingValidation
         var wait = Wait(.4f); while (wait.MoveNext()) yield return null;
         float remaining = timer.TimeRemaining;
         float alarm = AlarmSystem.Instance.ReservedActionAlarm;
+        float activeAlarm = AlarmSystem.Instance.ActiveReservedActionAlarm;
+        float ownAlarm = crystal.GetActionAlarm(crystal.GetHoverTarget(stone.transform.position));
         var materials = stone.requirements.Where(r => !r.resourceType.isHumanResource).Select(r => r.currentAmount).ToArray();
         Check(crystal.BeginDrag(2), "working production beam can be moved");
         crystal.DragTo(new Vector2(48, -5)); crystal.DropAt(new Vector2(48, -5));
@@ -422,7 +568,11 @@ public static class LightDraggingValidation
         Check(bar.activeInHierarchy && bar.GetComponent<CanvasGroup>().alpha == 1, "paused production keeps visible progress bar");
         Check(!stone.GetComponentsInChildren<ProductionFragments>(true).Any(p => p.IsEmitting), "paused production emits no work fragments");
         Check(Mathf.Approximately(alarm, AlarmSystem.Instance.ReservedActionAlarm), "pause retains alarm reservation without adding danger");
+        Check(Mathf.Approximately(AlarmSystem.Instance.ActiveReservedActionAlarm, activeAlarm - ownAlarm),
+            "paused production is excluded from the red-skull forecast");
         Check(Place(3, stone.transform.position) && timer.IsRunning && Mathf.Approximately(timer.TimeRemaining, remaining), "different beam resumes the same paid cycle");
+        Check(Mathf.Approximately(AlarmSystem.Instance.ActiveReservedActionAlarm, activeAlarm),
+            "resumed production is included in the forecast exactly once");
         Check(crystal.BeginDrag(3), "resumed production remains draggable");
         crystal.CancelDrag();
         Check(timer.IsRunning && !stone.IsCyclePaused, "cancelled drag resumes production at its original position");
@@ -469,10 +619,14 @@ public static class LightDraggingValidation
         camera.orthographicSize = cameraSize;
         if (cameraControls != null) cameraControls.enabled = cameraControlsEnabled;
         Check(Place(2, stone.transform.position) && stone.NeedsAnyResource() && !timer.IsRunning, "returning light waits for replacement worker with old timer intact");
+        Check(Mathf.Approximately(AlarmSystem.Instance.ActiveReservedActionAlarm, activeAlarm - ownAlarm),
+            "paused production awaiting a replacement worker remains excluded from forecast");
         var replacement = Warehouse.Instance.SpawnHumanForJob(stone, human.resourceType);
         Check(replacement != null, "portal dispatches replacement to paused production");
         wait = Wait(1.8f); while (wait.MoveNext()) yield return null;
         Check(replacement == null && human.currentAmount == 1 && timer.IsRunning && !stone.IsCyclePaused, "replacement arrival resumes paused work");
+        Check(Mathf.Approximately(AlarmSystem.Instance.ActiveReservedActionAlarm, activeAlarm),
+            "actual worker arrival restores production danger to the forecast");
         Check(resources.GetResourceAmount(human.resourceType) == before && starts == 0 && completions == 0, "resume neither duplicates a resident nor repeats start and completion events");
         Check(timer.TimeRemaining < remaining && timer.TimeRemaining > 0, "replacement continues remaining time without reset");
         Check(crystal.BeginDrag(2), "replacement cycle can be paused again");

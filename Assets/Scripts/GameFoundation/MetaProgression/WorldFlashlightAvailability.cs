@@ -186,7 +186,7 @@ namespace GameFoundation.MetaProgression
             for (int i = 0; i < lights.Length; i++)
             {
                 if (lights[i].occupied || !lights[i].beam.MarkerVisible) continue;
-                var clicked = ResolveTarget(point, i);
+                var clicked = ResolveTarget(lights[i].beam.ContainsMarkerPoint(point) ? lights[i].beam.MarkerPosition : point, i);
                 if (clicked.State != HoverState.Available || clicked.Anchor == null) continue;
                 var underLight = ResolveTarget(lights[i].beam.MarkerPosition, i);
                 if (underLight.Anchor != clicked.Anchor || underLight.State != HoverState.Available) continue;
@@ -212,15 +212,22 @@ namespace GameFoundation.MetaProgression
         private HoverTarget ResolveTarget(Vector2 point, int preferredLight)
         {
             if (escaped || !LightsActivated) return default;
+            int occupiedIndex = -1;
+            float occupiedDistance = float.MaxValue;
             for (int i = 0; i < lights.Length; i++)
-                if (lights[i].occupied && Vector2.Distance(point, lights[i].position) <= buildingSelectionRadius)
+                if (lights[i].occupied && lights[i].beam.ContainsMarkerPoint(point))
                 {
-                    var c = lights[i];
-                    var target = c.hex != null ? c.hex.transform : c.requester != null ? c.requester.transform : null;
-                    if (target != null && target.gameObject.activeInHierarchy)
-                        return new HoverTarget(HexAnchor(target), c.working ? HoverState.Working : HoverState.WaitingForResources,
-                            c.hex, c.requester, i, c.beam != null ? c.beam.Flag : null);
+                    float distance = (point - lights[i].position).sqrMagnitude;
+                    if (distance < occupiedDistance) { occupiedDistance = distance; occupiedIndex = i; }
                 }
+            if (occupiedIndex >= 0)
+            {
+                var c = lights[occupiedIndex];
+                var target = c.hex != null ? c.hex.transform : c.requester != null ? c.requester.transform : null;
+                if (target != null && target.gameObject.activeInHierarchy)
+                    return new HoverTarget(HexAnchor(target), c.working ? HoverState.Working : HoverState.WaitingForResources,
+                        c.hex, c.requester, occupiedIndex, c.beam.Flag);
+            }
             HexLightUnlocker hex = null;
             float nearest = float.MaxValue;
             foreach (var candidate in HexLightUnlocker.ActiveInstances)
@@ -266,17 +273,28 @@ namespace GameFoundation.MetaProgression
             return anchor;
         }
         private bool HasProductionTimer(ResourceRequester requester) => ProductionTimers(requester).Length > 0;
-        public float GetActionAlarm(HoverTarget target)
+        public float GetActionAlarm(HoverTarget target) => GetActionAlarm(target, out _);
+        public float GetActionAlarm(HoverTarget target, out float reservedForAction)
         {
+            reservedForAction = 0;
+            if ((target.Hex != null && target.Hex.IsPaused) ||
+                (target.Requester != null && target.Requester.IsCyclePaused)) return 0f;
+            if (target.State == HoverState.Working || target.State == HoverState.WaitingForResources)
+            {
+                if (target.LightIndex < 0 || target.LightIndex >= lights.Length) return 0;
+                var assignment = lights[target.LightIndex];
+                if (assignment.alarm != null)
+                    foreach (var source in assignment.alarmSources.Keys)
+                        reservedForAction += assignment.alarm.GetReservedActionAlarm(source);
+                return reservedForAction;
+            }
             if (target.State != HoverState.Available && target.State != HoverState.LightsBusy) return 0f;
             if (target.Hex != null)
             {
-                if (target.Hex.IsPaused) return 0f; // Already included in the pending action pool.
                 var blocker = target.Hex.GetComponentInParent<HexBlocker>();
                 return blocker != null ? blocker.UnlockAlarmAmount : 0f;
             }
             if (target.Requester == null) return 0f;
-            if (target.Requester.IsCyclePaused) return 0f;
             float amount = AlarmEmitter.Preview(target.Requester.OnAllResourcesReceived) +
                 AlarmEmitter.Preview(target.Requester.OnActionExecuted);
             foreach (var timer in ProductionTimers(target.Requester))
@@ -346,10 +364,11 @@ namespace GameFoundation.MetaProgression
             var blocker = hex.GetComponentInParent<HexBlocker>();
             if (blocker != null) assignment.alarmSources[blocker] = blocker.UnlockAlarmAmount;
             if (!resuming) ReserveAlarm(assignment);
+            SetAlarmPaused(assignment, false);
             foreach (var source in assignment.alarmSources.Keys) pausedAlarmSources.Remove(source);
             assignment.completed = () => Release(index, true);
             hex.OnUnlockCompleteEvent.AddListener(assignment.completed);
-            assignment.beam.Show(assignment.position, null, true);
+            assignment.beam.Show(assignment.position, null, true, openingHex: true);
             hex.StartUnlockProcess(1);
             GameFoundation.UI.GameNotifications.Post(resuming ? "Открытие гекса продолжено" : "Начато открытие гекса");
             return true;
@@ -392,6 +411,7 @@ namespace GameFoundation.MetaProgression
             var assignment = lights[index];
             if (!assignment.occupied || assignment.working || escaped) return;
             assignment.working = true;
+            SetAlarmPaused(assignment, false);
             GameFoundation.UI.GameNotifications.Post("Здание начало работу");
             assignment.beam.Show(assignment.position, assignment.requester, true);
         }
@@ -411,6 +431,11 @@ namespace GameFoundation.MetaProgression
             if (assignment.alarm == null) return;
             foreach (var source in assignment.alarmSources) assignment.alarm.ReserveActionAlarm(source.Key, source.Value);
         }
+        private static void SetAlarmPaused(LightAssignment assignment, bool paused)
+        {
+            if (assignment.alarm == null) return;
+            foreach (var source in assignment.alarmSources.Keys) assignment.alarm.SetActionAlarmPaused(source, paused);
+        }
         private void Release(int index, bool completed = false)
         {
             var assignment = lights[index];
@@ -422,7 +447,10 @@ namespace GameFoundation.MetaProgression
             // Completion callbacks can precede the persistent alarm callback in the same event.
             // Keep its reservation until the emitter atomically transfers it into flying orbs.
             if (preserveProgress)
+            {
                 foreach (var source in assignment.alarmSources.Keys) pausedAlarmSources.Add(source);
+                SetAlarmPaused(assignment, true);
+            }
             else if (!completed && assignment.alarm != null)
                 foreach (var source in assignment.alarmSources) assignment.alarm.CancelActionAlarm(source.Key);
             assignment.alarmSources.Clear();

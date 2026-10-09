@@ -15,7 +15,10 @@ namespace GameFoundation.MetaProgression
         private bool pointerStartedInWorld, pointerMoved;
         private bool dragHadAssignment;
         public bool LightsActivated { get; private set; }
+        public bool CanActivateLights => !escaped && !LightsActivated && lights.Length > 0 &&
+            GameSpeedControls.SimulationSpeed > 0;
         public bool IsDragging => draggedLight >= 0;
+        public Vector2 DragPosition => draggedLight >= 0 ? lights[draggedLight].beam.MarkerPosition : Vector2.zero;
         public bool IsDraggingFlag(LogisticFlag flag) => draggedLight >= 0 && lights[draggedLight].beam.Flag == flag;
 
         private void InitializeDragControls()

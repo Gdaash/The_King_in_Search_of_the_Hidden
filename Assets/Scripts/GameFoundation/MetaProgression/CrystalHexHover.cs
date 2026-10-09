@@ -65,7 +65,8 @@ namespace GameFoundation.MetaProgression
                 Input.mousePosition.x >= 0 && Input.mousePosition.y >= 0 &&
                 Input.mousePosition.x <= Screen.width && Input.mousePosition.y <= Screen.height &&
                 !crystal.IsPointerOverBlockingUI(Input.mousePosition))
-                desired = crystal.GetHoverTarget(worldCamera.ScreenToWorldPoint(Input.mousePosition));
+                desired = crystal.GetHoverTarget(crystal.IsDragging ? crystal.DragPosition :
+                    (Vector2)worldCamera.ScreenToWorldPoint(Input.mousePosition));
             Present(desired, Time.unscaledDeltaTime);
         }
         public void Present(WorldFlashlightAvailability.HoverTarget target, float deltaTime)
@@ -95,7 +96,11 @@ namespace GameFoundation.MetaProgression
                 {
                     view.canRecall = desired.CanRecallHumans;
                     view.canStart = crystal.CanStartManually(desired);
-                    if (view.alarmPreview != null) view.alarmPreview.Show(crystal.GetActionAlarm(desired));
+                    if (view.alarmPreview != null)
+                    {
+                        float amount = crystal.GetActionAlarm(desired, out float reservedForAction);
+                        view.alarmPreview.Show(amount, reservedForAction);
+                    }
                 }
                 if (view.flag != null) view.flag.SetCrystalHoverVisible(!crystal.IsDraggingFlag(view.flag));
                 if (view.clickTime >= 0)
@@ -178,7 +183,9 @@ namespace GameFoundation.MetaProgression
             }
             if (view.alarmGroup != null)
                 view.alarmGroup.alpha = view.state == WorldFlashlightAvailability.HoverState.Available ||
-                    view.state == WorldFlashlightAvailability.HoverState.LightsBusy ? alpha : 0;
+                    view.state == WorldFlashlightAvailability.HoverState.LightsBusy ||
+                    view.state == WorldFlashlightAvailability.HoverState.Working ||
+                    view.state == WorldFlashlightAvailability.HoverState.WaitingForResources ? alpha : 0;
         }
         private static void ReleaseFlag(View view)
         { if (view.flag != null) view.flag.SetCrystalHoverVisible(false); view.flag = null; }

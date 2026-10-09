@@ -1,83 +1,63 @@
-using DG.Tweening;
-using TMPro;
+using GameFoundation.UI;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace GameFoundation.MetaProgression
 {
-    /// <summary>Shows food status beside the escape button when it changes during an expedition.</summary>
+    /// <summary>Shows the current food warning in the standard tooltip while Escape is hovered.</summary>
     [DisallowMultipleComponent]
-    public sealed class FoodSufficiencyHint : MonoBehaviour
+    public sealed class FoodSufficiencyHint : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         [SerializeField] private ResourceType foodResource;
         [SerializeField] private ResourceType[] dailyFoodConsumers;
-        [SerializeField] private RectTransform panel;
-        [SerializeField] private CanvasGroup canvasGroup;
-        [SerializeField] private TMP_Text label;
         [SerializeField] private Color enoughColor = new(0.43f, 0.86f, 0.46f, 1f);
         [SerializeField] private Color insufficientColor = new(1f, 0.36f, 0.38f, 1f);
-        [SerializeField, Min(0.05f)] private float slideDuration = 0.28f;
-        [SerializeField, Min(0.05f)] private float fadeDuration = 0.18f;
 
-        private bool initialized;
-        private bool wasEnough;
         private bool suppressed;
-        private bool visible;
-        private int lastFoodAmount;
+        private bool hovering;
+        private bool tooltipShown;
+        private RectTransform tooltipTarget;
+
+        private void Awake() => tooltipTarget = transform as RectTransform;
 
         private void OnEnable()
         {
+            suppressed = false;
             GlobalResourceManager.OnResourceChanged += OnResourceChanged;
-            InitializeHidden();
         }
 
         private void OnDisable()
         {
             GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
-            KillTweens();
-            SetVisualState(false);
+            HideTooltip();
         }
+
+        private void Update()
+        {
+            // Retry if the standard tooltip manager appears after this HUD.
+            if (tooltipShown && TooltipManager.Instance == null) tooltipShown = false;
+            if (hovering && !suppressed && !tooltipShown)
+                ShowTooltip();
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            hovering = true;
+            if (!suppressed) ShowTooltip();
+        }
+
+        public void OnPointerExit(PointerEventData eventData) => HideTooltip();
 
         public void HideForEscape()
         {
             suppressed = true;
-            KillTweens();
-            SetVisualState(false);
-        }
-
-        private void InitializeHidden()
-        {
-            initialized = false;
-            suppressed = false;
-            visible = false;
-            SetVisualState(false);
-            if (GlobalResourceManager.Instance == null || foodResource == null || dailyFoodConsumers == null)
-                return;
-
-            wasEnough = HasEnoughFood();
-            lastFoodAmount = GlobalResourceManager.Instance.GetResourceAmount(foodResource);
-            initialized = true;
+            HideTooltip();
         }
 
         private void OnResourceChanged(ResourceType resource, int amount)
         {
-            if (suppressed || !IsRelevant(resource)) return;
-            if (!initialized)
-            {
-                InitializeHidden();
-                return;
-            }
-
-            bool foodWasSpent = resource == foodResource && amount < lastFoodAmount;
-            if (resource == foodResource) lastFoodAmount = amount;
-            bool enoughNow = HasEnoughFood();
-            if (enoughNow == wasEnough)
-            {
-                if (foodWasSpent && !enoughNow) Show(false);
-                return;
-            }
-
-            wasEnough = enoughNow;
-            Show(enoughNow);
+            if (suppressed || !hovering || !IsRelevant(resource)) return;
+            ShowTooltip();
         }
 
         private bool IsRelevant(ResourceType changed)
@@ -103,42 +83,28 @@ namespace GameFoundation.MetaProgression
             return resources.GetResourceAmount(foodResource) >= requiredFood;
         }
 
-        private void Show(bool enough)
+        private void ShowTooltip()
         {
-            if (panel == null || canvasGroup == null || label == null) return;
+            if (TooltipManager.Instance == null) return;
+            if (GlobalResourceManager.Instance == null || foodResource == null || dailyFoodConsumers == null)
+                return;
+            if (tooltipTarget == null) tooltipTarget = transform as RectTransform;
+            if (tooltipTarget == null) return;
 
-            label.text = enough ? "Еды хватает" : "Недостаточно еды";
-            label.color = enough ? enoughColor : insufficientColor;
-            if (visible) return;
-
-            visible = true;
-            panel.gameObject.SetActive(true);
-            KillTweens();
-            SetScaleX(0f);
-            canvasGroup.alpha = 0f;
-            panel.DOScaleX(1f, slideDuration).SetEase(Ease.OutCubic).SetUpdate(true);
-            canvasGroup.DOFade(1f, fadeDuration).SetUpdate(true);
+            bool enough = HasEnoughFood();
+            Color color = enough ? enoughColor : insufficientColor;
+            string hex = ColorUtility.ToHtmlStringRGB(color);
+            string message = enough ? "Еды хватает" : "Недостаточно еды";
+            TooltipManager.Instance.Show($"<color=#{hex}>{message}</color>", tooltipTarget);
+            tooltipShown = true;
         }
 
-        private void SetVisualState(bool shown)
+        private void HideTooltip()
         {
-            if (panel != null) SetScaleX(shown ? 1f : 0f);
-            if (canvasGroup != null) canvasGroup.alpha = shown ? 1f : 0f;
-            visible = shown;
-        }
-
-        private void SetScaleX(float value)
-        {
-            if (panel == null) return;
-            Vector3 scale = panel.localScale;
-            scale.x = value;
-            panel.localScale = scale;
-        }
-
-        private void KillTweens()
-        {
-            if (panel != null) panel.DOKill();
-            if (canvasGroup != null) canvasGroup.DOKill();
+            bool shouldHide = tooltipShown;
+            hovering = false;
+            tooltipShown = false;
+            if (shouldHide && TooltipManager.Instance != null) TooltipManager.Instance.Hide();
         }
     }
 }

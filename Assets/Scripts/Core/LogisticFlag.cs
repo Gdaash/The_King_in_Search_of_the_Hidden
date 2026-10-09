@@ -7,11 +7,23 @@ public class LogisticFlag : MonoBehaviour
 {
     public bool CrystalControlled { get; private set; }
     public ResourceRequester CrystalTarget { get; private set; }
+    public SpriteRenderer FrameRenderer => activeRenderer;
+    private bool crystalHoverVisible, crystalOpening;
     // The hover prefab draws the coloured frame; do not draw a second white frame underneath it.
     public void SetCrystalHoverVisible(bool visible)
     {
-        if (idleRenderer != null) idleRenderer.forceRenderingOff = visible;
-        if (activeRenderer != null) activeRenderer.forceRenderingOff = visible;
+        crystalHoverVisible = visible;
+        ApplyCrystalVisibility();
+    }
+    public void SetCrystalOpening(bool opening)
+    {
+        crystalOpening = opening;
+        ApplyCrystalVisibility();
+    }
+    private void ApplyCrystalVisibility()
+    {
+        if (idleRenderer != null) idleRenderer.forceRenderingOff = crystalHoverVisible || crystalOpening;
+        if (activeRenderer != null) activeRenderer.forceRenderingOff = crystalHoverVisible;
     }
     public void SetCrystalTarget(ResourceRequester target)
     {
@@ -61,7 +73,7 @@ public class LogisticFlag : MonoBehaviour
     }
 
     void OnEnable() => StartCoroutine(ValidationRoutine());
-    void OnDisable() { StopAllCoroutines(); SetCrystalHoverVisible(false); }
+    void OnDisable() { StopAllCoroutines(); crystalOpening = false; SetCrystalHoverVisible(false); }
 
     private IEnumerator ValidationRoutine() {
         while (true) {

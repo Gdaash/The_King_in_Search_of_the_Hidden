@@ -18,9 +18,9 @@ public sealed class DangerLevelNotificationView : MonoBehaviour
     [SerializeField] private string localizationKey = "world.danger_level_notification.title";
     [SerializeField] private string fallbackFormat = "Уровень опасности: {0}";
 
-    [Header("Цвета черепов")]
-    [SerializeField] private Color lockedSkullColor = Color.black;
-    [SerializeField] private Color unlockedSkullColor = Color.white;
+    [Header("Состояния черепов")]
+    [SerializeField] private Sprite activeSkullSprite;
+    [SerializeField] private Sprite inactiveSkullSprite;
 
     [Header("Анимация (всего 3 секунды)")]
     [SerializeField, Min(0f)] private float fadeInDuration = 0.25f;
@@ -48,7 +48,11 @@ public sealed class DangerLevelNotificationView : MonoBehaviour
         {
             Image skull = skulls[i];
             skull.gameObject.SetActive(i < totalLevels);
-            if (i < totalLevels) skull.color = i < level ? unlockedSkullColor : lockedSkullColor;
+            if (i >= totalLevels) continue;
+            skull.sprite = i < level ? activeSkullSprite : inactiveSkullSprite;
+            skull.color = Color.white;
+            skull.enabled = skull.sprite != null;
+            if (skull.sprite != null) skull.rectTransform.sizeDelta = skull.sprite.rect.size * 2f;
         }
     }
 
