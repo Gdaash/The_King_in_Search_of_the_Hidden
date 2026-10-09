@@ -141,6 +141,8 @@ public class HexBlocker : MonoBehaviour
     {
         if (_isRemoved) return;
         _isRemoved = true;
+        // Reserve content only when opening actually finishes, including empty steps.
+        if (_hexManager != null) prefabToSpawn = _hexManager.ResolveOpeningContent(prefabToSpawn);
         RaiseAlarmForUnlock();
 
         if (prefabToSpawn != null)

@@ -30,6 +30,10 @@ public class HexManager : MonoBehaviour
     [Header("Настройки групп префабов")]
     [SerializeField] private List<HexGroupSettings> groups;
     [SerializeField] private HexDifficultyTable difficultyTable;
+    [SerializeField, HideInInspector] private GameFoundation.MetaProgression.FirstPortalRunLayout firstPortalRunLayout;
+    [SerializeField] private GameFoundation.MetaProgression.FirstPortalRunSpawnOrder firstPortalRunSpawnOrder;
+    private bool useFirstPortalRunLayout;
+    private int openedHexCount;
 
     public IReadOnlyList<HexGroupSettings> ConfiguredGroups => groups;
     public HexDifficultyTable DifficultyTable => difficultyTable;
@@ -52,6 +56,8 @@ public class HexManager : MonoBehaviour
         {
             globalHexStats.LoadStats();
         }
+        useFirstPortalRunLayout = GameFoundation.MetaProgression.DayCycleService.IsFirstPortalRun &&
+            (firstPortalRunSpawnOrder != null || firstPortalRunLayout != null);
         AssignHexContents();
     }
 
@@ -59,6 +65,12 @@ public class HexManager : MonoBehaviour
 
     private void AssignHexContents()
     {
+        if (useFirstPortalRunLayout)
+        {
+            foreach (var hex in Object.FindObjectsByType<HexBlocker>(FindObjectsSortMode.None))
+                hex.AssignContent(null, 0, false);
+            return;
+        }
         int difficulty = GameFoundation.MetaProgression.DayCycleService.CurrentPortalDifficulty;
         IReadOnlyList<HexGroupSettings> activeGroups = groups;
         if (difficulty > 1 && difficultyTable != null && difficultyTable.TryGetExactGroups(difficulty, out var configuredGroups))
@@ -104,6 +116,14 @@ public class HexManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    public GameObject ResolveOpeningContent(GameObject assignedContent)
+    {
+        if (!useFirstPortalRunLayout) return assignedContent;
+        int openingIndex = openedHexCount++;
+        return firstPortalRunSpawnOrder != null ? firstPortalRunSpawnOrder.ContentAt(openingIndex) :
+            firstPortalRunLayout.ContentAt(openingIndex);
     }
 
     public void PlayBumpAnimation(GameObject spawnedObject)

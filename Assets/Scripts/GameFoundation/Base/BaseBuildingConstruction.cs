@@ -1,5 +1,6 @@
 using GameFoundation.Localization;
 using GameFoundation.Saves;
+using GameFoundation.Quests;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -10,6 +11,10 @@ namespace GameFoundation.Base
     public sealed class BaseBuildingConstruction : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         [SerializeField] private string buildingId;
+        [SerializeField] private ContentUnlockDefinition requiredUnlock;
+        public bool ConstructionUnlocked => ContentUnlocks.IsUnlocked(requiredUnlock);
+        public ContentUnlockDefinition RequiredUnlock => requiredUnlock;
+        public Button ConstructionButton => buildButton;
         [SerializeField] private string nameKey;
         [SerializeField, TextArea] private string fallbackName;
         [SerializeField] private string descriptionKey;
@@ -28,6 +33,7 @@ namespace GameFoundation.Base
         private bool built;
         private bool hovering;
         private bool languageSubscribed;
+        private CanvasGroup availabilityGroup;
         private string SaveKey => "foundation.building." + buildingId + ".built";
         public bool IsBuilt => built;
         public string BuildingId => buildingId;
@@ -36,10 +42,12 @@ namespace GameFoundation.Base
         public ResourceType Stone => stone;
         public int WoodCost => woodCost;
         public int StoneCost => stoneCost;
-        public bool CanAffordConstruction => !built && CanAfford();
+        public bool CanAffordConstruction => !built && ConstructionUnlocked && CanAfford();
 
         private void Awake()
         {
+            availabilityGroup = GetComponent<CanvasGroup>();
+            if (availabilityGroup == null) availabilityGroup = gameObject.AddComponent<CanvasGroup>();
             if (buildingButton == null) buildingButton = GetComponent<Button>();
             built = SaveSlotPrefs.GetInt(SaveKey, 0) != 0;
             if (buildButton != null) buildButton.onClick.AddListener(RequestBuild);
@@ -49,6 +57,7 @@ namespace GameFoundation.Base
         private void OnEnable()
         {
             GlobalResourceManager.OnResourceChanged += OnResourceChanged;
+            ContentUnlocks.Changed += Refresh;
             SubscribeLanguage();
             Refresh();
         }
@@ -62,6 +71,7 @@ namespace GameFoundation.Base
         private void OnDisable()
         {
             GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
+            ContentUnlocks.Changed -= Refresh;
             if (languageSubscribed && LocalizationService.Instance != null)
                 LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
             languageSubscribed = false;
@@ -76,7 +86,7 @@ namespace GameFoundation.Base
 
         private void RequestBuild()
         {
-            if (built || confirmation == null) return;
+            if (built || !ConstructionUnlocked || confirmation == null) return;
             BuildingConstructionTooltip.Instance?.Hide();
             hovering = false;
             confirmation.Open(this);
@@ -85,7 +95,7 @@ namespace GameFoundation.Base
         public void ConfirmBuild()
         {
             using var notification = GameFoundation.UI.GameNotifications.BeginAction();
-            if (built || !CanAfford()) return;
+            if (built || !ConstructionUnlocked || !CanAfford()) return;
             GlobalResourceManager resources = GlobalResourceManager.Instance;
             if (woodCost > 0 && !resources.TrySpendResource(wood, woodCost)) return;
             if (stoneCost > 0 && !resources.TrySpendResource(stone, stoneCost))
@@ -115,11 +125,17 @@ namespace GameFoundation.Base
 
         private void Refresh()
         {
+            bool visible = built || ConstructionUnlocked;
+            if (availabilityGroup != null)
+            {
+                availabilityGroup.alpha = visible ? 1f : 0f;
+                availabilityGroup.blocksRaycasts = visible;
+            }
             if (buildingButton != null) buildingButton.interactable = built;
             if (buildButton != null)
             {
-                buildButton.gameObject.SetActive(!built);
-                buildButton.interactable = !built && CanAfford();
+                buildButton.gameObject.SetActive(!built && ConstructionUnlocked);
+                buildButton.interactable = !built && ConstructionUnlocked && CanAfford();
             }
             if (buildButtonLabel != null)
                 buildButtonLabel.text = Tr(nameKey, fallbackName);
@@ -128,7 +144,7 @@ namespace GameFoundation.Base
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (built) return;
+            if (built || !ConstructionUnlocked) return;
             hovering = true;
             ShowTooltip();
         }
@@ -141,6 +157,7 @@ namespace GameFoundation.Base
 
         private void ShowTooltip()
         {
+            if (!ConstructionUnlocked) { BuildingConstructionTooltip.Instance?.Hide(); return; }
             string description = Tr(descriptionKey, fallbackDescription);
             if (buildingId == "housing")
                 description += "\n" + string.Format(Tr("base.building.housing.extra_places", "Увеличивает количество жилых мест для людей на {0}."),

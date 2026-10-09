@@ -13,6 +13,8 @@ namespace GameFoundation.UI
         private Button button;
         private bool available;
         public bool Available => available;
+        public Sprite StarSprite => stars != null ? stars.StarSprite : null;
+        public Color StarColor => theme != null ? theme.positiveLabelColor : Color.white;
 
         public void SetAvailable(bool value) { available = value; Refresh(); }
         private void OnEnable() { button = GetComponent<Button>(); Refresh(); }

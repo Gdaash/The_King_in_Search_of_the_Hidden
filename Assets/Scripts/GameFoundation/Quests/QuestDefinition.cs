@@ -18,6 +18,7 @@ namespace GameFoundation.Quests
         public string id;
         public string title;
         [TextArea] public string description;
+        public string inProgressStatus = "Доставьте ресурсы в портал";
         public List<Requirement> requirements = new();
         [Serializable]
         public sealed class ResourceReward
@@ -28,6 +29,8 @@ namespace GameFoundation.Quests
         [Header("Награда — выдаётся только по кнопке")]
         public List<ResourceReward> resourceRewards = new();
         public List<ContentUnlockDefinition> unlockRewards = new();
+        [Tooltip("Открыть наградной контент сразу после выполнения условий. Кнопка награды всё ещё завершает задание.")]
+        public bool unlockRewardsOnCompletion;
         private void OnValidate()
         {
             if (string.IsNullOrWhiteSpace(id)) id = System.Guid.NewGuid().ToString("N");

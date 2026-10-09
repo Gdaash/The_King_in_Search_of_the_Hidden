@@ -35,6 +35,7 @@ namespace GameFoundation.Base
             }
             GlobalResourceManager.OnResourceChanged += OnResourceChanged;
             BuildingUpgradeService.Changed += Refresh;
+            GameFoundation.Quests.ContentUnlocks.Changed += Refresh;
             SubscribeDay();
             Refresh();
         }
@@ -50,6 +51,7 @@ namespace GameFoundation.Base
             if (laboratoryStats != null) laboratoryStats.OnStatsUpdated -= Refresh;
             GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
             BuildingUpgradeService.Changed -= Refresh;
+            GameFoundation.Quests.ContentUnlocks.Changed -= Refresh;
             if (daySubscribed && DayCycleService.Instance != null) DayCycleService.Instance.Changed -= Refresh;
             daySubscribed = false;
         }

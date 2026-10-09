@@ -30,8 +30,15 @@ namespace GameFoundation.Quests
             var camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
             var source = claimButton != null ? (RectTransform)claimButton.transform : (RectTransform)transform;
             var origin = RectTransformUtility.WorldToScreenPoint(camera, source.TransformPoint(source.rect.center));
+            var newUnlocks = new List<ContentUnlockDefinition>();
+            if (quest != null)
+                foreach (var unlock in quest.unlockRewards)
+                    if (unlock != null && !ContentUnlocks.IsUnlocked(unlock)) newUnlocks.Add(unlock);
             if (QuestProgress.TryClaim(quest, GlobalResourceManager.Instance))
+            {
                 QuestRewardFlight.Play(canvas, origin, quest.resourceRewards);
+                QuestRewardFlight.PlayUnlocks(canvas, origin, newUnlocks);
+            }
             Refresh();
         }
         private void OnEnable()
@@ -60,7 +67,8 @@ namespace GameFoundation.Quests
             description.text = quest.description;
             bool claimed = QuestProgress.IsClaimed(quest);
             if (claimButton != null) { claimButton.gameObject.SetActive(completed && !claimed); claimButton.interactable = completed && !claimed; }
-            status.text = claimed ? "Награда получена" : completed ? "Задание выполнено" : "Доставьте ресурсы в портал";
+            status.text = claimed ? "Награда получена" : completed ? "Задание выполнено" :
+                string.IsNullOrEmpty(quest.inProgressStatus) ? "Доставьте ресурсы в портал" : quest.inProgressStatus;
             if (rewards != null)
             {
                 int count = quest.resourceRewards.Count + quest.unlockRewards.Count;

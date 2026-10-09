@@ -15,6 +15,7 @@ namespace GameFoundation.UI
         private readonly Star[] particles = new Star[16];
         private float next;
         public bool Emit { get; set; }
+        public Sprite StarSprite => starSprite;
         public override Texture mainTexture => starSprite != null ? starSprite.texture : Texture2D.whiteTexture;
         protected override void OnEnable() { base.OnEnable(); raycastTarget = false; }
         protected override void OnDisable() { System.Array.Clear(particles, 0, particles.Length); next = 0; base.OnDisable(); }

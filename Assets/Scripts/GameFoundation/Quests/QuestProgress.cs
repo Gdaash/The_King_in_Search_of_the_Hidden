@@ -48,7 +48,11 @@ namespace GameFoundation.Quests
             if (quest == null || resources == null || string.IsNullOrWhiteSpace(quest.id) ||
                 IsComplete(quest) || !quest.HasRequiredStock(resources.GetResourceAmount)) return false;
             SaveSlotPrefs.SetInt(Key(quest), 1);
+            if (quest.unlockRewardsOnCompletion)
+                foreach (var unlock in quest.unlockRewards)
+                    if (unlock != null && !string.IsNullOrWhiteSpace(unlock.id)) ContentUnlocks.Grant(unlock);
             SaveSlotPrefs.Save();
+            if (quest.unlockRewardsOnCompletion) ContentUnlocks.NotifyChanged();
             Changed?.Invoke();
             return true;
         }

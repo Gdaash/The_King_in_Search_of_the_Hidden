@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using GameFoundation.Localization;
+using GameFoundation.Quests;
+using GameFoundation.Saves;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -26,10 +28,15 @@ public sealed class CheatResourcePopup : MonoBehaviour
     [SerializeField] private GameObject window;
     [SerializeField] private GameObject dimmer;
     [SerializeField] private Button closeButton;
+    [SerializeField] private Button unlockAllBuildingsButton;
+    [SerializeField] private Button resetCurrentSaveButton;
+    [SerializeField] private ContentUnlockDefinition[] buildingUnlocks;
     [SerializeField] private List<ResourceRow> rows = new List<ResourceRow>();
 
     private void Awake()
     {
+        unlockAllBuildingsButton?.onClick.AddListener(UnlockAllBuildings);
+        resetCurrentSaveButton?.onClick.AddListener(CurrentSaveReset.Reload);
         if (closeButton != null)
             closeButton.onClick.AddListener(Close);
 
@@ -150,6 +157,21 @@ public sealed class CheatResourcePopup : MonoBehaviour
     private static void SetInteractable(Button button, bool value)
     {
         if (button != null) button.interactable = value;
+    }
+
+    private void UnlockAllBuildings()
+    {
+        if (buildingUnlocks == null) return;
+        foreach (var unlock in buildingUnlocks)
+            if (unlock != null) ContentUnlocks.Grant(unlock);
+        SaveSlotPrefs.Save();
+        ContentUnlocks.NotifyChanged();
+    }
+
+    private void OnDestroy()
+    {
+        unlockAllBuildingsButton?.onClick.RemoveListener(UnlockAllBuildings);
+        resetCurrentSaveButton?.onClick.RemoveListener(CurrentSaveReset.Reload);
     }
 
     private void Close()

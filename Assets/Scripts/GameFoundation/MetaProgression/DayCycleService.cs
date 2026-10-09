@@ -56,6 +56,10 @@ namespace GameFoundation.MetaProgression
         public List<PortalSite> Portals { get; private set; } = new(); public event Action Changed;
         public const int MaxPortals = 5;
         private const string Key="foundation.daycycle";
+        private int totalPortalEntries;
+        private bool firstPortalRun;
+        public static bool IsFirstPortalRun => Instance != null ? Instance.firstPortalRun :
+            JsonUtility.FromJson<Data>(PlayerPrefs.GetString(Key, "{}"))?.firstPortalRun == true;
         private void OnEnable()
         {
             // Awake does not run again after a Play Mode script reload.
@@ -107,6 +111,8 @@ namespace GameFoundation.MetaProgression
             if (!PortalProgression.IsUnlocked(location)) return false;
             site.active = true;
             EnteredToday = true;
+            firstPortalRun = totalPortalEntries == 0;
+            totalPortalEntries++;
             SelectedPortalLocationId = location.LocationId;
             SelectedPortalDifficulty = location.Difficulty;
             Save();
@@ -116,6 +122,7 @@ namespace GameFoundation.MetaProgression
 
         public void DeactivateSelectedPortal()
         {
+            firstPortalRun = false;
             PortalSite selected = Portals.FirstOrDefault(item => item.locationId == SelectedPortalLocationId);
             if (selected == null || !selected.active) return;
             selected.active = false;
@@ -133,6 +140,7 @@ namespace GameFoundation.MetaProgression
             Day++;
             SearchedToday = false;
             EnteredToday = false;
+            firstPortalRun = false;
             RefugeesAvailable = UnityEngine.Random.Range(1, 4);
             Save();
             DayResourceLedger.StartNextDay(Day);
@@ -264,9 +272,9 @@ namespace GameFoundation.MetaProgression
             SearchedToday = true;
         }
 
-        private void Save(){PlayerPrefs.SetString(Key,JsonUtility.ToJson(new Data{day=Day,searched=SearchedToday,entered=EnteredToday,refugees=RefugeesAvailable,selectedDifficulty=SelectedPortalDifficulty,selectedLocationId=SelectedPortalLocationId,portals=Portals}));PlayerPrefs.Save();}
-        private void Load(){if(!PlayerPrefs.HasKey(Key))return;var json=PlayerPrefs.GetString(Key);var d=JsonUtility.FromJson<Data>(json);if(d==null)return;Day=d.day;SearchedToday=d.searched;EnteredToday=d.entered;RefugeesAvailable=json.Contains("\"refugees\"")?d.refugees:2;SelectedPortalDifficulty=Mathf.Clamp(d.selectedDifficulty<=0?1:d.selectedDifficulty,1,5);SelectedPortalLocationId=string.IsNullOrEmpty(d.selectedLocationId)?"forest":d.selectedLocationId;Portals=d.portals??new();}
-        [Serializable] private class Data{public int day;public bool searched,entered;public int refugees=2;public int selectedDifficulty=1;public string selectedLocationId="forest";public List<PortalSite> portals;}
+        private void Save(){PlayerPrefs.SetString(Key,JsonUtility.ToJson(new Data{totalPortalEntries=totalPortalEntries,firstPortalRun=firstPortalRun,day=Day,searched=SearchedToday,entered=EnteredToday,refugees=RefugeesAvailable,selectedDifficulty=SelectedPortalDifficulty,selectedLocationId=SelectedPortalLocationId,portals=Portals}));PlayerPrefs.Save();}
+        private void Load(){if(!PlayerPrefs.HasKey(Key))return;var json=PlayerPrefs.GetString(Key);var d=JsonUtility.FromJson<Data>(json);if(d==null)return;totalPortalEntries=json.Contains("\"totalPortalEntries\"")?d.totalPortalEntries:(d.day>1||d.entered?1:0);firstPortalRun=d.firstPortalRun;Day=d.day;SearchedToday=d.searched;EnteredToday=d.entered;RefugeesAvailable=json.Contains("\"refugees\"")?d.refugees:2;SelectedPortalDifficulty=Mathf.Clamp(d.selectedDifficulty<=0?1:d.selectedDifficulty,1,5);SelectedPortalLocationId=string.IsNullOrEmpty(d.selectedLocationId)?"forest":d.selectedLocationId;Portals=d.portals??new();}
+        [Serializable] private class Data{public int totalPortalEntries;public bool firstPortalRun;public int day;public bool searched,entered;public int refugees=2;public int selectedDifficulty=1;public string selectedLocationId="forest";public List<PortalSite> portals;}
     }
 }
 

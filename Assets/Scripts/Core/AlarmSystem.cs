@@ -84,6 +84,8 @@ public class AlarmSystem : MonoBehaviour
     private readonly List<GameObject> _activeSpawnWarnings = new();
     private readonly Queue<int> _dangerNotificationQueue = new();
     private Coroutine _dangerNotificationRoutine;
+    private AlarmThreshold firstRunWaveTemplate;
+    public event Action DangerNotificationsFinished;
     private DangerLevelNotificationView _activeDangerNotification;
     private readonly List<Image> _thresholdSkulls = new();
     private float _displayedFill;
@@ -146,6 +148,11 @@ public class AlarmSystem : MonoBehaviour
         Instance = this;
         if (difficultyTable != null)
             thresholds = difficultyTable.GetThresholds(GameFoundation.MetaProgression.DayCycleService.CurrentPortalDifficulty).ToList();
+        if (GameFoundation.MetaProgression.DayCycleService.IsFirstPortalRun)
+        {
+            firstRunWaveTemplate = thresholds.FirstOrDefault(t => t != null);
+            thresholds = new List<AlarmThreshold>();
+        }
         _canvas = GetComponentInParent<Canvas>() ?? UnityEngine.Object.FindFirstObjectByType<Canvas>();
         _canvasRect = _canvas != null ? _canvas.transform as RectTransform : null;
     }
@@ -336,6 +343,24 @@ public class AlarmSystem : MonoBehaviour
         OnAlarmChanged?.Invoke(currentAlarm);
     }
 
+    public bool ReleaseFirstRunWave()
+    {
+        if (firstRunWaveTemplate == null || thresholds.Count != 0) return false;
+        var template = firstRunWaveTemplate;
+        thresholds.Add(new AlarmThreshold
+        {
+            alarmValue = currentAlarm,
+            minSpawnInterval = template.minSpawnInterval,
+            maxSpawnInterval = template.maxSpawnInterval,
+            minEnemiesPerWave = template.minEnemiesPerWave,
+            maxEnemiesPerWave = template.maxEnemiesPerWave,
+            enemies = new List<AlarmEnemy>(template.enemies)
+        });
+        RefreshThresholdMarkers();
+        EvaluateThresholds();
+        return true;
+    }
+
     private void EvaluateThresholds()
     {
         foreach (AlarmThreshold threshold in thresholds)
@@ -353,7 +378,7 @@ public class AlarmSystem : MonoBehaviour
     private void EnqueueDangerLevelNotification(int level)
     {
         GameFoundation.UI.GameNotifications.Post("Уровень тревоги: " + level, GameFoundation.UI.NotificationKind.Negative);
-        if (dangerLevelNotificationPrefab == null) return;
+        if (dangerLevelNotificationPrefab == null) { DangerNotificationsFinished?.Invoke(); return; }
         _dangerNotificationQueue.Enqueue(level);
         if (_dangerNotificationRoutine == null)
             _dangerNotificationRoutine = StartCoroutine(ShowDangerLevelNotifications());
@@ -371,6 +396,7 @@ public class AlarmSystem : MonoBehaviour
             _activeDangerNotification = null;
         }
         _dangerNotificationRoutine = null;
+        DangerNotificationsFinished?.Invoke();
     }
 
     private IEnumerator SpawnWavesForever(AlarmThreshold threshold)

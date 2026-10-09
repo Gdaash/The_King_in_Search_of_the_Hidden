@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using GameFoundation.Base;
+using GameFoundation.UI;
 
 namespace GameFoundation.Quests
 {
@@ -10,6 +12,10 @@ namespace GameFoundation.Quests
         sealed class Particle
         {
             public Image image, target;
+            public RectTransform targetRect;
+            public Canvas targetCanvas;
+            public Color tint = Color.white;
+            public float arcHeight = 65f;
             public Vector2 origin;
             public float delay;
         }
@@ -18,6 +24,55 @@ namespace GameFoundation.Quests
         Camera uiCamera;
         float elapsed;
         const float Duration = .8f;
+
+        public static void PlayUnlocks(Canvas canvas, Vector2 screenOrigin, List<ContentUnlockDefinition> unlocks)
+        {
+            if (canvas == null || unlocks == null || unlocks.Count == 0) return;
+            canvas = canvas.rootCanvas;
+            QuestRewardFlight effect = null;
+            var used = new HashSet<RectTransform>();
+            Canvas.ForceUpdateCanvases();
+            foreach (var building in Object.FindObjectsByType<BaseBuildingConstruction>(FindObjectsSortMode.None))
+            {
+                if (building.IsBuilt || building.RequiredUnlock == null ||
+                    !unlocks.Contains(building.RequiredUnlock) || building.ConstructionButton == null) continue;
+                var button = building.ConstructionButton;
+                var target = (RectTransform)button.transform;
+                if (!used.Add(target)) continue;
+                var highlight = button.GetComponent<BuildingButtonHighlight>() ?? building.GetComponent<BuildingButtonHighlight>();
+                if (highlight == null || highlight.StarSprite == null) continue;
+                if (effect == null)
+                {
+                    var go = new GameObject("Quest building unlock flight", typeof(RectTransform), typeof(Canvas), typeof(QuestRewardFlight));
+                    go.transform.SetParent(canvas.transform, false);
+                    var overlay = go.GetComponent<Canvas>();
+                    overlay.overrideSorting = true; overlay.sortingOrder = 32010;
+                    effect = go.GetComponent<QuestRewardFlight>();
+                    effect.rect = (RectTransform)go.transform;
+                    effect.rect.anchorMin = Vector2.zero; effect.rect.anchorMax = Vector2.one;
+                    effect.rect.offsetMin = effect.rect.offsetMax = Vector2.zero;
+                    effect.uiCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+                }
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(effect.rect, screenOrigin, effect.uiCamera, out var start);
+                var targetCanvas = button.GetComponentInParent<Canvas>().rootCanvas;
+                for (int i = 0; i < 8; i++)
+                {
+                    var image = new GameObject("Unlock star", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+                    image.transform.SetParent(effect.rect, false);
+                    image.sprite = highlight.StarSprite;
+                    image.rectTransform.sizeDelta = image.sprite.rect.size * 2f;
+                    image.raycastTarget = false;
+                    image.rectTransform.anchoredPosition = start;
+                    image.color = Color.clear;
+                    effect.particles.Add(new Particle
+                    {
+                        image = image, targetRect = target, targetCanvas = targetCanvas,
+                        origin = start, delay = i * .065f, tint = highlight.StarColor,
+                        arcHeight = 80f + (i % 3) * 14f
+                    });
+                }
+            }
+        }
 
         public static void Play(Canvas canvas, Vector2 screenOrigin, List<QuestDefinition.ResourceReward> rewards)
         {
@@ -67,18 +122,21 @@ namespace GameFoundation.Quests
             foreach (var particle in particles)
             {
                 if (particle.image == null) continue;
-                if (particle.target == null) { Destroy(particle.image.gameObject); continue; }
+                if (particle.target == null && particle.targetRect == null) { Destroy(particle.image.gameObject); continue; }
                 float t = (elapsed - particle.delay) / Duration;
                 if (t >= 1) { Destroy(particle.image.gameObject); continue; }
                 remaining = true;
                 if (t < 0) continue;
-                var destinationCanvas = particle.target.canvas.rootCanvas;
+                var destinationCanvas = particle.targetCanvas != null ? particle.targetCanvas : particle.target.canvas.rootCanvas;
                 var camera = destinationCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : destinationCanvas.worldCamera;
-                var screen = RectTransformUtility.WorldToScreenPoint(camera, particle.target.rectTransform.TransformPoint(particle.target.rectTransform.rect.center));
+                var destination = particle.targetRect != null ? particle.targetRect : particle.target.rectTransform;
+                var screen = RectTransformUtility.WorldToScreenPoint(camera, destination.TransformPoint(destination.rect.center));
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, screen, uiCamera, out var end);
                 float eased = t * t * (3 - 2 * t);
-                particle.image.rectTransform.anchoredPosition = Vector2.Lerp(particle.origin, end, eased) + Vector2.up * (Mathf.Sin(t * Mathf.PI) * 65);
-                particle.image.color = new Color(1, 1, 1, Mathf.Clamp01((1 - t) * 8));
+                particle.image.rectTransform.anchoredPosition = Vector2.Lerp(particle.origin, end, eased) + Vector2.up * (Mathf.Sin(t * Mathf.PI) * particle.arcHeight);
+                var color = particle.tint;
+                color.a *= Mathf.Clamp01((1 - t) * 8);
+                particle.image.color = color;
             }
             if (!remaining) Destroy(gameObject);
         }
