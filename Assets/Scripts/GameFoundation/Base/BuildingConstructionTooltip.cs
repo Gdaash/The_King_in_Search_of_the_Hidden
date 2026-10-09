@@ -19,6 +19,11 @@ namespace GameFoundation.Base
         [SerializeField] private float screenMargin = 12f;
         [SerializeField, Min(0f)] private float bottomPadding = 24f;
         [SerializeField, Min(0f)] private float resourceRowGap = 12f;
+        [SerializeField, Min(0f)] private float minimumHeight = 362f;
+        [SerializeField, Min(0f)] private float titleTopPadding = 22f;
+        [SerializeField, Min(0f)] private float titleDescriptionGap = 24f;
+        [SerializeField, Min(0f)] private float titleHorizontalPadding = 48f;
+        [SerializeField, Min(0f)] private float descriptionHorizontalPadding = 68f;
 
         private CanvasGroup group;
         private RectTransform rect;
@@ -41,11 +46,14 @@ namespace GameFoundation.Base
         {
             if (title != null) title.text = buildingName;
             if (description != null) description.text = function;
-            if (priceLabel != null) priceLabel.text = price;
+            bool first = wood != null && woodCost > 0;
+            bool second = stone != null && stoneCost > 0;
+            if (priceLabel != null) priceLabel.text = first || second ? price
+                : GameFoundation.Localization.LocalizationService.Instance?.Language == "en" ? "Free" : "Бесплатно";
             SetResource(woodIcon, woodAmount, wood, woodCost);
             SetResource(stoneIcon, stoneAmount, stone, stoneCost);
-            CenterPrice(wood != null, stone != null);
-            FitContent(wood != null, stone != null);
+            CenterPrice(first, second);
+            FitContent(first, second);
             group.alpha = 1f;
             group.blocksRaycasts = false;
             transform.SetAsLastSibling();
@@ -69,9 +77,9 @@ namespace GameFoundation.Base
             if (image != null)
             {
                 ResourceIconSizing.Apply(image, resource != null ? resource.resourceIcon : null);
-                image.enabled = image.sprite != null;
+                image.enabled = image.sprite != null && cost > 0;
             }
-            if (amount != null) { amount.text = cost.ToString(); amount.enabled = resource != null; }
+            if (amount != null) { amount.text = cost.ToString(); amount.enabled = resource != null && cost > 0; }
         }
 
         private void CenterPrice(bool first, bool second)
@@ -106,10 +114,25 @@ namespace GameFoundation.Base
             if (rect == null) rect = transform as RectTransform;
             if (rect == null || description == null || priceLabel == null) return;
 
-            // Icons retain their native pixel-art size. The background grows to contain them.
+            float panelWidth = rect.rect.width;
+            SetTextWidth(title, Mathf.Max(1f, panelWidth - titleHorizontalPadding));
+            SetTextWidth(description, Mathf.Max(1f, panelWidth - descriptionHorizontalPadding));
+            SetTextWidth(priceLabel, Mathf.Max(1f, panelWidth - descriptionHorizontalPadding));
+            Canvas.ForceUpdateCanvases();
+
+            // Wrapped title and description grow downward while resource icons keep their native size.
+            float titleHeight = title != null ? Mathf.Max(title.rectTransform.rect.height, title.preferredHeight) : 54f;
+            if (title != null) title.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, titleHeight);
+            float descriptionTop = titleTopPadding + titleHeight + titleDescriptionGap;
+            if (description != null)
+            {
+                var descriptionPosition = description.rectTransform.anchoredPosition;
+                descriptionPosition.y = -descriptionTop;
+                description.rectTransform.anchoredPosition = descriptionPosition;
+            }
             float descriptionHeight = Mathf.Max(104f, description.preferredHeight);
             description.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, descriptionHeight);
-            float priceTop = -description.rectTransform.anchoredPosition.y + descriptionHeight + 10f;
+            float priceTop = descriptionTop + descriptionHeight + 10f;
             var pricePosition = priceLabel.rectTransform.anchoredPosition;
             pricePosition.y = -priceTop;
             priceLabel.rectTransform.anchoredPosition = pricePosition;
@@ -134,7 +157,16 @@ namespace GameFoundation.Base
             }
             if (first) { Align(woodIcon != null ? woodIcon.rectTransform : null); Align(woodAmount != null ? woodAmount.rectTransform : null); }
             if (second) { Align(stoneIcon != null ? stoneIcon.rectTransform : null); Align(stoneAmount != null ? stoneAmount.rectTransform : null); }
-            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, rowTop + rowHeight + bottomPadding);
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
+                Mathf.Max(minimumHeight, rowTop + rowHeight + bottomPadding));
+        }
+
+        private static void SetTextWidth(Text text, float width)
+        {
+            if (text == null) return;
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            var textRect = text.rectTransform;
+            textRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
         }
 
         private void UpdatePosition()

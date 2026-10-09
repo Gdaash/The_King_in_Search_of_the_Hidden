@@ -6,7 +6,7 @@ namespace GameFoundation.Base
     /// <summary>Shows a building-button badge when the building can perform an action now.</summary>
     public sealed class BuildingActionAvailabilityIndicator : MonoBehaviour
     {
-        public enum ActionType { CartPurchase, BlacksmithProduction, MilitaryTraining, BuildingConstruction, LaboratoryUpgrade, PortalTravel, RefugeeAdmission }
+        public enum ActionType { CartPurchase, BlacksmithProduction, MilitaryTraining, BuildingConstruction, LaboratoryUpgrade, PortalTravel, RefugeeAdmission, None }
 
         [SerializeField] private GameObject marker;
         [SerializeField] private ActionType actionType;
@@ -16,6 +16,8 @@ namespace GameFoundation.Base
         [SerializeField] private MilitaryTrainingView training;
         [SerializeField] private SkillButton[] laboratorySkills;
         [SerializeField] private GlobalStats laboratoryStats;
+        [SerializeField] private GameFoundation.UI.BuildingButtonHighlight highlight;
+        [SerializeField] private string upgradeBuildingId;
 
         private bool daySubscribed;
 
@@ -62,11 +64,11 @@ namespace GameFoundation.Base
 
         private void Refresh()
         {
-            if (marker == null) return;
+            if (marker != null) marker.SetActive(false);
             bool actionAvailable = actionType switch
             {
                 ActionType.CartPurchase => warehouse != null && warehouse.CanBuyCart,
-                ActionType.BlacksmithProduction => blacksmith != null && blacksmith.CanProduceAny,
+                ActionType.BlacksmithProduction => (blacksmith != null && blacksmith.CanProduceAny) || (warehouse != null && warehouse.CanBuyCart),
                 ActionType.MilitaryTraining => training != null && training.CanArmWarrior,
                 ActionType.BuildingConstruction => construction != null && construction.CanAffordConstruction,
                 ActionType.LaboratoryUpgrade => HasAvailableLaboratoryUpgrade(),
@@ -75,7 +77,8 @@ namespace GameFoundation.Base
                 _ => false
             };
             bool buildingReady = actionType == ActionType.BuildingConstruction || construction == null || construction.IsBuilt;
-            marker.SetActive(buildingReady && actionAvailable);
+            bool upgrade = !string.IsNullOrEmpty(upgradeBuildingId) && BuildingUpgradeService.CanUpgrade(upgradeBuildingId);
+            if (highlight != null) highlight.SetAvailable(buildingReady && (actionAvailable || upgrade));
         }
 
         private bool HasAvailableLaboratoryUpgrade()

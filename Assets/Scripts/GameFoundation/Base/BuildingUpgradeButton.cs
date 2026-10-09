@@ -14,6 +14,7 @@ namespace GameFoundation.Base
         [SerializeField] private Text label;
         [SerializeField] private CanvasGroup visibility;
         [SerializeField] private GameObject availabilityMarker;
+        [SerializeField] private GameFoundation.UI.BuildingButtonHighlight highlight;
         private bool hovering;
         private LocalizationService localization;
         private void Awake() { button.onClick.AddListener(Upgrade); }
@@ -43,13 +44,14 @@ namespace GameFoundation.Base
         {
             int level = BuildingUpgradeService.Level(buildingId);
             int max = BuildingUpgradeService.Catalog?.Find(buildingId)?.levels.Count ?? 0;
-            bool visible = BuildingUpgradeService.IsBuilt(buildingId) && level < max;
-            bool affordable = visible && BuildingUpgradeService.CanUpgrade(buildingId);
+            bool visible = BuildingUpgradeService.IsBuilt(buildingId);
+            bool affordable = visible && level < max && BuildingUpgradeService.CanUpgrade(buildingId);
             visibility.alpha = visible ? 1 : 0;
             visibility.blocksRaycasts = visible;
             visibility.interactable = visible;
             button.interactable = affordable;
-            if (availabilityMarker != null) availabilityMarker.SetActive(affordable);
+            if (availabilityMarker != null) availabilityMarker.SetActive(false);
+            if (highlight != null) highlight.SetAvailable(affordable);
             if (!visible && hovering)
             {
                 hovering = false;

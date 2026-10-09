@@ -184,11 +184,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3727388993410057302, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 236
+      value: 176
       objectReference: {fileID: 0}
     - target: {fileID: 3727388993410057302, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 64
+      value: 80
       objectReference: {fileID: 0}
     - target: {fileID: 3727388993410057302, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
       propertyPath: m_LocalPosition.x
@@ -240,11 +240,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3807006760280512047, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
       propertyPath: m_Text
-      value: "\u0416\u0438\u043B\u043E\u0439 \u043A\u0432\u0430\u0440\u0442\u0430\u043B"
+      value: "\u0416\u0438\u043B\u043E\u0439\n\u043A\u0432\u0430\u0440\u0442\u0430\u043B"
       objectReference: {fileID: 0}
     - target: {fileID: 3807006760280512047, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
       propertyPath: m_FontData.m_BestFit
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3807006760280512047, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
       propertyPath: m_FontData.m_MaxSize
@@ -253,6 +253,14 @@ PrefabInstance:
     - target: {fileID: 3807006760280512047, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
       propertyPath: m_FontData.m_MinSize
       value: 16
+      objectReference: {fileID: 0}
+    - target: {fileID: 3807006760280512047, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
+      propertyPath: m_FontData.m_VerticalOverflow
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3807006760280512047, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
+      propertyPath: m_FontData.m_HorizontalOverflow
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4355781941448677211, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
       propertyPath: m_Name
@@ -276,7 +284,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7539268196687621801, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 212
+      value: 120
       objectReference: {fileID: 0}
     - target: {fileID: 7539268196687621801, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
       propertyPath: m_SizeDelta.y
@@ -294,9 +302,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3727388993410057302, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3684265724139851510}
-    - targetCorrespondingSourceObject: {fileID: 3727388993410057302, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8761389261126213828}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 4355781941448677211, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
       insertIndex: -1
@@ -389,9 +394,10 @@ MonoBehaviour:
   buildButton: {fileID: 1450527087456529791}
   buildButtonLabel: {fileID: 3769030030411127951}
   wood: {fileID: 11400000, guid: 45c32916e7e552e44b4498d5417db2bc, type: 2}
-  woodCost: 1
+  woodCost: 10
   stone: {fileID: 11400000, guid: 80528df5024cfad4d940509df98d860c, type: 2}
-  stoneCost: 1
+  stoneCost: 0
+  confirmation: {fileID: 0}
 --- !u!224 &636882451470315447 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3727388993410057302, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
@@ -440,6 +446,18 @@ PrefabInstance:
       propertyPath: construction
       value: 
       objectReference: {fileID: 3643378399588853850}
+    - target: {fileID: 1872163847850238002, guid: 4e27aba83ddcceb49a52b13f18fe1e3b, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -60.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2460762567080418883, guid: 4e27aba83ddcceb49a52b13f18fe1e3b, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 111
+      objectReference: {fileID: 0}
+    - target: {fileID: 2460762567080418883, guid: 4e27aba83ddcceb49a52b13f18fe1e3b, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 52
+      objectReference: {fileID: 0}
     - target: {fileID: 8571588586540050353, guid: 4e27aba83ddcceb49a52b13f18fe1e3b, type: 3}
       propertyPath: m_Name
       value: Build Button
@@ -470,11 +488,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8736110766529672380, guid: 4e27aba83ddcceb49a52b13f18fe1e3b, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 236
+      value: 217
       objectReference: {fileID: 0}
     - target: {fileID: 8736110766529672380, guid: 4e27aba83ddcceb49a52b13f18fe1e3b, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 64
+      value: 80
       objectReference: {fileID: 0}
     - target: {fileID: 8736110766529672380, guid: 4e27aba83ddcceb49a52b13f18fe1e3b, type: 3}
       propertyPath: m_LocalPosition.x
@@ -526,7 +544,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9102771574919456453, guid: 4e27aba83ddcceb49a52b13f18fe1e3b, type: 3}
       propertyPath: m_Text
-      value: "\u0416\u0438\u043B\u043E\u0439 \u043A\u0432\u0430\u0440\u0442\u0430\u043B"
+      value: "\u0416\u0438\u043B\u043E\u0439\n\u043A\u0432\u0430\u0440\u0442\u0430\u043B"
       objectReference: {fileID: 0}
     - target: {fileID: 9102771574919456453, guid: 4e27aba83ddcceb49a52b13f18fe1e3b, type: 3}
       propertyPath: m_FontData.m_BestFit
@@ -572,113 +590,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Text
---- !u!1001 &6974463321504570539
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 636882451470315447}
-    m_Modifications:
-    - target: {fileID: 1627049059404001122, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_Name
-      value: Building Upgrade Button
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_Pivot.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_Pivot.y
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_AnchorMin.x
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 44
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 48
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 18
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1832069318662801252, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: m_FontData.m_FontSize
-      value: 28
-      objectReference: {fileID: 0}
-    - target: {fileID: 5785868591748383541, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-      propertyPath: buildingId
-      value: housing
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
---- !u!224 &8761389261126213828 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 1827599898424179823, guid: 36ff3da2ec53c8c42bb1058f7adcaacb, type: 3}
-  m_PrefabInstance: {fileID: 6974463321504570539}
-  m_PrefabAsset: {fileID: 0}

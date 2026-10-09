@@ -50,15 +50,16 @@ namespace GameFoundation.Base
         }
         private void Refresh()
         {
+            bool built = Built;
             for (int i = 0; i < sprites.Count; i++)
             {
                 sprites[i].gameObject.SetActive(true);
-                sprites[i].sharedMaterial = !Built && unbuiltMaterial != null ? unbuiltMaterial : originalMaterials[i];
+                sprites[i].sharedMaterial = !built && unbuiltMaterial != null ? unbuiltMaterial : originalMaterials[i];
             }
-            if (TryGetComponent<Image>(out var image)) { image.enabled = Built; image.raycastTarget = Built; }
+            if (TryGetComponent<Image>(out var image)) { image.enabled = built; image.raycastTarget = built; }
             if (TryGetComponent<Button>(out var button) && button.targetGraphic != null)
-                button.targetGraphic.enabled = Built;
-            if (buildingLabel != null) buildingLabel.SetActive(Built);
+                button.targetGraphic.enabled = built;
+            if (buildingLabel != null) buildingLabel.SetActive(built);
         }
         private void LateUpdate() => UpdatePosition();
         private float ScreenScale => Mathf.Min(Screen.width / documentSize.x, Screen.height / documentSize.y);

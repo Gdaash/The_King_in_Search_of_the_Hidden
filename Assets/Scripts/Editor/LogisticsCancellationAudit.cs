@@ -45,6 +45,10 @@ public static class LogisticsCancellationAudit
     public static void RunForaging() { SessionState.SetBool(Key + "foraging", true); Run(); }
     public static void RunShelterFog() { SessionState.SetBool(Key + "shelterFog", true); Run(); }
     public static void RunShelterButtons() { SessionState.SetBool(Key + "shelterButtons", true); Run(); }
+    public static void RunShelterInteractions() { SessionState.SetBool(Key + "shelterInteractions", true); Run(); }
+    public static void RunBlacksmithVisuals() { SessionState.SetBool(Key + "blacksmithVisuals", true); Run(); }
+    public static void RunMilitaryPopupReadability() { SessionState.SetBool(Key + "militaryPopupReadability", true); Run(); }
+    public static void RunBuildingPrices() { SessionState.SetBool(Key + "buildingPrices", true); Run(); }
     public static void RunProductionFragments() { SessionState.SetBool(Key + "productionFragments", true); Run(); }
     public static void RunEnemyLevels() { SessionState.SetBool(Key + "enemyLevels", true); Run(); }
     public static void RunQuestRewards() { SessionState.SetBool(Key + "questRewards", true); Run(); }
@@ -116,6 +120,10 @@ public static class LogisticsCancellationAudit
     {
         try
         {
+            if (SessionState.GetBool(Key + "buildingPrices", false)) { SessionState.SetBool(Key + "buildingPrices", false); await BuildingPriceAudit.RunPlay(); return; }
+            if (SessionState.GetBool(Key + "militaryPopupReadability", false)) { SessionState.SetBool(Key + "militaryPopupReadability", false); await MilitaryPopupReadabilityAudit.RunPlay(); return; }
+            if (SessionState.GetBool(Key + "blacksmithVisuals", false)) { SessionState.SetBool(Key + "blacksmithVisuals", false); await BlacksmithVisualAudit.RunPlay(); return; }
+            if (SessionState.GetBool(Key + "shelterInteractions", false)) { SessionState.SetBool(Key + "shelterInteractions", false); await ShelterInteractionsAudit.RunPlay(); return; }
             if (SessionState.GetBool(Key + "shelterButtons", false)) { SessionState.SetBool(Key + "shelterButtons", false); await ShelterButtonsAudit.RunPlay(); return; }
             if (SessionState.GetBool(Key + "shelterFog", false)) { SessionState.SetBool(Key + "shelterFog", false); await ShelterFogAudit.RunPlay(); return; }
             if (SessionState.GetBool(Key + "productionFragments", false)) { SessionState.SetBool(Key + "productionFragments", false); await ProductionFragmentsAudit.RunPlay(); return; }
@@ -191,26 +199,35 @@ public static class LogisticsCancellationAudit
             for (int cycle = 0; cycle < 3; cycle++)
             {
                 var job = Job(1, 1); var person = warehouse.SpawnHumanForJob(job, human);
+                Check(Amount(human) == 10, "worker dispatch does not reduce population " + cycle);
+                Check(OrderManager.CountHumansAwayFromPortal(human) == 1 && OrderManager.CountHumansAtPortal(human) == 9,
+                    "escape count excludes travelling worker " + cycle);
                 await Task.Delay(200); job.SetCrystalFlag(null);
                 await Until(() => person == null, "human return");
-                Check(Amount(human) == 10 && job.requirements[1].currentAmount == 0, "human cancellation conserved " + cycle);
+                Check(Amount(human) == 10 && job.requirements[1].currentAmount == 0, "human cancellation keeps population " + cycle);
                 Object.Destroy(job.gameObject); await Task.Delay(50);
             }
             var occupied = Job(1, 1); var worker = warehouse.SpawnHumanForJob(occupied, human);
             await Until(() => worker == null, "worker reaches building");
-            Check(occupied.requirements[1].currentAmount == 1 && Amount(human) == 9, "worker accounted inside building");
+            Check(occupied.requirements[1].currentAmount == 1 && Amount(human) == 10, "worker inside building remains in population");
+            Check(OrderManager.CountHumansAwayFromPortal(human) == 1 && OrderManager.CountHumansAtPortal(human) == 9,
+                "escape count excludes worker inside building");
             occupied.SetCrystalFlag(null); Check(occupied.RecallIdleHumans() == 1 && occupied.RecallIdleHumans() == 0, "repeat recall cannot duplicate worker");
-            await Until(() => Amount(human) == 10, "recalled worker arrives");
+            await Until(() => OrderManager.CountHumansAwayFromPortal(human) == 0, "recalled worker arrives");
+            Check(Amount(human) == 10 && OrderManager.CountHumansAtPortal(human) == 10, "recalled worker keeps population count");
             Object.Destroy(occupied.gameObject);
             // Real scheduler must reserve only once per assigned porter.
             var scheduled = Job(2); orders.SendMessage("DistributeOrders");
             int assigned = 0; foreach(var p in Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)) if(p.GetCurrentJob()==scheduled) assigned++;
             Check(scheduled.requirements[0].reservedAmount == assigned, "scheduler reservation equals assigned porters");
+            Check(Amount(human) == 10 && OrderManager.CountHumansAwayFromPortal(human) == assigned,
+                "porters stay in population and count as away during escape");
             scheduled.SetCrystalFlag(null);
             await Until(() => Object.FindObjectsByType<Porter>(FindObjectsSortMode.None).Length == 0, "scheduled porters return");
             Check(Amount(human)==10 && Amount(cart)==10 && Amount(berry)==20, "scheduler cancellation conserves stocks");
             Object.Destroy(scheduled.gameObject); await Task.Delay(50);
             var duplicate = warehouse.SpawnPorter();
+            Check(Amount(human) == 10 && Amount(cart) == 9, "porter dispatch preserves population and reserves its cart");
             warehouse.DespawnPorter(duplicate); warehouse.DespawnPorter(duplicate);
             Check(Amount(human)==10 && Amount(cart)==10, "same-frame duplicate return cannot credit twice");
             await Task.Delay(50);
@@ -241,10 +258,25 @@ public static class LogisticsCancellationAudit
             // A second return callback must not credit the same human twice.
             var duplicateJob=Job(2,1); var duplicateHuman=warehouse.SpawnHumanForJob(duplicateJob,human);
             duplicateHuman.ReturnToPortal(); warehouse.ReturnHuman(duplicateHuman); warehouse.ReturnHuman(duplicateHuman);
-            Check(Amount(human)==10,"duplicate human callback credits once");
+            Check(Amount(human)==10,"duplicate human callback leaves population unchanged");
             await Until(()=>duplicateHuman==null,"duplicate human cleanup");
             Check(Amount(human)==10,"arrival after duplicate callback does not credit again");
             Object.Destroy(duplicateJob.gameObject);
+            // Staffing is bounded by the total civilian population, even though
+            // assigned workers are no longer subtracted from the resource amount.
+            resources.SetResourceAmount(human, 1);
+            var firstJob = Job(0, 1); var secondJob = Job(0, 1);
+            orders.SendMessage("DistributeOrders");
+            orders.SendMessage("DistributeOrders");
+            Check(firstJob.requirements[1].reservedAmount + firstJob.requirements[1].currentAmount +
+                  secondJob.requirements[1].reservedAmount + secondJob.requirements[1].currentAmount == 1,
+                "scheduler never assigns more workers than population");
+            Check(OrderManager.CountHumansAwayFromPortal(human) == 1 && Amount(human) == 1,
+                "escape count and population remain separate");
+            firstJob.SetCrystalFlag(null); secondJob.SetCrystalFlag(null);
+            foreach (var h in Object.FindObjectsByType<HumanUnit>(FindObjectsSortMode.None)) h.ReturnToPortal();
+            await Until(() => Object.FindObjectsByType<HumanUnit>(FindObjectsSortMode.None).Length == 0, "bounded worker returns");
+            Object.Destroy(firstJob.gameObject); Object.Destroy(secondJob.gameObject);
             File.AppendAllText(Report, "ALL PASSED: " + checks + " checks\n");
         }
         catch(Exception e) { File.AppendAllText(Report, "FAIL " + e + "\n"); }

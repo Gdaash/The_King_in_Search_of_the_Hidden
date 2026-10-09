@@ -69,6 +69,58 @@ public class OrderManager : MonoBehaviour
     public void RegisterHumanUnit(HumanUnit h) { if (h != null && !_allHumanUnits.Contains(h)) _allHumanUnits.Add(h); }
     public void UnregisterHumanUnit(HumanUnit h) => _allHumanUnits.Remove(h);
     public void ForceUpdateOrders() => _nextUpdateTime = 0;
+
+    /// <summary>
+    /// Workers remain part of the population resource while assigned. Count their
+    /// building reservations and people physically returning from a cancelled job
+    /// as away from the portal for staffing and escape progress.
+    /// </summary>
+    public static int CountHumansAwayFromPortal(ResourceType humanType)
+    {
+        if (humanType == null) return 0;
+
+        int away = 0;
+        foreach (ResourceRequester requester in ResourceRequester.ActiveInstances)
+        {
+            if (requester == null || !requester.isActiveAndEnabled) continue;
+            foreach (var requirement in requester.requirements)
+            {
+                if (requirement.resourceType == humanType)
+                    away += Mathf.Max(0, requirement.currentAmount) + Mathf.Max(0, requirement.reservedAmount);
+            }
+        }
+
+        if (Instance != null)
+        {
+            foreach (HumanUnit human in Instance._allHumanUnits)
+                if (human != null && human.GetCurrentJob() == null && human.IsReturningToWarehouse())
+                    away++;
+
+            foreach (Porter porter in Instance._allPorters)
+                if (porter != null && (porter.IsBusy() || porter.IsReturningToWarehouse() || porter.IsCarryingResource()))
+                    away++;
+        }
+        else
+        {
+            foreach (HumanUnit human in Object.FindObjectsByType<HumanUnit>(FindObjectsInactive.Exclude))
+                if (human != null && human.GetCurrentJob() == null && human.IsReturningToWarehouse())
+                    away++;
+
+            foreach (Porter porter in Object.FindObjectsByType<Porter>(FindObjectsInactive.Exclude))
+                if (porter != null && (porter.IsBusy() || porter.IsReturningToWarehouse() || porter.IsCarryingResource()))
+                    away++;
+        }
+
+        return away;
+    }
+
+    public static int CountHumansAtPortal(ResourceType humanType)
+    {
+        return Mathf.Max(0, (GlobalResourceManager.Instance != null
+            ? GlobalResourceManager.Instance.GetResourceAmount(humanType)
+            : 0) - CountHumansAwayFromPortal(humanType));
+    }
+
     public void CancelDeliveries(ResourceRequester requester)
     {
         foreach (var porter in _allPorters)
@@ -250,7 +302,10 @@ public class OrderManager : MonoBehaviour
                     break;
                 }
 
-                if (Warehouse.Instance != null)
+                // The resource amount is the total population, not just people
+                // currently idle at the portal. Do not create extra workers when
+                // every resident is already assigned or travelling.
+                if (Warehouse.Instance != null && CountHumansAtPortal(humanReq.resourceType) > 0)
                 {
                     order.requester.ReserveResource(humanReq.resourceType);
                     var spawned = Warehouse.Instance.SpawnHumanForJob(order.requester, humanReq.resourceType, false);

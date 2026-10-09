@@ -20,6 +20,7 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private Image progressFill;
         [SerializeField] private TMP_Text progressLabel;
         [SerializeField] private ResourceType humanResource;
+        [SerializeField] private FoodSufficiencyHint foodSufficiencyHint;
         [SerializeField] private WorldFlashlightAvailability flashlightAvailability;
         [SerializeField] private WorldMilitaryDeploymentController militaryDeployment;
 
@@ -72,7 +73,7 @@ namespace GameFoundation.MetaProgression
 
             foreach (var item in CaptureResources())
                 _startingResources[item.Key] = item.Value;
-            _startingHumans = GetStoredHumans();
+            _startingHumans = GetTotalHumans();
             if (GlobalResourceManager.Instance != null)
                 foreach (var item in GlobalResourceManager.Instance.GetAllResourcesData())
                     _lastStoredResources[item.Key] = item.Value;
@@ -149,18 +150,20 @@ namespace GameFoundation.MetaProgression
 
         private void RefreshProgress()
         {
-            int stored = GetStoredHumans();
+            int total = GetTotalHumans();
+            int away = OrderManager.CountHumansAwayFromPortal(humanResource);
+            int returned = Mathf.Max(0, total - away);
             if (progressFill != null)
-                progressFill.fillAmount = _startingHumans == 0 ? 1f : Mathf.Clamp01((float)stored / _startingHumans);
+                progressFill.fillAmount = _startingHumans == 0 ? 1f : Mathf.Clamp01((float)returned / _startingHumans);
             if (progressLabel != null)
-                progressLabel.text = $"{stored}/{_startingHumans}";
+                progressLabel.text = $"{returned}/{_startingHumans}";
 
             bool militaryReturned = militaryDeployment == null || !militaryDeployment.HasReturningUnits;
-            if (stored >= _startingHumans && militaryReturned)
+            if (away == 0 && returned >= _startingHumans && militaryReturned)
                 ShowStatistics();
         }
 
-        private int GetStoredHumans()
+        private int GetTotalHumans()
         {
             return GlobalResourceManager.Instance != null && humanResource != null
                 ? GlobalResourceManager.Instance.GetResourceAmount(humanResource)
@@ -170,6 +173,7 @@ namespace GameFoundation.MetaProgression
         private void OnEscapeClicked()
         {
             if (_loading || _showingStatistics) return;
+            foodSufficiencyHint?.HideForEscape();
             if (_escaping)
             {
                 ShowStatistics();
@@ -200,6 +204,7 @@ namespace GameFoundation.MetaProgression
         public void ShowPortalDestroyedStatistics()
         {
             if (_loading || _showingStatistics) return;
+            foodSufficiencyHint?.HideForEscape();
             DayCycleService.Instance?.DeactivateSelectedPortal();
             GameFoundation.UI.GameNotifications.Post("Портал уничтожен", GameFoundation.UI.NotificationKind.Negative);
             _escaping = true;
@@ -247,6 +252,7 @@ namespace GameFoundation.MetaProgression
         private void ShowStatistics()
         {
             if (_showingStatistics) return;
+            foodSufficiencyHint?.HideForEscape();
             _showingStatistics = true;
             GameSpeedControls speedControls = UnityEngine.Object.FindAnyObjectByType<GameSpeedControls>();
             if (speedControls != null) speedControls.SetSpeed(0f);

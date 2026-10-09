@@ -46,8 +46,6 @@ public class Warehouse : MonoBehaviour
     {
         if (humanPrefab == null || resourceType == null || GlobalResourceManager.Instance == null) return null;
         if (GlobalResourceManager.Instance.GetResourceAmount(resourceType) <= 0) return null;
-        using var notification = GameFoundation.UI.GameNotifications.BeginTransfer(resourceType);
-        if (!GlobalResourceManager.Instance.TrySpendResource(resourceType, 1)) return null;
 
         Vector3 spawnPos = GetSpawnPoint() + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0);
         GameObject humanObj = Instantiate(humanPrefab, spawnPos, Quaternion.identity);
@@ -58,10 +56,8 @@ public class Warehouse : MonoBehaviour
 
     public void ReturnHuman(HumanUnit human)
     {
-        if (human == null || GlobalResourceManager.Instance == null || humanResourceType == null) return;
+        if (human == null) return;
         if (!human.TryCompletePortalReturn()) return;
-        using var notification = GameFoundation.UI.GameNotifications.BeginTransfer(humanResourceType);
-        GlobalResourceManager.Instance.AddResource(humanResourceType, 1);
     }
 
     public bool SendHumanHomeFrom(Vector3 position)
@@ -77,7 +73,7 @@ public class Warehouse : MonoBehaviour
     {
         if (GlobalResourceManager.Instance == null || humanResourceType == null || cartResourceType == null || porterPrefab == null) return false;
 
-        return GlobalResourceManager.Instance.GetResourceAmount(humanResourceType) >= 1
+        return OrderManager.CountHumansAtPortal(humanResourceType) >= 1
             && GlobalResourceManager.Instance.GetResourceAmount(cartResourceType) >= 1;
     }
 
@@ -86,12 +82,8 @@ public class Warehouse : MonoBehaviour
         if (!CanSpawnPorter()) return null;
         using var notification = GameFoundation.UI.GameNotifications.BeginTransfer(humanResourceType, cartResourceType);
         
-        if (!GlobalResourceManager.Instance.TrySpendResource(humanResourceType, 1)) return null;
         if (!GlobalResourceManager.Instance.TrySpendResource(cartResourceType, 1))
-        {
-            GlobalResourceManager.Instance.AddResource(humanResourceType, 1);
             return null;
-        }
 
         Vector3 spawnPos = GetSpawnPoint() + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0);
         GameObject porterObj = Instantiate(porterPrefab, spawnPos, Quaternion.identity);
@@ -99,19 +91,18 @@ public class Warehouse : MonoBehaviour
     }
 
     /// <summary>
-    /// Носильщик возвращает человека и телегу в глобальное хранилище.
+    /// Носильщик возвращает телегу в хранилище; сам носильщик остаётся в общем населении.
     /// </summary>
     public void DespawnPorter(Porter porter)
     {
-        if (porter == null || humanResourceType == null || cartResourceType == null || GlobalResourceManager.Instance == null) return;
+        if (porter == null || cartResourceType == null || GlobalResourceManager.Instance == null) return;
         if (!porter.TryCompletePortalReturn()) return;
         porter.gameObject.SetActive(false);
         using var notification = GameFoundation.UI.GameNotifications.BeginTransfer(humanResourceType, cartResourceType);
         
-        GlobalResourceManager.Instance.AddResource(humanResourceType, 1);
         GlobalResourceManager.Instance.AddResource(cartResourceType, 1);
         
-        Debug.Log($"[Warehouse] Носильщик вернул человека и телегу.");
+        Debug.Log("[Warehouse] Носильщик вернул телегу в запас.");
         
         // Уничтожаем носильщика
         Destroy(porter.gameObject);

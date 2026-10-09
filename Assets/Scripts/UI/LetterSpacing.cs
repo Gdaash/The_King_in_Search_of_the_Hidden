@@ -9,6 +9,7 @@ namespace GameFoundation.UI
     public sealed class LetterSpacing : BaseMeshEffect
     {
         [SerializeField, Min(0f)] private float spacing = 1.5f;
+        public float Spacing => spacing;
 
         protected override void OnEnable()
         {

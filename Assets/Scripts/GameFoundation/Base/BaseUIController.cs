@@ -18,7 +18,6 @@ namespace GameFoundation.Base
         [SerializeField] private Button warehouseButton;
         [SerializeField] private Button housingButton;
         [SerializeField] private Button refugeesButton;
-        [SerializeField] private Button squareButton;
         [SerializeField] private Button blacksmithButton;
         [SerializeField] private Button libraryButton;
         [SerializeField] private Button settingsButton;
@@ -30,11 +29,11 @@ namespace GameFoundation.Base
         [SerializeField] private Button closeHousingButton;
         [SerializeField] private Button closeRefugeesButton;
         [SerializeField] private Button admitRefugeeButton;
-        [SerializeField] private Button closeSquareButton;
         [SerializeField] private Button closeBlacksmithButton;
         [SerializeField] private Button closeLibraryButton;
         [SerializeField] private Text refugeesAvailableText;
-        [SerializeField] private GameObject globalMap, laboratory, settings, warehouse, housing, refugees, square, blacksmith, magicLibrary;
+        [SerializeField] private GameObject globalMap, laboratory, settings, warehouse, housing, refugees, blacksmith, magicLibrary;
+        [SerializeField] private WarehouseCartPurchaseView cartWorkshop;
         [SerializeField] private GameObject nextDayConfirmation;
         [SerializeField] private FoodForecastView nextDayForecast, housingForecast;
         [SerializeField] private Button[] portalButtons;
@@ -59,7 +58,6 @@ namespace GameFoundation.Base
             Bind(warehouseButton, OpenWarehouse);
             Bind(housingButton, OpenHousing);
             Bind(refugeesButton, OpenRefugees);
-            Bind(squareButton, OpenSquare);
             Bind(blacksmithButton, OpenBlacksmith);
             Bind(libraryButton, OpenMagicLibrary);
             Bind(settingsButton, OpenSettings);
@@ -71,7 +69,6 @@ namespace GameFoundation.Base
             Bind(closeHousingButton, CloseHousing);
             Bind(closeRefugeesButton, CloseRefugees);
             Bind(admitRefugeeButton, AdmitRefugee);
-            Bind(closeSquareButton, CloseSquare);
             Bind(closeBlacksmithButton, CloseBlacksmith);
             // The library close icon is part of its window, unlike several older popups.
             Bind(closeLibraryButton, CloseMagicLibrary);
@@ -197,7 +194,6 @@ namespace GameFoundation.Base
         public void OpenWarehouse() => Show(warehouse, true);
         public void OpenHousing() { RefreshForecasts(); Show(housing, true); }
         public void OpenRefugees() => Show(refugees, true);
-        public void OpenSquare() => Show(square, true);
         public void OpenBlacksmith() => Show(blacksmith, true);
         public void OpenMagicLibrary() => Show(magicLibrary, true);
         public void CloseMap() => Show(globalMap, false);
@@ -206,7 +202,6 @@ namespace GameFoundation.Base
         public void CloseWarehouse() => Show(warehouse, false);
         public void CloseHousing() => Show(housing, false);
         public void CloseRefugees() => Show(refugees, false);
-        public void CloseSquare() => Show(square, false);
         public void CloseBlacksmith() => Show(blacksmith, false);
         public void CloseMagicLibrary() => Show(magicLibrary, false);
         public void NextDay() { if (DayCycleService.Instance == null) return; RefreshForecasts(); Show(nextDayConfirmation, true); }
@@ -225,9 +220,9 @@ namespace GameFoundation.Base
         public void BuyCart()
         {
             using var notification = GameFoundation.UI.GameNotifications.BeginAction();
-            var purchase = warehouse != null ? warehouse.GetComponent<WarehouseCartPurchaseView>() : null;
+            var purchase = cartWorkshop;
             if (purchase == null || !purchase.TryBuy()) { Message("Недостаточно дерева для телеги", GameFoundation.UI.NotificationKind.Negative); return; }
-            Message("Телега куплена", GameFoundation.UI.NotificationKind.Positive);
+            Message("Телега изготовлена", GameFoundation.UI.NotificationKind.Positive);
         }
         public void AdmitRefugee() { using var notification = GameFoundation.UI.GameNotifications.BeginAction(); if (GlobalResourceManager.Instance && human && DayCycleService.Instance?.AdmitRefugee() == true) { GlobalResourceManager.Instance.AddResource(human, 1); Message("Новый житель принят", GameFoundation.UI.NotificationKind.Positive); } }
     }

@@ -5,7 +5,7 @@ namespace GameFoundation.Base
 {
     public sealed class WarehouseCartPurchaseView : MonoBehaviour
     {
-        [Header("Покупка телеги")]
+        [Header("Изготовление телеги")]
         [SerializeField] private ResourceType wood;
         [SerializeField] private ResourceType cart;
         [SerializeField, Min(1)] private int woodCost = 10;

@@ -69,6 +69,11 @@ namespace GameFoundation.UI
             if (localization != null) localization.LanguageChanged += Refresh;
             CacheSources();
             Refresh();
+            if (scroll != null)
+            {
+                scroll.StopMovement();
+                scroll.verticalNormalizedPosition = 1f;
+            }
         }
         private void OnDisable()
         {

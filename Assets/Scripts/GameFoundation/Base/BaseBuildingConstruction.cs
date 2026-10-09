@@ -17,10 +17,13 @@ namespace GameFoundation.Base
         [SerializeField] private Button buildingButton;
         [SerializeField] private Button buildButton;
         [SerializeField] private Text buildButtonLabel;
-        [SerializeField] private ResourceType wood;
-        [SerializeField, Min(0)] private int woodCost = 1;
-        [SerializeField] private ResourceType stone;
-        [SerializeField, Min(0)] private int stoneCost = 1;
+        // Keep the serialized names for existing prefab and balance-sheet references.
+        [SerializeField, InspectorName("Ресурс 1")] private ResourceType wood;
+        [SerializeField, Min(0), InspectorName("Количество ресурса 1")] private int woodCost = 1;
+        [SerializeField, InspectorName("Ресурс 2")] private ResourceType stone;
+        [SerializeField, Min(0), InspectorName("Количество ресурса 2")] private int stoneCost = 1;
+        [SerializeField] private BuildingConstructionConfirmation confirmation;
+        [SerializeField] private BuildingConstructionEffect constructionEffect;
 
         private bool built;
         private bool hovering;
@@ -28,13 +31,18 @@ namespace GameFoundation.Base
         private string SaveKey => "foundation.building." + buildingId + ".built";
         public bool IsBuilt => built;
         public string BuildingId => buildingId;
+        public string DisplayName => Tr(nameKey, fallbackName);
+        public ResourceType Wood => wood;
+        public ResourceType Stone => stone;
+        public int WoodCost => woodCost;
+        public int StoneCost => stoneCost;
         public bool CanAffordConstruction => !built && CanAfford();
 
         private void Awake()
         {
             if (buildingButton == null) buildingButton = GetComponent<Button>();
             built = SaveSlotPrefs.GetInt(SaveKey, 0) != 0;
-            if (buildButton != null) buildButton.onClick.AddListener(Build);
+            if (buildButton != null) buildButton.onClick.AddListener(RequestBuild);
             Refresh();
         }
 
@@ -63,18 +71,26 @@ namespace GameFoundation.Base
 
         private void OnDestroy()
         {
-            if (buildButton != null) buildButton.onClick.RemoveListener(Build);
+            if (buildButton != null) buildButton.onClick.RemoveListener(RequestBuild);
         }
 
-        private void Build()
+        private void RequestBuild()
+        {
+            if (built || confirmation == null) return;
+            BuildingConstructionTooltip.Instance?.Hide();
+            hovering = false;
+            confirmation.Open(this);
+        }
+
+        public void ConfirmBuild()
         {
             using var notification = GameFoundation.UI.GameNotifications.BeginAction();
             if (built || !CanAfford()) return;
             GlobalResourceManager resources = GlobalResourceManager.Instance;
-            if (!resources.TrySpendResource(wood, woodCost)) return;
-            if (!resources.TrySpendResource(stone, stoneCost))
+            if (woodCost > 0 && !resources.TrySpendResource(wood, woodCost)) return;
+            if (stoneCost > 0 && !resources.TrySpendResource(stone, stoneCost))
             {
-                resources.AddResource(wood, woodCost);
+                if (woodCost > 0) resources.AddResource(wood, woodCost);
                 return;
             }
             built = true;
@@ -86,6 +102,7 @@ namespace GameFoundation.Base
             BuildingConstructionTooltip.Instance?.Hide();
             hovering = false;
             Refresh();
+            constructionEffect?.Play();
         }
 
         private bool CanAfford()
