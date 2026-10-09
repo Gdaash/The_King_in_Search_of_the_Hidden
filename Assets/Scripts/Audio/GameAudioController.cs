@@ -10,6 +10,7 @@ namespace GameFoundation.Audio
     public sealed class GameAudioController : MonoBehaviour
     {
         public static GameAudioController Instance { get; private set; }
+        public event System.Action<GameAudioCue> CuePlayed;
 
         [SerializeField] private GameAudioLibrary library;
         [SerializeField, Range(0f, 1f)] private float musicVolume = 0.42f;
@@ -192,6 +193,7 @@ namespace GameFoundation.Audio
             source.pitch = Random.Range(pitchMin, pitchMax);
             if (world) source.transform.position = position;
             source.PlayOneShot(clip, Mathf.Clamp01(volume));
+            CuePlayed?.Invoke(cue);
         }
     }
 }

@@ -23,6 +23,7 @@ namespace GameFoundation.Quests
         RectTransform rect;
         Camera uiCamera;
         float elapsed;
+        bool unlockFlight;
         const float Duration = .8f;
 
         public static void PlayUnlocks(Canvas canvas, Vector2 screenOrigin, List<ContentUnlockDefinition> unlocks)
@@ -48,6 +49,7 @@ namespace GameFoundation.Quests
                     var overlay = go.GetComponent<Canvas>();
                     overlay.overrideSorting = true; overlay.sortingOrder = 32010;
                     effect = go.GetComponent<QuestRewardFlight>();
+                    effect.unlockFlight = true;
                     effect.rect = (RectTransform)go.transform;
                     effect.rect.anchorMin = Vector2.zero; effect.rect.anchorMax = Vector2.one;
                     effect.rect.offsetMin = effect.rect.offsetMax = Vector2.zero;
@@ -138,7 +140,11 @@ namespace GameFoundation.Quests
                 color.a *= Mathf.Clamp01((1 - t) * 8);
                 particle.image.color = color;
             }
-            if (!remaining) Destroy(gameObject);
+            if (!remaining)
+            {
+                if (unlockFlight) GameFoundation.Audio.GameAudioController.PlayUI(GameFoundation.Audio.GameAudioCue.ContentUnlock, .5f);
+                Destroy(gameObject);
+            }
         }
     }
 }

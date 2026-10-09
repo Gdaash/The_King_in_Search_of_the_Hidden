@@ -53,6 +53,8 @@ public class ArcherTower : MonoBehaviour
         foreach (var t in targets)
         {
             if (!t.activeInHierarchy) continue;
+            var health = t.GetComponentInParent<Health>();
+            if (health != null && health.IsDead) continue;
             var col = t.GetComponent<Collider2D>();
             if (col == null) continue;
 
@@ -81,7 +83,7 @@ public class ArcherTower : MonoBehaviour
 
     private void ResetCooldown() 
     {
-        _currentCooldown = CurrentCooldownBase + Random.Range(-cooldownVariation, cooldownVariation);
+        _currentCooldown = Mathf.Max(.05f, CurrentCooldownBase + Random.Range(-cooldownVariation, cooldownVariation));
     }
 
     public void FinishAttack() 
@@ -91,6 +93,7 @@ public class ArcherTower : MonoBehaviour
     }
 
     public Transform GetTarget() => _target;
+    private void OnDisable() { _isAttacking = false; _target = null; _targetCollider = null; }
 
     private void OnDrawGizmosSelected()
     {

@@ -383,6 +383,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -1133,6 +1137,10 @@ MonoBehaviour:
   theme: {fileID: 0}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -1685,7 +1693,6 @@ MonoBehaviour:
   warehouseButton: {fileID: 4940488167951172181}
   housingButton: {fileID: 2678160138505893048}
   refugeesButton: {fileID: 7865571162695705332}
-  squareButton: {fileID: 8954514940314199730}
   blacksmithButton: {fileID: 8800403364510107834}
   libraryButton: {fileID: 7248967821011892361}
   settingsButton: {fileID: 3811659778198260309}
@@ -1693,11 +1700,10 @@ MonoBehaviour:
   closeMapButton: {fileID: 0}
   closeLaboratoryButton: {fileID: 6251226646562663948}
   closeWarehouseButton: {fileID: 8909536380873008511}
-  buyCartButton: {fileID: 3902684552739740812}
+  buyCartButton: {fileID: 0}
   closeHousingButton: {fileID: 3914088288917320621}
   closeRefugeesButton: {fileID: 465223000169445400}
   admitRefugeeButton: {fileID: 5234450972946722155}
-  closeSquareButton: {fileID: 648744719897586359}
   closeBlacksmithButton: {fileID: 4480850725130837239}
   closeLibraryButton: {fileID: 2027754601865761722}
   refugeesAvailableText: {fileID: 8681457909330767047}
@@ -1707,9 +1713,9 @@ MonoBehaviour:
   warehouse: {fileID: 8305114917636696328}
   housing: {fileID: 5712573523560366962}
   refugees: {fileID: 3379250903660195578}
-  square: {fileID: 6124907207070762888}
   blacksmith: {fileID: 5864616804597760177}
   magicLibrary: {fileID: 6141423875617227165}
+  cartWorkshop: {fileID: 0}
   nextDayConfirmation: {fileID: 5842900080416100534}
   nextDayForecast: {fileID: 4761095878144412174}
   housingForecast: {fileID: 11445108222212816}
@@ -2129,6 +2135,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -3621,6 +3631,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.CanvasWindowFit
   margin: 20
+  footerSpace: 0
 --- !u!1 &3358404603808223400
 GameObject:
   m_ObjectHideFlags: 0
@@ -4036,8 +4047,7 @@ MonoBehaviour:
   nameLabel: {fileID: 4197796921081100308}
   startLabel: {fileID: 6498704106134411407}
   runLabel: {fileID: 1271707673524065119}
-  gainedLabel: {fileID: 5285203146570411773}
-  spentLabel: {fileID: 5025470111071163034}
+  shelterLabel: {fileID: 5285203146570411773}
   endLabel: {fileID: 8611105492090013111}
 --- !u!1 &4034257084534363303
 GameObject:
@@ -4441,6 +4451,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -4676,6 +4690,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -5568,6 +5586,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.CanvasWindowFit
   margin: 20
+  footerSpace: 0
 --- !u!1 &5927950082032353831
 GameObject:
   m_ObjectHideFlags: 0
@@ -5947,6 +5966,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -6489,6 +6512,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -6960,6 +6987,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -8348,6 +8379,10 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
   animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -10716,17 +10751,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4311546258705678553, guid: dae2fa8cb8b13804bb0721853138a25c, type: 3}
   m_PrefabInstance: {fileID: 1629007808736689673}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &3902684552739740812 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2356080884192551557, guid: dae2fa8cb8b13804bb0721853138a25c, type: 3}
-  m_PrefabInstance: {fileID: 1629007808736689673}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!224 &5222248073709814834 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6837100907187370555, guid: dae2fa8cb8b13804bb0721853138a25c, type: 3}
@@ -11272,17 +11296,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 967554850863076467, guid: feec12a7c15269048ae2d324eaa27ce5, type: 3}
   m_PrefabInstance: {fileID: 2135433972844928758}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8954514940314199730 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7054402863440738372, guid: feec12a7c15269048ae2d324eaa27ce5, type: 3}
-  m_PrefabInstance: {fileID: 2135433972844928758}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1001 &2427428024928680466
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11513,6 +11526,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2932668393278370658}
     m_Modifications:
+    - target: {fileID: 367434715836840617, guid: 441e04384cb540645b14955eacd4aa91, type: 3}
+      propertyPath: requiredUnlock
+      value: 
+      objectReference: {fileID: 11400000, guid: 047d3981e45d9644f803d507d95d5646, type: 2}
     - target: {fileID: 793683830499526188, guid: 441e04384cb540645b14955eacd4aa91, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -13397,17 +13414,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 6745965962656371230}
   m_SourcePrefab: {fileID: 100100000, guid: d8cb888c6cf342c4aa05f718402c2100, type: 3}
---- !u!114 &648744719897586359 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5577077285011816996, guid: d8cb888c6cf342c4aa05f718402c2100, type: 3}
-  m_PrefabInstance: {fileID: 4928362818910054547}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!224 &3043706695178155115 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7951215933621673208, guid: d8cb888c6cf342c4aa05f718402c2100, type: 3}
@@ -14326,6 +14332,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Blacksmith
       objectReference: {fileID: 0}
+    - target: {fileID: 7421375914126538934, guid: e607bcee29417684eac0fcc5651febc6, type: 3}
+      propertyPath: requiredUnlock
+      value: 
+      objectReference: {fileID: 11400000, guid: 5baf8e5cb49f3364f8053b653752f8b4, type: 2}
     - target: {fileID: 7433422989608364397, guid: e607bcee29417684eac0fcc5651febc6, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -15081,6 +15091,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2932668393278370658}
     m_Modifications:
+    - target: {fileID: 1471048223646376355, guid: af5b83a25f1d13442a2cfe292fd8fdc6, type: 3}
+      propertyPath: requiredUnlock
+      value: 
+      objectReference: {fileID: 11400000, guid: f73243610a991974aa857a46338433e4, type: 2}
     - target: {fileID: 2556691964778569885, guid: af5b83a25f1d13442a2cfe292fd8fdc6, type: 3}
       propertyPath: training
       value: 

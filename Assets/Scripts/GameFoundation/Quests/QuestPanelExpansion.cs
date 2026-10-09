@@ -11,13 +11,20 @@ namespace GameFoundation.Quests
         [SerializeField] private CanvasGroup detailsGroup;
         [SerializeField, Min(.01f)] private float duration = .25f;
         private bool hovered;
+        private bool keepExpanded;
         private float progress;
         public void OnPointerEnter(PointerEventData _) => SetExpanded(true);
         public void OnPointerExit(PointerEventData _) => SetExpanded(false);
         public void SetExpanded(bool expanded, bool immediately = false)
         {
+            if (keepExpanded) expanded = true;
             hovered = expanded;
             if (immediately) { progress = expanded ? 1 : 0; Apply(); }
+        }
+        public void KeepExpanded(bool value)
+        {
+            keepExpanded = value;
+            if (value) SetExpanded(true, true);
         }
         private void OnDisable() { hovered = false; progress = 0; Apply(); }
         private void OnEnable() { hovered = false; progress = 0; Apply(); }

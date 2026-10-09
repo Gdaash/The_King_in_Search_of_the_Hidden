@@ -21,7 +21,7 @@ namespace GameFoundation.Quests
         }
         public void Present(QuestDefinition.Requirement goal, int stock, bool completed)
         {
-            ResourceIconSizing.Apply(resourceIcon, goal.resource != null ? goal.resource.resourceIcon : null);
+            ResourceIconSizing.Apply(resourceIcon, !string.IsNullOrEmpty(goal.buildingId) ? goal.buildingIcon : goal.resource != null ? goal.resource.resourceIcon : null);
             amount.text = $"{(completed ? goal.amount : Mathf.Clamp(stock, 0, goal.amount))} / {goal.amount}";
             amount.color = completed || stock >= goal.amount ? completeColor : incompleteColor;
             purpose.text = goal.purpose;

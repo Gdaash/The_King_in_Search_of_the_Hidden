@@ -8,6 +8,11 @@ namespace GameFoundation.Quests
     public sealed class QuestPanel : MonoBehaviour
     {
         [SerializeField] private QuestCatalog catalog;
+        [SerializeField] private bool showParallelQuest;
+        [SerializeField] private Text deadlineLabel;
+        [SerializeField] private QuestObjectiveRow penaltyRow;
+        private GameFoundation.MetaProgression.DayCycleService observedDay;
+        public bool HasQuest => QuestProgress.Current(catalog, showParallelQuest) != null;
         [SerializeField] private Text title;
         [SerializeField] private Text description;
         [SerializeField] private Text status;
@@ -25,7 +30,7 @@ namespace GameFoundation.Quests
         [SerializeField] private List<QuestObjectiveRow> rewardRows = new();
         private void ClaimReward()
         {
-            var quest = QuestProgress.Current(catalog);
+            var quest = QuestProgress.Current(catalog, showParallelQuest);
             var canvas = GetComponentInParent<Canvas>()?.rootCanvas;
             var camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
             var source = claimButton != null ? (RectTransform)claimButton.transform : (RectTransform)transform;
@@ -46,29 +51,63 @@ namespace GameFoundation.Quests
             if (claimButton != null) claimButton.onClick.AddListener(ClaimReward);
             GlobalResourceManager.OnResourceChanged += OnResourceChanged;
             QuestProgress.Changed += Refresh;
+            GameFoundation.Base.BuildingUpgradeService.Changed += Refresh;
+            observedDay = GameFoundation.MetaProgression.DayCycleService.Instance;
+            if (observedDay != null) observedDay.Changed += Refresh;
             Refresh();
         }
-        private void Start() => Refresh();
+        private void Start()
+        {
+            if (observedDay == null)
+            {
+                observedDay = GameFoundation.MetaProgression.DayCycleService.Instance;
+                if (observedDay != null) observedDay.Changed += Refresh;
+            }
+            Refresh();
+        }
         private void OnDisable()
         {
             if (claimButton != null) claimButton.onClick.RemoveListener(ClaimReward);
             GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
             QuestProgress.Changed -= Refresh;
+            GameFoundation.Base.BuildingUpgradeService.Changed -= Refresh;
+            if (observedDay != null) observedDay.Changed -= Refresh;
+            observedDay = null;
         }
         private void OnResourceChanged(ResourceType _, int __) => Refresh();
 
         public void Refresh()
         {
-            var quest = QuestProgress.Current(catalog);
-            if (quest == null) { gameObject.SetActive(false); return; }
+            var quest = QuestProgress.Current(catalog, showParallelQuest);
+            var visibility = GetComponent<CanvasGroup>();
+            if (visibility != null) { visibility.alpha = quest != null ? 1 : 0; visibility.blocksRaycasts = quest != null; visibility.interactable = quest != null; }
+            if (quest == null) return;
             var resources = GlobalResourceManager.Instance;
             bool completed = QuestProgress.IsComplete(quest);
             title.text = quest.title;
             description.text = quest.description;
             bool claimed = QuestProgress.IsClaimed(quest);
-            if (claimButton != null) { claimButton.gameObject.SetActive(completed && !claimed); claimButton.interactable = completed && !claimed; }
+            bool ready = QuestProgress.IsReadyToClaim(quest, resources);
+            if (deadlineLabel != null)
+            {
+                deadlineLabel.gameObject.SetActive(quest.deadlineDays > 0);
+                deadlineLabel.text = "Осталось дней: " + QuestProgress.DaysRemaining(quest) + " / " + quest.deadlineDays;
+                deadlineLabel.color = QuestProgress.DaysRemaining(quest) <= 5 ? new Color(.95f,.4f,.4f) : new Color(.94f,.86f,.62f);
+            }
+            if (penaltyRow != null)
+            {
+                penaltyRow.gameObject.SetActive(quest.penaltyResource != null && quest.penaltyAmount > 0);
+                penaltyRow.PresentReward(quest.penaltyResource != null ? quest.penaltyResource.resourceIcon : null, "−" + quest.penaltyAmount, "Штраф");
+                penaltyRow.GetComponentInChildren<Text>().color = new Color(.95f,.4f,.4f);
+            }
+            if (claimButton != null)
+            {
+                claimButton.gameObject.SetActive(ready); claimButton.interactable = ready;
+                var label = claimButton.GetComponentInChildren<Text>(true);
+                if (label != null) label.text = quest.consumeRequirementsOnClaim ? "Сдать руду" : "Забрать награду";
+            }
             status.text = claimed ? "Награда получена" : completed ? "Задание выполнено" :
-                string.IsNullOrEmpty(quest.inProgressStatus) ? "Доставьте ресурсы в портал" : quest.inProgressStatus;
+                ready && quest.consumeRequirementsOnClaim ? "Руда готова к сдаче" : string.IsNullOrEmpty(quest.inProgressStatus) ? "Доставьте ресурсы в портал" : quest.inProgressStatus;
             if (rewards != null)
             {
                 int count = quest.resourceRewards.Count + quest.unlockRewards.Count;
@@ -107,7 +146,7 @@ namespace GameFoundation.Quests
                 if (i < quest.requirements.Count)
                 {
                     var goal = quest.requirements[i];
-                    rows[i].Present(goal, resources != null && goal.resource != null ? resources.GetResourceAmount(goal.resource) : 0, completed);
+                    rows[i].Present(goal, goal.CurrentAmount(resources != null ? resources.GetResourceAmount : null), completed);
                 }
             }
             for (int i = 0; i < compactRows.Count; i++)
@@ -115,7 +154,7 @@ namespace GameFoundation.Quests
                 compactRows[i].gameObject.SetActive(i < quest.requirements.Count);
                 if (i >= quest.requirements.Count) continue;
                 var goal = quest.requirements[i];
-                compactRows[i].Present(goal, resources != null && goal.resource != null ? resources.GetResourceAmount(goal.resource) : 0, completed);
+                compactRows[i].Present(goal, goal.CurrentAmount(resources != null ? resources.GetResourceAmount : null), completed);
             }
             LayoutRebuilder.MarkLayoutForRebuild((RectTransform)transform);
         }

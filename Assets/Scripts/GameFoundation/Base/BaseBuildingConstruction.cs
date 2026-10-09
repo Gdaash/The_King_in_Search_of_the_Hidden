@@ -107,6 +107,7 @@ namespace GameFoundation.Base
             GameFoundation.UI.GameNotifications.Post("Построено: " + Tr(nameKey, fallbackName), GameFoundation.UI.NotificationKind.Positive);
             GameAudioController.PlayUI(GameAudioCue.BuildingComplete, 0.9f, 0.98f, 1.02f, 0.1f);
             SaveSlotPrefs.SetInt(SaveKey, 1);
+            if (buildingId == "refugees") GameFoundation.MetaProgression.DayCycleService.Instance?.EnsureFirstRefugees();
             SaveSlotPrefs.Save();
             BuildingUpgradeService.NotifyChanged();
             BuildingConstructionTooltip.Instance?.Hide();

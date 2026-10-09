@@ -26,10 +26,16 @@ public static class ArcherQuestValidation
         SessionState.SetBool(Key, true);
         BuildingUpgradeValidation.Begin();
         SaveSlotPrefs.SetInt("Global_Resource_Archer", 0);
+        SaveSlotPrefs.SetInt("foundation.quest.royal_magic_tribute.accepted",1);
+        SaveSlotPrefs.SetInt("foundation.quest.royal_magic_tribute.deadline",31);
         SaveSlotPrefs.SetInt("foundation.unlock.building.refugees", 0);
         SaveSlotPrefs.SetInt("foundation.quest.first_expedition_supplies.completed", 1);
         SaveSlotPrefs.SetInt("foundation.quest.first_expedition_supplies.claimed", 1);
+        SaveSlotPrefs.SetInt("foundation.quest.build_smithy_two_bows.completed", 1);
+        SaveSlotPrefs.SetInt("foundation.quest.build_smithy_two_bows.claimed", 1);
+        SaveSlotPrefs.SetInt("foundation.unlock.building.archery_range", 1);
         SaveSlotPrefs.SetInt("foundation.quest.recruit_two_archers.completed", 0);
+        SaveSlotPrefs.SetInt("foundation.quest.recruit_two_archers.accepted", 1);
         SaveSlotPrefs.SetInt("foundation.quest.recruit_two_archers.claimed", 0);
         SaveSlotPrefs.Save();
     }
@@ -77,7 +83,7 @@ public static class ArcherQuestValidation
             training.Arm();
             Check(GlobalResourceManager.Instance.GetResourceAmount(archer) == 2 && QuestProgress.IsComplete(quest) && !camp.ConstructionUnlocked, "Second recruited archer completes quest while camp stays locked");
             Check(!camp.CanAffordConstruction, "Completed but unclaimed quest does not permit construction");
-            var panel = UnityEngine.Object.FindFirstObjectByType<QuestPanel>();
+            var panel = UnityEngine.Object.FindObjectsByType<QuestPanel>(FindObjectsSortMode.None).First(p=>!RoyalTributeSetup.IsRoyal(p));
             var claim = (UnityEngine.UI.Button)new SerializedObject(panel).FindProperty("claimButton").objectReferenceValue;
             var canvas = claim.GetComponentInParent<Canvas>().rootCanvas;
             var camera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;

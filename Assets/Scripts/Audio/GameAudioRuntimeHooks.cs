@@ -9,6 +9,7 @@ namespace GameFoundation.Audio
         public void Setup(Button value) { button = value; button.onClick.AddListener(Play); }
         private void Play()
         {
+            if (button.GetComponentInParent<GameFoundation.Quests.QuestDialogueView>() != null) return;
             string lower = button.name.ToLowerInvariant();
             GameAudioCue cue = lower.Contains("build") || lower.Contains("buy") || lower.Contains("confirm") ||
                 lower.Contains("summon") || lower.Contains("train") || lower.Contains("next day")

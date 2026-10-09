@@ -12,10 +12,12 @@ public class EnemyProjectile : MonoBehaviour
     private List<GlobalStats.DamageInfo> _damageData;
     private Transform _owner;
     private float _damageMultiplier = 1f;
+    private bool _hasHit;
 
     public void Setup(Vector3 dir, string targetTag, List<GlobalStats.DamageInfo> damageData, Transform owner = null, float damageMultiplier = 1f) 
     {
         _direction = dir;
+        _hasHit = false;
         _targetTag = targetTag;
         _damageData = damageData;
         _owner = owner;
@@ -31,8 +33,10 @@ public class EnemyProjectile : MonoBehaviour
 
     private void ProcessHit(GameObject target)
     {
+        if (_hasHit) return;
         if (target.CompareTag(_targetTag)) 
         {
+            _hasHit = true;
             var h = target.GetComponentInParent<Health>();
             if (h != null && _damageData != null) {
                 foreach (var dmg in _damageData) h.TakeDamage(dmg.TotalDamage * _damageMultiplier, dmg.type, _owner != null ? _owner : transform);
@@ -40,6 +44,6 @@ public class EnemyProjectile : MonoBehaviour
             CombatImpactBurst.Spawn(transform.position, new Color(1f, 0.88f, 0.55f, 1f));
             Destroy(gameObject);
         }
-        else if (((1 << target.layer) & obstacleLayers) != 0) Destroy(gameObject);
+        else if (((1 << target.layer) & obstacleLayers) != 0) { _hasHit = true; Destroy(gameObject); }
     }
 }

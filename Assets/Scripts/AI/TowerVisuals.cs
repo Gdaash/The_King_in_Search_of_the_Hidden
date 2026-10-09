@@ -16,6 +16,7 @@ public class TowerVisuals : MonoBehaviour
     [Header("Анимация отдачи")]
     [SerializeField] private float kickbackDist = 0.3f;
     [SerializeField] private float shootSpeed = 10f;
+    [SerializeField, Min(0f)] private float windupDuration = 0.2f;
 
     private Vector3 _startPos;
 
@@ -36,11 +37,12 @@ public class TowerVisuals : MonoBehaviour
         Transform target = tower.GetTarget();
         if (target == null) { tower.FinishAttack(); yield break; }
 
-        yield return new WaitForSeconds(0.2f);
+        if (windupDuration > 0f) yield return new WaitForSeconds(windupDuration);
 
         target = tower.GetTarget();
         if (target == null) { tower.FinishAttack(); yield break; }
 
+        if (shootPoint == null) { tower.FinishAttack(); yield break; }
         Vector3 worldDir = (target.position - shootPoint.position).normalized;
         
         if (projectilePrefab)
@@ -54,7 +56,7 @@ public class TowerVisuals : MonoBehaviour
                 
                 if (stats != null)
                 {
-                    p.Setup(worldDir, targetTag, stats.damageSettings);
+                    p.Setup(worldDir, targetTag, stats.damageSettings, tower.transform);
                 }
                 else
                 {
@@ -67,7 +69,8 @@ public class TowerVisuals : MonoBehaviour
         // Анимация отдачи
         if (spriteTransform)
         {
-            Vector3 kickbackPos = _startPos - (spriteTransform.InverseTransformDirection(worldDir) * kickbackDist);
+            Vector3 localDir = spriteTransform.parent != null ? spriteTransform.parent.InverseTransformVector(worldDir) : worldDir;
+            Vector3 kickbackPos = _startPos - localDir * kickbackDist;
             float p = 0;
             while (p < 1f) {
                 p += Time.deltaTime * shootSpeed;

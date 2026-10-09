@@ -141,12 +141,20 @@ namespace GameFoundation.MetaProgression
             SearchedToday = false;
             EnteredToday = false;
             firstPortalRun = false;
-            RefugeesAvailable = UnityEngine.Random.Range(1, 4);
+            RefugeesAvailable = PlayerPrefs.GetInt("foundation.refugees.firstArrival", 0) == 0 ? 2 : UnityEngine.Random.Range(1, 4);
             Save();
             DayResourceLedger.StartNextDay(Day);
             Changed?.Invoke();
         }
         public bool AdmitRefugee(){if(RefugeesAvailable<=0 || !GameFoundation.Base.BuildingUpgradeService.CanAdmitResident)return false;RefugeesAvailable--;Save();Changed?.Invoke();return true;}
+        public void EnsureFirstRefugees()
+        {
+            if (PlayerPrefs.GetInt("foundation.refugees.firstArrival", 0) != 0) return;
+            RefugeesAvailable = 2;
+            PlayerPrefs.SetInt("foundation.refugees.firstArrival", 1);
+            GameFoundation.Audio.GameAudioController.PlayUI(GameFoundation.Audio.GameAudioCue.RefugeesArrival, .7f);
+            Save(); Changed?.Invoke();
+        }
         public FoodForecast GetFoodForecast()
         {
             var resources = GlobalResourceManager.Instance;

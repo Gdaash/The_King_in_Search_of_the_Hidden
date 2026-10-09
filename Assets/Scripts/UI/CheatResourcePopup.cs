@@ -161,9 +161,10 @@ public sealed class CheatResourcePopup : MonoBehaviour
 
     private void UnlockAllBuildings()
     {
-        if (buildingUnlocks == null) return;
-        foreach (var unlock in buildingUnlocks)
+        foreach (var unlock in buildingUnlocks ?? System.Array.Empty<ContentUnlockDefinition>())
             if (unlock != null) ContentUnlocks.Grant(unlock);
+        foreach (var unlock in Resources.LoadAll<ContentUnlockDefinition>("Quests/BuildingUnlocks"))
+            ContentUnlocks.Grant(unlock);
         SaveSlotPrefs.Save();
         ContentUnlocks.NotifyChanged();
     }

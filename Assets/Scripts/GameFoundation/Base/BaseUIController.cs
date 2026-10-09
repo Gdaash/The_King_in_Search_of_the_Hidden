@@ -224,6 +224,6 @@ namespace GameFoundation.Base
             if (purchase == null || !purchase.TryBuy()) { Message("Недостаточно дерева для телеги", GameFoundation.UI.NotificationKind.Negative); return; }
             Message("Телега изготовлена", GameFoundation.UI.NotificationKind.Positive);
         }
-        public void AdmitRefugee() { using var notification = GameFoundation.UI.GameNotifications.BeginAction(); if (GlobalResourceManager.Instance && human && DayCycleService.Instance?.AdmitRefugee() == true) { GlobalResourceManager.Instance.AddResource(human, 1); Message("Новый житель принят", GameFoundation.UI.NotificationKind.Positive); } }
+        public void AdmitRefugee() { using var notification = GameFoundation.UI.GameNotifications.BeginAction(); if (GlobalResourceManager.Instance && human && DayCycleService.Instance?.AdmitRefugee() == true) { GlobalResourceManager.Instance.AddResource(human, 1); Message("Новый житель принят", GameFoundation.UI.NotificationKind.Positive); GameFoundation.Audio.GameAudioController.PlayUI(GameFoundation.Audio.GameAudioCue.RefugeeAdmit, .65f); } }
     }
 }

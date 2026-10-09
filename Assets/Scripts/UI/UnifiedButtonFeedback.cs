@@ -11,6 +11,7 @@ namespace GameFoundation.UI
     {
         [SerializeField] private ButtonVisualTheme theme;
         [SerializeField] private bool animateScale = true;
+        [SerializeField] private bool keepHoverScaleWhenPressed;
         [SerializeField] private bool animateGraphic = true;
         [Tooltip("Keep the Image's authored opacity when highlighting, pressing or disabling this button.")]
         [SerializeField] private bool preserveGraphicAlpha;
@@ -71,7 +72,7 @@ namespace GameFoundation.UI
             }
             bool enabledButton = button.IsActive() && button.interactable;
             bool highlighted = enabledButton && !overChildButton && (hovered || focused);
-            float scale = pressed && enabledButton ? theme.pressedScale :
+            float scale = pressed && enabledButton && !keepHoverScaleWhenPressed ? theme.pressedScale :
                 highlighted ? (hoverScaleOverride > 0f ? hoverScaleOverride : theme.hoverScale) * hoverScaleMultiplier : 1f;
             float step = 1f - Mathf.Exp(-theme.transitionSpeed * Time.unscaledDeltaTime);
 

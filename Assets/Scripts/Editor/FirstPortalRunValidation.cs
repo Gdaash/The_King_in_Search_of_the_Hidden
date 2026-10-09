@@ -30,6 +30,8 @@ public static class FirstPortalRunValidation
         SaveSlotPrefs.SetString("foundation.forestForaging", "{}");
         SaveSlotPrefs.SetInt("foundation.quest.first_expedition_supplies.completed", 0);
         SaveSlotPrefs.SetInt("foundation.quest.first_expedition_supplies.claimed", 0);
+        SaveSlotPrefs.SetInt("foundation.quest.royal_magic_tribute.accepted",1);
+        SaveSlotPrefs.SetInt("foundation.quest.royal_magic_tribute.deadline",31);
         SaveSlotPrefs.Save();
     }
 
@@ -74,6 +76,9 @@ public static class FirstPortalRunValidation
         var loadWorld = SceneManager.LoadSceneAsync("World");
         while (!loadWorld.isDone) yield return null;
         yield return null;
+        var royal = AssetDatabase.LoadAssetAtPath<QuestDefinition>(RoyalTributeSetup.QuestPath);
+        var royalPanel = UnityEngine.Object.FindObjectsByType<QuestPanel>(FindObjectsSortMode.None).First(RoyalTributeSetup.IsRoyal);
+        Check(royalPanel.HasQuest && QuestProgress.DaysRemaining(royal) == 30, "Royal quest and saved deadline present after Base to World transition");
         var hexes = UnityEngine.Object.FindObjectsByType<HexBlocker>(FindObjectsSortMode.None).OrderByDescending(h => h.transform.position.x).ToArray();
         Check(hexes.Length >= 8 && hexes.All(h => h.prefabToSpawn == null && !h.shouldAutoUnlock), "No random content or automatic reveals in first run");
         var order = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Managers/First Portal Run Spawn Order.prefab").GetComponent<FirstPortalRunSpawnOrder>();
@@ -93,6 +98,7 @@ public static class FirstPortalRunValidation
         Check(alarm.ConfiguredThresholds.Count == 0 && !button.gameObject.activeSelf, "No waves or escape button before supplies");
         alarm.SetAlarm(42f);
         var quest = AssetDatabase.LoadAssetAtPath<QuestDefinition>("Assets/Resources/Quests/First Expedition.asset");
+        QuestProgress.Accept(quest);
         foreach (var goal in quest.requirements)
             GlobalResourceManager.Instance.SetResourceAmount(goal.resource, goal.amount - 1);
         foreach (var goal in quest.requirements.Take(quest.requirements.Count - 1))

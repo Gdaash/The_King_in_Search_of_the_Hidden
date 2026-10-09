@@ -80,6 +80,7 @@ namespace GameFoundation.Base
             {
                 MilitaryExperienceService.GetStored(warrior, GlobalResourceManager.Instance.GetResourceAmount(warrior));
                 GameNotifications.Post("Вооружён: " + (unitDescription != null ? unitDescription.Title : "Воин"), NotificationKind.Positive, warrior.resourceIcon);
+                GameFoundation.Audio.GameAudioController.PlayUI(GameFoundation.Audio.GameAudioCue.RecruitWarrior, .7f);
             }
             Refresh();
         }
@@ -95,6 +96,7 @@ namespace GameFoundation.Base
                 manager.AddResource(weapon, 1);
                 MilitaryExperienceService.RemoveStored(warrior);
                 GameNotifications.Post("Воин разоружён", NotificationKind.Normal, warrior.resourceIcon);
+                GameFoundation.Audio.GameAudioController.PlayUI(GameFoundation.Audio.GameAudioCue.DisarmWarrior, .6f);
             }
             Refresh();
         }
