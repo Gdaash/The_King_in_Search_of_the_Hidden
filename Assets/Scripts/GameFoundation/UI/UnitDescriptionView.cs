@@ -1,4 +1,5 @@
 using System;
+using GameFoundation.Combat;
 using System.Collections.Generic;
 using System.Globalization;
 using GameFoundation.Base;
@@ -12,7 +13,7 @@ namespace GameFoundation.UI
     {
         Health, PhysicalDamage, FireDamage, IceDamage, MagicDamage, AttackRate, AttackInterval,
         AttackRange, MovementSpeed, DetectionRange, PhysicalResistance, FireResistance,
-        IceResistance, MagicResistance, Regeneration, RegenerationDelay, PortalHealing, Retreat, Food, TargetPriority, Defense
+        IceResistance, MagicResistance, Regeneration, RegenerationDelay, PortalHealing, Retreat, Food, TargetPriority, Defense, Armor, Dps, ElectricDamage, ElectricResistance
     }
 
     [Serializable]
@@ -55,6 +56,7 @@ namespace GameFoundation.UI
         private MilitaryProfile profile;
         private GameObject liveUnit;
         private Health health;
+        private Combatant combat;
         private EnemyMovement movement;
         private EnemyAI melee;
         private EnemyAI_Ranged ranged;
@@ -101,6 +103,7 @@ namespace GameFoundation.UI
         private void CacheSources()
         {
             GameObject source = liveUnit != null ? liveUnit : definition != null ? definition.unitPrefab : null;
+            combat = source != null ? source.GetComponent<Combatant>() : null;
             health = source != null ? source.GetComponent<Health>() : null;
             movement = source != null ? source.GetComponent<EnemyMovement>() : null;
             melee = source != null ? source.GetComponent<EnemyAI>() : null;
@@ -156,7 +159,7 @@ namespace GameFoundation.UI
                 string caption = UnitDescriptionText.Get(entry.labelKey, entry.fallbackLabel);
                 Color stripe = visible % 2 == 0 ? stripeColor : Color.clear;
                 if (entry.stat == UnitStat.Defense)
-                    view.PresentDefense(icon, caption, healthStats, positiveColor, criticalColor, mutedColor, stripe);
+                    view.PresentDefense(icon, caption, healthStats, positiveColor, criticalColor, mutedColor, stripe, combat);
                 else
                     view.Present(icon, caption, value, color, stripe, entry.stat == UnitStat.Food);
                 visible++;
@@ -171,13 +174,14 @@ namespace GameFoundation.UI
             switch (entry.stat)
             {
                 case UnitStat.Health:
-                    float max = (healthStats != null ? healthStats.TotalMaxHealth : 100f) * multiplier;
+                    float max = (combat!=null?combat.HealthBeforeLevel:(healthStats != null ? healthStats.TotalMaxHealth : 100f)) * multiplier;
                     float current = liveUnit != null && health != null ? health.CurrentHealth : max * MilitaryExperienceService.HealthPercent(profile);
                     value = N(current) + " / " + N(max);
                     color = current < max * .25f ? criticalColor : current < max ? normalColor : positiveColor;
                     return true;
-                case UnitStat.PhysicalDamage: case UnitStat.FireDamage: case UnitStat.IceDamage: case UnitStat.MagicDamage:
-                    DamageType damageType = (DamageType)(entry.stat - UnitStat.PhysicalDamage);
+                case UnitStat.PhysicalDamage: case UnitStat.FireDamage: case UnitStat.IceDamage: case UnitStat.MagicDamage: case UnitStat.ElectricDamage:
+                    DamageType damageType = entry.stat==UnitStat.ElectricDamage?DamageType.Electric:(DamageType)(entry.stat - UnitStat.PhysicalDamage);
+                    if(combat!=null && combat.weapon!=null){number=combat.weapon.damageType==damageType?combat.DamageBeforeLevel*multiplier:0;value=N(number);break;}
                     if (damageStats != null) foreach (var damage in damageStats.damageSettings)
                         if (damage.type == damageType) number += damage.TotalDamage * multiplier;
                     value = N(number); break;
@@ -191,17 +195,23 @@ namespace GameFoundation.UI
                     number = (ranged != null ? ranged.CurrentAttackRange / MilitaryExperience.Multiplier(ranged) : melee != null ? melee.BaseAttackRange : 0f) * multiplier;
                     value = N(number) + T("distance", " ед."); break;
                 case UnitStat.MovementSpeed:
-                    float speed = movementStats != null ? movementStats.TotalSpeed : 3f;
+                    float speed = combat!=null?combat.SpeedBeforeLevel:movementStats != null ? movementStats.TotalSpeed : 3f;
                     float spread = movement != null ? movement.SpeedVariation : 0f;
                     value = (liveUnit != null && movement != null ? N(movement.CombatSpeed) : Range((speed - spread) * multiplier, (speed + spread) * multiplier)) + T("speed_unit", " ед./с"); return true;
                 case UnitStat.DetectionRange:
                     number = ranged != null ? ranged.DetectionRange : melee != null ? melee.DetectionRange : 0f;
                     value = N(number) + T("distance", " ед."); break;
-                case UnitStat.PhysicalResistance: case UnitStat.FireResistance: case UnitStat.IceResistance: case UnitStat.MagicResistance:
-                    DamageType resistType = (DamageType)(entry.stat - UnitStat.PhysicalResistance);
+                case UnitStat.PhysicalResistance: case UnitStat.FireResistance: case UnitStat.IceResistance: case UnitStat.MagicResistance: case UnitStat.ElectricResistance:
+                    DamageType resistType = entry.stat==UnitStat.ElectricResistance?DamageType.Electric:(DamageType)(entry.stat - UnitStat.PhysicalResistance);
                     var resistance = healthStats != null ? healthStats.resistances.Find(item => item.type == resistType) : null;
-                    number = resistance != null ? (1f - resistance.CurrentMult) * 100f : 0f;
+                    number = (1f-(combat!=null?combat.ResistanceMultiplier(resistType):resistance!=null?resistance.CurrentMult:1))*100f;
                     value = N(number) + "%"; color = number > 0f ? positiveColor : number < 0f ? criticalColor : mutedColor; break;
+                case UnitStat.Armor:
+                    int rank=definition.isEnemy?(liveUnit!=null?liveUnit.GetComponent<EnemyLevel>()?.Level??1:AlarmSystem.Instance?.EnemyLevel??1):1;
+                    number=combat!=null?combat.ArmorForLevel(rank):0;value=N(number);break;
+                case UnitStat.Dps:
+                    if(combat==null || combat.weapon==null)return false;
+                    number=combat.DamageBeforeLevel*multiplier*combat.weapon.count/Cooldown(multiplier);value=N(number);break;
                 case UnitStat.Defense:
                     return true;
                 case UnitStat.Regeneration:
@@ -230,7 +240,7 @@ namespace GameFoundation.UI
         }
 
         private float Cooldown(float multiplier) => Mathf.Max(.05f,
-            (ranged != null ? (ranged.GetStats() != null ? ranged.GetStats().TotalCooldown : 2f) : melee != null ? melee.BaseAttackCooldown : 1.5f) / multiplier);
+            (combat!=null?combat.IntervalBeforeLevel:ranged != null ? (ranged.GetStats() != null ? ranged.GetStats().TotalCooldown : 2f) : melee != null ? melee.BaseAttackCooldown : 1.5f) / multiplier);
         private static string N(float value) => value.ToString("0.##", CultureInfo.InvariantCulture);
         private static string Range(float low, float high) => Mathf.Approximately(low, high) ? N(low) : N(low) + "–" + N(high);
         private static string T(string suffix, string fallback) => UnitDescriptionText.Get("unit.details." + suffix, fallback);

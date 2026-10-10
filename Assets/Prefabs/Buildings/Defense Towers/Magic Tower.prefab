@@ -137,6 +137,7 @@ GameObject:
   - component: {fileID: 5610524118255641302}
   - component: {fileID: 8155900521971724959}
   - component: {fileID: 3627226351608401576}
+  - component: {fileID: 2444796092673676278}
   m_Layer: 10
   m_Name: Magic Tower
   m_TagString: Player
@@ -221,7 +222,7 @@ MonoBehaviour:
   stats: {fileID: 11400000, guid: b7f0d604934417a4ead0f4c8d767b77d, type: 2}
   targetTag: Enemy1
   defaultAttackRange: 10
-  cooldownVariation: 0.060000002
+  cooldownVariation: 0
   OnAttack:
     m_PersistentCalls:
       m_Calls:
@@ -282,3 +283,21 @@ MonoBehaviour:
   kickbackDist: 0.035
   shootSpeed: 18
   windupDuration: 0.12
+--- !u!114 &2444796092673676278
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4355500184176611135}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bd9379acbb699a4cb05ab0a3f6e24cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Combat.Combatant
+  baseHealth: 200
+  baseSpeed: 3
+  baseArmor: 0
+  weapon: {fileID: 11400000, guid: 93fbbbd26ff4a7b40a180bbe78975c96, type: 2}
+  defense: {fileID: 11400000, guid: f48d96d9323a4b64e946486ca4f6a3e9, type: 2}
+  modifiers: {fileID: 11400000, guid: b7f0d604934417a4ead0f4c8d767b77d, type: 2}

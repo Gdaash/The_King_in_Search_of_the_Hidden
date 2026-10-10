@@ -1,3 +1,4 @@
+using GameFoundation.Combat;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic; // Добавлено для работы со списками
@@ -49,7 +50,8 @@ public class TowerVisuals : MonoBehaviour
         
         if (projectilePrefab)
         {
-            int count = tower.PortalProgression != null ? tower.PortalProgression.ProjectileCount : 1;
+            var combat=GetComponent<Combatant>();
+            int count = tower.PortalProgression != null ? tower.PortalProgression.ProjectileCount : combat?.weapon?.count??1;
             for (int i = 0; i < count; i++)
             {
                 // Parallel shots stay aimed at the target, with a small transverse separation.
@@ -57,21 +59,20 @@ public class TowerVisuals : MonoBehaviour
                 GameObject proj = Instantiate(projectilePrefab, shootPoint.position + offset, Quaternion.identity);
                 if (proj.TryGetComponent<EnemyProjectile>(out var p))
                 {
-                    var stats = tower.GetStats();
-                    if (stats != null)
+                    var progression=tower.PortalProgression;
+                    if(progression!=null)
                     {
-                        float multiplier=1,flightSpeed=1;
-                        if(tower.PortalProgression != null)
-                        {
-                            var progression=tower.PortalProgression;
-                            float total=0;foreach(var damage in stats.damageSettings)total+=damage.TotalDamage;
-                            var weapon=progression.Balance.FindWeapon(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Bolts);
-                            multiplier=progression.DamageMultiplier*(weapon!=null && total>0 ? weapon.damage/total : 1);
-                            flightSpeed=progression.Multiplier(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Bolts,GameFoundation.MetaProgression.PortalTowerBalance.Effect.ExpansionSpeed);
-                        }
-                        p.Setup(worldDir,targetTag,stats.damageSettings,tower.transform,multiplier,flightSpeed,tower.PortalProgression!=null?tower.CurrentRange+1:0);
+                        var weapon=progression.Balance.FindWeapon(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Bolts);
+                        p.SetupHit(worldDir,targetTag,(weapon.damage+(tower.GetStats()?.damageSettings.Find(d=>d.type==weapon.damageType)?.bonusDamage??0))*progression.DamageMultiplier,weapon.damageType,tower.transform,
+                            progression.Multiplier(weapon.weapon,GameFoundation.MetaProgression.PortalTowerBalance.Effect.ExpansionSpeed),tower.CurrentRange+1);
                     }
-                    else p.Setup(worldDir, targetTag, new List<GlobalStats.DamageInfo>());
+                    else if(combat!=null && combat.weapon!=null)
+                        p.SetupHit(worldDir,targetTag,combat.Damage,combat.weapon.damageType,tower.transform);
+                    else
+                    {
+                        var stats=tower.GetStats();
+                        p.Setup(worldDir,targetTag,stats!=null?stats.damageSettings:new List<GlobalStats.DamageInfo>(),tower.transform);
+                    }
                 }
             }
         }

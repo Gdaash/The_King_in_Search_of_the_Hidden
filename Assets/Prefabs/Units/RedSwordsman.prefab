@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 7651302795157010279}
   - component: {fileID: 8597052440140464139}
   - component: {fileID: 3770430282008422911}
+  - component: {fileID: 725396394311205006}
   m_Layer: 9
   m_Name: RedSwordsman
   m_TagString: Player
@@ -128,7 +129,7 @@ MonoBehaviour:
   detectionRange: 50
   attackRange: 0.4
   baseAttackCooldown: 1.5
-  cooldownVariation: 0.4
+  cooldownVariation: 0
   homeStoppingDistance: 0.3
   positionVariation: 0.3
   OnMove:
@@ -213,7 +214,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stats: {fileID: 11400000, guid: 8df75f902ce8f734d8e0b42a89bc72bc, type: 2}
-  speedVariation: 0.2
+  speedVariation: 0.15
   flipThreshold: 0.2
 --- !u!114 &8597052440140464139
 MonoBehaviour:
@@ -233,6 +234,9 @@ MonoBehaviour:
   bounceSpeed: 8
   jabDist: 0.2
   jabSpeed: 5
+  windupDuration: 0.16
+  impactHoldDuration: 0.06
+  windupScale: {x: 1.08, y: 0.9}
 --- !u!114 &3770430282008422911
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -249,6 +253,9 @@ MonoBehaviour:
   targetSprite: {fileID: 3340244922551780561}
   damageTextPrefab: {fileID: 0}
   _cur: 0
+  hitFlashDuration: 0.16
+  hitScaleAmount: 0.12
+  deathDuration: 0.3
   OnHealthChanged:
     m_PersistentCalls:
       m_Calls:
@@ -279,6 +286,24 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &725396394311205006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2487240971312361663}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bd9379acbb699a4cb05ab0a3f6e24cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Combat.Combatant
+  baseHealth: 100
+  baseSpeed: 1.5
+  baseArmor: 0
+  weapon: {fileID: 11400000, guid: b509a72571bbe7147afbcbc67658e697, type: 2}
+  defense: {fileID: 11400000, guid: f48d96d9323a4b64e946486ca4f6a3e9, type: 2}
+  modifiers: {fileID: 11400000, guid: 8df75f902ce8f734d8e0b42a89bc72bc, type: 2}
 --- !u!1 &7520644690905877912
 GameObject:
   m_ObjectHideFlags: 0

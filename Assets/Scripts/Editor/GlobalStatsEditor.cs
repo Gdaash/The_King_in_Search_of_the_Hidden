@@ -9,6 +9,7 @@ internal sealed class GlobalStatsEditor : Editor
 
     public override void OnInspectorGUI()
     {
+        serializedObject.Update();
         var stats = (GlobalStats)target;
         var usesAxes = serializedObject.FindProperty("applySharpAxes").boolValue;
         if (usesAxes)
@@ -22,14 +23,24 @@ internal sealed class GlobalStatsEditor : Editor
                 $"; ячейка сохранения: {SaveSlotPrefs.SelectedSlot}.", MessageType.Info);
         }
 
-        DrawDefaultInspector();
+        if(stats.usesPrefabCombatBases)
+        {
+            EditorGUILayout.HelpBox("Базовые HP, скорость и броня находятся в Combatant префаба; атака — в CombatWeapon; сопротивления — в CombatDefenseProfile. Здесь только модификаторы.",MessageType.Info);
+            DrawPropertiesExcluding(serializedObject,"baseMaxHealth","baseSpeed","baseAttackCooldown","baseAttackRange","damageSettings","resistances");
+            var damage=serializedObject.FindProperty("damageSettings");
+            for(int i=0;i<damage.arraySize;i++){var d=damage.GetArrayElementAtIndex(i);EditorGUILayout.PropertyField(d.FindPropertyRelative("bonusDamage"),new GUIContent("Бонус урона "+(DamageType)d.FindPropertyRelative("type").enumValueIndex));}
+            var resistance=serializedObject.FindProperty("resistances");
+            for(int i=0;i<resistance.arraySize;i++){var r=resistance.GetArrayElementAtIndex(i);EditorGUILayout.PropertyField(r.FindPropertyRelative("bonusResist"),new GUIContent("Бонус защиты "+(DamageType)r.FindPropertyRelative("type").enumValueIndex));}
+            serializedObject.ApplyModifiedProperties();
+        }
+        else DrawDefaultInspector();
 
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Текущие параметры", EditorStyles.boldLabel);
         using (new EditorGUI.DisabledScope(true))
         {
             EditorGUILayout.IntField("Ячейка сохранения", SaveSlotPrefs.SelectedSlot);
-            EditorGUILayout.FloatField("Здоровье", stats.TotalMaxHealth);
+            EditorGUILayout.FloatField(stats.usesPrefabCombatBases?"Бонус здоровья":"Здоровье", stats.usesPrefabCombatBases?stats.bonusHealth:stats.TotalMaxHealth);
             EditorGUILayout.FloatField("Сокращение цикла, с", stats.bonusProductionSpeed);
             EditorGUILayout.FloatField("Множитель времени производства", stats.ProductionTimeMultiplier);
             EditorGUILayout.FloatField("Множитель апгрейда открытия гекса", stats.HexOpeningTimeMultiplier);

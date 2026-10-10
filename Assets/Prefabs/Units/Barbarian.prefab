@@ -107,6 +107,7 @@ GameObject:
   - component: {fileID: 7688126850717042858}
   - component: {fileID: 2029052960571929949}
   - component: {fileID: 3907863867643162510}
+  - component: {fileID: 7621751818162278528}
   m_Layer: 9
   m_Name: Barbarian
   m_TagString: Player
@@ -220,7 +221,7 @@ MonoBehaviour:
   detectionRange: 50
   attackRange: 0.4
   baseAttackCooldown: 2.5
-  cooldownVariation: 0.4
+  cooldownVariation: 0
   homeStoppingDistance: 0.3
   positionVariation: 0.3
   OnMove:
@@ -305,7 +306,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stats: {fileID: 11400000, guid: 997f56f8f10af544fba889a2e353752c, type: 2}
-  speedVariation: 0.2
+  speedVariation: 0.15
   flipThreshold: 0.2
 --- !u!114 &2029052960571929949
 MonoBehaviour:
@@ -325,6 +326,9 @@ MonoBehaviour:
   bounceSpeed: 8
   jabDist: 0.2
   jabSpeed: 5
+  windupDuration: 0.16
+  impactHoldDuration: 0.06
+  windupScale: {x: 1.08, y: 0.9}
 --- !u!114 &3907863867643162510
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -341,6 +345,9 @@ MonoBehaviour:
   targetSprite: {fileID: 5820651391669477464}
   damageTextPrefab: {fileID: 0}
   _cur: 0
+  hitFlashDuration: 0.16
+  hitScaleAmount: 0.12
+  deathDuration: 0.3
   OnHealthChanged:
     m_PersistentCalls:
       m_Calls:
@@ -371,6 +378,24 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &7621751818162278528
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7725003243762258916}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bd9379acbb699a4cb05ab0a3f6e24cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Combat.Combatant
+  baseHealth: 200
+  baseSpeed: 1.5
+  baseArmor: 0
+  weapon: {fileID: 11400000, guid: a2cc288b2eb8a2f4ca0037ef1ed76184, type: 2}
+  defense: {fileID: 11400000, guid: f48d96d9323a4b64e946486ca4f6a3e9, type: 2}
+  modifiers: {fileID: 11400000, guid: 997f56f8f10af544fba889a2e353752c, type: 2}
 --- !u!1001 &386931254998096306
 PrefabInstance:
   m_ObjectHideFlags: 0

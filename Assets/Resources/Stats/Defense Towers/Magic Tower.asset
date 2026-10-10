@@ -13,20 +13,36 @@ MonoBehaviour:
   m_Name: Magic Tower
   m_EditorClassIdentifier: Assembly-CSharp::GlobalStats
   unitTypeKey: MagicTower
+  usesPrefabCombatBases: 1
+  bonusArmor: 0
   baseMaxHealth: 200
   bonusHealth: 0
   baseRegenAmount: 0
   bonusRegenAmount: 0
   baseRegenDelay: 5
   bonusRegenDelayReduction: 0
-  resistances: []
+  resistances:
+  - type: 0
+    baseMult: 1
+    bonusResist: 0
+  - type: 1
+    baseMult: 1
+    bonusResist: 0
+  - type: 2
+    baseMult: 1
+    bonusResist: 0
+  - type: 3
+    baseMult: 1
+    bonusResist: 0
+  - type: 4
+    baseMult: 1
+    bonusResist: 0
   baseSpeed: 3
   bonusSpeed: 0
   baseAttackCooldown: 1.2
   bonusAttackSpeed: 0
   baseAttackRange: 8
   bonusAttackRange: 0
-  baseProductionTime: 5
   bonusProductionSpeed: 0
   scientificUpgradeTable: {fileID: 0}
   scientificProgressStats: {fileID: 0}
@@ -38,6 +54,18 @@ MonoBehaviour:
   damageSettings:
   - type: 3
     baseDamage: 12
+    bonusDamage: 0
+  - type: 0
+    baseDamage: 0
+    bonusDamage: 0
+  - type: 1
+    baseDamage: 0
+    bonusDamage: 0
+  - type: 2
+    baseDamage: 0
+    bonusDamage: 0
+  - type: 4
+    baseDamage: 0
     bonusDamage: 0
   unlockedHexContentIDs: []
   upgradedVisualStates: []

@@ -138,6 +138,7 @@ GameObject:
   - component: {fileID: 7029469513686974249}
   - component: {fileID: 4679095970568541840}
   - component: {fileID: 520316564317894737}
+  - component: {fileID: 9092074293330914996}
   m_Layer: 9
   m_Name: RedArcher
   m_TagString: Player
@@ -253,7 +254,7 @@ MonoBehaviour:
   detectionRange: 50
   defaultAttackRange: 8
   defaultStopRange: 6
-  cooldownVariation: 0.5
+  cooldownVariation: 0
   homeStoppingDistance: 0.3
   positionVariation: 0.3
   OnMove:
@@ -385,7 +386,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stats: {fileID: 11400000, guid: f96399298fc79404ebe5f0e4f707bbb8, type: 2}
-  speedVariation: 0.2
+  speedVariation: 0.15
   flipThreshold: 0.2
 --- !u!114 &520316564317894737
 MonoBehaviour:
@@ -436,6 +437,24 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &9092074293330914996
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5821733117237176047}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bd9379acbb699a4cb05ab0a3f6e24cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Combat.Combatant
+  baseHealth: 40
+  baseSpeed: 1.5
+  baseArmor: 0
+  weapon: {fileID: 11400000, guid: 23589919b1a9a9849a8fcc5e845f6f7e, type: 2}
+  defense: {fileID: 11400000, guid: f48d96d9323a4b64e946486ca4f6a3e9, type: 2}
+  modifiers: {fileID: 11400000, guid: f96399298fc79404ebe5f0e4f707bbb8, type: 2}
 --- !u!1001 &5308745416716574166
 PrefabInstance:
   m_ObjectHideFlags: 0

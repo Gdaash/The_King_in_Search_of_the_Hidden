@@ -8,7 +8,9 @@ using GameFoundation.MetaProgression;
 [CreateAssetMenu(fileName = "NewGlobalStats", menuName = "Game/Global Stats")]
 public class GlobalStats : ScriptableObject
 {
-    public string unitTypeKey; 
+    public string unitTypeKey;
+    [HideInInspector] public bool usesPrefabCombatBases;
+    [Header("Модификатор брони")] public float bonusArmor; 
 
     [System.Serializable]
     public class DamageInfo { public DamageType type; public float baseDamage; public float bonusDamage; public float TotalDamage => baseDamage + bonusDamage; }
@@ -18,8 +20,9 @@ public class GlobalStats : ScriptableObject
     [Header("Здоровье и Регенерация")]
     public float baseMaxHealth = 100f;
     public float bonusHealth = 0f;
-    public float TotalMaxHealth => (baseMaxHealth + bonusHealth) *
+    public float ApplyHealthModifiers(float baseHealth) => (baseHealth + bonusHealth) *
         (applyStrongWalls ? ScientificMultiplier(ScientificUpgrades.StrongWalls) : 1f);
+    public float TotalMaxHealth => ApplyHealthModifiers(baseMaxHealth);
     public float baseRegenAmount = 5f;
     public float bonusRegenAmount = 0f;
     public float TotalRegenAmount => baseRegenAmount + bonusRegenAmount;
@@ -201,6 +204,7 @@ public class GlobalStats : ScriptableObject
     {
         if (string.IsNullOrEmpty(unitTypeKey)) return;
 
+        bonusArmor = PlayerPrefs.GetFloat(unitTypeKey + "_BonusArmor", 0f);
         bonusHealth = PlayerPrefs.GetFloat(unitTypeKey + "_BonusHP", 0f);
         bonusRegenAmount = PlayerPrefs.GetFloat(unitTypeKey + "_BonusRegenAmt", 0f);
         bonusRegenDelayReduction = PlayerPrefs.GetFloat(unitTypeKey + "_BonusRegenDelay", 0f);
@@ -257,6 +261,7 @@ public class GlobalStats : ScriptableObject
         OnStatsUpdated?.Invoke();
     }
 
+    public void AddArmorUpgrade(float amount) => SaveValue(ref bonusArmor, "_BonusArmor", amount);
     public void AddHealthUpgrade(float amount) => SaveValue(ref bonusHealth, "_BonusHP", amount);
     public void AddSpeedUpgrade(float amount) => SaveValue(ref bonusSpeed, "_BonusSpeed", amount);
     public void AddAttackSpeedUpgrade(float amount) => SaveValue(ref bonusAttackSpeed, "_BonusAtkSpeed", amount);
@@ -282,9 +287,10 @@ public class GlobalStats : ScriptableObject
 
     [ContextMenu("Reset Progress")]
     public void ResetProgress() {
-        bonusHealth = 0; bonusRegenAmount = 0; bonusRegenDelayReduction = 0; bonusSpeed = 0; bonusAttackSpeed = 0; bonusAttackRange = 0; bonusProductionSpeed = 0;
+        bonusArmor=0; bonusHealth = 0; bonusRegenAmount = 0; bonusRegenDelayReduction = 0; bonusSpeed = 0; bonusAttackSpeed = 0; bonusAttackRange = 0; bonusProductionSpeed = 0;
         unlockedHexContentIDs.Clear(); upgradedVisualStates.Clear(); unlockedFlashlightIDs?.Clear();
         if (!string.IsNullOrEmpty(unitTypeKey)) {
+            PlayerPrefs.DeleteKey(unitTypeKey + "_BonusArmor");
             PlayerPrefs.DeleteKey(unitTypeKey + "_BonusHP"); PlayerPrefs.DeleteKey(unitTypeKey + "_BonusRegenAmt"); PlayerPrefs.DeleteKey(unitTypeKey + "_BonusRegenDelay");
             PlayerPrefs.DeleteKey(unitTypeKey + "_BonusSpeed"); PlayerPrefs.DeleteKey(unitTypeKey + "_BonusAtkSpeed"); PlayerPrefs.DeleteKey(unitTypeKey + "_BonusRange");
             PlayerPrefs.DeleteKey(unitTypeKey + "_BonusProdSpeed"); PlayerPrefs.DeleteKey(unitTypeKey + "_DifficultyBonus"); PlayerPrefs.DeleteKey(unitTypeKey + "_UnlockedHex");

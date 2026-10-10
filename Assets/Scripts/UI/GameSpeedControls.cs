@@ -13,15 +13,22 @@ public sealed class GameSpeedControls : MonoBehaviour
     [SerializeField] private GameObject normalSelected;
     [SerializeField] private GameObject doubleSelected;
     [SerializeField] private GameObject quadrupleSelected;
+    [SerializeField] private GameObject pauseGlyph;
+    [SerializeField] private Sprite playSprite;
+    [SerializeField] private Sprite pauseSprite;
 
     public float CurrentSpeed { get; private set; } = 1f;
 
     private void Awake()
     {
-        Bind(pauseButton, 0f);
+        if (pauseButton != null)
+        {
+            pauseButton.onClick.RemoveAllListeners();
+            pauseButton.onClick.AddListener(() => SetSpeed(CurrentSpeed > 0f ? 0f : 1f));
+        }
         Bind(normalButton, 1f);
         Bind(doubleButton, 2f);
-        Bind(quadrupleButton, 4f);
+        Bind(quadrupleButton, 3f);
         SetSpeed(1f);
     }
 
@@ -48,10 +55,12 @@ public sealed class GameSpeedControls : MonoBehaviour
 
     private void RefreshSelection()
     {
+        if (pauseButton != null && playSprite != null && pauseSprite != null)
+            pauseButton.image.sprite = CurrentSpeed > 0f ? pauseSprite : playSprite;
         SetSelected(pauseSelected, Mathf.Approximately(CurrentSpeed, 0f));
         SetSelected(normalSelected, Mathf.Approximately(CurrentSpeed, 1f));
         SetSelected(doubleSelected, Mathf.Approximately(CurrentSpeed, 2f));
-        SetSelected(quadrupleSelected, Mathf.Approximately(CurrentSpeed, 4f));
+        SetSelected(quadrupleSelected, Mathf.Approximately(CurrentSpeed, 3f));
     }
 
     private static void SetSelected(GameObject marker, bool selected)

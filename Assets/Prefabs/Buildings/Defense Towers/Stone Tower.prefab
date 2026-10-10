@@ -137,6 +137,7 @@ GameObject:
   - component: {fileID: 6278787914764591297}
   - component: {fileID: 3097231108246614482}
   - component: {fileID: 4095736664392555576}
+  - component: {fileID: 5514254129096342389}
   m_Layer: 10
   m_Name: Stone Tower
   m_TagString: Player
@@ -221,7 +222,7 @@ MonoBehaviour:
   stats: {fileID: 11400000, guid: 59e9bb136e3aaf540a99f0f9fb0adc0a, type: 2}
   targetTag: Enemy1
   defaultAttackRange: 10
-  cooldownVariation: 0.175
+  cooldownVariation: 0
   OnAttack:
     m_PersistentCalls:
       m_Calls:
@@ -282,3 +283,21 @@ MonoBehaviour:
   kickbackDist: 0.035
   shootSpeed: 12
   windupDuration: 0.25
+--- !u!114 &5514254129096342389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6860140511038768402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bd9379acbb699a4cb05ab0a3f6e24cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Combat.Combatant
+  baseHealth: 200
+  baseSpeed: 3
+  baseArmor: 0
+  weapon: {fileID: 11400000, guid: 28cdb8663b356304593c809db325cd4f, type: 2}
+  defense: {fileID: 11400000, guid: f48d96d9323a4b64e946486ca4f6a3e9, type: 2}
+  modifiers: {fileID: 11400000, guid: 59e9bb136e3aaf540a99f0f9fb0adc0a, type: 2}

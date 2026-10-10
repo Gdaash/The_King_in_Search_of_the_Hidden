@@ -19,6 +19,10 @@ namespace GameFoundation.MetaProgression
         private LocalizationService language;
         private void OnEnable()
         {
+            // Mandatory level choice covers HUD, tooltips and reward-flight overlays.
+            var canvas=GetComponent<Canvas>();
+            if(canvas!=null){canvas.overrideSorting=true;canvas.sortingOrder=32760;}
+            transform.SetAsLastSibling();
             progression.Changed += Refresh;
             language = LocalizationService.Instance;
             if(language!=null) language.LanguageChanged += Refresh;
@@ -51,6 +55,11 @@ namespace GameFoundation.MetaProgression
                 c.icon.sprite=u.icon; c.icon.enabled=u.icon!=null;
                 if(u.icon!=null)c.icon.rectTransform.sizeDelta=u.icon.rect.size*2;
                 var w=progression.Balance.FindWeapon(u.weapon);
+                if(u.effect==PortalTowerBalance.Effect.UnlockWeapon && w?.combat!=null)
+                {
+                    string type=w.damageType switch {DamageType.Physical=>English?"Physical":"Физический",DamageType.Fire=>English?"Fire":"Огонь",DamageType.Ice=>English?"Ice":"Лёд",DamageType.Electric=>English?"Electric":"Электрический",_=>English?"Magic":"Магический"};
+                    c.description.text += $"\n\n{type} · {w.damage:0.##} / {w.cooldown:0.##} {(English?"s":"с")}\nDPS: {w.combat.SingleTargetDps:0.##}";
+                }
                 c.category.text=u.effect==PortalTowerBalance.Effect.UnlockWeapon
                     ? (English?"NEW WEAPON":"НОВОЕ ОРУЖИЕ")
                     : (w!=null?(English?w.englishTitle:w.title):(English?"Portal":"Портал")) + " · " + (progression.Rank(u.id)+1);

@@ -13,20 +13,36 @@ MonoBehaviour:
   m_Name: Porter
   m_EditorClassIdentifier: 
   unitTypeKey: Porter
+  usesPrefabCombatBases: 1
+  bonusArmor: 0
   baseMaxHealth: 20
   bonusHealth: 0
   baseRegenAmount: 0
   bonusRegenAmount: 0
   baseRegenDelay: 5
   bonusRegenDelayReduction: 0
-  resistances: []
+  resistances:
+  - type: 0
+    baseMult: 1
+    bonusResist: 0
+  - type: 1
+    baseMult: 1
+    bonusResist: 0
+  - type: 2
+    baseMult: 1
+    bonusResist: 0
+  - type: 3
+    baseMult: 1
+    bonusResist: 0
+  - type: 4
+    baseMult: 1
+    bonusResist: 0
   baseSpeed: 1
   bonusSpeed: 0
   baseAttackCooldown: 1.5
   bonusAttackSpeed: 0
   baseAttackRange: 0.4
   bonusAttackRange: 0
-  baseProductionTime: 5
   bonusProductionSpeed: 0
   scientificUpgradeTable: {fileID: 0}
   scientificProgressStats: {fileID: 0}
@@ -35,7 +51,22 @@ MonoBehaviour:
   applySharpAxes: 0
   applyFastHex: 0
   applyQuietScouting: 0
-  damageSettings: []
+  damageSettings:
+  - type: 0
+    baseDamage: 0
+    bonusDamage: 0
+  - type: 1
+    baseDamage: 0
+    bonusDamage: 0
+  - type: 2
+    baseDamage: 0
+    bonusDamage: 0
+  - type: 3
+    baseDamage: 0
+    bonusDamage: 0
+  - type: 4
+    baseDamage: 0
+    bonusDamage: 0
   unlockedHexContentIDs: []
   upgradedVisualStates: []
   unlockedFlashlightIDs: []

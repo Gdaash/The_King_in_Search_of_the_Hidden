@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using GameFoundation.Combat;
 
 namespace GameFoundation.MetaProgression
 {
@@ -13,11 +14,19 @@ namespace GameFoundation.MetaProgression
         public sealed class WeaponDefinition
         {
             public Weapon weapon;
+            public bool disabled;
             public string title, englishTitle;
             [TextArea] public string description, englishDescription;
             public Sprite icon;
-            [Min(.01f)] public float damage = 10, cooldown = 1, range = 6, radius = .75f, duration = 1, expansionSpeed = 3;
-            [Min(1)] public int count = 1;
+            public CombatWeapon combat;
+            [Min(.01f)] public float duration=.16f;
+            public float damage => combat!=null?combat.damage:0;
+            public float cooldown => combat!=null?combat.interval:1;
+            public float range => combat!=null?combat.range:0;
+            public float radius => combat!=null?combat.radius:0;
+            public float expansionSpeed => combat!=null?combat.expansionSpeed:3;
+            public int count => combat!=null?combat.count:1;
+            public DamageType damageType => combat!=null?combat.damageType:DamageType.Magic;
         }
         [Serializable]
         public sealed class Upgrade
@@ -39,6 +48,7 @@ namespace GameFoundation.MetaProgression
         public List<Upgrade> upgrades = new();
         public List<WeaponDefinition> weapons = new();
         public WeaponDefinition FindWeapon(Weapon weapon) => weapons.Find(w => w.weapon == weapon);
+        public bool IsWeaponEnabled(Weapon weapon) => weapon==Weapon.None || (FindWeapon(weapon)!=null && !FindWeapon(weapon).disabled);
         public int RequiredExperience(int level) => Mathf.Max(1, firstLevelExperience + (Mathf.Max(1, level) - 1) * experienceIncreasePerLevel);
         public Upgrade Find(string id) => upgrades.Find(u => u.id == id);
     }

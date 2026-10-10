@@ -21,12 +21,11 @@ MonoBehaviour:
   - id: weapon_Bolts
     title: "\u041C\u0430\u0433\u0438\u0447\u0435\u0441\u043A\u0438\u0435 \u0441\u043D\u0430\u0440\u044F\u0434\u044B"
     englishTitle: Magic bolts
-    description: "\u0411\u0430\u0448\u043D\u044F \u0430\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u0438
-      \u0441\u0442\u0440\u0435\u043B\u044F\u0435\u0442 \u043C\u0430\u0433\u0438\u0447\u0435\u0441\u043A\u0438\u043C\u0438
-      \u0441\u043D\u0430\u0440\u044F\u0434\u0430\u043C\u0438 \u043F\u043E \u0431\u043B\u0438\u0436\u0430\u0439\u0448\u0435\u043C\u0443
+    description: "\u0421\u0438\u043B\u044C\u043D\u044B\u0435 \u043C\u0430\u0433\u0438\u0447\u0435\u0441\u043A\u0438\u0435
+      \u0441\u043D\u0430\u0440\u044F\u0434\u044B \u043F\u043E \u0431\u043B\u0438\u0436\u0430\u0439\u0448\u0435\u043C\u0443
       \u0432\u0440\u0430\u0433\u0443."
-    englishDescription: Automatically fires magic bolts at the nearest enemy.
-    icon: {fileID: 21300000, guid: 9673cc179c05db44eab21fe641bbb94e, type: 3}
+    englishDescription: Heavy magic bolts fired at the nearest enemy.
+    icon: {fileID: 21300000, guid: 8adb5bd61209f83408731b099e983f6f, type: 3}
     effect: 6
     weapon: 1
     value: 1
@@ -35,17 +34,13 @@ MonoBehaviour:
   - id: weapon_Beam
     title: "\u0412\u044B\u0436\u0438\u0433\u0430\u044E\u0449\u0438\u0439 \u043B\u0443\u0447"
     englishTitle: Burning beam
-    description: "\u0410\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u0438
-      \u043D\u0430\u043F\u0440\u0430\u0432\u043B\u044F\u0435\u0442\u0441\u044F \u043D\u0430
-      \u0431\u043B\u0438\u0436\u0430\u0439\u0448\u0435\u0433\u043E \u0432\u0440\u0430\u0433\u0430.
-      \u041D\u0430\u043D\u043E\u0441\u0438\u0442 \u043F\u0435\u0440\u0438\u043E\u0434\u0438\u0447\u0435\u0441\u043A\u0438\u0439
-      \u0443\u0440\u043E\u043D \u0432 \u043D\u0435\u0431\u043E\u043B\u044C\u0448\u043E\u043C
-      \u043F\u044F\u0442\u043D\u0435 \u0441\u0432\u0435\u0442\u0430. \u0411\u0435\u0437
-      \u0432\u0440\u0430\u0433\u043E\u0432 \u0432 \u0440\u0430\u0434\u0438\u0443\u0441\u0435
-      \u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D."
-    englishDescription: Automatically tracks the nearest enemy in range, dealing
-      periodic damage inside a small light spot. Turns off without targets.
-    icon: {fileID: 21300000, guid: fa389d80cd9f3004eac656f15a1d16ad, type: 3}
+    description: "\u0421\u043B\u0435\u0434\u0443\u0435\u0442 \u0437\u0430 \u0431\u043B\u0438\u0436\u0430\u0439\u0448\u0438\u043C
+      \u0432\u0440\u0430\u0433\u043E\u043C. \u041E\u0433\u043D\u0435\u043D\u043D\u043E\u0435
+      \u043F\u044F\u0442\u043D\u043E \u043F\u043E\u0440\u0430\u0436\u0430\u0435\u0442
+      \u0432\u0441\u0435\u0445 \u0432\u0440\u0430\u0433\u043E\u0432 \u0432\u043D\u0443\u0442\u0440\u0438."
+    englishDescription: Tracks the nearest enemy. The fiery spot damages every enemy
+      inside.
+    icon: {fileID: 21300000, guid: 5017c295e5698de4c8404d83a3c8a365, type: 3}
     effect: 6
     weapon: 2
     value: 1
@@ -54,14 +49,12 @@ MonoBehaviour:
   - id: weapon_Rings
     title: "\u041A\u043E\u043B\u044C\u0446\u0430 \u0441\u0438\u043B\u044B"
     englishTitle: Force rings
-    description: "\u041A\u0430\u0436\u0434\u044B\u0435 3 \u0441\u0435\u043A\u0443\u043D\u0434\u044B
-      \u043E\u0442 \u0431\u0430\u0448\u043D\u0438 \u0440\u0430\u0441\u0445\u043E\u0434\u0438\u0442\u0441\u044F
-      \u043A\u043E\u043B\u044C\u0446\u043E. \u041E\u043D\u043E \u043D\u0430\u043D\u043E\u0441\u0438\u0442
-      16 \u0443\u0440\u043E\u043D\u0430 \u043A\u0430\u0436\u0434\u043E\u043C\u0443
-      \u0437\u0430\u0434\u0435\u0442\u043E\u043C\u0443 \u0432\u0440\u0430\u0433\u0443.
-      \u0420\u0430\u0434\u0438\u0443\u0441: 6."
-    englishDescription: 'Every 3 seconds an expanding ring hits each enemy it touches
-      for 16 damage. Range: 6.'
+    description: "\u041A\u043E\u043B\u044C\u0446\u043E \u043A\u0430\u0436\u0434\u044B\u0435
+      1,5 \u0441\u0435\u043A\u0443\u043D\u0434\u044B: 30 \u043C\u0430\u0433\u0438\u0447\u0435\u0441\u043A\u043E\u0433\u043E
+      \u0443\u0440\u043E\u043D\u0430 \u043A\u0430\u0436\u0434\u043E\u043C\u0443 \u043F\u0435\u0440\u0435\u0441\u0435\u0447\u0451\u043D\u043D\u043E\u043C\u0443
+      \u0432\u0440\u0430\u0433\u0443."
+    englishDescription: 'A ring every 1.5 seconds: 30 magic damage to every enemy
+      it crosses.'
     icon: {fileID: 21300000, guid: 82e42f6a2df074f44ba7eeff80af415a, type: 3}
     effect: 6
     weapon: 3
@@ -71,14 +64,14 @@ MonoBehaviour:
   - id: weapon_Lightning
     title: "\u0421\u043B\u0443\u0447\u0430\u0439\u043D\u0430\u044F \u043C\u043E\u043B\u043D\u0438\u044F"
     englishTitle: Random lightning
-    description: "\u041A\u0430\u0436\u0434\u044B\u0435 2,5 \u0441\u0435\u043A\u0443\u043D\u0434\u044B
-      \u043C\u043E\u043B\u043D\u0438\u044F \u0431\u0435\u0437 \u043F\u0440\u043E\u043C\u0430\u0445\u0430
-      \u0431\u044C\u0451\u0442 \u0441\u043B\u0443\u0447\u0430\u0439\u043D\u043E\u0433\u043E
+    description: "\u0411\u044C\u0451\u0442 \u0441\u043B\u0443\u0447\u0430\u0439\u043D\u043E\u0433\u043E
       \u0432\u0440\u0430\u0433\u0430 \u0432 \u0440\u0430\u0434\u0438\u0443\u0441\u0435
-      8 \u043D\u0430 20 \u0443\u0440\u043E\u043D\u0430."
-    englishDescription: Every 2.5 seconds lightning hits a random enemy within range
-      8 for 20 damage. It cannot miss.
-    icon: {fileID: 21300000, guid: f167cbc1a503dcb45a915ec79638a6f8, type: 3}
+      2,6. \u0418\u0433\u043D\u043E\u0440\u0438\u0440\u0443\u0435\u0442 \u0431\u0440\u043E\u043D\u044E;
+      \u043F\u0440\u043E\u0442\u0438\u0432 \u0431\u0440\u043E\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u044B\u0445
+      +50%."
+    englishDescription: Hits a random enemy within 2.6 units. Ignores armor; +50%
+      damage against armored enemies.
+    icon: {fileID: 21300000, guid: 62e3b8368a9697742b7d644a07fa23f3, type: 3}
     effect: 6
     weapon: 4
     value: 1
@@ -90,7 +83,7 @@ MonoBehaviour:
     description: "+25% \u0431\u0430\u0437\u043E\u0432\u043E\u0433\u043E \u0443\u0440\u043E\u043D\u0430
       \u044D\u0442\u043E\u0433\u043E \u043E\u0440\u0443\u0436\u0438\u044F."
     englishDescription: +25% of this weapon's base damage.
-    icon: {fileID: 21300000, guid: 9673cc179c05db44eab21fe641bbb94e, type: 3}
+    icon: {fileID: 21300000, guid: 8adb5bd61209f83408731b099e983f6f, type: 3}
     effect: 2
     weapon: 1
     value: 0.25
@@ -102,7 +95,7 @@ MonoBehaviour:
     description: "+20% \u0441\u043A\u043E\u0440\u043E\u0441\u0442\u0438 \u0430\u0442\u0430\u043A\u0438
       \u044D\u0442\u043E\u0433\u043E \u043E\u0440\u0443\u0436\u0438\u044F."
     englishDescription: +20% attack speed for this weapon.
-    icon: {fileID: 21300000, guid: 9673cc179c05db44eab21fe641bbb94e, type: 3}
+    icon: {fileID: 21300000, guid: 8adb5bd61209f83408731b099e983f6f, type: 3}
     effect: 3
     weapon: 1
     value: 0.2
@@ -114,7 +107,7 @@ MonoBehaviour:
     description: "+15% \u0434\u0430\u043B\u044C\u043D\u043E\u0441\u0442\u0438 \u044D\u0442\u043E\u0433\u043E
       \u043E\u0440\u0443\u0436\u0438\u044F."
     englishDescription: +15% range for this weapon.
-    icon: {fileID: 21300000, guid: 9673cc179c05db44eab21fe641bbb94e, type: 3}
+    icon: {fileID: 21300000, guid: 8adb5bd61209f83408731b099e983f6f, type: 3}
     effect: 5
     weapon: 1
     value: 0.15
@@ -126,7 +119,7 @@ MonoBehaviour:
     description: "\u0415\u0449\u0451 \u043E\u0434\u0438\u043D \u0441\u043D\u0430\u0440\u044F\u0434
       \u0432 \u043A\u0430\u0436\u0434\u043E\u043C \u0437\u0430\u043B\u043F\u0435."
     englishDescription: One extra projectile in each volley.
-    icon: {fileID: 21300000, guid: 9673cc179c05db44eab21fe641bbb94e, type: 3}
+    icon: {fileID: 21300000, guid: 8adb5bd61209f83408731b099e983f6f, type: 3}
     effect: 4
     weapon: 1
     value: 1
@@ -138,7 +131,7 @@ MonoBehaviour:
     description: "+25% \u0441\u043A\u043E\u0440\u043E\u0441\u0442\u0438 \u043F\u043E\u043B\u0451\u0442\u0430
       \u0441\u043D\u0430\u0440\u044F\u0434\u043E\u0432."
     englishDescription: +25% projectile flight speed.
-    icon: {fileID: 21300000, guid: 9673cc179c05db44eab21fe641bbb94e, type: 3}
+    icon: {fileID: 21300000, guid: 8adb5bd61209f83408731b099e983f6f, type: 3}
     effect: 9
     weapon: 1
     value: 0.25
@@ -150,7 +143,7 @@ MonoBehaviour:
     description: "+25% \u0431\u0430\u0437\u043E\u0432\u043E\u0433\u043E \u0443\u0440\u043E\u043D\u0430
       \u044D\u0442\u043E\u0433\u043E \u043E\u0440\u0443\u0436\u0438\u044F."
     englishDescription: +25% of this weapon's base damage.
-    icon: {fileID: 21300000, guid: fa389d80cd9f3004eac656f15a1d16ad, type: 3}
+    icon: {fileID: 21300000, guid: 5017c295e5698de4c8404d83a3c8a365, type: 3}
     effect: 2
     weapon: 2
     value: 0.25
@@ -162,7 +155,7 @@ MonoBehaviour:
     description: "+20% \u0441\u043A\u043E\u0440\u043E\u0441\u0442\u0438 \u0430\u0442\u0430\u043A\u0438
       \u044D\u0442\u043E\u0433\u043E \u043E\u0440\u0443\u0436\u0438\u044F."
     englishDescription: +20% attack speed for this weapon.
-    icon: {fileID: 21300000, guid: fa389d80cd9f3004eac656f15a1d16ad, type: 3}
+    icon: {fileID: 21300000, guid: 5017c295e5698de4c8404d83a3c8a365, type: 3}
     effect: 3
     weapon: 2
     value: 0.2
@@ -174,7 +167,7 @@ MonoBehaviour:
     description: "+15% \u0434\u0430\u043B\u044C\u043D\u043E\u0441\u0442\u0438 \u044D\u0442\u043E\u0433\u043E
       \u043E\u0440\u0443\u0436\u0438\u044F."
     englishDescription: +15% range for this weapon.
-    icon: {fileID: 21300000, guid: fa389d80cd9f3004eac656f15a1d16ad, type: 3}
+    icon: {fileID: 21300000, guid: 5017c295e5698de4c8404d83a3c8a365, type: 3}
     effect: 5
     weapon: 2
     value: 0.15
@@ -186,7 +179,7 @@ MonoBehaviour:
     description: "+20% \u0440\u0430\u0434\u0438\u0443\u0441\u0430 \u043F\u044F\u0442\u043D\u0430
       \u0432\u044B\u0436\u0438\u0433\u0430\u044E\u0449\u0435\u0433\u043E \u043B\u0443\u0447\u0430."
     englishDescription: +20% burning spot radius.
-    icon: {fileID: 21300000, guid: fa389d80cd9f3004eac656f15a1d16ad, type: 3}
+    icon: {fileID: 21300000, guid: 5017c295e5698de4c8404d83a3c8a365, type: 3}
     effect: 7
     weapon: 2
     value: 0.2
@@ -270,7 +263,7 @@ MonoBehaviour:
     description: "+25% \u0431\u0430\u0437\u043E\u0432\u043E\u0433\u043E \u0443\u0440\u043E\u043D\u0430
       \u044D\u0442\u043E\u0433\u043E \u043E\u0440\u0443\u0436\u0438\u044F."
     englishDescription: +25% of this weapon's base damage.
-    icon: {fileID: 21300000, guid: f167cbc1a503dcb45a915ec79638a6f8, type: 3}
+    icon: {fileID: 21300000, guid: 62e3b8368a9697742b7d644a07fa23f3, type: 3}
     effect: 2
     weapon: 4
     value: 0.25
@@ -282,7 +275,7 @@ MonoBehaviour:
     description: "+20% \u0441\u043A\u043E\u0440\u043E\u0441\u0442\u0438 \u0430\u0442\u0430\u043A\u0438
       \u044D\u0442\u043E\u0433\u043E \u043E\u0440\u0443\u0436\u0438\u044F."
     englishDescription: +20% attack speed for this weapon.
-    icon: {fileID: 21300000, guid: f167cbc1a503dcb45a915ec79638a6f8, type: 3}
+    icon: {fileID: 21300000, guid: 62e3b8368a9697742b7d644a07fa23f3, type: 3}
     effect: 3
     weapon: 4
     value: 0.2
@@ -294,7 +287,7 @@ MonoBehaviour:
     description: "+15% \u0434\u0430\u043B\u044C\u043D\u043E\u0441\u0442\u0438 \u044D\u0442\u043E\u0433\u043E
       \u043E\u0440\u0443\u0436\u0438\u044F."
     englishDescription: +15% range for this weapon.
-    icon: {fileID: 21300000, guid: f167cbc1a503dcb45a915ec79638a6f8, type: 3}
+    icon: {fileID: 21300000, guid: 62e3b8368a9697742b7d644a07fa23f3, type: 3}
     effect: 5
     weapon: 4
     value: 0.15
@@ -308,7 +301,7 @@ MonoBehaviour:
       \u0432\u0440\u0430\u0433\u0443 \u0437\u0430 \u0430\u0442\u0430\u043A\u0443."
     englishDescription: One extra lightning strike on a different random enemy per
       attack.
-    icon: {fileID: 21300000, guid: f167cbc1a503dcb45a915ec79638a6f8, type: 3}
+    icon: {fileID: 21300000, guid: 62e3b8368a9697742b7d644a07fa23f3, type: 3}
     effect: 4
     weapon: 4
     value: 1
@@ -332,76 +325,53 @@ MonoBehaviour:
     requiresAttack: 0
   weapons:
   - weapon: 1
+    disabled: 0
     title: "\u041C\u0430\u0433\u0438\u0447\u0435\u0441\u043A\u0438\u0435 \u0441\u043D\u0430\u0440\u044F\u0434\u044B"
     englishTitle: Magic bolts
-    description: "\u0411\u0430\u0448\u043D\u044F \u0430\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u0438
-      \u0441\u0442\u0440\u0435\u043B\u044F\u0435\u0442 \u043C\u0430\u0433\u0438\u0447\u0435\u0441\u043A\u0438\u043C\u0438
-      \u0441\u043D\u0430\u0440\u044F\u0434\u0430\u043C\u0438 \u043F\u043E \u0431\u043B\u0438\u0436\u0430\u0439\u0448\u0435\u043C\u0443
+    description: "\u0421\u0438\u043B\u044C\u043D\u044B\u0435 \u043C\u0430\u0433\u0438\u0447\u0435\u0441\u043A\u0438\u0435
+      \u0441\u043D\u0430\u0440\u044F\u0434\u044B \u043F\u043E \u0431\u043B\u0438\u0436\u0430\u0439\u0448\u0435\u043C\u0443
       \u0432\u0440\u0430\u0433\u0443."
-    englishDescription: Automatically fires magic bolts at the nearest enemy.
-    icon: {fileID: 21300000, guid: 9673cc179c05db44eab21fe641bbb94e, type: 3}
-    damage: 10
-    cooldown: 1.5
-    range: 8
-    radius: 0.1
+    englishDescription: Heavy magic bolts fired at the nearest enemy.
+    icon: {fileID: 21300000, guid: 8adb5bd61209f83408731b099e983f6f, type: 3}
+    combat: {fileID: 11400000, guid: 7befa6aac377fc74c9b17da017b4f9f3, type: 2}
     duration: 0.16
-    expansionSpeed: 3
-    count: 1
   - weapon: 2
+    disabled: 0
     title: "\u0412\u044B\u0436\u0438\u0433\u0430\u044E\u0449\u0438\u0439 \u043B\u0443\u0447"
     englishTitle: Burning beam
-    description: "\u0410\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u0438
-      \u043D\u0430\u043F\u0440\u0430\u0432\u043B\u044F\u0435\u0442\u0441\u044F \u043D\u0430
-      \u0431\u043B\u0438\u0436\u0430\u0439\u0448\u0435\u0433\u043E \u0432\u0440\u0430\u0433\u0430.
-      \u041D\u0430\u043D\u043E\u0441\u0438\u0442 \u043F\u0435\u0440\u0438\u043E\u0434\u0438\u0447\u0435\u0441\u043A\u0438\u0439
-      \u0443\u0440\u043E\u043D \u0432 \u043D\u0435\u0431\u043E\u043B\u044C\u0448\u043E\u043C
-      \u043F\u044F\u0442\u043D\u0435 \u0441\u0432\u0435\u0442\u0430. \u0411\u0435\u0437
-      \u0432\u0440\u0430\u0433\u043E\u0432 \u0432 \u0440\u0430\u0434\u0438\u0443\u0441\u0435
-      \u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D."
-    englishDescription: Automatically tracks the nearest enemy in range, dealing
-      periodic damage inside a small light spot. Turns off without targets.
-    icon: {fileID: 21300000, guid: fa389d80cd9f3004eac656f15a1d16ad, type: 3}
-    damage: 8
-    cooldown: 0.5
-    range: 6
-    radius: 0.75
+    description: "\u0421\u043B\u0435\u0434\u0443\u0435\u0442 \u0437\u0430 \u0431\u043B\u0438\u0436\u0430\u0439\u0448\u0438\u043C
+      \u0432\u0440\u0430\u0433\u043E\u043C. \u041E\u0433\u043D\u0435\u043D\u043D\u043E\u0435
+      \u043F\u044F\u0442\u043D\u043E \u043F\u043E\u0440\u0430\u0436\u0430\u0435\u0442
+      \u0432\u0441\u0435\u0445 \u0432\u0440\u0430\u0433\u043E\u0432 \u0432\u043D\u0443\u0442\u0440\u0438."
+    englishDescription: Tracks the nearest enemy. The fiery spot damages every enemy
+      inside.
+    icon: {fileID: 21300000, guid: 5017c295e5698de4c8404d83a3c8a365, type: 3}
+    combat: {fileID: 11400000, guid: 3d9e5001edd896a4c8e448571dd69829, type: 2}
     duration: 0.16
-    expansionSpeed: 3
-    count: 1
   - weapon: 3
+    disabled: 1
     title: "\u041A\u043E\u043B\u044C\u0446\u0430 \u0441\u0438\u043B\u044B"
     englishTitle: Force rings
-    description: "\u041A\u0430\u0436\u0434\u044B\u0435 3 \u0441\u0435\u043A\u0443\u043D\u0434\u044B
-      \u043E\u0442 \u0431\u0430\u0448\u043D\u0438 \u0440\u0430\u0441\u0445\u043E\u0434\u0438\u0442\u0441\u044F
-      \u043A\u043E\u043B\u044C\u0446\u043E. \u041E\u043D\u043E \u043D\u0430\u043D\u043E\u0441\u0438\u0442
-      16 \u0443\u0440\u043E\u043D\u0430 \u043A\u0430\u0436\u0434\u043E\u043C\u0443
-      \u0437\u0430\u0434\u0435\u0442\u043E\u043C\u0443 \u0432\u0440\u0430\u0433\u0443.
-      \u0420\u0430\u0434\u0438\u0443\u0441: 6."
-    englishDescription: 'Every 3 seconds an expanding ring hits each enemy it touches
-      for 16 damage. Range: 6.'
+    description: "\u041A\u043E\u043B\u044C\u0446\u043E \u043A\u0430\u0436\u0434\u044B\u0435
+      1,5 \u0441\u0435\u043A\u0443\u043D\u0434\u044B: 30 \u043C\u0430\u0433\u0438\u0447\u0435\u0441\u043A\u043E\u0433\u043E
+      \u0443\u0440\u043E\u043D\u0430 \u043A\u0430\u0436\u0434\u043E\u043C\u0443 \u043F\u0435\u0440\u0435\u0441\u0435\u0447\u0451\u043D\u043D\u043E\u043C\u0443
+      \u0432\u0440\u0430\u0433\u0443."
+    englishDescription: 'A ring every 1.5 seconds: 30 magic damage to every enemy
+      it crosses.'
     icon: {fileID: 21300000, guid: 82e42f6a2df074f44ba7eeff80af415a, type: 3}
-    damage: 16
-    cooldown: 3
-    range: 6
-    radius: 0.22
+    combat: {fileID: 11400000, guid: f56db31814204b14580d1097567b33fb, type: 2}
     duration: 0.16
-    expansionSpeed: 3
-    count: 1
   - weapon: 4
+    disabled: 0
     title: "\u0421\u043B\u0443\u0447\u0430\u0439\u043D\u0430\u044F \u043C\u043E\u043B\u043D\u0438\u044F"
     englishTitle: Random lightning
-    description: "\u041A\u0430\u0436\u0434\u044B\u0435 2,5 \u0441\u0435\u043A\u0443\u043D\u0434\u044B
-      \u043C\u043E\u043B\u043D\u0438\u044F \u0431\u0435\u0437 \u043F\u0440\u043E\u043C\u0430\u0445\u0430
-      \u0431\u044C\u0451\u0442 \u0441\u043B\u0443\u0447\u0430\u0439\u043D\u043E\u0433\u043E
+    description: "\u0411\u044C\u0451\u0442 \u0441\u043B\u0443\u0447\u0430\u0439\u043D\u043E\u0433\u043E
       \u0432\u0440\u0430\u0433\u0430 \u0432 \u0440\u0430\u0434\u0438\u0443\u0441\u0435
-      8 \u043D\u0430 20 \u0443\u0440\u043E\u043D\u0430."
-    englishDescription: Every 2.5 seconds lightning hits a random enemy within range
-      8 for 20 damage. It cannot miss.
-    icon: {fileID: 21300000, guid: f167cbc1a503dcb45a915ec79638a6f8, type: 3}
-    damage: 20
-    cooldown: 2.5
-    range: 8
-    radius: 0.1
+      2,6. \u0418\u0433\u043D\u043E\u0440\u0438\u0440\u0443\u0435\u0442 \u0431\u0440\u043E\u043D\u044E;
+      \u043F\u0440\u043E\u0442\u0438\u0432 \u0431\u0440\u043E\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u044B\u0445
+      +50%."
+    englishDescription: Hits a random enemy within 2.6 units. Ignores armor; +50%
+      damage against armored enemies.
+    icon: {fileID: 21300000, guid: 62e3b8368a9697742b7d644a07fa23f3, type: 3}
+    combat: {fileID: 11400000, guid: 7ff40e5b49221d246bd17838fe092df1, type: 2}
     duration: 0.16
-    expansionSpeed: 3
-    count: 1

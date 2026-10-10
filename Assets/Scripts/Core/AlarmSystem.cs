@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,6 +40,7 @@ public class AlarmSystem : MonoBehaviour
     [SerializeField, Min(0f)] private float fillSpeed = 3f;
     [SerializeField] private Image fillImage;
     [SerializeField] private Image previewImage;
+    [SerializeField] private Material incomingFillMaterial;
     [SerializeField] private Transform tickContainer;
     [SerializeField] private Sprite uiSprite;
     [SerializeField] private Sprite thresholdSkullSprite;
@@ -351,7 +352,7 @@ public class AlarmSystem : MonoBehaviour
         var template = firstRunWaveTemplate;
         thresholds.Add(new AlarmThreshold
         {
-            alarmValue = currentAlarm,
+            alarmValue = currentAlarm+_pendingAlarm,
             minSpawnInterval = template.minSpawnInterval,
             maxSpawnInterval = template.maxSpawnInterval,
             minEnemiesPerWave = template.minEnemiesPerWave,
@@ -359,15 +360,15 @@ public class AlarmSystem : MonoBehaviour
             enemies = new List<AlarmEnemy>(template.enemies)
         });
         RefreshThresholdMarkers();
-        EvaluateThresholds();
+        if(_pendingAlarm<=0)StartCoroutine(DelayedIncomingEvents(currentAlarm,alarmRevision));
         return true;
     }
 
-    private void EvaluateThresholds()
+    private void EvaluateThresholds(float eligibleAlarm=float.PositiveInfinity)
     {
         foreach (AlarmThreshold threshold in ConfiguredThresholds)
         {
-            if (threshold == null || _activatedThresholds.Contains(threshold) || currentAlarm < threshold.alarmValue)
+            if (threshold == null || _activatedThresholds.Contains(threshold) || Mathf.Min(currentAlarm,eligibleAlarm) < threshold.alarmValue)
                 continue;
 
             _activatedThresholds.Add(threshold);
@@ -603,7 +604,7 @@ public class AlarmSystem : MonoBehaviour
 
     private void ApplyPreview(float value)
     {
-        if (previewImage != null) previewImage.fillAmount = value;
+        if (previewImage != null) { if(fillImage!=null)previewImage.sprite=fillImage.sprite;previewImage.material=incomingFillMaterial;previewImage.color=Color.white;previewImage.fillAmount = value; }
     }
 
     private IEnumerator FlyOrb(Vector3 worldPosition, float amount, float targetFill, int revision)
@@ -635,7 +636,9 @@ public class AlarmSystem : MonoBehaviour
             orbImage.color = Color.white;
         }
         orbImage.raycastTarget = false;
+        if (thresholdSkullSprite != null) orbImage.sprite = thresholdSkullSprite;
         RectTransform orbRect = orb.GetComponent<RectTransform>();
+        orbRect.localScale = Vector3.one;
         float configuredSize = spawnedSettings != null ? spawnedSettings.Size : orbSize;
         float configuredDuration = spawnedSettings != null ? spawnedSettings.TotalDuration : orbFlightDuration;
         float configuredSpreadDuration = spawnedSettings != null ? spawnedSettings.SpreadDuration : orbSpreadDuration;
@@ -677,7 +680,7 @@ public class AlarmSystem : MonoBehaviour
             float t = Mathf.Clamp01(elapsed / arcDuration);
             float easedT = t * t * (3f - 2f * t);
             orbRect.anchoredPosition = Vector2.Lerp(Vector2.Lerp(clusterPosition, control, easedT), Vector2.Lerp(control, target, easedT), easedT);
-            orbRect.localScale = Vector3.one * Mathf.Lerp(1f, 0.4f, easedT);
+            orbRect.localScale = Vector3.one;
             yield return null;
         }
 
@@ -689,12 +692,19 @@ public class AlarmSystem : MonoBehaviour
     {
         _pendingAlarm = Mathf.Max(0f, _pendingAlarm - amount);
         currentAlarm = Mathf.Clamp(currentAlarm + amount, 0f, MaximumTotalAlarm);
-        RefreshEnemyLevel();
         float value = Mathf.Clamp01(currentAlarm / maximumAlarm);
+        _displayedFill=value;
         ApplyFill(value);
         ApplyPreview(Mathf.Clamp01((currentAlarm + _pendingAlarm) / maximumAlarm));
         OnAlarmChanged?.Invoke(currentAlarm);
-        EvaluateThresholds();
+        StartCoroutine(DelayedIncomingEvents(currentAlarm,alarmRevision));
+    }
+    private IEnumerator DelayedIncomingEvents(float arrivedAlarm,int revision)
+    {
+        yield return new WaitForSecondsRealtime(.5f);
+        if(revision!=alarmRevision || !isActiveAndEnabled)yield break;
+        RefreshEnemyLevel();
+        EvaluateThresholds(arrivedAlarm);
     }
 
     private void CreateRuntimeUiIfNeeded()

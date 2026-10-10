@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: 6031976570780847185}
   - component: {fileID: 9118978437845007099}
   - component: {fileID: 4800805252432581984}
+  - component: {fileID: 3838148084941506722}
   m_Layer: 9
   m_Name: OctopusGuardian
   m_TagString: Enemy1
@@ -131,7 +132,7 @@ MonoBehaviour:
   detectionRange: 50
   attackRange: 0.65
   baseAttackCooldown: 2.2
-  cooldownVariation: 0.4
+  cooldownVariation: 0
   homeStoppingDistance: 0.3
   positionVariation: 1.5
   OnMove:
@@ -216,7 +217,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stats: {fileID: 11400000, guid: bbd7cba1d2708b741ab1f6ca8fb1dd3b, type: 2}
-  speedVariation: 0.2
+  speedVariation: 0.1
   flipThreshold: 0.2
 --- !u!114 &8601704601893895995
 MonoBehaviour:
@@ -326,6 +327,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b13c2cc0471fdf54ca6ff9caa01c6e6b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.MetaProgression.EnemyLevel
+--- !u!114 &3838148084941506722
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2351670428627621129}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bd9379acbb699a4cb05ab0a3f6e24cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Combat.Combatant
+  baseHealth: 80
+  baseSpeed: 1
+  baseArmor: 3
+  weapon: {fileID: 11400000, guid: b046f665334333a4fa745e2bdbc1e04a, type: 2}
+  defense: {fileID: 11400000, guid: a227edad0d92fb14f9a8a8e515397045, type: 2}
+  modifiers: {fileID: 11400000, guid: bbd7cba1d2708b741ab1f6ca8fb1dd3b, type: 2}
 --- !u!1 &6516186102205842980
 GameObject:
   m_ObjectHideFlags: 0

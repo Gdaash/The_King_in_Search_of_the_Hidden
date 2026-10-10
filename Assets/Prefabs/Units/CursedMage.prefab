@@ -49,6 +49,7 @@ GameObject:
   - component: {fileID: 6037851558419606766}
   - component: {fileID: 4520358830588918743}
   - component: {fileID: 1722406524308806989}
+  - component: {fileID: 122900007263403898}
   m_Layer: 9
   m_Name: CursedMage
   m_TagString: Enemy1
@@ -164,7 +165,7 @@ MonoBehaviour:
   detectionRange: 50
   defaultAttackRange: 8
   defaultStopRange: 6
-  cooldownVariation: 0.5
+  cooldownVariation: 0
   homeStoppingDistance: 0.5
   positionVariation: 2
   OnMove:
@@ -296,7 +297,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stats: {fileID: 11400000, guid: a4690da2b24d5e443b7ed0162ecfe594, type: 2}
-  speedVariation: 0.2
+  speedVariation: 0.15
   flipThreshold: 0.2
 --- !u!114 &6712944776575412886
 MonoBehaviour:
@@ -385,6 +386,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b13c2cc0471fdf54ca6ff9caa01c6e6b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.MetaProgression.EnemyLevel
+--- !u!114 &122900007263403898
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4929410714400224446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bd9379acbb699a4cb05ab0a3f6e24cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Combat.Combatant
+  baseHealth: 60
+  baseSpeed: 1.5
+  baseArmor: 0
+  weapon: {fileID: 11400000, guid: 71da66947b9ccad4d81e4fc5b1ec0219, type: 2}
+  defense: {fileID: 11400000, guid: 5c63be0e6c5102746800e6119eb6a4e3, type: 2}
+  modifiers: {fileID: 11400000, guid: a4690da2b24d5e443b7ed0162ecfe594, type: 2}
 --- !u!1 &6350412556276859824
 GameObject:
   m_ObjectHideFlags: 0

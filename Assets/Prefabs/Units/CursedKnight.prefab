@@ -110,6 +110,7 @@ GameObject:
   - component: {fileID: 7131382001215548247}
   - component: {fileID: 2944880993460662006}
   - component: {fileID: 6696617758053734319}
+  - component: {fileID: 4100288603651111000}
   m_Layer: 9
   m_Name: CursedKnight
   m_TagString: Enemy1
@@ -223,7 +224,7 @@ MonoBehaviour:
   detectionRange: 50
   attackRange: 0.4
   baseAttackCooldown: 1.5
-  cooldownVariation: 0.4
+  cooldownVariation: 0
   homeStoppingDistance: 0.3
   positionVariation: 1.5
   OnMove:
@@ -308,7 +309,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stats: {fileID: 11400000, guid: f81aa22a07a7b0945b1f384480e8b423, type: 2}
-  speedVariation: 0.2
+  speedVariation: 0.120000005
   flipThreshold: 0.2
 --- !u!114 &8188600506580571441
 MonoBehaviour:
@@ -418,6 +419,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b13c2cc0471fdf54ca6ff9caa01c6e6b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.MetaProgression.EnemyLevel
+--- !u!114 &4100288603651111000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7778425866933791397}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bd9379acbb699a4cb05ab0a3f6e24cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Combat.Combatant
+  baseHealth: 100
+  baseSpeed: 1.2
+  baseArmor: 3
+  weapon: {fileID: 11400000, guid: 86a049c03986bd344a861b783c68dfe0, type: 2}
+  defense: {fileID: 11400000, guid: a227edad0d92fb14f9a8a8e515397045, type: 2}
+  modifiers: {fileID: 11400000, guid: f81aa22a07a7b0945b1f384480e8b423, type: 2}
 --- !u!1001 &1705191119144591628
 PrefabInstance:
   m_ObjectHideFlags: 0

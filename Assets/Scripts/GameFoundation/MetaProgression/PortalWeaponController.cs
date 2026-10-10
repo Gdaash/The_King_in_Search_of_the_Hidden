@@ -11,6 +11,7 @@ namespace GameFoundation.MetaProgression
     {
         public PortalTowerProgression progression;
         public GameObject beamPrefab;
+        public Sprite lightningSprite;
         private ArcherTower tower;
         private FlashlightController beam;
         private Light2D spot;
@@ -40,10 +41,10 @@ namespace GameFoundation.MetaProgression
             effectMaterial=new Material(Shader.Find("Sprites/Default"));
         }
         private PortalTowerBalance.WeaponDefinition Def(PortalTowerBalance.Weapon w) => progression.Balance.FindWeapon(w);
-        private float Range(PortalTowerBalance.Weapon w) => Def(w).range*progression.Multiplier(w,PortalTowerBalance.Effect.Range);
+        private float Range(PortalTowerBalance.Weapon w) => Mathf.Max(0,Def(w).range+(tower.GetStats()?.bonusAttackRange??0))*progression.Multiplier(w,PortalTowerBalance.Effect.Range);
         private float Radius(PortalTowerBalance.Weapon w) => Def(w).radius*progression.Multiplier(w,PortalTowerBalance.Effect.Area);
-        private float Damage(PortalTowerBalance.Weapon w) => Def(w).damage*progression.Multiplier(w,PortalTowerBalance.Effect.Damage);
-        private float Cooldown(PortalTowerBalance.Weapon w) => Def(w).cooldown/progression.Multiplier(w,PortalTowerBalance.Effect.AttackSpeed);
+        private float Damage(PortalTowerBalance.Weapon w) => (Def(w).damage+(tower.GetStats()?.damageSettings.Find(d=>d.type==Def(w).damageType)?.bonusDamage??0))*progression.Multiplier(w,PortalTowerBalance.Effect.Damage);
+        private float Cooldown(PortalTowerBalance.Weapon w) => Mathf.Max(.05f,Def(w).cooldown-(tower.GetStats()?.bonusAttackSpeed??0))/progression.Multiplier(w,PortalTowerBalance.Effect.AttackSpeed);
         private Transform Source => tower.GetComponent<TowerVisuals>()?.ShootPoint ?? tower.transform;
         private void Update()
         {
@@ -97,7 +98,7 @@ namespace GameFoundation.MetaProgression
                 beamTime=Time.time+Cooldown(PortalTowerBalance.Weapon.Beam);
                 bool hit=false;
                 foreach(var h in enemies)if(Enemy(h) && Vector2.Distance(h.transform.position,aim)<=BeamRadius)
-                {h.TakeDamage(Damage(PortalTowerBalance.Weapon.Beam),DamageType.Fire,tower.transform);hit=true;}
+                {h.TakeDamage(Damage(PortalTowerBalance.Weapon.Beam),Def(PortalTowerBalance.Weapon.Beam).damageType,tower.transform);hit=true;}
                 if(hit)GameAudioController.PlayAt(GameAudioCue.MagicAttack,aim);
             }
         }
@@ -200,7 +201,7 @@ namespace GameFoundation.MetaProgression
                 foreach(var h in enemies)if(Enemy(h) && !hit.Contains(h))
                 {
                     float d=Vector2.Distance(origin,h.transform.position);
-                    if(d>=previous-thickness && d<=radius+thickness){hit.Add(h);h.TakeDamage(damage,DamageType.Magic,tower.transform);}
+                    if(d>=previous-thickness && d<=radius+thickness){hit.Add(h);h.TakeDamage(damage,Def(w).damageType,tower.transform);}
                 }
                 line.startColor=line.endColor=new Color(.65f,.55f,1,Mathf.Lerp(.85f,.2f,radius/range));
                 yield return null;
@@ -217,7 +218,7 @@ namespace GameFoundation.MetaProgression
             {
                 int index=Random.Range(0,candidates.Count);var h=candidates[index];candidates.RemoveAt(index);
                 Vector3 end=h.transform.position;
-                h.TakeDamage(Damage(w),DamageType.Magic,tower.transform);
+                h.TakeDamage(Damage(w),Def(w).damageType,tower.transform);
                 CombatImpactBurst.Spawn(end,new Color(.55f,.8f,1));
                 GameAudioController.PlayAt(GameAudioCue.MagicAttack,end);
                 StartCoroutine(Lightning(end));
@@ -225,11 +226,25 @@ namespace GameFoundation.MetaProgression
         }
         private IEnumerator Lightning(Vector3 end)
         {
-            var w=PortalTowerBalance.Weapon.Lightning;var line=Line("Portal lightning",new Color(.6f,.85f,1),.09f,9);
-            Vector3 start=end+Vector3.up*3;
-            for(int i=0;i<9;i++){var p=Vector3.Lerp(start,end,i/8f);if(i>0 && i<8)p.x+=Random.Range(-.3f,.3f);line.SetPosition(i,p);}
-            yield return new WaitForSeconds(Def(w).duration*progression.Multiplier(w,PortalTowerBalance.Effect.Duration));
-            ClearEffect(line);
+            if(lightningSprite==null)yield break;
+            var w=PortalTowerBalance.Weapon.Lightning;
+            var go=new GameObject("Portal pixel lightning");effects.Add(go);
+            var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=lightningSprite;
+            renderer.sharedMaterial=effectMaterial;renderer.sortingLayerName="OverLight";renderer.sortingOrder=150;
+            float height=lightningSprite.rect.height/lightningSprite.pixelsPerUnit;
+            go.transform.position=new Vector3(Mathf.Round(end.x*32)/32,Mathf.Round((end.y+height*.5f)*32)/32,end.z);
+            if(Random.value>.5f)renderer.flipX=true;
+            var glow=go.AddComponent<Light2D>();glow.lightType=Light2D.LightType.Point;
+            glow.color=new Color(.25f,.65f,1);glow.intensity=1.5f;glow.pointLightOuterRadius=1.2f;
+            float duration=Def(w).duration*progression.Multiplier(w,PortalTowerBalance.Effect.Duration);
+            float elapsed=0;
+            while(elapsed<duration)
+            {
+                elapsed+=Time.deltaTime;float alpha=1-Mathf.Clamp01(elapsed/duration);
+                renderer.color=new Color(1,1,1,alpha);glow.intensity=1.5f*alpha;
+                yield return null;
+            }
+            effects.Remove(go);Destroy(go);
         }
         private void OnDestroy()
         {

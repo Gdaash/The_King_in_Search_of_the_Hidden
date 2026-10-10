@@ -1,4 +1,5 @@
 using System;
+using GameFoundation.Combat;
 using System.Globalization;
 using UnityEngine;
 
@@ -41,7 +42,7 @@ namespace GameFoundation.UI
             if (background != null) background.color = stripe;
         }
 
-        public void PresentDefense(Sprite shield, string caption, GlobalStats stats, Color positive, Color negative, Color neutral, Color stripe)
+        public void PresentDefense(Sprite shield, string caption, GlobalStats stats, Color positive, Color negative, Color neutral, Color stripe, Combatant combat=null)
         {
             Present(shield, caption, string.Empty, neutral, stripe, defense: true);
             if (defenseCells == null) return;
@@ -49,7 +50,7 @@ namespace GameFoundation.UI
             {
                 if (cell == null) continue;
                 var resistance = stats != null ? stats.resistances.Find(item => item.type == cell.type) : null;
-                float percent = resistance != null ? (1f - resistance.CurrentMult) * 100f : 0f;
+                float percent = (1f-(combat!=null?combat.ResistanceMultiplier(cell.type):resistance!=null?resistance.CurrentMult:1))*100f;
                 if (cell.amount != null)
                 {
                     cell.amount.text = percent.ToString("0.#", CultureInfo.InvariantCulture) + "%";

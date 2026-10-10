@@ -1,3 +1,4 @@
+using GameFoundation.Combat;
 using UnityEngine;
 using System.Linq;
 using UnityEngine.Events;
@@ -25,9 +26,9 @@ public class ArcherTower : MonoBehaviour
     private float _currentCooldown;
 
     // Свойства для получения данных из GlobalStats
-    public float CurrentRange => (PortalProgression?.Balance.FindWeapon(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Bolts)?.range ?? (stats != null ? stats.TotalAttackRange : defaultAttackRange)) *
+    public float CurrentRange => (PortalProgression != null ? Mathf.Max(0,(PortalProgression.Balance.FindWeapon(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Bolts)?.range ?? 0)+(stats?.bonusAttackRange??0)) : (GetComponent<Combatant>()?.RangeBeforeLevel ?? (stats != null ? stats.TotalAttackRange : defaultAttackRange))) *
         (PortalProgression != null ? PortalProgression.RangeMultiplier : 1f);
-    public float CurrentCooldownBase => (PortalProgression?.Balance.FindWeapon(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Bolts)?.cooldown ?? (stats != null ? stats.TotalCooldown : 1.5f)) /
+    public float CurrentCooldownBase => (PortalProgression != null ? Mathf.Max(.05f,(PortalProgression.Balance.FindWeapon(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Bolts)?.cooldown ?? 1.5f)-(stats?.bonusAttackSpeed??0)) : (GetComponent<Combatant>()?.IntervalBeforeLevel ?? (stats != null ? stats.TotalCooldown : 1.5f))) /
         (PortalProgression != null ? PortalProgression.AttackSpeedMultiplier : 1f);
     public GameFoundation.MetaProgression.PortalTowerProgression PortalProgression =>
         stats != null && stats.IsPortalTower ? GameFoundation.MetaProgression.PortalTowerProgression.Instance : null;

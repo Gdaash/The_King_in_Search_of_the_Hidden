@@ -1,3 +1,4 @@
+using GameFoundation.Combat;
 using UnityEngine;
 using UnityEngine.Events;
 using System.Collections;
@@ -41,7 +42,8 @@ public class Health : MonoBehaviour
     private readonly Dictionary<MilitaryExperience, float> _contributors = new();
     private MilitaryExperience _lastContributor;
 
-    public float MaxHealth => (stats != null ? stats.TotalMaxHealth : 100f) * MilitaryExperience.Multiplier(this);
+    public float Armor => GetComponent<Combatant>()?.Armor ?? 0;
+    public float MaxHealth => (GetComponent<Combatant>()?.HealthBeforeLevel ?? (stats != null ? stats.TotalMaxHealth : 100f)) * MilitaryExperience.Multiplier(this);
     public float CurrentHealth => _cur;
     public GlobalStats Stats => stats;
     public float NormalizedHealth => MaxHealth > 0f ? Mathf.Clamp01(_cur / MaxHealth) : 0f;
@@ -107,7 +109,7 @@ public class Health : MonoBehaviour
     {
         if (_dead) return;
         float multiplier = GetGlobalMultiplier(type);
-        float final = amt * multiplier;
+        float final = CombatDamage.Calculate(amt,type,Armor,multiplier);
         
         if (final > 0) 
         {
@@ -132,8 +134,11 @@ public class Health : MonoBehaviour
         if (_cur <= 0) Die();
     }
 
+    public float ResistanceMultiplier(DamageType t) => GetGlobalMultiplier(t);
     private float GetGlobalMultiplier(DamageType t)
     {
+        var combat=GetComponent<Combatant>();
+        if(combat!=null)return combat.ResistanceMultiplier(t);
         if (stats == null) return 1f;
         var res = stats.resistances.Find(r => r.type == t);
         return res != null ? res.CurrentMult : 1f;
@@ -178,7 +183,9 @@ public class Health : MonoBehaviour
         targetSprite.color = flashColor;
         Transform visual = targetSprite.transform;
         Vector3 baseScale = visual.localScale;
-        bool animateScale = _ai != null;
+        // Ranged windup owns this transform's scale. A hit must not capture its
+        // temporary stretch and restore it after the shooting animation ends.
+        bool animateScale = _ai != null && !TryGetComponent<EnemyVisuals_Ranged>(out _);
         float elapsed = 0f;
         while (elapsed < hitFlashDuration)
         {

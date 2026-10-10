@@ -54,6 +54,7 @@ namespace GameFoundation.MetaProgression
         private bool _escaping;
         private bool _showingStatistics;
         private bool _loading;
+        private bool _humanLossesSettled;
         private UnifiedButtonFeedback _buttonFeedback;
         private Color _normalButtonLabelColor = Color.white;
         private float _portalHealthNormalized = 1f;
@@ -252,6 +253,7 @@ namespace GameFoundation.MetaProgression
         private void ShowStatistics()
         {
             if (_showingStatistics) return;
+            SettleUnreturnedHumans();
             foodSufficiencyHint?.HideForEscape();
             _showingStatistics = true;
             GameSpeedControls speedControls = UnityEngine.Object.FindAnyObjectByType<GameSpeedControls>();
@@ -268,6 +270,19 @@ namespace GameFoundation.MetaProgression
                 durationLabel.text = $"Длительность забега: {seconds / 3600:00}:{seconds / 60 % 60:00}:{seconds % 60:00}";
 
             StartCoroutine(RevealStatistics(CaptureResources()));
+        }
+
+        private void SettleUnreturnedHumans()
+        {
+            if (_humanLossesSettled) return;
+            var manager = GlobalResourceManager.Instance;
+            if (manager == null || humanResource == null) return;
+            _humanLossesSettled = true;
+            // Workers remain in the population while deployed. Only those who
+            // have not reached the portal when the run ends are permanently lost.
+            int lost = Mathf.Min(manager.GetResourceAmount(humanResource),
+                OrderManager.CountHumansAwayFromPortal(humanResource));
+            if (lost > 0) manager.TrySpendResource(humanResource, lost);
         }
 
         private IEnumerator RevealStatistics(Dictionary<ResourceType, int> endingResources)

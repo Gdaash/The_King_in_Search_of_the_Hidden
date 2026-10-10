@@ -13,12 +13,16 @@ public class EnemyProjectile : MonoBehaviour
     private Transform _owner;
     private float _damageMultiplier = 1f;
     private bool _hasHit;
+    private bool singleDamage;
+    private float hitDamage;
+    private DamageType hitType;
     private float _speedMultiplier = 1f;
 
     public void Setup(Vector3 dir, string targetTag, List<GlobalStats.DamageInfo> damageData, Transform owner = null, float damageMultiplier = 1f, float speedMultiplier = 1f, float minimumLifetime = 0f)
     {
         _direction = dir;
         _hasHit = false;
+        singleDamage=false;
         _targetTag = targetTag;
         _damageData = damageData;
         _owner = owner;
@@ -27,6 +31,12 @@ public class EnemyProjectile : MonoBehaviour
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0, 0, angle);
         Destroy(gameObject, Mathf.Max(lifetime,minimumLifetime));
+    }
+
+    public void SetupHit(Vector3 dir,string targetTag,float damage,DamageType type,Transform owner,float speedMultiplier=1,float minimumLifetime=0)
+    {
+        Setup(dir,targetTag,null,owner,1,speedMultiplier,minimumLifetime);
+        singleDamage=true;hitDamage=damage;hitType=type;
     }
 
     void Update() => transform.position += _direction * speed * _speedMultiplier * Time.deltaTime;
@@ -40,7 +50,8 @@ public class EnemyProjectile : MonoBehaviour
         {
             _hasHit = true;
             var h = target.GetComponentInParent<Health>();
-            if (h != null && _damageData != null) {
+            if(h!=null && singleDamage)h.TakeDamage(hitDamage,hitType,_owner!=null?_owner:transform);
+            else if (h != null && _damageData != null) {
                 foreach (var dmg in _damageData) h.TakeDamage(dmg.TotalDamage * _damageMultiplier, dmg.type, _owner != null ? _owner : transform);
             }
             CombatImpactBurst.Spawn(transform.position, new Color(1f, 0.88f, 0.55f, 1f));

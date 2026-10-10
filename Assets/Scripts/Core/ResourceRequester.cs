@@ -54,10 +54,6 @@ public class ResourceRequester : MonoBehaviour {
     [SerializeField] protected GameObject inTransitIconPrefab;
     [SerializeField] protected Transform iconsContainer; 
     [SerializeField] protected float iconSpacing = 0.4f; 
-    [SerializeField] protected float bobbingAmount = 0.1f;
-    [SerializeField] protected float bobbingSpeed = 2f;
-    [Tooltip("Смещение иконок требований во время паузы: оставляет место для видимого прогрессбара.")]
-    [SerializeField] private Vector3 pausedRequestOffset = new Vector3(0, 1.1f, 0);
 
     [Header("Общие события")]
     public UnityEvent OnResourceReceived;
@@ -78,7 +74,6 @@ public class ResourceRequester : MonoBehaviour {
     
     private List<GameObject> _spawnedResources = new List<GameObject>();
     private bool _wasFull; 
-    protected float _bobbingOffset;
     
     private int _completedCycles = 0;
     private bool _crystalControlled;
@@ -123,7 +118,6 @@ public class ResourceRequester : MonoBehaviour {
         if (iconsContainer != null) _containerBasePos = iconsContainer.localPosition;
         _myCollider = GetComponent<Collider2D>();
         if (storageFullVisual != null) storageFullVisual.SetActive(false);
-        _bobbingOffset = Random.Range(0f, Mathf.PI * 2f);
     }
 
     protected virtual void OnEnable() {
@@ -141,9 +135,7 @@ public class ResourceRequester : MonoBehaviour {
 
     protected virtual void Update() {
         if (iconsContainer != null && iconsContainer.gameObject.activeSelf) {
-            Vector3 origin = _containerBasePos + (IsCyclePaused ? pausedRequestOffset : Vector3.zero);
-            origin.y += Mathf.Sin((Time.time * bobbingSpeed) + _bobbingOffset) * bobbingAmount;
-            iconsContainer.localPosition = origin;
+            iconsContainer.localPosition = _containerBasePos;
         }
 
         UpdateStorageStatus();
@@ -381,7 +373,7 @@ public class ResourceRequester : MonoBehaviour {
         }
 
         iconsContainer.gameObject.SetActive(true);
-        iconsContainer.localPosition = _containerBasePos + (IsCyclePaused ? pausedRequestOffset : Vector3.zero);
+        iconsContainer.localPosition = _containerBasePos;
         float totalWidth = (displayIcons.Count - 1) * iconSpacing;
         float startX = -totalWidth / 2f;
 

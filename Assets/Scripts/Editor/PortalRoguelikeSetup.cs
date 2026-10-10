@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;
 using System.Linq;
 using GameFoundation.MetaProgression;
@@ -38,15 +38,15 @@ public static class PortalRoguelikeSetup
     {
         var b=AssetDatabase.LoadAssetAtPath<PortalTowerBalance>(PortalTowerProgressionSetup.BalancePath);
         b.upgrades.Clear();b.weapons.Clear();
-        void Weapon(PortalTowerBalance.Weapon w,string ru,string en,string desc,string eng,Sprite icon,float dmg,float cd,float range,float radius,float speed=3)
+        void Weapon(PortalTowerBalance.Weapon w,string ru,string en,string desc,string eng,Sprite icon)
         {
-            b.weapons.Add(new(){weapon=w,title=ru,englishTitle=en,description=desc,englishDescription=eng,icon=icon,damage=dmg,cooldown=cd,range=range,radius=radius,duration=.16f,expansionSpeed=speed});
+            b.weapons.Add(new(){weapon=w,title=ru,englishTitle=en,description=desc,englishDescription=eng,icon=icon,combat=AssetDatabase.LoadAssetAtPath<GameFoundation.Combat.CombatWeapon>("Assets/Resources/Combat/Weapons/Portal "+w+".asset"),duration=.16f});
             b.upgrades.Add(new(){id="weapon_"+w,title=ru,englishTitle=en,description=desc,englishDescription=eng,icon=icon,weapon=w,effect=PortalTowerBalance.Effect.UnlockWeapon,value=1,maximumRank=1});
         }
-        Weapon(PortalTowerBalance.Weapon.Bolts,"Магические снаряды","Magic bolts","Башня автоматически стреляет магическими снарядами по ближайшему врагу.","Automatically fires magic bolts at the nearest enemy.",Icon("Target"),10,1.5f,8,.1f);
-        Weapon(PortalTowerBalance.Weapon.Beam,"Выжигающий луч","Burning beam","Автоматически направляет пятно света на ближайшего врага в радиусе. Враги в пятне получают 8 урона каждые 0,5 секунды. Дальность: 6.","Automatically tracks the nearest enemy in range. Enemies inside take 8 damage every 0.5 seconds. Range: 6.",Icon("Magic"),8,.5f,6,.75f);
-        Weapon(PortalTowerBalance.Weapon.Rings,"Кольца силы","Force rings","Каждые 3 секунды от башни расходится кольцо. Оно наносит 16 урона каждому задетому врагу. Радиус: 6.","Every 3 seconds an expanding ring hits each enemy it touches for 16 damage. Range: 6.",Icon("Shield"),16,3,6,.22f);
-        Weapon(PortalTowerBalance.Weapon.Lightning,"Случайная молния","Random lightning","Каждые 2,5 секунды молния без промаха бьёт случайного врага в радиусе 8 на 20 урона.","Every 2.5 seconds lightning hits a random enemy within range 8 for 20 damage. It cannot miss.",Sprite("Assets/Sprites/Ui/Icons/Energy Crystal.png"),20,2.5f,8,.1f);
+        Weapon(PortalTowerBalance.Weapon.Bolts,"Магические снаряды","Magic bolts","Башня автоматически стреляет магическими снарядами по ближайшему врагу.","Automatically fires magic bolts at the nearest enemy.",Icon("Target"));
+        Weapon(PortalTowerBalance.Weapon.Beam,"Выжигающий луч","Burning beam","Автоматически направляет пятно света на ближайшего врага в радиусе. Враги в пятне получают 5 урона каждые 0,25 секунды. Дальность: 6.","Automatically tracks the nearest enemy in range. Enemies inside take 5 damage every 0.25 seconds. Range: 6.",Icon("Magic"));
+        Weapon(PortalTowerBalance.Weapon.Rings,"Кольца силы","Force rings","Каждые 1,5 секунды от башни расходится кольцо. Оно наносит 30 урона каждому задетому врагу. Радиус: 6.","Every 1.5 seconds an expanding ring hits each enemy it touches for 30 damage. Range: 6.",Icon("Shield"));
+        Weapon(PortalTowerBalance.Weapon.Lightning,"Случайная молния","Random lightning","Каждые 2 секунды молния без промаха бьёт случайного врага в радиусе 8 на 40 электрического урона.","Every 2 seconds lightning hits a random enemy within range 8 for 40 electric damage. It cannot miss.",Sprite("Assets/Sprites/Ui/Icons/Energy Crystal.png"));
         void Upgrade(PortalTowerBalance.WeaponDefinition w,PortalTowerBalance.Effect effect,string ru,string en,string desc,string eng,float value,int max)
         {
             b.upgrades.Add(new(){id=w.weapon+"_"+effect,weapon=w.weapon,title=ru,englishTitle=en,description=desc,englishDescription=eng,icon=w.icon,effect=effect,value=value,maximumRank=max});

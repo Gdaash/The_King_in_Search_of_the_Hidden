@@ -137,6 +137,7 @@ GameObject:
   - component: {fileID: 6189498405745864615}
   - component: {fileID: 9075061559678275506}
   - component: {fileID: 6544084654841755576}
+  - component: {fileID: 5364501252635908024}
   m_Layer: 9
   m_Name: BuilderOld
   m_TagString: Untagged
@@ -242,6 +243,9 @@ MonoBehaviour:
   targetSprite: {fileID: 8067589581821259260}
   damageTextPrefab: {fileID: 0}
   _cur: 0
+  hitFlashDuration: 0.16
+  hitScaleAmount: 0.12
+  deathDuration: 0.3
   OnHealthChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -300,5 +304,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stats: {fileID: 0}
-  speedVariation: 0
+  speedVariation: 0.15
   flipThreshold: 0.2
+--- !u!114 &5364501252635908024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6424592258639342999}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bd9379acbb699a4cb05ab0a3f6e24cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Combat.Combatant
+  baseHealth: 100
+  baseSpeed: 1.5
+  baseArmor: 0
+  weapon: {fileID: 0}
+  defense: {fileID: 11400000, guid: f48d96d9323a4b64e946486ca4f6a3e9, type: 2}
+  modifiers: {fileID: 11400000, guid: 8df75f902ce8f734d8e0b42a89bc72bc, type: 2}

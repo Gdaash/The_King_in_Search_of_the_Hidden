@@ -110,6 +110,7 @@ GameObject:
   - component: {fileID: 8201071060490024730}
   - component: {fileID: 69865424902096738}
   - component: {fileID: 8473832841586868003}
+  - component: {fileID: 4553908944440816930}
   m_Layer: 9
   m_Name: OctopusRaider
   m_TagString: Enemy1
@@ -223,7 +224,7 @@ MonoBehaviour:
   detectionRange: 50
   attackRange: 0.4
   baseAttackCooldown: 1.2
-  cooldownVariation: 0.4
+  cooldownVariation: 0
   homeStoppingDistance: 0.3
   positionVariation: 1.5
   OnMove:
@@ -308,7 +309,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stats: {fileID: 11400000, guid: 64c6f074d1f2ed94f838a387f2279668, type: 2}
-  speedVariation: 0.2
+  speedVariation: 0.3
   flipThreshold: 0.2
 --- !u!114 &7628581094449162847
 MonoBehaviour:
@@ -418,6 +419,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b13c2cc0471fdf54ca6ff9caa01c6e6b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.MetaProgression.EnemyLevel
+--- !u!114 &4553908944440816930
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5708845872940498816}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bd9379acbb699a4cb05ab0a3f6e24cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Combat.Combatant
+  baseHealth: 35
+  baseSpeed: 3
+  baseArmor: 0
+  weapon: {fileID: 11400000, guid: f89266ca5d53af0459f6edf1435ff1a9, type: 2}
+  defense: {fileID: 11400000, guid: f48d96d9323a4b64e946486ca4f6a3e9, type: 2}
+  modifiers: {fileID: 11400000, guid: 64c6f074d1f2ed94f838a387f2279668, type: 2}
 --- !u!1001 &4451284483017281345
 PrefabInstance:
   m_ObjectHideFlags: 0

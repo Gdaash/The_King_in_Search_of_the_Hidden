@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -71,6 +71,9 @@ public static class PortalRoguelikeValidation
         Check(p.WeaponCount==0 && p.Level==1,"Run starts without a weapon");
         p.AddExperience(p.RequiredExperience);
         Check(Time.timeScale==0 && p.Offers.Count==3,"Three choices and pause");
+        Check(UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject==null,"First card is not auto-selected");
+        var modalCanvas=view.GetComponent<Canvas>();
+        Check(modalCanvas.overrideSorting && modalCanvas.sortingOrder>=32760,"Upgrade modal above other UI");
         Check(p.Offers.All(u=>u.effect==PortalTowerBalance.Effect.UnlockWeapon) && p.Offers.Select(u=>u.weapon).Distinct().Count()==3,"First choice is three distinct weapons");
         Check(!p.Purchase("lights"),"Unshown upgrades cannot be purchased");
         yield return Wait(.3f);ScreenCapture.CaptureScreenshot("Temp/PortalRoguelikeCards.png");yield return Wait(.2f);
@@ -132,20 +135,27 @@ public static class PortalRoguelikeValidation
         Check(p.Level==cheatLevel+1 && p.Experience==0 && p.LevelPoints==1 && Time.timeScale==0,"Editor cheat grants one level and opens mandatory choice");
         p.GrantEditorLevel();Check(p.Level==cheatLevel+1,"Editor cheat cannot stack levels while choosing");
         p.Purchase(p.Offers[0].id);
+        if(p.Balance.IsWeaponEnabled(PortalTowerBalance.Weapon.Rings))
+        {
         Equip(PortalTowerBalance.Weapon.Rings);
         typeof(PortalWeaponController).GetField("ringTime",Private).SetValue(controller,Time.time+.2f);
         var ringA=Enemy((Vector2)tower.transform.position+Vector2.right*1.5f);var ringB=Enemy((Vector2)tower.transform.position+Vector2.up*1.5f);var ringFar=Enemy((Vector2)tower.transform.position+Vector2.right*8);
         yield return Wait(1.5f);
-        Check(ringA.CurrentHealth==84 && ringB.CurrentHealth==84 && ringFar.CurrentHealth==100,"Ring hits every touched enemy once and respects radius");
+        Check(ringA.CurrentHealth==70 && ringB.CurrentHealth==70 && ringFar.CurrentHealth==100,"Ring hits every touched enemy once and respects radius");
         Object.Destroy(ringA.gameObject);Object.Destroy(ringB.gameObject);Object.Destroy(ringFar.gameObject);
+        }
+        else Check(!p.HasWeapon(PortalTowerBalance.Weapon.Rings) && !p.Offers.Any(u=>u.weapon==PortalTowerBalance.Weapon.Rings),"Disabled rings excluded from weapons and offers");
         Equip(PortalTowerBalance.Weapon.Lightning);
         typeof(PortalWeaponController).GetField("lightningTime",Private).SetValue(controller,Time.time+.2f);
-        var la=Enemy((Vector2)tower.transform.position+Vector2.right*2);var lb=Enemy((Vector2)tower.transform.position+Vector2.up*2);var lf=Enemy((Vector2)tower.transform.position+Vector2.left*10);
-        yield return Wait(.6f);
-        Check(Mathf.Approximately(la.CurrentHealth+lb.CurrentHealth,180) && lf.CurrentHealth==100,"Lightning guarantees one random in-range hit");
+        var la=Enemy((Vector2)tower.transform.position+Vector2.right*2);var lb=Enemy((Vector2)tower.transform.position+Vector2.up*2);var lf=Enemy((Vector2)tower.transform.position+Vector2.left*3);
+        yield return Wait(.25f);
+        ScreenCapture.CaptureScreenshot("Temp/PortalPixelLightning.png");
+        yield return Wait(.35f);
+        Check(controller.lightningSprite!=null && p.Balance.FindWeapon(PortalTowerBalance.Weapon.Lightning).range<2.9f,"Pixel lightning uses short first-ring range");
+        Check(Mathf.Approximately(la.CurrentHealth+lb.CurrentHealth,160) && lf.CurrentHealth==100,"Lightning guarantees one random in-range hit");
         ranks["Lightning_Projectiles"]=1;
         typeof(PortalWeaponController).GetField("lightningTime",Private).SetValue(controller,Time.time+.1f);
-        yield return Wait(.4f);Check(la.CurrentHealth+lb.CurrentHealth==140,"Additional lightning hits another target");
+        yield return Wait(.4f);Check(la.CurrentHealth+lb.CurrentHealth==80,"Additional lightning hits another target");
         Object.Destroy(la.gameObject);Object.Destroy(lb.gameObject);Object.Destroy(lf.gameObject);
         Equip(PortalTowerBalance.Weapon.Bolts);tower.enabled=true;
         var boltEnemy=Enemy((Vector2)tower.transform.position+Vector2.right*3);
@@ -157,7 +167,7 @@ public static class PortalRoguelikeValidation
         foreach(var weapon in p.Balance.weapons)ranks["weapon_"+weapon.weapon]=1;
         var mixedEnemy=Enemy((Vector2)tower.transform.position+Vector2.left);
         yield return Wait(.8f);
-        Check(p.WeaponCount==4 && mixedEnemy.CurrentHealth<100,"Multiple owned weapons operate together");
+        Check(p.WeaponCount==p.Balance.weapons.Count(w=>p.Balance.IsWeaponEnabled(w.weapon)) && mixedEnemy.CurrentHealth<100,"Multiple owned weapons operate together");
         tower.enabled=false;yield return Wait(.5f);
         p.EndExpedition();float stopped=mixedEnemy.CurrentHealth;yield return Wait(.7f);
         Check(mixedEnemy.CurrentHealth==stopped,"Escape stops the new weapons safely");

@@ -106,6 +106,7 @@ GameObject:
   - component: {fileID: 6486551117769286756}
   - component: {fileID: 4705285276062767897}
   - component: {fileID: 1927028500747851521}
+  - component: {fileID: 5513028168109681058}
   m_Layer: 10
   m_Name: Arrow Tower
   m_TagString: Player
@@ -190,7 +191,7 @@ MonoBehaviour:
   stats: {fileID: 11400000, guid: 62a1334e60f30e3498144e6869b8149f, type: 2}
   targetTag: Enemy1
   defaultAttackRange: 10
-  cooldownVariation: 0.011
+  cooldownVariation: 0
   OnAttack:
     m_PersistentCalls:
       m_Calls:
@@ -251,6 +252,24 @@ MonoBehaviour:
   kickbackDist: 0.035
   shootSpeed: 60
   windupDuration: 0.02
+--- !u!114 &5513028168109681058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6943488352291659641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bd9379acbb699a4cb05ab0a3f6e24cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Combat.Combatant
+  baseHealth: 200
+  baseSpeed: 3
+  baseArmor: 0
+  weapon: {fileID: 11400000, guid: 439153515af5d3b4ab74c3035df36dd3, type: 2}
+  defense: {fileID: 11400000, guid: f48d96d9323a4b64e946486ca4f6a3e9, type: 2}
+  modifiers: {fileID: 11400000, guid: 62a1334e60f30e3498144e6869b8149f, type: 2}
 --- !u!1 &7209432102060306152
 GameObject:
   m_ObjectHideFlags: 0

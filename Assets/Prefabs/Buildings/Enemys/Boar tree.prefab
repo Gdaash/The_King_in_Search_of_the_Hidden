@@ -104,7 +104,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -0.027999878, y: 0.86300015}
+  m_AnchoredPosition: {x: 0, y: -0.88}
   m_SizeDelta: {x: 0.5, y: 0.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &2921617542428513679
@@ -373,7 +373,7 @@ SpriteRenderer:
   m_Size: {x: 2.04, y: 1.71}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
 --- !u!61 &6635042856157650514
@@ -438,6 +438,8 @@ MonoBehaviour:
   storageFullVisual: {fileID: 0}
   maxProductionCycles: 0
   ignoreFlag: 0
+  retainHumansBetweenCycles: 0
+  humanSuccessor: {fileID: 0}
   priority: 10
   requirements: []
   outputResources:
@@ -449,8 +451,6 @@ MonoBehaviour:
   inTransitIconPrefab: {fileID: 0}
   iconsContainer: {fileID: 8668909615778337043}
   iconSpacing: 0.4
-  bobbingAmount: 0.1
-  bobbingSpeed: 2
   OnResourceReceived:
     m_PersistentCalls:
       m_Calls: []
@@ -504,6 +504,9 @@ MonoBehaviour:
   targetSprite: {fileID: 3884981053325103957}
   damageTextPrefab: {fileID: 0}
   _cur: 0
+  hitFlashDuration: 0.16
+  hitScaleAmount: 0.12
+  deathDuration: 0.3
   OnHealthChanged:
     m_PersistentCalls:
       m_Calls:
@@ -560,7 +563,7 @@ Transform:
   m_GameObject: {fileID: 7596770899999892643}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.028, y: 0.847, z: 0}
+  m_LocalPosition: {x: 0, y: 0.8800001, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

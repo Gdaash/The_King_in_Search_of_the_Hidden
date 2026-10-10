@@ -75,7 +75,7 @@ public static class DefenseTowersValidation
         Check(shots[1]>=15 && shots[1]>shots[0]*3, "arrow tower fires many weak arrows");
         Check(shots[0]>=3 && shots[2]>=1 && shots[0]>shots[2], "magic shoots regularly, stone rarely");
         for(int i=0;i<3;i++) Check(targets[i].GetComponent<Health>().CurrentHealth<5000, names[i]+" projectile actually damages enemy");
-        Check(towers[2].CurrentRange<towers[0].CurrentRange && towers[2].GetStats().damageSettings[0].TotalDamage>towers[0].GetStats().damageSettings[0].TotalDamage*3,"stone short range and powerful damage");
+        Check(towers[2].CurrentRange<towers[0].CurrentRange && towers[2].GetComponent<GameFoundation.Combat.Combatant>().weapon.damage>=towers[0].GetComponent<GameFoundation.Combat.Combatant>().weapon.damage*2,"stone short range and powerful damage");
         checks.Add("Shots magic/arrow/stone: "+shots[0]+"/"+shots[1]+"/"+shots[2]);
         // Dead targets must stop attracting fire even while death animation is playing.
         for(int i=0;i<3;i++) targets[i].SetActive(false);

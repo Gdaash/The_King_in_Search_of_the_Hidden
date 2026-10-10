@@ -1,3 +1,4 @@
+using GameFoundation.Combat;
 using UnityEngine;
 using GameFoundation.MetaProgression;
 
@@ -13,6 +14,7 @@ public class EnemyMovement : MonoBehaviour
     [Header("Настройки разворота")]
     [SerializeField] private float flipThreshold = 0.1f; 
 
+    private Combatant combat;
     private Rigidbody2D _rb;
     private IEnemyAI _ai; 
     private bool _canMove = false;
@@ -22,7 +24,7 @@ public class EnemyMovement : MonoBehaviour
     public GlobalStats Stats => stats;
     public float SpeedVariation => speedVariation;
     // FixedUpdate currently uses this speed; the UI must describe actual movement.
-    public float CombatSpeed => _finalSpeed > 0f ? _finalSpeed : (stats != null ? stats.TotalSpeed : 3f) + _individualVariation;
+    public float CombatSpeed => _finalSpeed > 0f ? _finalSpeed : (combat!=null?combat.SpeedBeforeLevel:(stats != null ? stats.TotalSpeed : 3f)) + _individualVariation;
 
     public float CurrentSpeed
     {
@@ -35,6 +37,7 @@ public class EnemyMovement : MonoBehaviour
 
     void Awake()
     {
+        combat=GetComponent<Combatant>();
         _rb = GetComponent<Rigidbody2D>();
         _ai = GetComponent<IEnemyAI>(); 
         _initialScaleX = Mathf.Abs(transform.localScale.x);
@@ -65,7 +68,8 @@ public class EnemyMovement : MonoBehaviour
 
     private void UpdateSpeed()
     {
-        if (stats != null)
+        if(combat!=null) _finalSpeed=combat.SpeedBeforeLevel+_individualVariation;
+        else if (stats != null)
         {
             // Итоговая скорость = Глобальная (База + Бонус) + личная вариативность
             _finalSpeed = stats.TotalSpeed + _individualVariation;

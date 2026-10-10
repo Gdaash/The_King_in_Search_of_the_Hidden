@@ -1,3 +1,4 @@
+using GameFoundation.Combat;
 using UnityEngine;
 using System.Collections;
 using GameFoundation.MetaProgression;
@@ -157,7 +158,9 @@ public class EnemyVisuals_Ranged : MonoBehaviour
                 var stats = ai.GetStats();
                 if (stats != null)
                 {
-                    p.Setup(worldDir, ai.GetTargetTag(), stats.damageSettings, transform, MilitaryExperience.Multiplier(this));
+                    var combat=GetComponent<Combatant>();
+                    if(combat!=null && combat.weapon!=null)p.SetupHit(worldDir,ai.GetTargetTag(),combat.Damage,combat.weapon.damageType,transform);
+                    else p.Setup(worldDir, ai.GetTargetTag(), stats.damageSettings, transform, MilitaryExperience.Multiplier(this));
                 }
                 else
                 {

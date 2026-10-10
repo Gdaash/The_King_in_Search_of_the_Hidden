@@ -1,3 +1,4 @@
+using GameFoundation.Combat;
 using UnityEngine;
 using System.Linq;
 using UnityEngine.Events;
@@ -23,6 +24,7 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
     public UnityEvent OnStop;   
     public UnityEvent OnAttack; 
 
+    private Combatant combat;
     private Transform _target;
     private Transform _boundaryTarget;
     private PortalMeleeBoundary _portalBoundary;
@@ -41,13 +43,14 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
 
     public bool HasAssignedHomePoint => _hasAssignedHomePoint;
     public Vector3 AssignedHomePoint => _assignedHomePoint;
-    public float BaseAttackRange => attackRange;
-    public float BaseAttackCooldown => baseAttackCooldown;
+    public float BaseAttackRange => combat!=null?combat.RangeBeforeLevel:attackRange;
+    public float BaseAttackCooldown => combat!=null?combat.IntervalBeforeLevel:baseAttackCooldown;
     public float CooldownVariation => cooldownVariation;
     public float DetectionRange => detectionRange;
 
     void Awake()
     {
+        combat=GetComponent<Combatant>();
         // Каждый юнит выбирает случайную точку в круге при рождении
         _personalOffset = Random.insideUnitCircle * positionVariation;
         
@@ -109,7 +112,7 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
         }
         bool canReach = _portalBoundary != null
             ? _portalBoundary.IsAtBoundary(transform.position)
-            : distanceToTarget <= attackRange * MilitaryExperience.Multiplier(this);
+            : distanceToTarget <= BaseAttackRange * MilitaryExperience.Multiplier(this);
 
         if (canReach)
         {
@@ -171,7 +174,7 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
         }
     }
 
-    private void ResetCooldown() => _currentCooldown = Mathf.Max(.05f, (baseAttackCooldown + Random.Range(-cooldownVariation, cooldownVariation)) / MilitaryExperience.Multiplier(this));
+    private void ResetCooldown() => _currentCooldown = Mathf.Max(.05f, (BaseAttackCooldown + Random.Range(-cooldownVariation, cooldownVariation)) / MilitaryExperience.Multiplier(this));
     
     // EnemyMovement берет эту цель. Если врага нет — берет персональную точку у дома
     public Transform GetTarget() 

@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using GameFoundation.Audio;
 using UnityEngine;
@@ -17,13 +18,11 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private GameObject upgradeWindow;
         [Header("Получение опыта")]
         [SerializeField] private PortalExperienceCrystal experienceCrystalPrefab;
-        private Transform experienceDestination;
-        private SpriteRenderer portalRenderer;
         private readonly Dictionary<string, int> ranks = new();
         private readonly List<PortalTowerBalance.Upgrade> offers = new();
         public IReadOnlyList<PortalTowerBalance.Upgrade> Offers => offers;
         public int ChoiceLevel => Level - LevelPoints + 1;
-        public bool HasWeapon(PortalTowerBalance.Weapon weapon) => balance.upgrades.Exists(u =>
+        public bool HasWeapon(PortalTowerBalance.Weapon weapon) => balance.IsWeaponEnabled(weapon) && balance.upgrades.Exists(u =>
             u.weapon == weapon && u.effect == PortalTowerBalance.Effect.UnlockWeapon && Rank(u.id) > 0);
         public int WeaponCount => balance.weapons.FindAll(w => HasWeapon(w.weapon)).Count;
         private float previousSpeed;
@@ -36,6 +35,7 @@ namespace GameFoundation.MetaProgression
         public PortalTowerBalance Balance => balance;
         public int Level { get; private set; } = 1;
         public int Experience { get; private set; }
+        public int PendingExperience { get; private set; }
         public int LevelPoints { get; private set; }
         public int RequiredExperience => balance.RequiredExperience(Level);
         public bool CanAttack => !expeditionEnded && HasWeapon(PortalTowerBalance.Weapon.Bolts);
@@ -65,8 +65,8 @@ namespace GameFoundation.MetaProgression
 #endif
         public int Rank(string id) => ranks.TryGetValue(id, out int rank) ? rank : 0;
         public bool IsComplete(PortalTowerBalance.Upgrade upgrade) => upgrade.maximumRank > 0 && Rank(upgrade.id) >= upgrade.maximumRank;
-        public bool IsUnlocked(PortalTowerBalance.Upgrade upgrade) => upgrade.effect == PortalTowerBalance.Effect.UnlockWeapon
-            ? !HasWeapon(upgrade.weapon) : upgrade.weapon == PortalTowerBalance.Weapon.None || HasWeapon(upgrade.weapon);
+        public bool IsUnlocked(PortalTowerBalance.Upgrade upgrade) => balance.IsWeaponEnabled(upgrade.weapon) && (upgrade.effect == PortalTowerBalance.Effect.UnlockWeapon
+            ? !HasWeapon(upgrade.weapon) : upgrade.weapon == PortalTowerBalance.Weapon.None || HasWeapon(upgrade.weapon));
         public bool CanPurchase(PortalTowerBalance.Upgrade upgrade) => upgrade != null && LevelPoints > 0 && offers.Contains(upgrade) && !IsComplete(upgrade) && IsUnlocked(upgrade);
         private void RollOffers()
         {
@@ -94,32 +94,57 @@ namespace GameFoundation.MetaProgression
             if (expeditionEnded || amount <= 0) return;
             if (experienceCrystalPrefab != null)
             {
-                if (experienceDestination == null)
-                    foreach (var tower in FindObjectsByType<ArcherTower>(FindObjectsSortMode.None))
-                    {
-                        if (tower.GetStats() == null || !tower.GetStats().IsPortalTower) continue;
-                        var visuals = tower.GetComponent<TowerVisuals>();
-                        experienceDestination = visuals != null && visuals.ShootPoint != null ? visuals.ShootPoint : tower.transform;
-                        portalRenderer = tower.GetComponent<SpriteRenderer>();
-                        break;
-                    }
-                if (experienceDestination != null)
+                var bar=FindFirstObjectByType<PortalTowerExperienceBar>();
+                if(bar!=null)
                 {
-                    int count = Mathf.Min(amount, 32);
-                    for (int i = 0; i < count; i++)
-                        Instantiate(experienceCrystalPrefab, position, Quaternion.identity).Launch(position, experienceDestination, portalRenderer, i * .06f, i == count - 1);
+                    int count=Mathf.Min(amount,32);
+                    PendingExperience+=amount;
+                    Changed?.Invoke();
+                    int targetExperience=Experience+PendingExperience-amount;
+                    for(int i=0;i<count;i++)
+                    {
+                        int units=amount/count+(i<amount%count?1:0);
+                        targetExperience+=units;
+                        float targetFill=Mathf.Clamp01((float)targetExperience/RequiredExperience);
+                        Instantiate(experienceCrystalPrefab,position,Quaternion.identity).Launch(position,bar,i*.06f,i==count-1,()=>CommitIncomingExperience(units),targetFill);
+                    }
+                    return;
                 }
             }
             AddExperience(amount);
+        }
+        private void CommitIncomingExperience(int amount)
+        {
+            if(expeditionEnded)return;
+            PendingExperience=Mathf.Max(0,PendingExperience-amount);
+            Experience+=amount;
+            Changed?.Invoke();
+            if(Experience>=RequiredExperience)StartCoroutine(DelayedLevel(Experience+processedExperience));
+        }
+        private IEnumerator DelayedLevel(int arrivedExperience)
+        {
+            yield return new WaitForSecondsRealtime(.5f);
+            if(expeditionEnded)yield break;
+            // Only experience that had arrived when this delay began can level up.
+            ProcessLevels(arrivedExperience);
         }
         public void AddExperience(int amount)
         {
             if (amount <= 0 || balance == null || expeditionEnded) return;
             Experience += amount;
+            ProcessLevels(Experience+processedExperience);
+        }
+        private int processedExperience;
+        private void ProcessLevels(int availableExperience)
+        {
             bool gainedLevel = false;
-            while (Experience >= RequiredExperience)
+            int eligible=availableExperience-processedExperience;
+            while (eligible >= RequiredExperience)
             {
-                Experience -= RequiredExperience;
+                int required=RequiredExperience;
+                eligible-=required;
+                processedExperience+=required;
+                Experience -= required;
                 Level++;
                 LevelPoints++;
                 gainedLevel = true;
@@ -133,8 +158,7 @@ namespace GameFoundation.MetaProgression
                     GameSpeedControls.SetSimulationSpeed(0);
                     BlockInterface();
                     upgradeWindow.SetActive(true);
-                    var firstButton = Array.Find(upgradeWindow.GetComponentsInChildren<Button>(), b => b.IsInteractable());
-                    EventSystem.current?.SetSelectedGameObject(firstButton != null ? firstButton.gameObject : null);
+                    EventSystem.current?.SetSelectedGameObject(null);
                 }
                 GameAudioController.PlayUI(GameAudioCue.ContentUnlock);
             }
@@ -161,6 +185,8 @@ namespace GameFoundation.MetaProgression
         public void EndExpedition()
         {
             expeditionEnded = true;
+            PendingExperience=0;
+            Changed?.Invoke();
         }
         private void BlockInterface()
         {

@@ -1,3 +1,4 @@
+using GameFoundation.Combat;
 using UnityEngine;
 using System.Linq;
 using UnityEngine.Events;
@@ -28,6 +29,7 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
     public UnityEvent OnStop;   
     public UnityEvent OnAttack; 
 
+    private Combatant combat;
     private Transform _target;
     private Transform _homeTransform;
     
@@ -46,12 +48,13 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
     public float DetectionRange => detectionRange;
 
     // Свойства для удобного доступа к статам
-    public float CurrentAttackRange => (stats != null ? stats.TotalAttackRange : defaultAttackRange) * MilitaryExperience.Multiplier(this);
-    public float CurrentStopRange => (stats != null ? (stats.TotalAttackRange * 0.75f) : defaultStopRange) * MilitaryExperience.Multiplier(this);
-    public float CurrentCooldown => (stats != null ? stats.TotalCooldown : 2f) / MilitaryExperience.Multiplier(this);
+    public float CurrentAttackRange => (combat!=null?combat.RangeBeforeLevel:(stats != null ? stats.TotalAttackRange : defaultAttackRange)) * MilitaryExperience.Multiplier(this);
+    public float CurrentStopRange => (combat!=null?combat.RangeBeforeLevel*.75f:(stats != null ? (stats.TotalAttackRange * 0.75f) : defaultStopRange)) * MilitaryExperience.Multiplier(this);
+    public float CurrentCooldown => (combat!=null?combat.IntervalBeforeLevel:(stats != null ? stats.TotalCooldown : 2f)) / MilitaryExperience.Multiplier(this);
 
     void Awake()
     {
+        combat=GetComponent<Combatant>();
         _personalOffset = Random.insideUnitCircle * positionVariation;
         _offsetAnchor = new GameObject($"RangedAnchor_{gameObject.name}");
     }

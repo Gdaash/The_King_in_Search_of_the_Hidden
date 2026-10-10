@@ -1,3 +1,4 @@
+using GameFoundation.Combat;
 using UnityEngine;
 using System.Collections;
 using GameFoundation.MetaProgression;
@@ -90,7 +91,8 @@ public class EnemyVisuals : MonoBehaviour
         yield return AnimatePose(spriteParent.localPosition, targetLocalPos, spriteParent.localScale,
             new Vector3(baseScale.x * 0.92f, baseScale.y * 1.08f, baseScale.z), 1f / Mathf.Max(0.01f, jabSpeed));
 
-        if (target.TryGetComponent<Health>(out var h) && stats != null) 
+        if (target.TryGetComponent<Health>(out var h) && GetComponent<Combatant>() is Combatant combat && combat.weapon!=null) combat.Hit(h);
+        else if (target.TryGetComponent<Health>(out h) && stats != null) 
         {
             foreach (var dmgInfo in stats.damageSettings)
             {
