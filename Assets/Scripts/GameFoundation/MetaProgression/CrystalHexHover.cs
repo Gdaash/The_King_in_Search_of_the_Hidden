@@ -61,7 +61,7 @@ namespace GameFoundation.MetaProgression
         private void LateUpdate()
         {
             desired = default;
-            if (crystal != null && worldCamera != null && !crystal.Escaped &&
+            if (!PortalWeaponController.OwnsPointer && crystal != null && worldCamera != null && !crystal.Escaped &&
                 Input.mousePosition.x >= 0 && Input.mousePosition.y >= 0 &&
                 Input.mousePosition.x <= Screen.width && Input.mousePosition.y <= Screen.height &&
                 !crystal.IsPointerOverBlockingUI(Input.mousePosition))

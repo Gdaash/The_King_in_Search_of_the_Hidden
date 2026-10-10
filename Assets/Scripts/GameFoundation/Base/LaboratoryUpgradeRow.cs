@@ -27,27 +27,30 @@ namespace GameFoundation.Base
         public void Refresh(ScientificUpgradeTable.Entry entry, int bought, int total, GlobalStats stats)
         {
             Entry = entry;
-            IsComplete = bought == total;
-            bool unlocked = stats.IsUpgradeUnlocked(entry);
-            bool affordable = stats.CanPurchaseUpgrade(entry);
+            var portal = owner.portalProgression;
+            var upgrade = portal != null ? portal.Balance.Find(entry.id) : null;
+            IsComplete = portal != null ? portal.IsComplete(upgrade) : bought == total;
+            bool unlocked = portal != null ? portal.IsUnlocked(upgrade) : stats.IsUpgradeUnlocked(entry);
+            bool affordable = portal != null ? portal.CanPurchase(upgrade) : stats.CanPurchaseUpgrade(entry);
             Color tint = IsComplete ? purchasedColor : !unlocked ? lockedColor : affordable ? affordableColor : unaffordableColor;
             border.color = tint;
             lockIcon.color = unlocked || IsComplete ? new Color(.85f, .77f, .55f) : new Color(.64f, .59f, .68f);
-            requirementLabel.text = entry.requiredPurchases.ToString();
+            requirementLabel.text = (portal != null ? bought : entry.requiredPurchases).ToString();
+            if (portal != null) ResourceIconSizing.Apply(lockIcon, upgrade.icon);
             titleLabel.text = owner.Title(entry) + "  " + LaboratoryUpgradeList.Tr("laboratory.level", "ур.") + entry.level;
             titleLabel.color = IsComplete ? purchasedColor : unlocked ? new Color(.94f, .91f, .82f) : new Color(.64f, .60f, .67f);
             statusLabel.text = IsComplete ? LaboratoryUpgradeList.Tr("laboratory.complete", "Изучено") :
                 !unlocked ? LaboratoryUpgradeList.Tr("laboratory.locked", "Заблокировано") :
                 affordable ? LaboratoryUpgradeList.Tr("laboratory.available", "Можно изучить") : LaboratoryUpgradeList.Tr("laboratory.no_resources", "Не хватает ресурсов");
-            if (total > 1) statusLabel.text += "  ·  " + bought + "/" + total;
+            if (total > 1 || total == 0) statusLabel.text += "  ·  " + bought + "/" + (total == 0 ? "∞" : total.ToString());
             statusLabel.color = !unlocked && !IsComplete ? new Color(.64f, .59f, .68f) : tint;
             price.SetActive(true);
-            ResourceIconSizing.Apply(costIcon, entry.costResource != null ? entry.costResource.resourceIcon : null);
+            ResourceIconSizing.Apply(costIcon, portal != null ? portal.Balance.levelPointIcon : entry.costResource != null ? entry.costResource.resourceIcon : null);
             costIcon.enabled = costIcon.sprite != null;
             costLabel.text = entry.cost.ToString();
             costLabel.color = IsComplete ? new Color(.64f, .59f, .68f) : new Color(.94f, .91f, .82f);
             // A locked row still receives hover for its explanation.
-            purchaseButton.interactable = !IsComplete && unlocked;
+            purchaseButton.interactable = !IsComplete && unlocked && (portal == null || affordable);
             var actionColor = purchaseButton.GetComponent<GameFoundation.UI.ActionButtonLabelColor>();
             if (actionColor != null) actionColor.ActionAvailable = !IsComplete && affordable && unlocked;
         }

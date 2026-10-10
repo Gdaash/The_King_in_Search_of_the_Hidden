@@ -214,6 +214,7 @@ public class Health : MonoBehaviour
     { 
         if (_dead) return;
         _dead = true; 
+        if (CompareTag("Enemy1")) GameFoundation.MetaProgression.PortalTowerProgression.Instance?.AwardEnemyExperience(transform.position);
         AwardMilitaryExperience();
         if (_regenCoroutine != null) StopCoroutine(_regenCoroutine);
         if (_flashCoroutine != null) StopCoroutine(_flashCoroutine);

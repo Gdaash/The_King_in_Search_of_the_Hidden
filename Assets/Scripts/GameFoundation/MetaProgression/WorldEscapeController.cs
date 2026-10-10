@@ -172,7 +172,7 @@ namespace GameFoundation.MetaProgression
 
         private void OnEscapeClicked()
         {
-            if (_loading || _showingStatistics) return;
+            if (_loading || _showingStatistics || PortalTowerProgression.IsChoosingUpgrade) return;
             foodSufficiencyHint?.HideForEscape();
             if (_escaping)
             {

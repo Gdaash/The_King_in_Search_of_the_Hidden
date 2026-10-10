@@ -35,7 +35,7 @@ public class AlarmSystem : MonoBehaviour
     public static AlarmSystem Instance { get; private set; }
 
     [Header("Шкала тревоги")]
-    [SerializeField, Min(1f)] private float maximumAlarm = 100f;
+    private float maximumAlarm => difficultyTable != null ? difficultyTable.GetMaximumAlarm(GameFoundation.MetaProgression.DayCycleService.CurrentPortalDifficulty) : 300f;
     [SerializeField, Min(0f)] private float currentAlarm;
     [SerializeField, Min(0f)] private float fillSpeed = 3f;
     [SerializeField] private Image fillImage;
@@ -63,7 +63,8 @@ public class AlarmSystem : MonoBehaviour
     [SerializeField, Min(4f)] private float orbSize = 36f;
 
     [Header("Пороги и волны")]
-    [SerializeField] private List<AlarmThreshold> thresholds = new();
+    // Runtime state only: wave authoring lives exclusively in the referenced asset.
+    private List<AlarmThreshold> thresholds = new();
     [SerializeField] private AlarmDifficultyTable difficultyTable;
     [SerializeField, Min(1)] private int nearestBlockedHexesToUse = 8;
     [SerializeField] private Transform mapCenter;
@@ -157,7 +158,8 @@ public class AlarmSystem : MonoBehaviour
         _canvasRect = _canvas != null ? _canvas.transform as RectTransform : null;
     }
 
-    public IReadOnlyList<AlarmThreshold> ConfiguredThresholds => thresholds;
+    public IReadOnlyList<AlarmThreshold> ConfiguredThresholds => Application.isPlaying ? thresholds :
+        difficultyTable != null ? difficultyTable.GetThresholds(GameFoundation.MetaProgression.DayCycleService.CurrentPortalDifficulty) : Array.Empty<AlarmThreshold>();
     public AlarmDifficultyTable DifficultyTable => difficultyTable;
     public Sprite OrbSprite => orbSettings != null && orbSettings.Image != null ? orbSettings.Image.sprite : alarmOrbSprite != null ? alarmOrbSprite : uiSprite;
     public Color OrbColor => orbSettings != null && orbSettings.Image != null ? orbSettings.Image.color : Color.white;
@@ -363,7 +365,7 @@ public class AlarmSystem : MonoBehaviour
 
     private void EvaluateThresholds()
     {
-        foreach (AlarmThreshold threshold in thresholds)
+        foreach (AlarmThreshold threshold in ConfiguredThresholds)
         {
             if (threshold == null || _activatedThresholds.Contains(threshold) || currentAlarm < threshold.alarmValue)
                 continue;
@@ -754,7 +756,7 @@ public class AlarmSystem : MonoBehaviour
             else DestroyImmediate(child.gameObject);
         }
 
-        foreach (AlarmThreshold threshold in thresholds)
+        foreach (AlarmThreshold threshold in ConfiguredThresholds)
         {
             if (threshold == null) continue;
 
@@ -799,7 +801,7 @@ public class AlarmSystem : MonoBehaviour
     private void RefreshThresholdSkulls()
     {
         int visualIndex = 0;
-        foreach (AlarmThreshold threshold in thresholds)
+        foreach (AlarmThreshold threshold in ConfiguredThresholds)
         {
             if (threshold == null) continue;
             if (visualIndex >= _thresholdSkulls.Count) break;

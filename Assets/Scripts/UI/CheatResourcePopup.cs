@@ -77,7 +77,7 @@ public sealed class CheatResourcePopup : MonoBehaviour
 
     private void Update()
     {
-        if (GameFoundation.Base.ForestForagingService.IsPending) return;
+        if (GameFoundation.Base.ForestForagingService.IsPending || GameFoundation.MetaProgression.PortalTowerProgression.IsChoosingUpgrade) return;
         if (Input.GetKeyDown(KeyCode.L) && !IsEditingText())
         {
             if (window != null) window.SetActive(!window.activeSelf);

@@ -16,8 +16,8 @@ internal sealed class GlobalStatsEditor : Editor
             bool purchased = stats.HasUpgrade(ScientificUpgrades.SharpAxes);
             float multiplier = purchased ? stats.FindUpgradeDefinition(ScientificUpgrades.SharpAxes)?.effectValue ?? 1f : 1f;
             EditorGUILayout.HelpBox(
-                $"ИТОГОВОЕ ВРЕМЯ: {stats.TotalProductionTime:0.##} с\n" +
-                $"Базовое: {stats.baseProductionTime:0.##} с; «Заточить топоры»: " +
+                $"Базовое время задаётся в Duration таймера в префабе.\n" +
+                $"Модификатор «Заточить топоры»: " +
                 (purchased ? $"куплено, ×{multiplier:0.##}" : "не куплено") +
                 $"; ячейка сохранения: {SaveSlotPrefs.SelectedSlot}.", MessageType.Info);
         }
@@ -30,7 +30,8 @@ internal sealed class GlobalStatsEditor : Editor
         {
             EditorGUILayout.IntField("Ячейка сохранения", SaveSlotPrefs.SelectedSlot);
             EditorGUILayout.FloatField("Здоровье", stats.TotalMaxHealth);
-            EditorGUILayout.FloatField("Время производства", stats.TotalProductionTime);
+            EditorGUILayout.FloatField("Сокращение цикла, с", stats.bonusProductionSpeed);
+            EditorGUILayout.FloatField("Множитель времени производства", stats.ProductionTimeMultiplier);
             EditorGUILayout.FloatField("Множитель апгрейда открытия гекса", stats.HexOpeningTimeMultiplier);
             EditorGUILayout.FloatField("Снижение тревоги", stats.HexAlarmReduction);
             EditorGUILayout.Toggle("Может стрелять", stats.CanAttack);

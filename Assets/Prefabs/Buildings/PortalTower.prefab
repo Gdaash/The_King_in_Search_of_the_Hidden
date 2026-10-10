@@ -282,6 +282,7 @@ GameObject:
   - component: {fileID: 2103243559373853517}
   - component: {fileID: 5454212394572378618}
   - component: {fileID: 918284753103309342}
+  - component: {fileID: 5890546333870403907}
   m_Layer: 10
   m_Name: PortalTower
   m_TagString: Player
@@ -481,6 +482,7 @@ MonoBehaviour:
   targetTag: Enemy1
   kickbackDist: 0
   shootSpeed: 10
+  windupDuration: 0.2
 --- !u!61 &2103243559373853517
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -561,6 +563,20 @@ MonoBehaviour:
   humanResourceType: {fileID: 11400000, guid: 07868ec9cbda2e44a81ed7cdb689956f, type: 2}
   cartResourceType: {fileID: 11400000, guid: a10a6a3e8d324c83bdd10ee0d968d9e2, type: 2}
   porterPrefab: {fileID: 6828933153720249748, guid: 4396e69a114909f40b9fc29f9679aff9, type: 3}
+--- !u!114 &5890546333870403907
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2638661897868168699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26fd4151456bd164b940f4aff7de84c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PortalMeleeBoundary
+  hexSprite: {fileID: 21300000, guid: 10d69ab3cd2a23f4684586dba86cf240, type: 3}
+  hexScale: {x: 1, y: 1}
 --- !u!1 &5269539732869380220
 GameObject:
   m_ObjectHideFlags: 0

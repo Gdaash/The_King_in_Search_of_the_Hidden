@@ -3,14 +3,15 @@ using UnityEngine.Events;
 
 public class TimerController : MonoBehaviour
 {
-    [Header("Глобальные настройки (Опционально)")]
+    [Header("Модификаторы времени (Опционально)")]
+    [Tooltip("Только модификаторы улучшений. Базовое время всегда задаётся в Duration этого таймера.")]
     [SerializeField] private GlobalStats stats; 
 
     [Header("Ссылки")]
     [SerializeField] private GameObject progressBarObject; // Вернул эту переменную
 
-    [Header("Настройки времени (Если нет GlobalStats)")]
-    [SerializeField] private float duration = 5f; 
+    [Header("Базовое время цикла в префабе")]
+    [SerializeField, Min(0.2f)] private float duration = 5f; 
     [SerializeField] private bool loopInfinitely = false; 
     [SerializeField] private int repeatCount = 1; 
     [SerializeField] private bool runOnStart = true;
@@ -47,11 +48,11 @@ public class TimerController : MonoBehaviour
             progressBarObject.SendMessage("Show", SendMessageOptions.DontRequireReceiver);
     }
 
-    // Логика: берем время из статов или из локальной переменной
-    private float CurrentDuration => stats != null ? stats.TotalProductionTime : duration;
+    // Префаб владеет базовым временем, GlobalStats применяет только улучшения.
+    private float CurrentDuration => stats != null ? stats.ApplyProductionTimeModifiers(duration) : Mathf.Max(0.2f, duration);
 
     /// <summary>
-    /// Длительность, настроенная для этого таймера в инспекторе либо через GlobalStats.
+    /// Длительность из префаба с модификаторами GlobalStats.
     /// Системы, запускающие таймер, должны брать базовое время отсюда, а не подменять его
     /// собственной формулой.
     /// </summary>

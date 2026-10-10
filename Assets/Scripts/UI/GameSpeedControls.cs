@@ -33,6 +33,7 @@ public sealed class GameSpeedControls : MonoBehaviour
 
     public static float SetSimulationSpeed(float speed)
     {
+        if (GameFoundation.MetaProgression.PortalTowerProgression.IsChoosingUpgrade) speed = 0;
         SimulationSpeed = Mathf.Clamp(speed, 0f, 4f);
         Time.timeScale = SimulationSpeed;
         return SimulationSpeed;

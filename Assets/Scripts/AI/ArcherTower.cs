@@ -25,13 +25,18 @@ public class ArcherTower : MonoBehaviour
     private float _currentCooldown;
 
     // Свойства для получения данных из GlobalStats
-    public float CurrentRange => stats != null ? stats.TotalAttackRange : defaultAttackRange;
-    public float CurrentCooldownBase => stats != null ? stats.TotalCooldown : 1.5f;
+    public float CurrentRange => (PortalProgression?.Balance.FindWeapon(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Bolts)?.range ?? (stats != null ? stats.TotalAttackRange : defaultAttackRange)) *
+        (PortalProgression != null ? PortalProgression.RangeMultiplier : 1f);
+    public float CurrentCooldownBase => (PortalProgression?.Balance.FindWeapon(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Bolts)?.cooldown ?? (stats != null ? stats.TotalCooldown : 1.5f)) /
+        (PortalProgression != null ? PortalProgression.AttackSpeedMultiplier : 1f);
+    public GameFoundation.MetaProgression.PortalTowerProgression PortalProgression =>
+        stats != null && stats.IsPortalTower ? GameFoundation.MetaProgression.PortalTowerProgression.Instance : null;
 
     void Start() => ResetCooldown();
 
     void Update()
     {
+        if (Time.timeScale <= 0) return;
         if (stats != null && !stats.CanAttack) return;
         FindClosestTarget();
 

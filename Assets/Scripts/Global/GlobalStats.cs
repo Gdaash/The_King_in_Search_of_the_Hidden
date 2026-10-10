@@ -44,10 +44,11 @@ public class GlobalStats : ScriptableObject
     public float TotalAttackRange => baseAttackRange + bonusAttackRange;
 
     [Header("Производство (Таймеры)")]
-    public float baseProductionTime = 5f;
-    public float bonusProductionSpeed = 0f; 
-    public float TotalProductionTime => Mathf.Max(0.2f, (baseProductionTime - bonusProductionSpeed) *
-        (applySharpAxes ? ScientificMultiplier(ScientificUpgrades.SharpAxes) : 1f));
+    [Tooltip("На сколько секунд улучшения сокращают базовый цикл из префаба.")]
+    public float bonusProductionSpeed = 0f;
+    public float ProductionTimeMultiplier => applySharpAxes ? ScientificMultiplier(ScientificUpgrades.SharpAxes) : 1f;
+    public float ApplyProductionTimeModifiers(float baseDuration) =>
+        Mathf.Max(0.2f, (baseDuration - bonusProductionSpeed) * ProductionTimeMultiplier);
 
     [Header("Научная лаборатория")]
     [Tooltip("Таблица с определениями и значениями эффектов улучшений. Назначается на глобальные статы гексов.")]
@@ -92,7 +93,9 @@ public class GlobalStats : ScriptableObject
     }
     public ScientificUpgradeTable.Entry FindUpgradeDefinition(string id) =>
         ScientificSource.scientificUpgradeTable != null ? ScientificSource.scientificUpgradeTable.Find(id) : null;
-    public bool CanAttack => !requiresPortalArrows || HasUpgrade(ScientificUpgrades.PortalArrows);
+    public bool IsPortalTower => requiresPortalArrows;
+    public bool CanAttack => !requiresPortalArrows || (PortalTowerProgression.Instance != null
+        ? PortalTowerProgression.Instance.CanAttack : HasUpgrade(ScientificUpgrades.PortalArrows));
     public float HexOpeningTimeMultiplier => applyFastHex ? ScientificMultiplier(ScientificUpgrades.FastHex) : 1f;
     public float HexAlarmReduction => applyQuietScouting ? ScientificReduction(ScientificUpgrades.QuietScouting) : 0f;
     /// <summary>Health fraction at which warriors retreat to the portal. A negative value means the upgrade is unavailable.</summary>
@@ -103,6 +106,7 @@ public class GlobalStats : ScriptableObject
     {
         get
         {
+            if (PortalTowerProgression.Instance != null) return PortalTowerProgression.Instance.LightCount;
             int count = 1;
             foreach (string id in ScientificUpgrades.Flashlights)
             {

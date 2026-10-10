@@ -11,8 +11,15 @@ namespace Steamworks
     {
         private bool _isInitialized = false;
         
-        void Awake()
+        void OnEnable()
         {
+            if (CallbackDispatcher.IsInitialized) _isInitialized = true;
+            else InitializeSteam();
+        }
+
+        private void InitializeSteam()
+        {
+            _isInitialized = false;
             // Инициализация Steam API
             if (SteamAPI.Init())
             {
@@ -29,8 +36,12 @@ namespace Steamworks
         {
             if (_isInitialized)
             {
-                //TODO при скалировании времени равны 0
-                // Update вызываться не будет
+                // Editor reloads can reset the dispatcher independently of this flag.
+                if (!CallbackDispatcher.IsInitialized)
+                {
+                    InitializeSteam();
+                    if (!_isInitialized || !CallbackDispatcher.IsInitialized) return;
+                }
                 SteamAPI.RunCallbacks();
             }
         }
@@ -39,14 +50,15 @@ namespace Steamworks
         {
             if (_isInitialized)
             {
-                SteamAPI.Shutdown();
+                _isInitialized = false;
+                if (CallbackDispatcher.IsInitialized) SteamAPI.Shutdown();
             }
         }
 
         // Пример функции для разблокировки достижения
         public bool UnlockAchievement(string achievementId)
         {
-            if (!_isInitialized) return false;
+            if (!_isInitialized || !CallbackDispatcher.IsInitialized) return false;
 
             bool setAchievement = SteamUserStats.SetAchievement(achievementId);
             bool storeStats     = SteamUserStats.StoreStats(); // Отправляет данные на сервер Steam
@@ -58,6 +70,7 @@ namespace Steamworks
 
         public void ClearAchievements(List<string> idAchievements)
         {
+            if (!_isInitialized || !CallbackDispatcher.IsInitialized) return;
             foreach (var id in idAchievements)
             {
                 bool state = SteamUserStats.ClearAchievement(id);

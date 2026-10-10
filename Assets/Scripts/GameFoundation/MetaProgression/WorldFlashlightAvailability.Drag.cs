@@ -62,6 +62,7 @@ namespace GameFoundation.MetaProgression
         // This is also exercised by the Play Mode audit with screen-space pointer sequences.
         internal void ProcessDragPointer(Vector2 screenPosition, bool pressed, bool held, bool released)
         {
+            if (PortalWeaponController.OwnsPointer) { CancelDrag(); return; }
             if (escaped || !LightsActivated || worldCamera == null || GameSpeedControls.SimulationSpeed <= 0)
             { CancelDrag(); return; }
             bool onScreen = worldCamera.pixelRect.Contains(screenPosition);

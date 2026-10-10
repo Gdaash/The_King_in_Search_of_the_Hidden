@@ -24,6 +24,8 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
     public UnityEvent OnAttack; 
 
     private Transform _target;
+    private Transform _boundaryTarget;
+    private PortalMeleeBoundary _portalBoundary;
     private Transform _homeTransform;
 
     private bool _isAttacking = false;
@@ -100,7 +102,16 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
     {
         float distanceToTarget = Vector2.Distance(transform.position, _target.position);
 
-        if (distanceToTarget <= attackRange * MilitaryExperience.Multiplier(this))
+        if (_boundaryTarget != _target)
+        {
+            _boundaryTarget = _target;
+            _portalBoundary = CompareTag("Enemy1") ? _target.GetComponentInParent<PortalMeleeBoundary>() : null;
+        }
+        bool canReach = _portalBoundary != null
+            ? _portalBoundary.IsAtBoundary(transform.position)
+            : distanceToTarget <= attackRange * MilitaryExperience.Multiplier(this);
+
+        if (canReach)
         {
             OnStop?.Invoke();
             if (!_isAttacking && Time.time >= _nextAttackTime)

@@ -8,13 +8,13 @@ internal sealed class TimerControllerEditor : Editor
     {
         serializedObject.Update();
         var stats = serializedObject.FindProperty("stats").objectReferenceValue as GlobalStats;
-        float effectiveDuration = stats != null
-            ? stats.TotalProductionTime
-            : serializedObject.FindProperty("duration").floatValue;
+        float baseDuration = serializedObject.FindProperty("duration").floatValue;
+        float effectiveDuration = stats != null ? stats.ApplyProductionTimeModifiers(baseDuration) : Mathf.Max(.2f, baseDuration);
         EditorGUILayout.HelpBox(
-            $"ДЛИТЕЛЬНОСТЬ ЦИКЛА: {effectiveDuration:0.##} с. " +
-            (stats != null ? $"Берётся из GlobalStats «{stats.name}». Поле Duration ниже запасное."
-                : "Берётся из локального поля Duration."), MessageType.Info);
+            $"БАЗОВОЕ ВРЕМЯ ИЗ ПРЕФАБА: {baseDuration:0.##} с.\n" +
+            $"С УЛУЧШЕНИЯМИ: {effectiveDuration:0.##} с. " +
+            (stats != null ? $"Модификаторы из GlobalStats «{stats.name}»: −{stats.bonusProductionSpeed:0.##} с, ×{stats.ProductionTimeMultiplier:0.##}."
+                : "Модификаторы не назначены."), MessageType.Info);
 
         if (Application.isPlaying)
         {

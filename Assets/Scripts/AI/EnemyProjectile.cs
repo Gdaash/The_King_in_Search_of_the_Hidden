@@ -13,8 +13,9 @@ public class EnemyProjectile : MonoBehaviour
     private Transform _owner;
     private float _damageMultiplier = 1f;
     private bool _hasHit;
+    private float _speedMultiplier = 1f;
 
-    public void Setup(Vector3 dir, string targetTag, List<GlobalStats.DamageInfo> damageData, Transform owner = null, float damageMultiplier = 1f) 
+    public void Setup(Vector3 dir, string targetTag, List<GlobalStats.DamageInfo> damageData, Transform owner = null, float damageMultiplier = 1f, float speedMultiplier = 1f, float minimumLifetime = 0f)
     {
         _direction = dir;
         _hasHit = false;
@@ -22,12 +23,13 @@ public class EnemyProjectile : MonoBehaviour
         _damageData = damageData;
         _owner = owner;
         _damageMultiplier = Mathf.Max(0f, damageMultiplier);
+        _speedMultiplier = Mathf.Max(.01f,speedMultiplier);
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0, 0, angle);
-        Destroy(gameObject, lifetime);
+        Destroy(gameObject, Mathf.Max(lifetime,minimumLifetime));
     }
 
-    void Update() => transform.position += _direction * speed * Time.deltaTime;
+    void Update() => transform.position += _direction * speed * _speedMultiplier * Time.deltaTime;
 
     private void OnTriggerEnter2D(Collider2D collision) => ProcessHit(collision.gameObject);
 

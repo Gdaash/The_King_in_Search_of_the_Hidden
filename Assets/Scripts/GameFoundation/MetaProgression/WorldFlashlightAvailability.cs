@@ -93,6 +93,26 @@ namespace GameFoundation.MetaProgression
                 autoRepeatToggle.onValueChanged.AddListener(SetAutoRepeat);
             }
             InitializeDragControls();
+            if (PortalTowerProgression.Instance != null) PortalTowerProgression.Instance.Changed += RefreshAvailableLights;
+        }
+        private void RefreshAvailableLights()
+        {
+            if (escaped) return;
+            int count = Mathf.Min(flashlights.Length, flashlightStats != null ? flashlightStats.AvailableFlashlightCount : 1);
+            if (count <= lights.Length) return;
+            var available = new List<LightAssignment>(lights);
+            for (int i = lights.Length; i < count; i++)
+            {
+                var root = flashlights[i];
+                if (root == null) continue;
+                root.SetActive(true);
+                var beam = root.GetComponent<CrystalLightBeam>();
+                if (beam == null) continue;
+                available.Add(new LightAssignment { beam = beam, position = beam.MarkerPosition,
+                    restartPending = LightsActivated && autoRepeat, restartAfterFrame = Time.frameCount + 1 });
+                if (LightsActivated) beam.ShowIdle(beam.MarkerPosition);
+            }
+            lights = available.ToArray();
         }
         public bool IsPointerOverBlockingUI(Vector2 screenPosition)
         {
@@ -484,6 +504,7 @@ namespace GameFoundation.MetaProgression
         }
         public void DisableAllForEscape()
         {
+            PortalTowerProgression.Instance?.EndExpedition();
             escaped = true;
             StopAllCoroutines();
             pendingDragLight = draggedLight = -1;
@@ -497,6 +518,7 @@ namespace GameFoundation.MetaProgression
         }
         private void OnDisable()
         {
+            if (PortalTowerProgression.Instance != null) PortalTowerProgression.Instance.Changed -= RefreshAvailableLights;
             if (autoRepeatToggle != null) autoRepeatToggle.onValueChanged.RemoveListener(SetAutoRepeat);
             DisableAllForEscape();
         }

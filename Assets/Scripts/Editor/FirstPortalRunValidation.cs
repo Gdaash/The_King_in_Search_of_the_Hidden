@@ -90,6 +90,9 @@ public static class FirstPortalRunValidation
             if (expected[i] != null)
                 Check(UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None).Any(g => g.name == expected[i] + "(Clone)" && Vector3.Distance(g.transform.position, hexes[i].transform.position) < 0.01f), "Content spawned on chosen hex");
             hexes[i].RemoveHex(); // Repeated completion must not advance the sequence.
+            var towerProgression = PortalTowerProgression.Instance;
+            while (towerProgression != null && towerProgression.LevelPoints > 0)
+                Check(towerProgression.Purchase(towerProgression.Offers[0].id), "Choose earned tower upgrade before continuing the run");
         }
         var alarm = UnityEngine.Object.FindFirstObjectByType<AlarmSystem>();
         var presentation = UnityEngine.Object.FindFirstObjectByType<FirstPortalRunPresentation>();
