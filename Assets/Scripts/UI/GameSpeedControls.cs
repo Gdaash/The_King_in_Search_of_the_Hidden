@@ -16,6 +16,8 @@ public sealed class GameSpeedControls : MonoBehaviour
     [SerializeField] private GameObject pauseGlyph;
     [SerializeField] private Sprite playSprite;
     [SerializeField] private Sprite pauseSprite;
+    [SerializeField] private Color activeLabelColor = new Color(1f,.78f,.35f,1f);
+    [SerializeField] private Color inactiveLabelColor = new Color(.47f,.41f,.55f,1f);
 
     public float CurrentSpeed { get; private set; } = 1f;
 
@@ -61,7 +63,12 @@ public sealed class GameSpeedControls : MonoBehaviour
         SetSelected(normalSelected, Mathf.Approximately(CurrentSpeed, 1f));
         SetSelected(doubleSelected, Mathf.Approximately(CurrentSpeed, 2f));
         SetSelected(quadrupleSelected, Mathf.Approximately(CurrentSpeed, 3f));
+        Tint(normalButton,Mathf.Approximately(CurrentSpeed,1));
+        Tint(doubleButton,Mathf.Approximately(CurrentSpeed,2));
+        Tint(quadrupleButton,Mathf.Approximately(CurrentSpeed,3));
     }
+    private void Tint(Button button,bool selected)
+    { if(!button)return;var label=button.transform.Find("Pixel Label");if(label){var image=label.GetComponent<UnityEngine.UI.Image>();if(image)image.color=selected?activeLabelColor:inactiveLabelColor;} }
 
     private static void SetSelected(GameObject marker, bool selected)
     {

@@ -39,7 +39,7 @@ namespace GameFoundation.Quests
             {
                 if (catalog != null) foreach (var entry in catalog.quests) QuestProgress.TryFail(entry, resources);
                 var quest = QuestProgress.Current(catalog);
-                if (QuestProgress.TryComplete(quest, resources)) GameNotifications.Post("Задание выполнено: " + quest.title, NotificationKind.Positive);
+                if (QuestProgress.TryComplete(quest, resources)) GameNotifications.Post(GameFoundation.Localization.GameText.Get("Задание выполнено: ") + quest.title, NotificationKind.Positive);
                 ActivateDialogues();
             }
             finally { evaluating = false; }

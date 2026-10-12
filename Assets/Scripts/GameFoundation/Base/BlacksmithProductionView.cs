@@ -69,7 +69,7 @@ namespace GameFoundation.Base
                 return;
 
             manager.AddResource(recipe.output, recipe.outputAmount);
-            GameFoundation.UI.GameNotifications.Post("Оружие изготовлено", GameFoundation.UI.NotificationKind.Positive, recipe.output.resourceIcon);
+            GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Оружие изготовлено"), GameFoundation.UI.NotificationKind.Positive, recipe.output.resourceIcon);
             GameAudioController.PlayUI(GameAudioCue.ProductionComplete, 0.85f, 0.96f, 1.04f, 0.08f);
             Refresh();
         }

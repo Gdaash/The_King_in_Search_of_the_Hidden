@@ -46,6 +46,10 @@ public class ResourceRequester : MonoBehaviour {
     [SerializeField] protected List<ResourceOutput> outputResources = new List<ResourceOutput>();
     [SerializeField] protected Transform spawnPoint;
     [SerializeField] protected float spawnSpread = 0.5f;
+    [Tooltip("Полуразмер области выпадения ресурсов относительно центра гекса.")]
+    [SerializeField] private Vector2 resourceDropHalfSize = new Vector2(1.5f, 1.3f);
+    private float _resourceDropPosition;
+    private bool _resourceDropPositionInitialized;
 
     [Header("Визуал иконок")]
     [Tooltip("Обычная иконка ресурса")]
@@ -451,16 +455,60 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     protected void SpawnAllResults() {
+        HexMagnet dropHex = GetDropHex();
         foreach (var output in outputResources) {
             if (output.prefab == null) continue;
             for (int i = 0; i < output.count; i++) {
                 Vector3 origin = transform.position;
                 Vector3 spawnTarget = (spawnPoint != null ? spawnPoint.position : origin) + new Vector3(Random.Range(-spawnSpread, spawnSpread), Random.Range(-spawnSpread, spawnSpread), 0);
+                if (dropHex != null && output.prefab.GetComponent<ResourceItem>() != null)
+                    spawnTarget = GetResourceDropPosition(dropHex.transform.position, origin.z);
                 GameObject res = Instantiate(output.prefab, origin, Quaternion.identity);
                 if (res.CompareTag("Untagged")) res.tag = "Resource";
                 _spawnedResources.Add(res);
                 StartCoroutine(TossResource(res.transform, origin, spawnTarget));
             }
+        }
+    }
+
+    private HexMagnet GetDropHex() {
+        var parentHex = GetComponentInParent<HexMagnet>();
+        if (parentHex != null) return parentHex;
+        HexMagnet nearest = null;
+        float distance = 2f * 2f;
+        foreach (var hex in HexMagnet.ActiveInstances) {
+            if (hex == null) continue;
+            float candidate = ((Vector2)(hex.transform.position - transform.position)).sqrMagnitude;
+            if (candidate < distance) { distance = candidate; nearest = hex; }
+        }
+        return nearest;
+    }
+
+    private Vector3 GetResourceDropPosition(Vector3 center, float z) {
+        if (!_resourceDropPositionInitialized) {
+            _resourceDropPosition = Random.value;
+            _resourceDropPositionInitialized = true;
+        }
+        // Golden-ratio spacing spreads both a batch and successive cycles around the hex.
+        _resourceDropPosition = Mathf.Repeat(_resourceDropPosition + .61803399f, 1f);
+        float edgePosition = Mathf.Lerp(.12f, 4.88f, _resourceDropPosition);
+        int edge = Mathf.FloorToInt(edgePosition);
+        Vector2 half = new Vector2(Mathf.Max(.1f, resourceDropHalfSize.x), Mathf.Max(.1f, resourceDropHalfSize.y));
+        // Walk the five edges from bottom-right to bottom-left, leaving the bottom free.
+        Vector2 a = ResourceDropCorner(edge, half);
+        Vector2 b = ResourceDropCorner(edge + 1, half);
+        Vector2 offset = Vector2.Lerp(a, b, edgePosition - edge) * Random.Range(.86f, .96f);
+        return new Vector3(center.x + offset.x, center.y + offset.y, z);
+    }
+
+    private static Vector2 ResourceDropCorner(int corner, Vector2 half) {
+        switch (corner) {
+            case 0: return new Vector2(half.x * .5f, -half.y);
+            case 1: return new Vector2(half.x, 0f);
+            case 2: return new Vector2(half.x * .5f, half.y);
+            case 3: return new Vector2(-half.x * .5f, half.y);
+            case 4: return new Vector2(-half.x, 0f);
+            default: return new Vector2(-half.x * .5f, -half.y);
         }
     }
 

@@ -35,8 +35,8 @@ namespace GameFoundation.Base
             bool unlocked = PortalProgression.IsUnlocked(location);
             title.text = PortalProgression.Name(location);
             title.color = unlocked ? new Color(.94f, .91f, .82f) : new Color(.68f, .63f, .72f);
-            status.text = unlocked ? PortalPopupView.Tr("base.portal.available", "Доступно") :
-                string.Format(PortalPopupView.Tr("base.portal.requires_level", "Улучшите портал до ур. {0}"), location.RequiredPortalLevel);
+            status.text = unlocked ? PortalPopupView.Tr("base.portal.available", GameFoundation.Localization.GameText.Get("Доступно")) :
+                string.Format(PortalPopupView.Tr("base.portal.requires_level", GameFoundation.Localization.GameText.Get("Улучшите портал до ур. {0}")), location.RequiredPortalLevel);
             status.color = unlocked ? new Color(.58f, .77f, .52f) : new Color(.68f, .63f, .72f);
             lockIcon.enabled = !unlocked;
             selection.enabled = selected;

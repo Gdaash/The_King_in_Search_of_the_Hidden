@@ -155,6 +155,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.UnifiedButtonFeedback
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
+  keepHoverScaleWhenPressed: 0
+  animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
+  hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
   hoverScaleMultiplier: 1
@@ -178,6 +185,8 @@ MonoBehaviour:
   training: {fileID: 0}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!1 &828976966890224271
 GameObject:
   m_ObjectHideFlags: 0
@@ -265,6 +274,7 @@ GameObject:
   - component: {fileID: 6697938370035034577}
   - component: {fileID: 5219666051976458646}
   - component: {fileID: 5247463051087427645}
+  - component: {fileID: 6826363572793576628}
   m_Layer: 0
   m_Name: Exclamation
   m_TagString: Untagged
@@ -348,6 +358,19 @@ MonoBehaviour:
   m_EffectColor: {r: 0.18, g: 0.05, b: 0.06, a: 1}
   m_EffectDistance: {x: 1, y: -1}
   m_UseGraphicAlpha: 1
+--- !u!114 &6826363572793576628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5207245234190281296}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbcd56c5a16f10649b89bd61ef0ab5ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedGameText
+  source: 
 --- !u!1 &6888679203792821308
 GameObject:
   m_ObjectHideFlags: 0
@@ -435,6 +458,7 @@ GameObject:
   - component: {fileID: 6046074106156672629}
   - component: {fileID: 8604509310229485683}
   - component: {fileID: 7677561934418311820}
+  - component: {fileID: 4946110953574863218}
   m_Layer: 0
   m_Name: Label
   m_TagString: Untagged
@@ -503,3 +527,16 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "\u041F\u043E\u0441\u0442\u0440\u043E\u0438\u0442\u044C"
+--- !u!114 &4946110953574863218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8423575277440395439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbcd56c5a16f10649b89bd61ef0ab5ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedGameText
+  source: 

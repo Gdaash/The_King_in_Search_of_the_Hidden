@@ -95,7 +95,7 @@ namespace GameFoundation.Base
             if (result.food > 0) resources.AddResource(settings.food, result.food);
             SaveSlotPrefs.Save();
             ForagingInputLock.SetLocked(false);
-            GameFoundation.UI.GameNotifications.Post($"Поиски еды: выжило {result.survived}, погибло {result.dead}");
+            GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Format("Поиски еды: выжило {0}, погибло {1}", result.survived, result.dead));
             return true;
         }
     }

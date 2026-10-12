@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using GameFoundation.Base;
 
@@ -64,8 +64,8 @@ namespace GameFoundation.MetaProgression
                 fill.rectTransform.anchorMax = new Vector2(fill.fillAmount, 1);
                 fill.rectTransform.offsetMin = fill.rectTransform.offsetMax = Vector2.zero;
             }
-            label.text = LaboratoryUpgradeList.Tr("portal_tower.experience", "Башня портала") + "  " +
-                LaboratoryUpgradeList.Tr("laboratory.level", "ур.") + progression.Level + "   " + progression.Experience + " / " + progression.RequiredExperience;
+            label.text = LaboratoryUpgradeList.Tr("portal_tower.experience", GameFoundation.Localization.GameText.Get("Башня портала")) + "  " +
+                LaboratoryUpgradeList.Tr("laboratory.level", GameFoundation.Localization.GameText.Get("ур.")) + progression.Level + "   " + progression.Experience + " / " + progression.RequiredExperience;
         }
     }
 }

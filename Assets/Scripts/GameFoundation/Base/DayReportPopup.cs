@@ -9,6 +9,21 @@ namespace GameFoundation.Base
 {
     public sealed class DayReportPopup : MonoBehaviour
     {
+        private static readonly HashSet<DayReportPopup> pendingReports = new();
+        public static bool BlocksQuestDialogues
+        {
+            get
+            {
+                pendingReports.RemoveWhere(report => report == null);
+                return pendingReports.Count > 0;
+            }
+        }
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetPendingReports() => pendingReports.Clear();
+        public void PrepareForNextDay()
+        {
+            if (panel != null && content != null && rowTemplate != null) pendingReports.Add(this);
+        }
         [SerializeField] private GameObject panel;
         [SerializeField] private TMP_Text title;
         [SerializeField] private TMP_Text runDuration;
@@ -26,23 +41,27 @@ namespace GameFoundation.Base
 
         private void OnDestroy()
         {
+            pendingReports.Remove(this);
             if (closeButton != null) closeButton.onClick.RemoveListener(Close);
         }
 
         public void Open(DayResourceLedger.Report report)
         {
             if (report == null || panel == null || content == null || rowTemplate == null) return;
+            pendingReports.Add(this);
             foreach (Transform child in content) { child.gameObject.SetActive(false); Destroy(child.gameObject); }
-            if (title != null) title.text = $"Итоги дня {report.day}";
+            if (title != null) title.text = GameFoundation.Localization.GameText.Format("Итоги дня {0}", report.day);
             if (runDuration != null)
             {
                 int seconds = report.runDurationSeconds;
-                runDuration.text = $"Время в забеге: {seconds / 3600:00}:{seconds / 60 % 60:00}:{seconds % 60:00}";
+                runDuration.text = GameFoundation.Localization.GameText.Format("Время в забеге: {0}", $"{seconds / 3600:00}:{seconds / 60 % 60:00}:{seconds % 60:00}");
             }
             if (starvation != null)
             {
-                starvation.gameObject.SetActive(report.starved > 0);
-                starvation.text = $"От голода умерло жителей и воинов: {report.starved}";
+                starvation.gameObject.SetActive(report.starved > 0 || report.frozen > 0);
+                starvation.text = report.starved > 0 ? GameFoundation.Localization.GameText.Format("От голода умерло жителей и воинов: {0}", report.starved) : "";
+                if (report.frozen > 0)
+                    starvation.text += (report.starved > 0 ? "\n" : "") + GameFoundation.Localization.GameText.Format("Умерли от холода: {0}", report.frozen);
             }
 
             var types = new Dictionary<string, ResourceType>();
@@ -78,6 +97,9 @@ namespace GameFoundation.Base
         public void Close()
         {
             if (panel != null) panel.SetActive(false);
+            pendingReports.Remove(this);
+            foreach (var view in UnityEngine.Object.FindObjectsByType<GameFoundation.Quests.QuestDialogueView>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (view.gameObject.scene.IsValid() && view.gameObject.scene.isLoaded) view.ActivateIfNeeded();
         }
     }
 

@@ -34,7 +34,7 @@ namespace GameFoundation.MetaProgression
             if (retreatRequested || deployment == null || !RoyalDecreeService.IsEnabled(RoyalDecreeService.CautiousWarriors)) return;
             if (normalizedHealth > 0.1f) return;
             retreatRequested = deployment.RequestLowHealthRetreat(gameObject);
-            if (retreatRequested) GameFoundation.UI.GameNotifications.Post("Раненый воин отступает в портал", GameFoundation.UI.NotificationKind.Negative);
+            if (retreatRequested) GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Раненый воин отступает в портал"), GameFoundation.UI.NotificationKind.Negative);
         }
     }
 }

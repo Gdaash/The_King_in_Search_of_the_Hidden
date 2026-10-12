@@ -14,7 +14,7 @@ namespace GameFoundation.UI
         public readonly ResourceType Resource;
         public readonly int Delta;
         public NotificationPart(string text, NotificationKind kind, Sprite icon)
-        { Text = text; Kind = kind; Icon = icon; Resource = null; Delta = 0; }
+        { Text = GameFoundation.Localization.GameText.Source(text); Kind = kind; Icon = icon; Resource = null; Delta = 0; }
         public NotificationPart(ResourceType resource, int delta)
         {
             Resource = resource; Delta = delta; Icon = resource.resourceIcon;

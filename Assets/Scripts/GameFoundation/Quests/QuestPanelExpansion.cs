@@ -13,6 +13,13 @@ namespace GameFoundation.Quests
         private bool hovered;
         private bool keepExpanded;
         private float progress;
+        [SerializeField] private UnityEngine.UI.Button toggleButton;
+        [SerializeField] private RectTransform toggleArrow;
+        [SerializeField] private bool showObjectives = true;
+        public bool Hovered => hovered || keepExpanded;
+        public bool ShowObjectives => showObjectives;
+        public float ExpansionAmount => progress * progress * (3 - 2 * progress);
+        public void ToggleObjectives() => showObjectives = !showObjectives;
         public void OnPointerEnter(PointerEventData _) => SetExpanded(true);
         public void OnPointerExit(PointerEventData _) => SetExpanded(false);
         public void SetExpanded(bool expanded, bool immediately = false)
@@ -26,8 +33,8 @@ namespace GameFoundation.Quests
             keepExpanded = value;
             if (value) SetExpanded(true, true);
         }
-        private void OnDisable() { hovered = false; progress = 0; Apply(); }
-        private void OnEnable() { hovered = false; progress = 0; Apply(); }
+        private void OnDisable() { if(toggleButton) toggleButton.onClick.RemoveListener(ToggleObjectives); hovered = false; progress = 0; Apply(); }
+        private void OnEnable() { if(toggleButton) toggleButton.onClick.AddListener(ToggleObjectives); hovered = false; progress = 0; Apply(); }
         private void LateUpdate()
         {
             progress = Mathf.MoveTowards(progress, hovered ? 1 : 0, Time.unscaledDeltaTime / duration);
@@ -35,6 +42,16 @@ namespace GameFoundation.Quests
         }
         private void Apply()
         {
+            bool visible = showObjectives || hovered || keepExpanded;
+            var background = GetComponent<UnityEngine.UI.Image>();
+            if (background) background.enabled = visible;
+            foreach (string name in new[] { "Resource Summary", "Days Remaining" })
+            {
+                var child = transform.Find(name);
+                var quest = GetComponent<QuestPanel>();
+                if (child) child.gameObject.SetActive(visible && (name != "Days Remaining" || (quest ? quest.HasDeadline : child.gameObject.activeSelf)));
+            }
+            if(toggleArrow) toggleArrow.localEulerAngles = new Vector3(0,0,showObjectives?0:180);
             if (detailsContent == null || detailsLayout == null || detailsGroup == null) return;
             float eased = progress * progress * (3 - 2 * progress);
             float height = LayoutUtility.GetPreferredHeight(detailsContent) * eased;

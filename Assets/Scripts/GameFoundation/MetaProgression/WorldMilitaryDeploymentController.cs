@@ -239,6 +239,19 @@ namespace GameFoundation.MetaProgression
 
         private static void RemoveDestroyed(UnitControl control) => control.deployed.RemoveAll(unit => unit == null);
 
+        public void AbandonDeployedUnits()
+        {
+            Abandon(swordsmen);
+            Abandon(archers);
+        }
+
+        private static void Abandon(UnitControl control)
+        {
+            foreach (var unit in control.deployed)
+                if (unit != null) { unit.GetComponent<MilitaryExperience>()?.Die(); Destroy(unit); }
+            control.deployed.Clear();
+        }
+
         private static void ReturnSurvivors(UnitControl control)
         {
             if (!Application.isPlaying || GlobalResourceManager.Instance == null || control.resource == null) return;

@@ -75,7 +75,7 @@ public class ResourceTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPoin
         var id = _resourceType != null ? _resourceType.Id : _resourceName;
         var key = "resource." + id + ".name";
         var translated = LocalizationService.Instance != null ? LocalizationService.Instance.Get(key) : key;
-        return translated != key ? translated : _resourceName;
+        return translated != key ? translated : GameText.Get(_resourceName);
     }
 
     private void HideTooltip()

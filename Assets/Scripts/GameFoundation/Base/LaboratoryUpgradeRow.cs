@@ -37,11 +37,11 @@ namespace GameFoundation.Base
             lockIcon.color = unlocked || IsComplete ? new Color(.85f, .77f, .55f) : new Color(.64f, .59f, .68f);
             requirementLabel.text = (portal != null ? bought : entry.requiredPurchases).ToString();
             if (portal != null) ResourceIconSizing.Apply(lockIcon, upgrade.icon);
-            titleLabel.text = owner.Title(entry) + "  " + LaboratoryUpgradeList.Tr("laboratory.level", "ур.") + entry.level;
+            titleLabel.text = owner.Title(entry) + "  " + LaboratoryUpgradeList.Tr("laboratory.level", GameFoundation.Localization.GameText.Get("ур.")) + entry.level;
             titleLabel.color = IsComplete ? purchasedColor : unlocked ? new Color(.94f, .91f, .82f) : new Color(.64f, .60f, .67f);
-            statusLabel.text = IsComplete ? LaboratoryUpgradeList.Tr("laboratory.complete", "Изучено") :
-                !unlocked ? LaboratoryUpgradeList.Tr("laboratory.locked", "Заблокировано") :
-                affordable ? LaboratoryUpgradeList.Tr("laboratory.available", "Можно изучить") : LaboratoryUpgradeList.Tr("laboratory.no_resources", "Не хватает ресурсов");
+            statusLabel.text = IsComplete ? LaboratoryUpgradeList.Tr("laboratory.complete", GameFoundation.Localization.GameText.Get("Изучено")) :
+                !unlocked ? LaboratoryUpgradeList.Tr("laboratory.locked", GameFoundation.Localization.GameText.Get("Заблокировано")) :
+                affordable ? LaboratoryUpgradeList.Tr("laboratory.available", GameFoundation.Localization.GameText.Get("Можно изучить")) : LaboratoryUpgradeList.Tr("laboratory.no_resources", GameFoundation.Localization.GameText.Get("Не хватает ресурсов"));
             if (total > 1 || total == 0) statusLabel.text += "  ·  " + bought + "/" + (total == 0 ? "∞" : total.ToString());
             statusLabel.color = !unlocked && !IsComplete ? new Color(.64f, .59f, .68f) : tint;
             price.SetActive(true);

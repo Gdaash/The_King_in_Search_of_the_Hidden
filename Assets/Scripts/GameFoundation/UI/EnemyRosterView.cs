@@ -26,6 +26,23 @@ namespace GameFoundation.UI
         private AlarmSystem boundAlarm;
         private bool subscribed;
         private bool started;
+        public void SetCompact(bool compact)
+            => SetCompactAmount(compact ? 1 : 0);
+        public void SetCompactAmount(float amount)
+        {
+            amount=Mathf.Clamp01(amount);
+            if(rows)
+            {
+                var scroll=rows.GetComponentInParent<UnityEngine.UI.ScrollRect>(true);
+                var content=scroll ? scroll.gameObject : rows.gameObject;
+                content.SetActive(amount<.9999f);
+                var group=content.GetComponent<CanvasGroup>();
+                if(!group)group=content.AddComponent<CanvasGroup>();
+                group.alpha=1-amount;group.blocksRaycasts=amount<.01f;
+            }
+            float listHeight=Mathf.Min(maximumVisibleRows,entries.Count)*(rowHeight+rowSpacing)-(entries.Count>0?rowSpacing:0);
+            if(panel) panel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,headerAndPadding+listHeight*(1-amount));
+        }
 
         private void Awake() => SetVisible(false);
         private void OnEnable() { if (started) Bind(); }
@@ -81,7 +98,7 @@ namespace GameFoundation.UI
                 // New spawn-list entries work immediately; a catalog asset can refine their text/icon later.
                 data = ScriptableObject.CreateInstance<UnitDescriptionDefinition>();
                 data.isEnemy = true; data.unitPrefab = prefab; data.fallbackTitle = prefab.name;
-                data.roleKey = "unit.enemy.role"; data.fallbackRole = "ВРАГ";
+                data.roleKey = "unit.enemy.role"; data.fallbackRole = GameFoundation.Localization.GameText.Get("ВРАГ");
                 var sprite = prefab.GetComponentInChildren<SpriteRenderer>(true)?.sprite;
                 data.portraitIcon = sprite != null && sprite.rect.width <= 32 && sprite.rect.height <= 32 ? sprite : fallbackPortrait;
                 generatedDescriptions.Add(data);

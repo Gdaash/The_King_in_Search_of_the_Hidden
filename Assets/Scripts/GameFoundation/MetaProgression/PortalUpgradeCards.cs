@@ -40,10 +40,10 @@ namespace GameFoundation.MetaProgression
         private bool English => language!=null && language.Language == "en";
         private void Refresh()
         {
-            heading.text = English ? "PORTAL TOWER — LEVEL " + progression.ChoiceLevel : "БАШНЯ ПОРТАЛА — УРОВЕНЬ " + progression.ChoiceLevel;
+            heading.text = English ? "PORTAL TOWER — LEVEL " + progression.ChoiceLevel : GameFoundation.Localization.GameText.Get("БАШНЯ ПОРТАЛА — УРОВЕНЬ ") + progression.ChoiceLevel;
             hint.text = progression.WeaponCount == 0
-                ? (English ? "Choose your first weapon" : "Выберите первое оружие")
-                : (English ? "Choose one upgrade to continue" : "Выберите одно улучшение, чтобы продолжить");
+                ? (English ? "Choose your first weapon" : GameFoundation.Localization.GameText.Get("Выберите первое оружие"))
+                : (English ? "Choose one upgrade to continue" : GameFoundation.Localization.GameText.Get("Выберите одно улучшение, чтобы продолжить"));
             for(int i=0;i<cards.Length;i++)
             {
                 var c=cards[i]; bool visible=i<progression.Offers.Count;
@@ -57,12 +57,12 @@ namespace GameFoundation.MetaProgression
                 var w=progression.Balance.FindWeapon(u.weapon);
                 if(u.effect==PortalTowerBalance.Effect.UnlockWeapon && w?.combat!=null)
                 {
-                    string type=w.damageType switch {DamageType.Physical=>English?"Physical":"Физический",DamageType.Fire=>English?"Fire":"Огонь",DamageType.Ice=>English?"Ice":"Лёд",DamageType.Electric=>English?"Electric":"Электрический",_=>English?"Magic":"Магический"};
+                    string type=w.damageType switch {DamageType.Physical=>English?"Physical":GameFoundation.Localization.GameText.Get("Физический"),DamageType.Fire=>English?"Fire":GameFoundation.Localization.GameText.Get("Огонь"),DamageType.Ice=>English?"Ice":GameFoundation.Localization.GameText.Get("Лёд"),DamageType.Electric=>English?"Electric":GameFoundation.Localization.GameText.Get("Электрический"),_=>English?"Magic":GameFoundation.Localization.GameText.Get("Магический")};
                     c.description.text += $"\n\n{type} · {w.damage:0.##} / {w.cooldown:0.##} {(English?"s":"с")}\nDPS: {w.combat.SingleTargetDps:0.##}";
                 }
                 c.category.text=u.effect==PortalTowerBalance.Effect.UnlockWeapon
-                    ? (English?"NEW WEAPON":"НОВОЕ ОРУЖИЕ")
-                    : (w!=null?(English?w.englishTitle:w.title):(English?"Portal":"Портал")) + " · " + (progression.Rank(u.id)+1);
+                    ? (English?"NEW WEAPON":GameFoundation.Localization.GameText.Get("НОВОЕ ОРУЖИЕ"))
+                    : (w!=null?(English?w.englishTitle:w.title):(English?"Portal":GameFoundation.Localization.GameText.Get("Портал"))) + " · " + (progression.Rank(u.id)+1);
                 c.button.interactable=progression.CanPurchase(u);
                 c.button.GetComponentInChildren<Text>().text=English?"Choose":"Выбрать";
             }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -109,7 +109,7 @@ public class AlarmSystem : MonoBehaviour
         reportedEnemyLevel = level;
         EnemyLevelChanged?.Invoke(level);
         if (notify && increased) GameFoundation.UI.GameNotifications.Post(
-            string.Format(GameFoundation.UI.UnitDescriptionText.Get("enemy.level.notification", "Враги достигли уровня {0}"), level),
+            string.Format(GameFoundation.UI.UnitDescriptionText.Get("enemy.level.notification", GameFoundation.Localization.GameText.Get("Враги достигли уровня {0}")), level),
             GameFoundation.UI.NotificationKind.Negative);
     }
     private readonly Dictionary<UnityEngine.Object, float> _actionAlarmReservations = new();
@@ -380,7 +380,7 @@ public class AlarmSystem : MonoBehaviour
 
     private void EnqueueDangerLevelNotification(int level)
     {
-        GameFoundation.UI.GameNotifications.Post("Уровень тревоги: " + level, GameFoundation.UI.NotificationKind.Negative);
+        GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Уровень тревоги: ") + level, GameFoundation.UI.NotificationKind.Negative);
         if (dangerLevelNotificationPrefab == null) { DangerNotificationsFinished?.Invoke(); return; }
         _dangerNotificationQueue.Enqueue(level);
         if (_dangerNotificationRoutine == null)

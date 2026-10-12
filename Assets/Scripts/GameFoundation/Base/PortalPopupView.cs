@@ -69,7 +69,7 @@ namespace GameFoundation.Base
                     ?? locations.FirstOrDefault(row => row != null && row.location != null)?.location;
             if (Selected == null) return;
             foreach (var row in locations) if (row != null && row.location != null) row.Refresh(Selected);
-            portalLevel.text = string.Format(Tr("base.portal.level", "Уровень портала: {0} / {1}"), PortalProgression.Level, PortalProgression.MaxLevel);
+            portalLevel.text = string.Format(Tr("base.portal.level", GameFoundation.Localization.GameText.Get("Уровень портала: {0} / {1}")), PortalProgression.Level, PortalProgression.MaxLevel);
             title.text = PortalProgression.Name(Selected);
             description.text = Tr(Selected.DescriptionKey, Selected.FallbackDescription);
             for (int i = 0; i < dangerSkulls.Length; i++)
@@ -88,9 +88,9 @@ namespace GameFoundation.Base
             bool unlocked = PortalProgression.IsUnlocked(Selected);
             bool entered = DayCycleService.Instance != null && DayCycleService.Instance.EnteredToday;
             travelButton.interactable = unlocked && !entered && DayCycleService.Instance != null;
-            travelLabel.text = Tr("base.portal.depart", "Отправиться");
-            status.text = !unlocked ? string.Format(Tr("base.portal.requires_level", "Улучшите портал до ур. {0}"), Selected.RequiredPortalLevel) :
-                entered ? Tr("base.portal.travel_used", "На сегодня вы исчерпали эту возможность.") : Tr("base.portal.ready", "Портал готов к переходу");
+            travelLabel.text = Tr("base.portal.depart", GameFoundation.Localization.GameText.Get("Отправиться"));
+            status.text = !unlocked ? string.Format(Tr("base.portal.requires_level", GameFoundation.Localization.GameText.Get("Улучшите портал до ур. {0}")), Selected.RequiredPortalLevel) :
+                entered ? Tr("base.portal.travel_used", GameFoundation.Localization.GameText.Get("На сегодня вы исчерпали эту возможность.")) : Tr("base.portal.ready", GameFoundation.Localization.GameText.Get("Портал готов к переходу"));
             status.color = unlocked && !entered ? readyColor : lockedColor;
         }
         public void Travel()

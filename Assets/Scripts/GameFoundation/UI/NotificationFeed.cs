@@ -7,11 +7,13 @@ namespace GameFoundation.UI
 {
     public sealed class NotificationFeed : MonoBehaviour
     {
-        [SerializeField, Min(1)] private int maximumRows = 8;
+        [SerializeField, Min(1)] private int maximumRows = 5;
+        [SerializeField] private bool retainUntilReplaced;
         [SerializeField, Min(.1f)] private float visibleSeconds = 7f;
         [SerializeField, Min(.01f)] private float fadeSeconds = .35f;
         [SerializeField, Min(.01f)] private float moveSeconds = .25f;
         [SerializeField, Min(0)] private float rowSpacing = 6f;
+        [SerializeField] private Vector2 contentInsets;
         [Tooltip("Новые сообщения появляются снизу, предыдущие поднимаются вверх.")]
         [SerializeField] private bool growUpwards = true;
         [SerializeField] private Color normalColor = Color.white;
@@ -56,8 +58,8 @@ namespace GameFoundation.UI
             var soldier = health.GetComponent<MilitaryExperience>();
             if (enemy == null && soldier == null) return;
             var definition = enemy != null ? enemyCatalog?.FindEnemyId(enemy.Id) : unitCatalog?.Find(soldier.Profile?.type);
-            string title = definition != null ? definition.Title : enemy != null ? "Враг" : "Воин";
-            GameNotifications.Post((enemy != null ? "Убит враг: " : "Погиб воин: ") + title,
+            string title = definition != null ? definition.Title : enemy != null ? GameFoundation.Localization.GameText.Get("Враг") : GameFoundation.Localization.GameText.Get("Воин");
+            GameNotifications.Post((enemy != null ? GameFoundation.Localization.GameText.Get("Убит враг: ") : GameFoundation.Localization.GameText.Get("Погиб воин: ")) + title,
                 enemy != null ? NotificationKind.Positive : NotificationKind.Negative, definition?.Portrait);
         }
 
@@ -85,7 +87,7 @@ namespace GameFoundation.UI
             }
             entry.lastPosted = Time.unscaledTime;
             if (entry.row == null) entry.row = CreateRow(entry.parts);
-            else entry.row.Configure(entry.parts, normalColor, positiveColor, negativeColor, ((RectTransform)transform).rect.width);
+            else entry.row.Configure(entry.parts, normalColor, positiveColor, negativeColor, RowWidth);
         }
 
         private NotificationRow CreateRow(IReadOnlyList<NotificationPart> parts)
@@ -94,10 +96,10 @@ namespace GameFoundation.UI
             while (rows.Count >= Mathf.Max(1, maximumRows)) RemoveFirst();
             var row = Instantiate(rowPrefab, transform, false);
             row.gameObject.SetActive(true);
-            row.Configure(parts, normalColor, positiveColor, negativeColor, ((RectTransform)transform).rect.width);
+            row.Configure(parts, normalColor, positiveColor, negativeColor, RowWidth);
             row.Rect.anchorMin = row.Rect.anchorMax = row.Rect.pivot = new Vector2(1, growUpwards ? 0 : 1);
-            float y = growUpwards || rows.Count == 0 ? 0 : rows[^1].Rect.anchoredPosition.y - rows[^1].Height - rowSpacing;
-            row.Rect.anchoredPosition = new Vector2(0, y);
+            float y = growUpwards ? contentInsets.y : rows.Count == 0 ? -contentInsets.y : rows[^1].Rect.anchoredPosition.y - rows[^1].Height - rowSpacing;
+            row.Rect.anchoredPosition = new Vector2(-contentInsets.x, y);
             rows.Add(row);
             return row;
         }
@@ -120,15 +122,16 @@ namespace GameFoundation.UI
         {
             while (rows.Count > Mathf.Max(1, maximumRows)) RemoveFirst();
             for (int i = rows.Count - 1; i >= 0; i--)
-                if (Time.unscaledTime - rows[i].CreatedAt >= visibleSeconds + fadeSeconds)
+                if (!retainUntilReplaced && Time.unscaledTime - rows[i].CreatedAt >= visibleSeconds + fadeSeconds)
                 { RemoveRow(rows[i]); rows.RemoveAt(i); }
-            float y = 0;
+            float y = growUpwards ? contentInsets.y : -contentInsets.y;
             for (int index = 0; index < rows.Count; index++)
             {
                 var row = rows[growUpwards ? rows.Count - 1 - index : index];
-                row.Animate(y, visibleSeconds, fadeSeconds, moveSeconds);
+                row.Animate(y, retainUntilReplaced ? float.PositiveInfinity : visibleSeconds, fadeSeconds, moveSeconds);
                 y += (row.Height + rowSpacing) * (growUpwards ? 1 : -1);
             }
         }
+        private float RowWidth => Mathf.Max(1, ((RectTransform)transform).rect.width - contentInsets.x * 2);
     }
 }

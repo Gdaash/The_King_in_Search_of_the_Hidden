@@ -79,7 +79,7 @@ namespace GameFoundation.Base
             if (GlobalResourceManager.Instance?.TryExchangeResources(human, 1, weapon, 1, warrior, 1) == true)
             {
                 MilitaryExperienceService.GetStored(warrior, GlobalResourceManager.Instance.GetResourceAmount(warrior));
-                GameNotifications.Post("Вооружён: " + (unitDescription != null ? unitDescription.Title : "Воин"), NotificationKind.Positive, warrior.resourceIcon);
+                GameNotifications.Post(GameFoundation.Localization.GameText.Get("Вооружён: ") + (unitDescription != null ? unitDescription.Title : GameFoundation.Localization.GameText.Get("Воин")), NotificationKind.Positive, warrior.resourceIcon);
                 GameFoundation.Audio.GameAudioController.PlayUI(GameFoundation.Audio.GameAudioCue.RecruitWarrior, .7f);
             }
             Refresh();
@@ -95,7 +95,7 @@ namespace GameFoundation.Base
                 manager.AddResource(human, 1);
                 manager.AddResource(weapon, 1);
                 MilitaryExperienceService.RemoveStored(warrior);
-                GameNotifications.Post("Воин разоружён", NotificationKind.Normal, warrior.resourceIcon);
+                GameNotifications.Post(GameFoundation.Localization.GameText.Get("Воин разоружён"), NotificationKind.Normal, warrior.resourceIcon);
                 GameFoundation.Audio.GameAudioController.PlayUI(GameFoundation.Audio.GameAudioCue.DisarmWarrior, .6f);
             }
             Refresh();
@@ -118,7 +118,7 @@ namespace GameFoundation.Base
             ApplyIcon(weaponIcon, weapon);
             ApplyIcon(warriorIcon, warrior);
             // DayCycleService consumes one berry for every resident, including each warrior.
-            string daily = UnitDescriptionText.Get("unit.training.food_daily", "{0} / день");
+            string daily = UnitDescriptionText.Get("unit.training.food_daily", GameFoundation.Localization.GameText.Get("{0} / день"));
             if (foodPerUnitAmount != null) foodPerUnitAmount.text = string.Format(daily, 1);
             if (totalFoodAmount != null) totalFoodAmount.text = string.Format(daily, Mathf.Max(0, warriors));
             if (unitDescription != null)

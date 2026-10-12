@@ -84,6 +84,7 @@ public class LogisticFlag : MonoBehaviour
     }
 
     public void OnMouseUp() {
+        if (GameFoundation.MetaProgression.FirstRunLightTutorial.BlocksInput) return;
         if (CrystalControlled) return;
         StopAllCoroutines();
         StartCoroutine(NotifyRoutine());

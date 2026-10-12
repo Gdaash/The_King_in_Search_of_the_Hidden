@@ -13,12 +13,12 @@ namespace GameFoundation.Quests
         [SerializeField] private QuestObjectiveRow penaltyRow;
         private GameFoundation.MetaProgression.DayCycleService observedDay;
         public bool HasQuest => QuestProgress.Current(catalog, showParallelQuest) != null;
+        public bool HasDeadline => (QuestProgress.Current(catalog, showParallelQuest)?.deadlineDays ?? 0) > 0;
         [SerializeField] private Text title;
         [SerializeField] private Text description;
         [SerializeField] private Text status;
         [SerializeField] private RectTransform objectives;
         [SerializeField] private QuestObjectiveRow rowPrefab;
-        [SerializeField] private List<QuestObjectiveRow> rows = new();
         [SerializeField] private RectTransform compactObjectives;
         [SerializeField] private QuestObjectiveRow compactRowPrefab;
         [SerializeField] private List<QuestObjectiveRow> compactRows = new();
@@ -78,36 +78,62 @@ namespace GameFoundation.Quests
 
         public void Refresh()
         {
+            if (objectives != null) objectives.gameObject.SetActive(false);
+            if (description != null)
+            {
+                description.horizontalOverflow = HorizontalWrapMode.Wrap;
+                var layout = description.GetComponent<LayoutElement>();
+                if (layout != null)
+                {
+                    // Let Text report its full preferred height at the available width.
+                    layout.minHeight = -1;
+                    layout.preferredHeight = -1;
+                    layout.flexibleHeight = 0;
+                }
+            }
+            if (status != null)
+            {
+                status.horizontalOverflow = HorizontalWrapMode.Wrap;
+                if (description != null) status.fontSize = description.fontSize;
+                var layout = status.GetComponent<LayoutElement>();
+                if (layout != null)
+                {
+                    layout.minHeight = -1;
+                    layout.preferredHeight = -1;
+                    layout.flexibleHeight = 0;
+                }
+            }
             var quest = QuestProgress.Current(catalog, showParallelQuest);
             var visibility = GetComponent<CanvasGroup>();
             if (visibility != null) { visibility.alpha = quest != null ? 1 : 0; visibility.blocksRaycasts = quest != null; visibility.interactable = quest != null; }
             if (quest == null) return;
             var resources = GlobalResourceManager.Instance;
             bool completed = QuestProgress.IsComplete(quest);
-            title.text = quest.title;
-            description.text = quest.description;
+            title.text = GameFoundation.Localization.GameText.Get(quest.title);
+            description.text = GameFoundation.Localization.GameText.Get(quest.description);
             bool claimed = QuestProgress.IsClaimed(quest);
             bool ready = QuestProgress.IsReadyToClaim(quest, resources);
             if (deadlineLabel != null)
             {
                 deadlineLabel.gameObject.SetActive(quest.deadlineDays > 0);
-                deadlineLabel.text = "Осталось дней: " + QuestProgress.DaysRemaining(quest) + " / " + quest.deadlineDays;
+                deadlineLabel.text = GameFoundation.Localization.GameText.Get("Осталось дней: ") + QuestProgress.DaysRemaining(quest) + " / " + quest.deadlineDays;
                 deadlineLabel.color = QuestProgress.DaysRemaining(quest) <= 5 ? new Color(.95f,.4f,.4f) : new Color(.94f,.86f,.62f);
             }
             if (penaltyRow != null)
             {
                 penaltyRow.gameObject.SetActive(quest.penaltyResource != null && quest.penaltyAmount > 0);
-                penaltyRow.PresentReward(quest.penaltyResource != null ? quest.penaltyResource.resourceIcon : null, "−" + quest.penaltyAmount, "Штраф");
+                penaltyRow.PresentReward(quest.penaltyResource != null ? quest.penaltyResource.resourceIcon : null, "−" + quest.penaltyAmount, GameFoundation.Localization.GameText.Get("Штраф"));
                 penaltyRow.GetComponentInChildren<Text>().color = new Color(.95f,.4f,.4f);
             }
             if (claimButton != null)
             {
                 claimButton.gameObject.SetActive(ready); claimButton.interactable = ready;
                 var label = claimButton.GetComponentInChildren<Text>(true);
-                if (label != null) label.text = quest.consumeRequirementsOnClaim ? "Сдать руду" : "Забрать награду";
+                if (label != null) label.text = quest.consumeRequirementsOnClaim ? GameFoundation.Localization.GameText.Get("Сдать руду") :
+                    GameFoundation.Localization.GameText.Get(quest.resourceRewards.Count == 0 && quest.unlockRewards.Count == 0 ? "Завершить задание" : "Забрать награду");
             }
-            status.text = claimed ? "Награда получена" : completed ? "Задание выполнено" :
-                ready && quest.consumeRequirementsOnClaim ? "Руда готова к сдаче" : string.IsNullOrEmpty(quest.inProgressStatus) ? "Доставьте ресурсы в портал" : quest.inProgressStatus;
+            status.text = claimed ? GameFoundation.Localization.GameText.Get("Награда получена") : completed ? GameFoundation.Localization.GameText.Get("Задание выполнено") :
+                ready && quest.consumeRequirementsOnClaim ? GameFoundation.Localization.GameText.Get("Руда готова к сдаче") : string.IsNullOrEmpty(quest.inProgressStatus) ? GameFoundation.Localization.GameText.Get("Доставьте ресурсы в портал") : GameFoundation.Localization.GameText.Get(quest.inProgressStatus);
             if (rewards != null)
             {
                 int count = quest.resourceRewards.Count + quest.unlockRewards.Count;
@@ -126,7 +152,7 @@ namespace GameFoundation.Quests
                     else
                     {
                         var unlock = quest.unlockRewards[i - quest.resourceRewards.Count];
-                        rewardRows[i].PresentReward(unlock != null ? unlock.icon : null, "", unlock != null ? unlock.title : "Не назначена разблокировка");
+                        rewardRows[i].PresentReward(unlock != null ? unlock.icon : null, "", unlock != null ? unlock.title : GameFoundation.Localization.GameText.Get("Не назначена разблокировка"));
                     }
                 }
                 if (rewardsViewport != null)
@@ -137,18 +163,8 @@ namespace GameFoundation.Quests
                 }
             }
             status.color = completed ? new Color(.5f, .85f, .5f) : new Color(.72f, .68f, .77f);
-            while (rows.Count < quest.requirements.Count) rows.Add(Instantiate(rowPrefab, objectives, false));
             if (compactRowPrefab != null)
                 while (compactRows.Count < quest.requirements.Count) compactRows.Add(Instantiate(compactRowPrefab, compactObjectives, false));
-            for (int i = 0; i < rows.Count; i++)
-            {
-                rows[i].gameObject.SetActive(i < quest.requirements.Count);
-                if (i < quest.requirements.Count)
-                {
-                    var goal = quest.requirements[i];
-                    rows[i].Present(goal, goal.CurrentAmount(resources != null ? resources.GetResourceAmount : null), completed);
-                }
-            }
             for (int i = 0; i < compactRows.Count; i++)
             {
                 compactRows[i].gameObject.SetActive(i < quest.requirements.Count);

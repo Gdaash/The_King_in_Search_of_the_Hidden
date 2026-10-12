@@ -94,7 +94,7 @@ namespace GameFoundation.MetaProgression
             bool enough = HasEnoughFood();
             Color color = enough ? enoughColor : insufficientColor;
             string hex = ColorUtility.ToHtmlStringRGB(color);
-            string message = enough ? "Еды хватает" : "Недостаточно еды";
+            string message = enough ? GameFoundation.Localization.GameText.Get("Еды хватает") : GameFoundation.Localization.GameText.Get("Недостаточно еды");
             TooltipManager.Instance.Show($"<color=#{hex}>{message}</color>", tooltipTarget);
             tooltipShown = true;
         }

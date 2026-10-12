@@ -41,12 +41,14 @@ namespace GameFoundation.MetaProgression
         {
             if (escaped || LightsActivated || lights.Length == 0 || GameSpeedControls.SimulationSpeed <= 0) return;
             LightsActivated = true;
+            LightsTurnedOn?.Invoke();
             if (activationButton != null) activationButton.gameObject.SetActive(false);
             StartCoroutine(ActivateBeams());
         }
 
         private IEnumerator ActivateBeams()
         {
+            while (GameSpeedControls.SimulationSpeed <= 0 && !escaped) yield return null;
             for (int i = 0; i < lights.Length && !escaped; i++)
             {
                 lights[i].beam.ShowIdle(lights[i].position);
@@ -56,14 +58,15 @@ namespace GameFoundation.MetaProgression
         }
 
         private bool CanDragLight(int index) => !escaped && LightsActivated &&
-            GameSpeedControls.SimulationSpeed > 0 && index >= 0 && index < lights.Length &&
+            (GameSpeedControls.SimulationSpeed > 0 || FirstRunLightTutorial.AllowsLightDrag) && index >= 0 && index < lights.Length &&
             lights[index].beam.MarkerVisible;
 
         // This is also exercised by the Play Mode audit with screen-space pointer sequences.
         internal void ProcessDragPointer(Vector2 screenPosition, bool pressed, bool held, bool released)
         {
+            if (FirstRunLightTutorial.BlocksInput && !FirstRunLightTutorial.AllowsLightDrag) { CancelDrag(); return; }
             if (PortalWeaponController.OwnsPointer) { CancelDrag(); return; }
-            if (escaped || !LightsActivated || worldCamera == null || GameSpeedControls.SimulationSpeed <= 0)
+            if (escaped || !LightsActivated || worldCamera == null || (GameSpeedControls.SimulationSpeed <= 0 && !FirstRunLightTutorial.AllowsLightDrag))
             { CancelDrag(); return; }
             bool onScreen = worldCamera.pixelRect.Contains(screenPosition);
             bool blocked = !onScreen || IsPointerOverBlockingUI(screenPosition);
@@ -109,7 +112,7 @@ namespace GameFoundation.MetaProgression
             }
             if (released)
             {
-                if (pointerStartedInWorld && !pointerMoved && !blocked && !wasDragging)
+                if (!FirstRunLightTutorial.BlocksInput && pointerStartedInWorld && !pointerMoved && !blocked && !wasDragging)
                     StartAtIlluminatedHex(point);
                 pendingDragLight = -1;
                 pointerStartedInWorld = false;
@@ -127,7 +130,7 @@ namespace GameFoundation.MetaProgression
                 bool pausing = lights[index].working ||
                     (lights[index].requester != null && lights[index].requester.IsCyclePaused);
                 Release(index);
-                GameFoundation.UI.GameNotifications.Post(pausing ? "Работа приостановлена" : "Действие отменено");
+                GameFoundation.UI.GameNotifications.Post(pausing ? GameFoundation.Localization.GameText.Get("Работа приостановлена") : GameFoundation.Localization.GameText.Get("Действие отменено"));
             }
             draggedLight = index;
             lights[index].beam.ShowIdle(dragOrigin);
@@ -145,17 +148,32 @@ namespace GameFoundation.MetaProgression
             int index = draggedLight;
             if (!CanDragLight(index)) { CancelDrag(); return false; }
             var target = GetHoverTarget(point);
+            if (FirstRunLightTutorial.AllowsLightDrag)
+            {
+                Vector2 destination = target.Anchor != null ? (Vector2)target.Anchor.position : SnapToOpenHex(point);
+                bool onHex = target.Anchor != null;
+                if (!onHex) foreach (var magnet in HexMagnet.ActiveInstances)
+                    if (magnet != null && magnet.IsPointOverMagnet(point)) { onHex = true; break; }
+                if (!onHex || !FirstRunLightTutorial.IsAllowedDragTarget(destination)) { CancelDrag(); return false; }
+            }
             draggedLight = -1;
             pendingDragLight = -1;
             if (target.State == HoverState.Available && target.LightIndex == index)
             {
                 TargetClicked?.Invoke(target);
-                return target.Hex != null ? OpenHex(index, target.Hex) : ReserveBuilding(index, target.Requester);
+                bool accepted = target.Hex != null ? OpenHex(index, target.Hex) : ReserveBuilding(index, target.Requester);
+                if (accepted && ((Vector2)target.Anchor.position - dragOrigin).sqrMagnitude > .01f)
+                    LightDraggedToHex?.Invoke(target.Anchor.position);
+                return accepted;
             }
             // Empty ground parks the free light. An invalid/occupied target returns it without starting an action.
             lights[index].position = target.Anchor == null ? SnapToOpenHex(point) : dragOrigin;
             lights[index].beam.ShowIdle(lights[index].position);
             if (target.Anchor != null) RestoreDragOrigin(index);
+            else if ((lights[index].position - dragOrigin).sqrMagnitude > .01f)
+                foreach (var magnet in HexMagnet.ActiveInstances)
+                    if (magnet != null && magnet.IsPointOverMagnet(point))
+                    { LightDraggedToHex?.Invoke(lights[index].position); break; }
             return false;
         }
 

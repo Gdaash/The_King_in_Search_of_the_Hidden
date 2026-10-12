@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using GameFoundation.Base;
@@ -12,15 +13,32 @@ using UnityEngine.UI;
 public static class BuildingUpgradeValidation
 {
     const string BackupKey = "BuildingUpgradeValidation.Backup";
+    static string BackupPath => Path.GetFullPath("UserSettings/CodexValidation/slot3-backup.json");
     [Serializable] class Backup { public bool envelopeExists, createdExists, selectedExists; public string envelope; public int created, selected; }
-    static BuildingUpgradeValidation() { EditorApplication.playModeStateChanged += StateChanged; }
+    static BuildingUpgradeValidation()
+    {
+        EditorApplication.playModeStateChanged += StateChanged;
+        EditorApplication.delayCall += () =>
+        {
+            if (!EditorApplication.isPlayingOrWillChangePlaymode) Restore();
+        };
+    }
     static void ResetCache() => typeof(SaveSlotPrefs).Assembly.GetType("GameFoundation.Saves.GameSaveService").GetMethod("ResetCache", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, null);
     public static void Begin()
     {
-        if (EditorApplication.isPlaying || SessionState.GetString(BackupKey, "") != "") throw new Exception("Validation already active");
+        if (EditorApplication.isPlayingOrWillChangePlaymode || SessionState.GetString(BackupKey, "") != "" || File.Exists(BackupPath)) throw new Exception("Validation already active; restore its backup first");
         const string key = "foundation.slot.3.saveData";
         var backup = new Backup { envelopeExists = PlayerPrefs.HasKey(key), envelope = PlayerPrefs.GetString(key), createdExists = PlayerPrefs.HasKey("foundation.slot.3.created"), created = PlayerPrefs.GetInt("foundation.slot.3.created"), selectedExists = PlayerPrefs.HasKey("foundation.selectedSaveSlot"), selected = PlayerPrefs.GetInt("foundation.selectedSaveSlot", 1) };
-        SessionState.SetString(BackupKey, JsonUtility.ToJson(backup));
+        string json = JsonUtility.ToJson(backup);
+        Directory.CreateDirectory(Path.GetDirectoryName(BackupPath));
+        // Persist before touching PlayerPrefs; SessionState does not survive a crash.
+        using (var stream = new FileStream(BackupPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+        {
+            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(json);
+            stream.Write(bytes, 0, bytes.Length);
+            stream.Flush(true);
+        }
+        SessionState.SetString(BackupKey, json);
         PlayerPrefs.SetString(key, "{\"version\":1,\"entries\":[]}"); ResetCache(); SaveSlotPrefs.Select(3);
         foreach (var b in BuildingUpgradeService.Catalog.buildings)
         {
@@ -37,7 +55,8 @@ public static class BuildingUpgradeValidation
     }
     public static void Restore()
     {
-        string json = SessionState.GetString(BackupKey, ""); if (json == "") return;
+        string json = File.Exists(BackupPath) ? File.ReadAllText(BackupPath) : SessionState.GetString(BackupKey, "");
+        if (json == "") return;
         var b = JsonUtility.FromJson<Backup>(json);
         if (b.envelopeExists) PlayerPrefs.SetString("foundation.slot.3.saveData", b.envelope); else PlayerPrefs.DeleteKey("foundation.slot.3.saveData");
         if (b.createdExists) PlayerPrefs.SetInt("foundation.slot.3.created", b.created); else PlayerPrefs.DeleteKey("foundation.slot.3.created");
@@ -45,6 +64,7 @@ public static class BuildingUpgradeValidation
         PlayerPrefs.Save(); ResetCache();
         typeof(SaveSlotPrefs).GetField("_selected", BindingFlags.NonPublic | BindingFlags.Static).SetValue(null, 0);
         SessionState.EraseString(BackupKey);
+        if (File.Exists(BackupPath)) File.Delete(BackupPath);
         Debug.Log("Building upgrade validation: original player save restored.");
     }
     static void Check(bool condition, string message) { if (!condition) throw new Exception("Building upgrades: " + message); }

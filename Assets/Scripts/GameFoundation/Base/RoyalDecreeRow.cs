@@ -30,9 +30,9 @@ namespace GameFoundation.Base
             if (decree == null) return;
             bool active = RoyalDecreeService.IsEnabled(decree.id);
             title.text = decree.title; description.text = decree.description;
-            state.text = active ? "Указ включён" : "Указ выключен";
+            state.text = active ? GameFoundation.Localization.GameText.Get("Указ включён") : GameFoundation.Localization.GameText.Get("Указ выключен");
             state.color = active ? new Color(.38f,.9f,.48f) : new Color(.66f,.61f,.72f);
-            buttonLabel.text = active ? "Отключить" : "Включить";
+            buttonLabel.text = active ? GameFoundation.Localization.GameText.Get("Отключить") : GameFoundation.Localization.GameText.Get("Включить");
             price.SetActive(!active);
             priceAmount.text = decree.activationCost.ToString();
             ResourceIconSizing.Apply(priceIcon, decree.influence != null ? decree.influence.resourceIcon : null);

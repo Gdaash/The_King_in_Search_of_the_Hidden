@@ -21,6 +21,7 @@ namespace GameFoundation.UI
         [SerializeField, Min(1)] private float minimumHeight = 32;
         [SerializeField, Min(0)] private float partSpacing = 10;
         [SerializeField, Min(0)] private float wrappedLineSpacing = 4;
+        [SerializeField] private bool singleLine;
         [Tooltip("Прозрачные поля иконок в исходных пикселях. Учитываются только при размещении, масштаб спрайта сохраняется.")]
         [SerializeField] private IconPadding[] iconPadding;
         public RectTransform Rect => (RectTransform)transform;
@@ -29,6 +30,18 @@ namespace GameFoundation.UI
         private float appearedAt;
         private bool configured;
         private readonly List<GameObject> generated = new();
+        private IReadOnlyList<NotificationPart> localizedParts;
+        private Color lastNormal,lastPositive,lastNegative;
+        private float lastWidth;
+        private string lastLanguage;
+        private void LateUpdate()
+        {
+            string language=GameFoundation.Localization.LocalizationService.Instance?.Language;
+            if(localizedParts==null||lastLanguage==language)return;
+            float created=CreatedAt;
+            Configure(localizedParts,lastNormal,lastPositive,lastNegative,lastWidth);
+            CreatedAt=created;
+        }
 
         private sealed class PartView
         {
@@ -42,6 +55,8 @@ namespace GameFoundation.UI
 
         public void Configure(IReadOnlyList<NotificationPart> parts, Color normal, Color positive, Color negative, float width)
         {
+            localizedParts=parts;lastNormal=normal;lastPositive=positive;lastNegative=negative;lastWidth=width;
+            lastLanguage=GameFoundation.Localization.LocalizationService.Instance?.Language;
             CreatedAt = Time.unscaledTime;
             if (!configured) appearedAt = CreatedAt;
             foreach (var child in generated)
@@ -62,7 +77,7 @@ namespace GameFoundation.UI
                 view.text = Instantiate(label, transform, false);
                 generated.Add(view.text.gameObject);
                 view.text.gameObject.SetActive(true);
-                view.text.text = part.Text;
+                view.text.text = GameFoundation.Localization.GameText.Get(part.Text);
                 view.text.color = part.Kind == NotificationKind.Positive ? positive : part.Kind == NotificationKind.Negative ? negative : normal;
                 float right = 0;
                 Vector2 size = part.Icon != null ? part.Icon.rect.size * 2 : Vector2.zero;
@@ -85,9 +100,35 @@ namespace GameFoundation.UI
                 view.height = Mathf.Max(minimumHeight, size.y, view.text.preferredHeight);
                 if (line.Count > 0 && lineWidth + partSpacing + view.width > width)
                 {
-                    PlaceLine(line, lineWidth, lineHeight, y, width);
-                    y += lineHeight + wrappedLineSpacing;
-                    line.Clear(); lineWidth = 0; lineHeight = minimumHeight;
+                    if (singleLine)
+                    {
+                        float remaining = width - lineWidth - partSpacing - view.inset;
+                        if (remaining < 16)
+                        {
+                            view.text.gameObject.SetActive(false);
+                            if (view.image != null) view.image.gameObject.SetActive(false);
+                            break;
+                        }
+                        view.width = remaining + view.inset;
+                    }
+                    else
+                    {
+                        PlaceLine(line, lineWidth, lineHeight, y, width);
+                        y += lineHeight + wrappedLineSpacing;
+                        line.Clear(); lineWidth = 0; lineHeight = minimumHeight;
+                    }
+                }
+                if (singleLine)
+                {
+                    float available = view.width - view.inset;
+                    view.text.horizontalOverflow = HorizontalWrapMode.Overflow;
+                    string original = view.text.text;
+                    while (view.text.preferredWidth > available && original.Length > 0)
+                    {
+                        original = original.Substring(0, original.Length - 1);
+                        view.text.text = original + "…";
+                    }
+                    view.height = minimumHeight;
                 }
                 lineWidth += (line.Count > 0 ? partSpacing : 0) + view.width;
                 lineHeight = Mathf.Max(lineHeight, view.height);
@@ -124,7 +165,7 @@ namespace GameFoundation.UI
         {
             float age = Time.unscaledTime - CreatedAt;
             group.alpha = Mathf.Min(Mathf.Clamp01((Time.unscaledTime - appearedAt) / fade), Mathf.Clamp01((lifetime + fade - age) / fade));
-            Rect.anchoredPosition = Vector2.Lerp(Rect.anchoredPosition, new Vector2(0, y),
+            Rect.anchoredPosition = Vector2.Lerp(Rect.anchoredPosition, new Vector2(Rect.anchoredPosition.x, y),
                 1 - Mathf.Exp(-Time.unscaledDeltaTime * 5 / movement));
         }
     }

@@ -31,10 +31,10 @@ namespace GameFoundation.Base
             SetIcon(berriesIcon, berries);
             SetIcon(starvationIcon, human);
             SetIcon(crownsIcon, crowns);
-            if (residentsLabel != null) residentsLabel.text = Tr("base.food_forecast.residents", "Жители и воины");
-            if (foodLabel != null) foodLabel.text = Tr("base.food_forecast.food", "Еда");
-            if (starvationLabel != null) starvationLabel.text = Tr("base.food_forecast.deaths", "Умрёт от голода");
-            if (crownsLabel != null) crownsLabel.text = Tr("base.food_forecast.crowns", "Влияние");
+            if (residentsLabel != null) residentsLabel.text = Tr("base.food_forecast.residents", GameFoundation.Localization.GameText.Get("Жители и воины"));
+            if (foodLabel != null) foodLabel.text = Tr("base.food_forecast.food", GameFoundation.Localization.GameText.Get("Еда"));
+            if (starvationLabel != null) starvationLabel.text = Tr("base.food_forecast.deaths", GameFoundation.Localization.GameText.Get("Умрёт от голода"));
+            if (crownsLabel != null) crownsLabel.text = Tr("base.food_forecast.crowns", GameFoundation.Localization.GameText.Get("Влияние"));
             SetAmount(residentsAmount, forecast.Residents, normalColor);
             SetAmount(berriesAmount, forecast.Berries, normalColor);
             SetAmount(starvationAmount, forecast.Starving,

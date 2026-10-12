@@ -61,8 +61,8 @@ namespace GameFoundation.Bestiary
 
         public void Refresh()
         {
-            if (title != null) title.text = Tr(titleKey, "МАГИЧЕСКАЯ БИБЛИОТЕКА");
-            if (subtitle != null) subtitle.text = Tr(subtitleKey, "Бестиарий встреченных существ");
+            if (title != null) title.text = Tr(titleKey, GameFoundation.Localization.GameText.Get("МАГИЧЕСКАЯ БИБЛИОТЕКА"));
+            if (subtitle != null) subtitle.text = Tr(subtitleKey, GameFoundation.Localization.GameText.Get("Бестиарий встреченных существ"));
 
             foreach (BestiaryEntryView entry in entries)
                 if (entry != null)
@@ -88,12 +88,12 @@ namespace GameFoundation.Bestiary
             }
 
             if (discoveredCount != null)
-                discoveredCount.text = string.Format(Tr(countKey, "Открыто: {0}"), discovered);
+                discoveredCount.text = string.Format(Tr(countKey, GameFoundation.Localization.GameText.Get("Открыто: {0}")), discovered);
             if (emptyState != null)
             {
                 emptyState.SetActive(discovered == 0);
                 var text = emptyState.GetComponent<UnityEngine.UI.Text>();
-                if (text != null) text.text = Tr(emptyKey, "В бестиарии пока нет записей.\nВстретьте монстра в бою, чтобы добавить его сюда.");
+                if (text != null) text.text = Tr(emptyKey, GameFoundation.Localization.GameText.Get("В бестиарии пока нет записей.\nВстретьте монстра в бою, чтобы добавить его сюда."));
             }
         }
 

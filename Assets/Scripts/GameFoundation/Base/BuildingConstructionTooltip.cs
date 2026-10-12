@@ -49,7 +49,7 @@ namespace GameFoundation.Base
             bool first = wood != null && woodCost > 0;
             bool second = stone != null && stoneCost > 0;
             if (priceLabel != null) priceLabel.text = first || second ? price
-                : GameFoundation.Localization.LocalizationService.Instance?.Language == "en" ? "Free" : "Бесплатно";
+                : GameFoundation.Localization.LocalizationService.Instance?.Language == "en" ? "Free" : GameFoundation.Localization.GameText.Get("Бесплатно");
             SetResource(woodIcon, woodAmount, wood, woodCost);
             SetResource(stoneIcon, stoneAmount, stone, stoneCost);
             CenterPrice(first, second);

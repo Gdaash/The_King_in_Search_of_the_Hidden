@@ -16,8 +16,11 @@ namespace GameFoundation.Quests
             [Tooltip("Для цели строительства укажите id здания, например blacksmith. Resource оставьте пустым.")]
             public string buildingId;
             public Sprite buildingIcon;
+            [Tooltip("Построенное здание засчитывает уже потраченные на него материалы этой цели.")]
+            public string fulfilledByBuilding;
             public int CurrentAmount(Func<ResourceType, int> stock) => !string.IsNullOrWhiteSpace(buildingId) ?
-                GameFoundation.Saves.SaveSlotPrefs.GetInt("foundation.building." + buildingId + ".built", 0) : resource != null && stock != null ? stock(resource) : 0;
+                GameFoundation.Saves.SaveSlotPrefs.GetInt("foundation.building." + buildingId + ".built", 0) :
+                !string.IsNullOrEmpty(fulfilledByBuilding) && GameFoundation.Base.BuildingUpgradeService.IsBuilt(fulfilledByBuilding) ? amount : resource != null && stock != null ? stock(resource) : 0;
         }
         [Tooltip("Stable save identifier. Do not change after publishing the quest.")]
         public string id;

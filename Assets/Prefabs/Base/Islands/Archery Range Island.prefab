@@ -324,6 +324,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.UnifiedButtonFeedback
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
+  keepHoverScaleWhenPressed: 0
   animateGraphic: 1
   preserveGraphicAlpha: 0
   useHoverGraphicAlpha: 0
@@ -442,6 +443,7 @@ GameObject:
   - component: {fileID: 8234300508470776778}
   - component: {fileID: 2415497205986928781}
   - component: {fileID: 8371463417615516307}
+  - component: {fileID: 8995917349399066559}
   m_Layer: 0
   m_Name: Exclamation
   m_TagString: Untagged
@@ -525,6 +527,19 @@ MonoBehaviour:
   m_EffectColor: {r: 0.18, g: 0.05, b: 0.06, a: 1}
   m_EffectDistance: {x: 1, y: -1}
   m_UseGraphicAlpha: 1
+--- !u!114 &8995917349399066559
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4393534940137064525}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbcd56c5a16f10649b89bd61ef0ab5ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedGameText
+  source: 
 --- !u!1 &4404755987663188568
 GameObject:
   m_ObjectHideFlags: 0
@@ -537,6 +552,7 @@ GameObject:
   - component: {fileID: 7858459722483041840}
   - component: {fileID: 964831958750665381}
   - component: {fileID: 7100439337723046162}
+  - component: {fileID: 145789802637714813}
   m_Layer: 0
   m_Name: Exclamation
   m_TagString: Untagged
@@ -620,6 +636,19 @@ MonoBehaviour:
   m_EffectColor: {r: 0.18, g: 0.05, b: 0.06, a: 1}
   m_EffectDistance: {x: 1, y: -1}
   m_UseGraphicAlpha: 1
+--- !u!114 &145789802637714813
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4404755987663188568}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbcd56c5a16f10649b89bd61ef0ab5ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedGameText
+  source: 
 --- !u!1 &4779081838128754584
 GameObject:
   m_ObjectHideFlags: 0
@@ -958,6 +987,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.UnifiedButtonFeedback
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
+  keepHoverScaleWhenPressed: 0
   animateGraphic: 1
   preserveGraphicAlpha: 0
   useHoverGraphicAlpha: 0
@@ -1141,6 +1171,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.UnifiedButtonFeedback
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
+  keepHoverScaleWhenPressed: 0
   animateGraphic: 1
   preserveGraphicAlpha: 0
   useHoverGraphicAlpha: 0
@@ -1178,6 +1209,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Base.BaseBuildingConstruction
   buildingId: archery_range
+  requiredUnlock: {fileID: 11400000, guid: 434e4198782619940b31c7c340f3252f, type: 2}
   nameKey: base.base_panel.archery_range.label
   fallbackName: "\u0421\u0442\u0440\u0435\u043B\u044C\u0431\u0438\u0449\u0435"
   descriptionKey: base.building.archery_range.description
@@ -1188,9 +1220,9 @@ MonoBehaviour:
   buildButton: {fileID: 7092625517864316512}
   buildButtonLabel: {fileID: 4654907998988344203}
   wood: {fileID: 11400000, guid: 45c32916e7e552e44b4498d5417db2bc, type: 2}
-  woodCost: 1
+  woodCost: 4
   stone: {fileID: 11400000, guid: 80528df5024cfad4d940509df98d860c, type: 2}
-  stoneCost: 1
+  stoneCost: 4
   confirmation: {fileID: 0}
   constructionEffect: {fileID: 0}
 --- !u!114 &2556691964778569885
@@ -1319,6 +1351,7 @@ GameObject:
   - component: {fileID: 3738128226335478331}
   - component: {fileID: 4064473866443383040}
   - component: {fileID: 4654907998988344203}
+  - component: {fileID: 8486883875099299509}
   m_Layer: 0
   m_Name: Label
   m_TagString: Untagged
@@ -1387,6 +1420,19 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "\u0421\u0442\u0440\u0435\u043B\u044C\u0431\u0438\u0449\u0435"
+--- !u!114 &8486883875099299509
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6729321953722879865}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbcd56c5a16f10649b89bd61ef0ab5ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedGameText
+  source: 
 --- !u!1 &7562301622780339279
 GameObject:
   m_ObjectHideFlags: 0
@@ -1475,6 +1521,7 @@ GameObject:
   - component: {fileID: 6497402973728082033}
   - component: {fileID: 2762525736051728527}
   - component: {fileID: 4420926614825806863}
+  - component: {fileID: 8260865985985305980}
   m_Layer: 0
   m_Name: Exclamation
   m_TagString: Untagged
@@ -1558,6 +1605,19 @@ MonoBehaviour:
   m_EffectColor: {r: 0.18, g: 0.05, b: 0.06, a: 1}
   m_EffectDistance: {x: 1, y: -1}
   m_UseGraphicAlpha: 1
+--- !u!114 &8260865985985305980
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7728331057244176745}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbcd56c5a16f10649b89bd61ef0ab5ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedGameText
+  source: 
 --- !u!1 &8604518565072650838
 GameObject:
   m_ObjectHideFlags: 0
@@ -1569,6 +1629,7 @@ GameObject:
   - component: {fileID: 238121541381576804}
   - component: {fileID: 261132631091294953}
   - component: {fileID: 9153281480230085502}
+  - component: {fileID: 6390080631246975164}
   m_Layer: 0
   m_Name: Label
   m_TagString: Untagged
@@ -1637,6 +1698,19 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "\u0423\u043B\u0443\u0447\u0448\u0438\u0442\u044C 0/7"
+--- !u!114 &6390080631246975164
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8604518565072650838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbcd56c5a16f10649b89bd61ef0ab5ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedGameText
+  source: 
 --- !u!1 &9061947896272861876
 GameObject:
   m_ObjectHideFlags: 0

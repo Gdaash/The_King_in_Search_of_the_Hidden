@@ -83,7 +83,7 @@ namespace GameFoundation.Base
             if (current == null) return;
             if (title != null) title.text = Tr(current.NameKey, current.FallbackName);
             if (description != null) description.text = Tr(current.DescriptionKey, current.FallbackDescription);
-            if (dangerLabel != null) dangerLabel.text = Tr("base.portal.tooltip.danger", "Опасность");
+            if (dangerLabel != null) dangerLabel.text = Tr("base.portal.tooltip.danger", GameFoundation.Localization.GameText.Get("Опасность"));
 
             for (int i = 0; dangerSkulls != null && i < dangerSkulls.Length; i++)
                 if (dangerSkulls[i] != null)

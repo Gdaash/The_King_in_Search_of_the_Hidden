@@ -35,7 +35,7 @@ namespace GameFoundation.Base
         public void ConfirmDisable(RoyalDecreeRow row)
         {
             selected = row;
-            disableMessage.text = "Отключить указ «" + row.decree.title + "»?\n\nПотраченное влияние не вернётся.\nПовторное включение снова потребует оплаты.";
+            disableMessage.text = GameFoundation.Localization.GameText.Get("Отключить указ «") + row.decree.title + GameFoundation.Localization.GameText.Get("»?\n\nПотраченное влияние не вернётся.\nПовторное включение снова потребует оплаты.");
             disableConfirmation.SetActive(true);
         }
         public void CancelDisable() { selected = null; if(disableConfirmation)disableConfirmation.SetActive(false); }

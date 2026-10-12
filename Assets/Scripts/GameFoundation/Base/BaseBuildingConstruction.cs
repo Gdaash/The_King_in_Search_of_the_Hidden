@@ -104,9 +104,10 @@ namespace GameFoundation.Base
                 return;
             }
             built = true;
-            GameFoundation.UI.GameNotifications.Post("Построено: " + Tr(nameKey, fallbackName), GameFoundation.UI.NotificationKind.Positive);
+            GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Построено: ") + Tr(nameKey, fallbackName), GameFoundation.UI.NotificationKind.Positive);
             GameAudioController.PlayUI(GameAudioCue.BuildingComplete, 0.9f, 0.98f, 1.02f, 0.1f);
             SaveSlotPrefs.SetInt(SaveKey, 1);
+            SaveSlotPrefs.SetInt("foundation.building." + buildingId + ".builtDay", GameFoundation.MetaProgression.DayCycleService.Instance != null ? GameFoundation.MetaProgression.DayCycleService.Instance.Day : 1);
             if (buildingId == "refugees") GameFoundation.MetaProgression.DayCycleService.Instance?.EnsureFirstRefugees();
             SaveSlotPrefs.Save();
             BuildingUpgradeService.NotifyChanged();
@@ -161,11 +162,11 @@ namespace GameFoundation.Base
             if (!ConstructionUnlocked) { BuildingConstructionTooltip.Instance?.Hide(); return; }
             string description = Tr(descriptionKey, fallbackDescription);
             if (buildingId == "housing")
-                description += "\n" + string.Format(Tr("base.building.housing.extra_places", "Увеличивает количество жилых мест для людей на {0}."),
+                description += "\n" + string.Format(Tr("base.building.housing.extra_places", GameFoundation.Localization.GameText.Get("Увеличивает количество жилых мест для людей на {0}.")),
                     BuildingUpgradeService.Catalog?.Find("housing")?.constructionCapacity ?? 0);
             BuildingConstructionTooltip.Instance?.Show(
                 Tr(nameKey, fallbackName), description,
-                Tr("base.building.price", "Цена постройки"), wood, woodCost, stone, stoneCost);
+                Tr("base.building.price", GameFoundation.Localization.GameText.Get("Цена постройки")), wood, woodCost, stone, stoneCost);
         }
 
         private void OnResourceChanged(ResourceType _, int __) => Refresh();

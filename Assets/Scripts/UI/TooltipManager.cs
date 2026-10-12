@@ -20,6 +20,7 @@ public class TooltipManager : MonoBehaviour
     private RectTransform _currentTarget;
     private RectTransform _textRect;
     private bool _alwaysBelow;
+    private string _sourceText, _displayedLanguage;
     private readonly Vector3[] _targetCorners = new Vector3[4];
 
     private void Awake()
@@ -53,6 +54,8 @@ public class TooltipManager : MonoBehaviour
         // Если тултип активен, обновляем его положение вслед за целью
         if (_canvasGroup.alpha > 0 && _currentTarget != null)
         {
+            string language=GameFoundation.Localization.LocalizationService.Instance?.Language;
+            if(language!=_displayedLanguage&&tooltipText!=null){_displayedLanguage=language;tooltipText.text=GameFoundation.Localization.GameText.Get(_sourceText);ResizeToText();}
             UpdatePosition();
         }
     }
@@ -66,7 +69,9 @@ public class TooltipManager : MonoBehaviour
         transform.SetAsLastSibling();
         if (tooltipText != null)
         {
-            tooltipText.text = description;
+            _sourceText=GameFoundation.Localization.GameText.Source(description);
+            _displayedLanguage=GameFoundation.Localization.LocalizationService.Instance?.Language;
+            tooltipText.text = GameFoundation.Localization.GameText.Get(_sourceText);
             ResizeToText();
         }
 

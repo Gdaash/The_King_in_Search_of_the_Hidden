@@ -131,13 +131,13 @@ namespace GameFoundation.UI
             {
                 int earned = 0;
                 for (int level = 0; level < stars; level++) earned += MilitaryExperienceService.ExperienceForNextStar(level);
-                progress.text = definition.isEnemy ? string.Format(UnitDescriptionText.Get("enemy.level.detail", "Уровень {0}/50 · без опыта"), enemyLevel) : profile == null ? T("recruit", "Новобранец · без звёзд") :
-                    string.Format(T("progress", "Уровень {0}/10 · опыт {1}"), stars,
-                        stars >= 10 ? T("maximum", "максимум") : (profile.experience - earned) + " / " + MilitaryExperienceService.ExperienceForNextStar(stars));
+                progress.text = definition.isEnemy ? string.Format(UnitDescriptionText.Get("enemy.level.detail", GameFoundation.Localization.GameText.Get("Уровень {0}/50 · без опыта")), enemyLevel) : profile == null ? T("recruit", GameFoundation.Localization.GameText.Get("Новобранец · без звёзд")) :
+                    string.Format(T("progress", GameFoundation.Localization.GameText.Get("Уровень {0}/10 · опыт {1}")), stars,
+                        stars >= 10 ? T("maximum", GameFoundation.Localization.GameText.Get("максимум")) : (profile.experience - earned) + " / " + MilitaryExperienceService.ExperienceForNextStar(stars));
             }
             if (footer != null) footer.text = definition.isEnemy
-                ? UnitDescriptionText.Get("enemy.level.footer", "Уровень фиксируется при появлении врага.\nВ панели показаны характеристики новых врагов.")
-                : string.Format(T("footer", "За убийство: {0} опыта · за помощь: {1}\nНовый день полностью восстанавливает здоровье.\nКолесо мыши — прокрутка характеристик."), MilitaryExperience.KillExperience, MilitaryExperience.AssistExperience);
+                ? UnitDescriptionText.Get("enemy.level.footer", GameFoundation.Localization.GameText.Get("Уровень фиксируется при появлении врага.\nВ панели показаны характеристики новых врагов."))
+                : string.Format(T("footer_compact", GameFoundation.Localization.GameText.Get("За убийство: {0} опыта · за помощь: {1}\nНовый день полностью восстанавливает здоровье.")), MilitaryExperience.KillExperience, MilitaryExperience.AssistExperience);
 
             int visible = 0;
             foreach (UnitStatPresentation entry in stats)
@@ -187,20 +187,20 @@ namespace GameFoundation.UI
                     value = N(number); break;
                 case UnitStat.AttackRate:
                     // Attacks per second is the reciprocal of the base interval, with the level bonus applied.
-                    value = N(1f / Cooldown(multiplier)) + T("per_second", " / с"); return true;
+                    value = N(1f / Cooldown(multiplier)) + T("per_second", GameFoundation.Localization.GameText.Get(" / с")); return true;
                 case UnitStat.AttackInterval:
                     float variation = ranged != null ? ranged.CooldownVariation : melee != null ? melee.CooldownVariation / multiplier : 0f;
-                    value = Range(Mathf.Max(.05f, Cooldown(multiplier) - variation), Cooldown(multiplier) + variation) + T("seconds", " с"); return true;
+                    value = Range(Mathf.Max(.05f, Cooldown(multiplier) - variation), Cooldown(multiplier) + variation) + T("seconds", GameFoundation.Localization.GameText.Get(" с")); return true;
                 case UnitStat.AttackRange:
                     number = (ranged != null ? ranged.CurrentAttackRange / MilitaryExperience.Multiplier(ranged) : melee != null ? melee.BaseAttackRange : 0f) * multiplier;
-                    value = N(number) + T("distance", " ед."); break;
+                    value = N(number) + T("distance", GameFoundation.Localization.GameText.Get(" ед.")); break;
                 case UnitStat.MovementSpeed:
                     float speed = combat!=null?combat.SpeedBeforeLevel:movementStats != null ? movementStats.TotalSpeed : 3f;
                     float spread = movement != null ? movement.SpeedVariation : 0f;
-                    value = (liveUnit != null && movement != null ? N(movement.CombatSpeed) : Range((speed - spread) * multiplier, (speed + spread) * multiplier)) + T("speed_unit", " ед./с"); return true;
+                    value = (liveUnit != null && movement != null ? N(movement.CombatSpeed) : Range((speed - spread) * multiplier, (speed + spread) * multiplier)) + T("speed_unit", GameFoundation.Localization.GameText.Get(" ед./с")); return true;
                 case UnitStat.DetectionRange:
                     number = ranged != null ? ranged.DetectionRange : melee != null ? melee.DetectionRange : 0f;
-                    value = N(number) + T("distance", " ед."); break;
+                    value = N(number) + T("distance", GameFoundation.Localization.GameText.Get(" ед.")); break;
                 case UnitStat.PhysicalResistance: case UnitStat.FireResistance: case UnitStat.IceResistance: case UnitStat.MagicResistance: case UnitStat.ElectricResistance:
                     DamageType resistType = entry.stat==UnitStat.ElectricResistance?DamageType.Electric:(DamageType)(entry.stat - UnitStat.PhysicalResistance);
                     var resistance = healthStats != null ? healthStats.resistances.Find(item => item.type == resistType) : null;
@@ -216,23 +216,23 @@ namespace GameFoundation.UI
                     return true;
                 case UnitStat.Regeneration:
                     number = healthStats != null ? healthStats.TotalRegenAmount * multiplier : 0f;
-                    value = number > 0f ? N(number) + T("hp_per_second", " HP/с") : T("none", "Нет"); break;
+                    value = number > 0f ? N(number) + T("hp_per_second", GameFoundation.Localization.GameText.Get(" HP/с")) : T("none", GameFoundation.Localization.GameText.Get("Нет")); break;
                 case UnitStat.RegenerationDelay:
                     if (healthStats == null || healthStats.TotalRegenAmount <= 0f) return false;
-                    value = N(healthStats.TotalRegenDelay / multiplier) + T("seconds", " с"); return true;
+                    value = N(healthStats.TotalRegenDelay / multiplier) + T("seconds", GameFoundation.Localization.GameText.Get(" с")); return true;
                 case UnitStat.PortalHealing:
                     number = definition.scientificStats != null ? definition.scientificStats.WarriorBaseRegenPerSecond * 100f : 0f;
-                    value = number > 0f ? N(number) + T("percent_per_second", "% HP/с") : T("not_researched", "Не изучено");
+                    value = number > 0f ? N(number) + T("percent_per_second", GameFoundation.Localization.GameText.Get("% HP/с")) : T("not_researched", GameFoundation.Localization.GameText.Get("Не изучено"));
                     color = number > 0f ? positiveColor : mutedColor; return true;
                 case UnitStat.Retreat:
                     bool retreat = RoyalDecreeService.IsEnabled(RoyalDecreeService.CautiousWarriors);
-                    value = retreat ? T("retreat_threshold", "При HP ≤ 10%") : T("decree_off", "Указ выключен");
+                    value = retreat ? T("retreat_threshold", GameFoundation.Localization.GameText.Get("При HP ≤ 10%")) : T("decree_off", GameFoundation.Localization.GameText.Get("Указ выключен"));
                     color = retreat ? positiveColor : mutedColor; return true;
                 case UnitStat.Food:
-                    value = T("food_amount", "1 / день"); return definition.food != null;
+                    value = T("food_amount", GameFoundation.Localization.GameText.Get("1 / день")); return definition.food != null;
                 case UnitStat.TargetPriority:
                     bool weakest = !definition.isEnemy && ranged != null && RoyalDecreeService.IsEnabled(RoyalDecreeService.FinishOffEnemies);
-                    value = weakest ? T("weakest", "Меньше % HP") : T("nearest", "Ближайший");
+                    value = weakest ? T("weakest", GameFoundation.Localization.GameText.Get("Меньше % HP")) : T("nearest", GameFoundation.Localization.GameText.Get("Ближайший"));
                     color = weakest ? positiveColor : normalColor; return true;
             }
             if (entry.hideWhenZero && Mathf.Approximately(number, 0f)) return false;

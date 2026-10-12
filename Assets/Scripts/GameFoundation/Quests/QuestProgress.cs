@@ -72,7 +72,7 @@ namespace GameFoundation.Quests
                 foreach (var reward in rewards) resources.AddResource(reward.Key, (int)reward.Value);
                 foreach (var unlock in quest.unlockRewards) ContentUnlocks.Grant(unlock);
                 SaveSlotPrefs.Save();
-                GameFoundation.UI.GameNotifications.Post("Награда получена: " + quest.title, GameFoundation.UI.NotificationKind.Positive);
+                GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Награда получена: ") + quest.title, GameFoundation.UI.NotificationKind.Positive);
             }
             ContentUnlocks.NotifyChanged();
             GameFoundation.Audio.GameAudioController.PlayUI(GameFoundation.Audio.GameAudioCue.QuestReward, .8f);
@@ -109,7 +109,7 @@ namespace GameFoundation.Quests
                         if (resource != null && resource != quest.penaltyResource && !quest.protectedResources.Contains(resource)) resources.SetResourceAmount(resource, 0);
                 if (quest.penaltyResource != null && quest.penaltyAmount > 0) resources.AddResource(quest.penaltyResource, -quest.penaltyAmount);
                 SaveSlotPrefs.Save();
-                GameFoundation.UI.GameNotifications.Post("Провалено: " + quest.title + (quest.confiscateResourcesOnFailure ? ". Припасы конфискованы." : ""), GameFoundation.UI.NotificationKind.Negative);
+                GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Провалено: ") + quest.title + (quest.confiscateResourcesOnFailure ? GameFoundation.Localization.GameText.Get(". Припасы конфискованы.") : ""), GameFoundation.UI.NotificationKind.Negative);
             }
             GameFoundation.Audio.GameAudioController.PlayUI(GameFoundation.Audio.GameAudioCue.UiDenied, .9f);
             Changed?.Invoke(); return true;

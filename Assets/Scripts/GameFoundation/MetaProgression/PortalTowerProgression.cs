@@ -55,7 +55,7 @@ namespace GameFoundation.MetaProgression
 #if UNITY_EDITOR
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.K)) GrantEditorLevel();
+            if (!FirstRunLightTutorial.BlocksInput && Input.GetKeyDown(KeyCode.K)) GrantEditorLevel();
         }
         public void GrantEditorLevel()
         {
@@ -124,6 +124,7 @@ namespace GameFoundation.MetaProgression
         private IEnumerator DelayedLevel(int arrivedExperience)
         {
             yield return new WaitForSecondsRealtime(.5f);
+            while (FirstRunLightTutorial.BlocksInput && !expeditionEnded) yield return null;
             if(expeditionEnded)yield break;
             // Only experience that had arrived when this delay began can level up.
             ProcessLevels(arrivedExperience);

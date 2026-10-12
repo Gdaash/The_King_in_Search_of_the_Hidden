@@ -88,6 +88,7 @@ GameObject:
   - component: {fileID: 7485362092873081918}
   - component: {fileID: 1075604946800890293}
   - component: {fileID: 8222412667472966077}
+  - component: {fileID: 5861672081546376445}
   m_Layer: 5
   m_Name: TitleText (1)
   m_TagString: Untagged
@@ -198,6 +199,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.LetterSpacing
   spacing: 1.5
+--- !u!114 &5861672081546376445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6114539583055569922}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbcd56c5a16f10649b89bd61ef0ab5ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedGameText
+  source: 
 --- !u!1 &6571707054822713335
 GameObject:
   m_ObjectHideFlags: 0
@@ -295,7 +309,7 @@ MonoBehaviour:
   skillID: Skill1
   upgradeStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
   purchaseResourceType: {fileID: 0}
-  cost: 1
+  cost: 4
   isPurchased: 0
   isUnlocked: 1
   lockedSprite: {fileID: 21300000, guid: 917fd507449fd39418f1ab3f743b2d8d, type: 3}
@@ -404,7 +418,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.UnifiedButtonFeedback
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 0
+  keepHoverScaleWhenPressed: 0
+  animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
+  hoverScaleOverride: 0
+  scaleTarget: {fileID: 0}
   useButtonPalette: 0
+  hoverScaleMultiplier: 1
 --- !u!114 &7544296071477026229
 MonoBehaviour:
   m_ObjectHideFlags: 0

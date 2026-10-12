@@ -22,8 +22,8 @@ namespace GameFoundation.Base
             if (IsEnabled(decreeId) == enabled) return;
             SaveSlotPrefs.SetInt(Prefix + decreeId, enabled ? 1 : 0);
             SaveSlotPrefs.Save();
-            string title = decreeId == CautiousWarriors ? "Не трус, а осторожный" : decreeId == FinishOffEnemies ? "Бей раненых" : decreeId == ForestForaging ? "Поиски еды в лесу" : "Указ";
-            GameFoundation.UI.GameNotifications.Post((enabled ? "Указ включён: " : "Указ выключен: ") + title);
+            string title = decreeId == CautiousWarriors ? GameFoundation.Localization.GameText.Get("Не трус, а осторожный") : decreeId == FinishOffEnemies ? GameFoundation.Localization.GameText.Get("Бей раненых") : decreeId == ForestForaging ? GameFoundation.Localization.GameText.Get("Поиски еды в лесу") : GameFoundation.Localization.GameText.Get("Указ");
+            GameFoundation.UI.GameNotifications.Post((enabled ? GameFoundation.Localization.GameText.Get("Указ включён: ") : GameFoundation.Localization.GameText.Get("Указ выключен: ")) + title);
             Changed?.Invoke(decreeId, enabled);
         }
 

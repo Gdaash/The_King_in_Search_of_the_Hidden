@@ -40,15 +40,15 @@ namespace GameFoundation.Base
             offer.SetActive(visible && !used); timer.SetActive(visible && busy); results.SetActive(visible && used && !busy);
             send.interactable = ForestForagingService.CanStart(settings);
             priceAmount.text = settings.cost.ToString();
-            warning.text = "ВНИМАНИЕ! " + Mathf.RoundToInt((1f - settings.survivalChance) * 100f) + "% шанс гибели.";
+            warning.text = GameFoundation.Localization.GameText.Get("ВНИМАНИЕ! ") + Mathf.RoundToInt((1f - settings.survivalChance) * 100f) + GameFoundation.Localization.GameText.Get("% шанс гибели.");
             ResourceIconSizing.Apply(priceIcon,settings.influence.resourceIcon);
             ResourceIconSizing.Apply(foodIcon,settings.food.resourceIcon);
-            if (busy) timerLabel.text = "Поиски еды… " + ForestForagingService.Remaining.ToString("0.0") + " с";
+            if (busy) timerLabel.text = GameFoundation.Localization.GameText.Get("Поиски еды… ") + ForestForagingService.Remaining.ToString("0.0") + GameFoundation.Localization.GameText.Get(" с");
             else
             {
                 forecast.SetData(day.GetFoodForecast());
-                survivorsLabel.text = "Выжило: " + data.survived;
-                deathsLabel.text = "Погибло: " + data.dead;
+                survivorsLabel.text = GameFoundation.Localization.GameText.Get("Выжило: ") + data.survived;
+                deathsLabel.text = GameFoundation.Localization.GameText.Get("Погибло: ") + data.dead;
                 foodAmount.text = data.food.ToString();
             }
         }

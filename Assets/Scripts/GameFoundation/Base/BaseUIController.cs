@@ -60,7 +60,8 @@ namespace GameFoundation.Base
             Bind(refugeesButton, OpenRefugees);
             Bind(blacksmithButton, OpenBlacksmith);
             Bind(libraryButton, OpenMagicLibrary);
-            Bind(settingsButton, OpenSettings);
+            if (settingsButton != null && settingsButton.GetComponent<GameFoundation.Settings.GameMenuLauncher>() == null)
+                Bind(settingsButton, OpenSettings);
             Bind(searchPortalsButton, SearchPortals);
             Bind(closeMapButton, CloseMap);
             Bind(closeLaboratoryButton, CloseLaboratory);
@@ -121,18 +122,18 @@ namespace GameFoundation.Base
                 ? GlobalResourceManager.Instance.GetResourceAmount(magicOre) : 0;
             if (portalTravelNotice != null)
                 portalTravelNotice.text = Tr("base.portal.travel_once",
-                    "Путешествовать через портал можно только один раз в день.");
+                    GameFoundation.Localization.GameText.Get("Путешествовать через портал можно только один раз в день."));
             if (portalTravelUsedNotice != null)
             {
                 portalTravelUsedNotice.text = Tr("base.portal.travel_used",
-                    "На сегодня вы исчерпали эту возможность.");
+                    GameFoundation.Localization.GameText.Get("На сегодня вы исчерпали эту возможность."));
                 portalTravelUsedNotice.gameObject.SetActive(day != null && day.EnteredToday);
             }
-            if (dayText) dayText.text = Tr("base.day", "День") + " " + (day?.Day ?? 1);
+            if (dayText) dayText.text = Tr("base.day", GameFoundation.Localization.GameText.Get("День")) + " " + (day?.Day ?? 1);
             var search = searchPortalsButton;
             if (search) search.gameObject.SetActive(false);
             var available = refugeesAvailableText;
-            if (available) available.text = Tr("base.waiting", "Ожидают:") + " " + (day?.RefugeesAvailable ?? 0);
+            if (available) available.text = Tr("base.waiting", GameFoundation.Localization.GameText.Get("Ожидают:")) + " " + (day?.RefugeesAvailable ?? 0);
             var admit = admitRefugeeButton;
             if (admit) admit.interactable = day != null && day.RefugeesAvailable > 0 && BuildingUpgradeService.CanAdmitResident;
             for (var i = 0; portalButtons != null && i < portalButtons.Length; i++)
@@ -148,7 +149,7 @@ namespace GameFoundation.Base
                 if (!visible) continue;
                 if (view != null)
                     view.Refresh(site, location, magicOre, oreAmount, day.EnteredToday,
-                        Tr("base.enter", "Войти"), Tr("base.portal.free", "Бесплатно"));
+                        Tr("base.enter", GameFoundation.Localization.GameText.Get("Войти")), Tr("base.portal.free", GameFoundation.Localization.GameText.Get("Бесплатно")));
                 button.onClick.RemoveAllListeners();
                 var portal = site;
                 button.onClick.AddListener(() => SelectPortal(portal));
@@ -168,8 +169,8 @@ namespace GameFoundation.Base
         {
             var day = DayCycleService.Instance;
             if (day == null) return;
-            if (!PortalProgression.IsUnlocked(DayCycleService.GetPortalLocation(site.locationId))) { Message("Улучшите портал для доступа к этой локации", GameFoundation.UI.NotificationKind.Negative); return; }
-            if (!day.Enter(site)) { Message("Сегодня уже был поход", GameFoundation.UI.NotificationKind.Negative); return; }
+            if (!PortalProgression.IsUnlocked(DayCycleService.GetPortalLocation(site.locationId))) { Message(GameFoundation.Localization.GameText.Get("Улучшите портал для доступа к этой локации"), GameFoundation.UI.NotificationKind.Negative); return; }
+            if (!day.Enter(site)) { Message(GameFoundation.Localization.GameText.Get("Сегодня уже был поход"), GameFoundation.UI.NotificationKind.Negative); return; }
             FindFirstObjectByType<RunSceneRouter>()?.EnterRun();
         }
         private void Message(string value, GameFoundation.UI.NotificationKind kind = GameFoundation.UI.NotificationKind.Normal)
@@ -212,18 +213,19 @@ namespace GameFoundation.Base
             using var notification = GameFoundation.UI.GameNotifications.BeginAction();
             if (DayCycleService.Instance == null) return;
             Show(nextDayConfirmation, false);
+            dayReportPopup?.PrepareForNextDay();
             DayCycleService.Instance.NextDay();
             dayReportPopup?.Open(DayResourceLedger.LastReport);
-            Message("Наступил следующий день");
+            Message(GameFoundation.Localization.GameText.Get("Наступил следующий день"));
         }
         public void SearchPortals() { DayCycleService.Instance?.Search(); Refresh(); }
         public void BuyCart()
         {
             using var notification = GameFoundation.UI.GameNotifications.BeginAction();
             var purchase = cartWorkshop;
-            if (purchase == null || !purchase.TryBuy()) { Message("Недостаточно дерева для телеги", GameFoundation.UI.NotificationKind.Negative); return; }
-            Message("Телега изготовлена", GameFoundation.UI.NotificationKind.Positive);
+            if (purchase == null || !purchase.TryBuy()) { Message(GameFoundation.Localization.GameText.Get("Недостаточно дерева для телеги"), GameFoundation.UI.NotificationKind.Negative); return; }
+            Message(GameFoundation.Localization.GameText.Get("Телега изготовлена"), GameFoundation.UI.NotificationKind.Positive);
         }
-        public void AdmitRefugee() { using var notification = GameFoundation.UI.GameNotifications.BeginAction(); if (GlobalResourceManager.Instance && human && DayCycleService.Instance?.AdmitRefugee() == true) { GlobalResourceManager.Instance.AddResource(human, 1); Message("Новый житель принят", GameFoundation.UI.NotificationKind.Positive); GameFoundation.Audio.GameAudioController.PlayUI(GameFoundation.Audio.GameAudioCue.RefugeeAdmit, .65f); } }
+        public void AdmitRefugee() { using var notification = GameFoundation.UI.GameNotifications.BeginAction(); if (GlobalResourceManager.Instance && human && DayCycleService.Instance?.AdmitRefugee() == true) { GlobalResourceManager.Instance.AddResource(human, 1); Message(GameFoundation.Localization.GameText.Get("Новый житель принят"), GameFoundation.UI.NotificationKind.Positive); GameFoundation.Audio.GameAudioController.PlayUI(GameFoundation.Audio.GameAudioCue.RefugeeAdmit, .65f); } }
     }
 }

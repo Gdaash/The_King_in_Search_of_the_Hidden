@@ -28,10 +28,11 @@ namespace GameFoundation.Quests
         [SerializeField, Min(.02f)] private float wordInterval = .12f;
         [SerializeField, Range(0, 1)] private float wordSoundVolume = .2f;
         [Header("Удержание кнопки диалога")]
-        [SerializeField, Min(.1f)] private float holdDuration = 1f;
+        [SerializeField, Min(.1f)] private float holdDuration = .7f;
         [SerializeField] private Color holdFillColor = new Color(.55f, .7f, .85f, 1);
         private DialogueHoldButton holdButton;
         private Coroutine typing;
+        private string displayedLanguage;
         public bool IsTyping { get; private set; }
         private string DoneKey(QuestDialogueDefinition d) => "foundation.dialogue." + d.id + ".seen";
         private void OnEnable() { nextButton.onClick.AddListener(RevealText); QuestProgress.Changed += Evaluate; }
@@ -55,6 +56,8 @@ namespace GameFoundation.Quests
         }
         private void Start() => Evaluate();
         private bool Available(QuestDialogueDefinition d) => d != null && !string.IsNullOrWhiteSpace(d.id) &&
+            !GameFoundation.Base.DayReportPopup.BlocksQuestDialogues &&
+            d.BuildingNightPassed &&
             d.lines != null && d.lines.Length > 0 &&
             (d.quest != null ? !QuestProgress.IsAccepted(d.quest) : SaveSlotPrefs.GetInt(DoneKey(d), 0) != 1) &&
             (d.prerequisite == null || (d.prerequisiteAccepted ? QuestProgress.IsAccepted(d.prerequisite) : QuestProgress.IsClaimed(d.prerequisite)));
@@ -79,8 +82,9 @@ namespace GameFoundation.Quests
         }
         private void ShowLine()
         {
-            speaker.text = current.speakerName;
-            dialogue.text = current.lines[line];
+            displayedLanguage = GameFoundation.Localization.LocalizationService.Instance?.Language;
+            speaker.text = GameFoundation.Localization.GameText.Get(current.speakerName);
+            dialogue.text = GameFoundation.Localization.GameText.Get(current.lines[line]);
             StopTyping();
             dialogue.ForceMeshUpdate();
             dialogue.maxVisibleCharacters = 0;
@@ -90,10 +94,14 @@ namespace GameFoundation.Quests
             if (portrait.sprite != null) portrait.rectTransform.sizeDelta = portrait.sprite.rect.size * 2;
             UpdateButtonLabel();
         }
+        private void Update()
+        {
+            if(current!=null&&!presenting&&displayedLanguage!=GameFoundation.Localization.LocalizationService.Instance?.Language)ShowLine();
+        }
         private void UpdateButtonLabel()
         {
             if (current == null) return;
-            nextLabel.text = IsTyping ? "…" : line < current.lines.Length - 1 ? "Далее" : current.quest != null ? "Взять задание" : "Закрыть";
+            nextLabel.text = IsTyping ? "…" : line < current.lines.Length - 1 ? GameFoundation.Localization.GameText.Get("Далее") : current.quest != null ? GameFoundation.Localization.GameText.Get("Взять задание") : GameFoundation.Localization.GameText.Get("Закрыть");
             if (buttonTheme != null) nextLabel.color = line < current.lines.Length - 1 ? buttonTheme.neutralLabelColor :
                 current.quest != null ? buttonTheme.positiveLabelColor : buttonTheme.negativeLabelColor;
         }
@@ -174,7 +182,7 @@ namespace GameFoundation.Quests
             confirm.gameObject.SetActive(true); confirm.interactable = true;
             confirm.onClick = new Button.ButtonClickedEvent();
             var label = confirm.GetComponentInChildren<TMP_Text>(true);
-            if (label != null) { label.text = "ОК"; if (buttonTheme != null) label.color = buttonTheme.neutralLabelColor; }
+            if (label != null) { label.text = GameFoundation.Localization.GameText.Get("ОК"); if (buttonTheme != null) label.color = buttonTheme.neutralLabelColor; }
             var confirmRect = (RectTransform)confirm.transform;
             confirmRect.anchorMin = confirmRect.anchorMax = confirmRect.pivot = new Vector2(.5f, .5f);
             confirmRect.localScale = Vector3.one;

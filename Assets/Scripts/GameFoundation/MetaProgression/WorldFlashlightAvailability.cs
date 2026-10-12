@@ -33,6 +33,9 @@ namespace GameFoundation.MetaProgression
             { Anchor = anchor; State = state; Hex = hex; Requester = requester; LightIndex = lightIndex; Flag = flag; }
         }
         public event Action<HoverTarget> TargetClicked;
+        public event Action<Vector2> LightHexOpened;
+        public event Action LightsTurnedOn;
+        public event Action<Vector2> LightDraggedToHex;
         private sealed class LightAssignment
         {
             public CrystalLightBeam beam;
@@ -144,12 +147,12 @@ namespace GameFoundation.MetaProgression
             }
             ProcessDragPointer(Input.mousePosition, Input.GetMouseButtonDown(0),
                 Input.GetMouseButton(0), Input.GetMouseButtonUp(0));
-            if (Input.GetMouseButtonDown(1))
+            if (!FirstRunLightTutorial.BlocksInput && Input.GetMouseButtonDown(1))
             {
                 rightPointerDown = Input.mousePosition;
                 rightPointerStartedInWorld = !IsPointerOverBlockingUI(Input.mousePosition);
             }
-            if (Input.GetMouseButtonUp(1) && rightPointerStartedInWorld &&
+            if (!FirstRunLightTutorial.BlocksInput && Input.GetMouseButtonUp(1) && rightPointerStartedInWorld &&
                 Vector2.Distance(rightPointerDown, Input.mousePosition) < 8 && !IsPointerOverBlockingUI(Input.mousePosition) && worldCamera != null)
                 RecallHumansAt(worldCamera.ScreenToWorldPoint(Input.mousePosition));
             UpdateAutomaticWork();
@@ -166,7 +169,7 @@ namespace GameFoundation.MetaProgression
                 const string key = "world.lights.manual_mode_hint";
                 string hint = GameFoundation.Localization.LocalizationService.Instance?.Get(key);
                 if (string.IsNullOrEmpty(hint) || hint == key)
-                    hint = "Автоповтор выключен. ЛКМ по гексу с лучом запускает работу.";
+                    hint = GameFoundation.Localization.GameText.Get("Автоповтор выключен. ЛКМ по гексу с лучом запускает работу.");
                 GameFoundation.UI.GameNotifications.Post(hint);
             }
             for (int i = 0; i < lights.Length; i++)
@@ -337,7 +340,7 @@ namespace GameFoundation.MetaProgression
             var target = GetHoverTarget(point);
             if (target.State == HoverState.None) return false;
             TargetClicked?.Invoke(target);
-            if (target.State == HoverState.WaitingForResources) { Release(target.LightIndex); GameFoundation.UI.GameNotifications.Post("Действие отменено"); return true; }
+            if (target.State == HoverState.WaitingForResources) { Release(target.LightIndex); GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Действие отменено")); return true; }
             if (target.State != HoverState.Available) return false;
             return target.Hex != null ? OpenHex(target.LightIndex, target.Hex) : ReserveBuilding(target.LightIndex, target.Requester);
         }
@@ -356,7 +359,7 @@ namespace GameFoundation.MetaProgression
                     target.Requester.RecallIdleHumans();
                 }
                 OrderManager.Instance?.ForceUpdateOrders();
-                GameFoundation.UI.GameNotifications.Post("Действие отменено");
+                GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Действие отменено"));
                 return true;
             }
             if (Warehouse.Instance == null) return false;
@@ -368,7 +371,7 @@ namespace GameFoundation.MetaProgression
             TargetClicked?.Invoke(target);
             target.Requester.SetCrystalFlag(null);
             int sent = target.Requester.RecallIdleHumans();
-            if (sent > 0) GameFoundation.UI.GameNotifications.Post("Люди возвращаются в портал");
+            if (sent > 0) GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Люди возвращаются в портал"));
             OrderManager.Instance?.ForceUpdateOrders();
             return sent > 0;
         }
@@ -390,7 +393,7 @@ namespace GameFoundation.MetaProgression
             hex.OnUnlockCompleteEvent.AddListener(assignment.completed);
             assignment.beam.Show(assignment.position, null, true, openingHex: true);
             hex.StartUnlockProcess(1);
-            GameFoundation.UI.GameNotifications.Post(resuming ? "Открытие гекса продолжено" : "Начато открытие гекса");
+            GameFoundation.UI.GameNotifications.Post(resuming ? GameFoundation.Localization.GameText.Get("Открытие гекса продолжено") : GameFoundation.Localization.GameText.Get("Начато открытие гекса"));
             return true;
         }
         private bool ReserveBuilding(int index, ResourceRequester requester)
@@ -417,7 +420,7 @@ namespace GameFoundation.MetaProgression
             { timer.BindCrystalOwner(requester); timer.CrystalCycleStarted += assignment.started; }
             requester.OnActionExecuted.AddListener(assignment.completed);
             assignment.beam.Show(assignment.position, requester, true);
-            if (!requester.CrystalResourcesReady) GameFoundation.UI.GameNotifications.Post("Здание ожидает доставку ресурсов");
+            if (!requester.CrystalResourcesReady) GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Здание ожидает доставку ресурсов"));
             requester.SetCrystalFlag(assignment.beam.Flag);
             Physics2D.SyncTransforms();
             requester.TryStartCrystalCycle();
@@ -432,7 +435,7 @@ namespace GameFoundation.MetaProgression
             if (!assignment.occupied || assignment.working || escaped) return;
             assignment.working = true;
             SetAlarmPaused(assignment, false);
-            GameFoundation.UI.GameNotifications.Post("Здание начало работу");
+            GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Здание начало работу"));
             assignment.beam.Show(assignment.position, assignment.requester, true);
         }
         private static void CollectAlarmSources(LightAssignment assignment, UnityEvent action)
@@ -460,10 +463,11 @@ namespace GameFoundation.MetaProgression
         {
             var assignment = lights[index];
             bool repeat = completed && assignment.occupied && autoRepeat && !escaped;
+            if (completed && assignment.occupied && assignment.hex != null) LightHexOpened?.Invoke(assignment.position);
             bool preserveProgress = !completed && !escaped &&
                 ((assignment.hex != null && assignment.hex.IsUnlocking()) ||
                  (assignment.requester != null && assignment.requester.IsProcessing));
-            if (completed && assignment.occupied) GameFoundation.UI.GameNotifications.Post(assignment.hex != null ? "Гекс открыт" : "Работа здания завершена", GameFoundation.UI.NotificationKind.Positive);
+            if (completed && assignment.occupied) GameFoundation.UI.GameNotifications.Post(assignment.hex != null ? GameFoundation.Localization.GameText.Get("Гекс открыт") : GameFoundation.Localization.GameText.Get("Работа здания завершена"), GameFoundation.UI.NotificationKind.Positive);
             // Completion callbacks can precede the persistent alarm callback in the same event.
             // Keep its reservation until the emitter atomically transfers it into flying orbs.
             if (preserveProgress)

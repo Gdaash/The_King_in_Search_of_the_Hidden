@@ -91,7 +91,7 @@ public class GlobalStats : ScriptableObject
         if (!CanPurchaseUpgrade(entry)) return false;
         if (entry.cost > 0 && !GlobalResourceManager.Instance.TrySpendResource(entry.costResource, entry.cost)) return false;
         UnlockUpgrade(id);
-        GameFoundation.UI.GameNotifications.Post("Изучено: " + entry.title, GameFoundation.UI.NotificationKind.Positive);
+        GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Изучено: ") + entry.title, GameFoundation.UI.NotificationKind.Positive);
         return true;
     }
     public ScientificUpgradeTable.Entry FindUpgradeDefinition(string id) =>

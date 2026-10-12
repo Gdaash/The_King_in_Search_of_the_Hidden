@@ -16,7 +16,7 @@ namespace GameFoundation.Quests
             ResourceIconSizing.Apply(resourceIcon, icon);
             resourceIcon.enabled = icon != null;
             amount.text = value; amount.color = completeColor;
-            purpose.text = caption;
+            purpose.text = GameFoundation.Localization.GameText.Get(caption);
             GetComponent<LayoutElement>().preferredHeight = Mathf.Max(44, icon != null ? icon.rect.height * 2 + 8 : 44);
         }
         public void Present(QuestDefinition.Requirement goal, int stock, bool completed)
@@ -24,7 +24,7 @@ namespace GameFoundation.Quests
             ResourceIconSizing.Apply(resourceIcon, !string.IsNullOrEmpty(goal.buildingId) ? goal.buildingIcon : goal.resource != null ? goal.resource.resourceIcon : null);
             amount.text = $"{(completed ? goal.amount : Mathf.Clamp(stock, 0, goal.amount))} / {goal.amount}";
             amount.color = completed || stock >= goal.amount ? completeColor : incompleteColor;
-            purpose.text = goal.purpose;
+            purpose.text = GameFoundation.Localization.GameText.Get(goal.purpose);
             var height = Mathf.Max(60, resourceIcon.sprite != null ? resourceIcon.sprite.rect.height * 2 + 8 : 60);
             GetComponent<LayoutElement>().preferredHeight = height;
         }

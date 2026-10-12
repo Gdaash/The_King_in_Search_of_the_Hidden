@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1478530320974176608}
   - component: {fileID: 8128716851990125265}
   - component: {fileID: 646171744662687192}
+  - component: {fileID: 3920462759111000955}
   m_Layer: 0
   m_Name: Label
   m_TagString: Untagged
@@ -79,6 +80,19 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "\u0423\u043B\u0443\u0447\u0448\u0438\u0442\u044C 0/7"
+--- !u!114 &3920462759111000955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3000034187265741803}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbcd56c5a16f10649b89bd61ef0ab5ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedGameText
+  source: 
 --- !u!1 &6324908092748707965
 GameObject:
   m_ObjectHideFlags: 0
@@ -91,6 +105,7 @@ GameObject:
   - component: {fileID: 7754347909067895081}
   - component: {fileID: 2527318429066932037}
   - component: {fileID: 4302172637890498303}
+  - component: {fileID: 3979951193965047919}
   m_Layer: 0
   m_Name: Exclamation
   m_TagString: Untagged
@@ -174,6 +189,19 @@ MonoBehaviour:
   m_EffectColor: {r: 0.18, g: 0.05, b: 0.06, a: 1}
   m_EffectDistance: {x: 1, y: -1}
   m_UseGraphicAlpha: 1
+--- !u!114 &3979951193965047919
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6324908092748707965}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbcd56c5a16f10649b89bd61ef0ab5ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedGameText
+  source: 
 --- !u!1 &8197015398956501610
 GameObject:
   m_ObjectHideFlags: 0
@@ -329,8 +357,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.UnifiedButtonFeedback
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
+  keepHoverScaleWhenPressed: 0
   animateGraphic: 1
   preserveGraphicAlpha: 1
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
   hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
@@ -364,6 +396,7 @@ MonoBehaviour:
   label: {fileID: 646171744662687192}
   visibility: {fileID: 5774008020304820349}
   availabilityMarker: {fileID: 9136603929131162564}
+  highlight: {fileID: 0}
 --- !u!1 &9136603929131162564
 GameObject:
   m_ObjectHideFlags: 0

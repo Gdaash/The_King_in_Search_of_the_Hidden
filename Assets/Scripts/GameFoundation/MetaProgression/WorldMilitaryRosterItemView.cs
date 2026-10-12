@@ -115,14 +115,14 @@ namespace GameFoundation.MetaProgression
                 fillRect.anchorMin = new Vector2(0f, .5f);
                 fillRect.anchorMax = new Vector2(0f, .5f);
                 fillRect.pivot = new Vector2(0f, .5f);
-                fillRect.anchoredPosition = Vector2.zero;
-                fillRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, barRect.rect.width * value);
-                fillRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, barRect.rect.height);
+                fillRect.anchoredPosition = new Vector2(2, 0);
+                fillRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Max(0, barRect.rect.width - 4) * value);
+                fillRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(0, barRect.rect.height - 4));
             }
 
             healthFill.type = Image.Type.Simple;
             healthFill.fillAmount = value;
-            healthFill.color = value <= .25f ? criticalColor : value <= .5f ? warningColor : healthyColor;
+            healthFill.color = Color.white;
         }
     }
 }

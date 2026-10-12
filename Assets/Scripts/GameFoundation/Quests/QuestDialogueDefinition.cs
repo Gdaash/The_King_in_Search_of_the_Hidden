@@ -16,5 +16,12 @@ namespace GameFoundation.Quests
         public QuestDefinition prerequisite;
         [Tooltip("Начать после принятия prerequisite, не дожидаясь его награды")]
         public bool prerequisiteAccepted;
+        [Tooltip("Дождаться следующего дня после строительства этого здания.")]
+        public string requiredBuildingAfterNight;
+        public bool BuildingNightPassed => string.IsNullOrEmpty(requiredBuildingAfterNight) ||
+            (GameFoundation.Base.BuildingUpgradeService.IsBuilt(requiredBuildingAfterNight) &&
+             GameFoundation.MetaProgression.DayCycleService.Instance != null &&
+             GameFoundation.MetaProgression.DayCycleService.Instance.Day >
+             GameFoundation.Saves.SaveSlotPrefs.GetInt("foundation.building." + requiredBuildingAfterNight + ".builtDay", 1));
     }
 }

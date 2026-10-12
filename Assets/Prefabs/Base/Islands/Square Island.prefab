@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1826238193164998757}
   - component: {fileID: 6029853104401819441}
   - component: {fileID: 3919834269606273241}
+  - component: {fileID: 6910439133654901898}
   m_Layer: 0
   m_Name: Exclamation
   m_TagString: Untagged
@@ -95,6 +96,19 @@ MonoBehaviour:
   m_EffectColor: {r: 0.18, g: 0.05, b: 0.06, a: 1}
   m_EffectDistance: {x: 1, y: -1}
   m_UseGraphicAlpha: 1
+--- !u!114 &6910439133654901898
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 84861172073261195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbcd56c5a16f10649b89bd61ef0ab5ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedGameText
+  source: 
 --- !u!1 &1461865435694418668
 GameObject:
   m_ObjectHideFlags: 0
@@ -344,6 +358,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.UnifiedButtonFeedback
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
+  keepHoverScaleWhenPressed: 0
+  animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
+  hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
   hoverScaleMultiplier: 1
@@ -375,6 +396,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Base.BaseBuildingConstruction
   buildingId: square
+  requiredUnlock: {fileID: 11400000, guid: 434e4198782619940b31c7c340f3252f, type: 2}
   nameKey: base.base_panel.square.label
   fallbackName: "\u041F\u043B\u043E\u0449\u0430\u0434\u044C"
   descriptionKey: base.building.square.description
@@ -384,9 +406,11 @@ MonoBehaviour:
   buildButton: {fileID: 3249774836393173518}
   buildButtonLabel: {fileID: 2910157398461076635}
   wood: {fileID: 11400000, guid: 45c32916e7e552e44b4498d5417db2bc, type: 2}
-  woodCost: 1
+  woodCost: 4
   stone: {fileID: 11400000, guid: 80528df5024cfad4d940509df98d860c, type: 2}
-  stoneCost: 1
+  stoneCost: 4
+  confirmation: {fileID: 0}
+  constructionEffect: {fileID: 0}
 --- !u!114 &4352144417646379383
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -786,6 +810,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.UnifiedButtonFeedback
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
+  keepHoverScaleWhenPressed: 0
+  animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
+  hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
   hoverScaleMultiplier: 1
@@ -809,6 +840,8 @@ MonoBehaviour:
   training: {fileID: 0}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!1 &7772317557615172141
 GameObject:
   m_ObjectHideFlags: 0
@@ -895,6 +928,7 @@ GameObject:
   - component: {fileID: 5678987103027599324}
   - component: {fileID: 3645308994875559345}
   - component: {fileID: 2910157398461076635}
+  - component: {fileID: 5751812990396594820}
   m_Layer: 0
   m_Name: Label
   m_TagString: Untagged
@@ -963,3 +997,16 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "\u041F\u043B\u043E\u0449\u0430\u0434\u044C"
+--- !u!114 &5751812990396594820
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8086127466733810390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbcd56c5a16f10649b89bd61ef0ab5ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedGameText
+  source: 

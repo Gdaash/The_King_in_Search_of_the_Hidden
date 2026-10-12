@@ -17,6 +17,7 @@ namespace GameFoundation.Saves
         [SerializeField] private Button slotsCloseButton;
         [SerializeField] private Button[] slotButtons = new Button[3];
         [SerializeField] private TMP_Text[] slotLabels = new TMP_Text[3];
+        [SerializeField] private SaveSlotSummaryView[] slotSummaries = new SaveSlotSummaryView[3];
         [SerializeField] private SettingsPopupController settingsPopup;
         [SerializeField] private string gameScene = "Base";
 
@@ -48,13 +49,16 @@ namespace GameFoundation.Saves
             {
                 if (slotLabels[i] == null) continue;
                 int slot = i + 1;
+                if (i < slotSummaries.Length && slotSummaries[i] != null)
+                { slotSummaries[i].Present(slot); continue; }
                 if (!SaveSlotPrefs.SlotExists(slot))
                 {
-                    slotLabels[i].text = $"Ячейка {slot}\nНовое сохранение";
+                    slotLabels[i].text = GameFoundation.Localization.GameText.Format("Ячейка {0}\nНовое сохранение", slot);
                     continue;
                 }
                 int seconds = Mathf.FloorToInt(SaveSlotPrefs.SlotPlaySeconds(slot));
-                slotLabels[i].text = $"Ячейка {slot}\n{seconds / 3600:00}:{seconds / 60 % 60:00}:{seconds % 60:00}  ·  Люди: {SaveSlotPrefs.SlotResource(slot, "Human")}  ·  Магическая руда: {SaveSlotPrefs.SlotResource(slot, "MagicOre")}";
+                slotLabels[i].text = GameFoundation.Localization.GameText.Format("Ячейка {0}\n{1}  ·  Люди: {2}  ·  Магическая руда: {3}", slot,
+                    $"{seconds / 3600:00}:{seconds / 60 % 60:00}:{seconds % 60:00}", SaveSlotPrefs.SlotResource(slot,"Human"), SaveSlotPrefs.SlotResource(slot,"MagicOre"));
             }
             if (slotsPanel) slotsPanel.SetActive(true);
         }

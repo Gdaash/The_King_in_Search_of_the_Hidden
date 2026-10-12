@@ -292,6 +292,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.UnifiedButtonFeedback
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   animateScale: 1
+  keepHoverScaleWhenPressed: 0
+  animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
+  hoverScaleOverride: 0
   scaleTarget: {fileID: 0}
   useButtonPalette: 0
   hoverScaleMultiplier: 1
@@ -330,6 +337,8 @@ MonoBehaviour:
   training: {fileID: 0}
   laboratorySkills: []
   laboratoryStats: {fileID: 11400000, guid: 02e450863b48557459312bf1b18b54eb, type: 2}
+  highlight: {fileID: 0}
+  upgradeBuildingId: 
 --- !u!114 &4054028667307206952
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -360,6 +369,7 @@ GameObject:
   - component: {fileID: 2541622586689821671}
   - component: {fileID: 1056670238539472028}
   - component: {fileID: 5392739329112833991}
+  - component: {fileID: 2688499608311541508}
   m_Layer: 0
   m_Name: Exclamation
   m_TagString: Untagged
@@ -443,6 +453,19 @@ MonoBehaviour:
   m_EffectColor: {r: 0.18, g: 0.05, b: 0.06, a: 1}
   m_EffectDistance: {x: 1, y: -1}
   m_UseGraphicAlpha: 1
+--- !u!114 &2688499608311541508
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4268134739978473617}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbcd56c5a16f10649b89bd61ef0ab5ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedGameText
+  source: 
 --- !u!1 &5171720976205219243
 GameObject:
   m_ObjectHideFlags: 0

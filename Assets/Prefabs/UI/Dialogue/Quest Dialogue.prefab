@@ -53,6 +53,7 @@ MonoBehaviour:
   conversations:
   - {fileID: 6223388900190344157, guid: 1cc2a4f6dead3a34cb12286cdb2306a9, type: 3}
   - {fileID: 708913728110660451, guid: c425d0ab785d7d54692b0f454c004508, type: 3}
+  - {fileID: 1991050491313475174, guid: abfc20dce80ca324c8c63c3ab9cfee2b, type: 3}
   - {fileID: 2740036588435952505, guid: 766281ec0b3a4cd46b75f3119b1c281c, type: 3}
   - {fileID: 1729079634707292424, guid: 1995e206c8ee41746a8de37ee0bdc99e, type: 3}
   window: {fileID: 1249829540077547839}
@@ -66,7 +67,7 @@ MonoBehaviour:
   buttonTheme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   wordInterval: 0.12
   wordSoundVolume: 0.2
-  holdDuration: 1
+  holdDuration: 0.7
   holdFillColor: {r: 0.55, g: 0.7, b: 0.85, a: 1}
 --- !u!1 &6360249507396675068
 GameObject:
@@ -79,6 +80,7 @@ GameObject:
   - component: {fileID: 3121727413388173073}
   - component: {fileID: 75814407323109781}
   - component: {fileID: 9142463366843315300}
+  - component: {fileID: 7084216227632383771}
   m_Layer: 0
   m_Name: Label
   m_TagString: Untagged
@@ -205,6 +207,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &7084216227632383771
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6360249507396675068}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbcd56c5a16f10649b89bd61ef0ab5ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedGameText
+  source: 
 --- !u!1 &8273875532121856409
 GameObject:
   m_ObjectHideFlags: 0
@@ -592,13 +607,19 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3625133645084329766, guid: 5ae4b322d609f0e4d92b441249c7464e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6105224502933093259}
+    - targetCorrespondingSourceObject: {fileID: 4837871714879188045, guid: 5ae4b322d609f0e4d92b441249c7464e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6592935196214425215}
+    - targetCorrespondingSourceObject: {fileID: 4447811110894919628, guid: 5ae4b322d609f0e4d92b441249c7464e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 543334985143090345}
   m_SourcePrefab: {fileID: 100100000, guid: 5ae4b322d609f0e4d92b441249c7464e, type: 3}
 --- !u!114 &928447827390812223 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3455884819526968870, guid: 5ae4b322d609f0e4d92b441249c7464e, type: 3}
   m_PrefabInstance: {fileID: 2528567298681026073}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 6932399093054806612}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
@@ -627,17 +648,53 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 3995671479788443099, guid: 5ae4b322d609f0e4d92b441249c7464e, type: 3}
   m_PrefabInstance: {fileID: 2528567298681026073}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2210856390285617621 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4447811110894919628, guid: 5ae4b322d609f0e4d92b441249c7464e, type: 3}
+  m_PrefabInstance: {fileID: 2528567298681026073}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &543334985143090345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2210856390285617621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbcd56c5a16f10649b89bd61ef0ab5ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedGameText
+  source: 
 --- !u!224 &6079368714064936907 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8595409254087363026, guid: 5ae4b322d609f0e4d92b441249c7464e, type: 3}
   m_PrefabInstance: {fileID: 2528567298681026073}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &6932399093054806612 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4837871714879188045, guid: 5ae4b322d609f0e4d92b441249c7464e, type: 3}
+  m_PrefabInstance: {fileID: 2528567298681026073}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6592935196214425215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6932399093054806612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbcd56c5a16f10649b89bd61ef0ab5ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedGameText
+  source: 
 --- !u!114 &7238105030931982884 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5144707963325652029, guid: 5ae4b322d609f0e4d92b441249c7464e, type: 3}
   m_PrefabInstance: {fileID: 2528567298681026073}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 2210856390285617621}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
@@ -665,6 +722,10 @@ PrefabInstance:
     - target: {fileID: 5746839573036531632, guid: 776c2e7ec735a914e80ec8da5002698f, type: 3}
       propertyPath: m_Name
       value: Dialogue Screen Dimmer
+      objectReference: {fileID: 0}
+    - target: {fileID: 5746839573036531632, guid: 776c2e7ec735a914e80ec8da5002698f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7364878511982548894, guid: 776c2e7ec735a914e80ec8da5002698f, type: 3}
       propertyPath: m_Pivot.x

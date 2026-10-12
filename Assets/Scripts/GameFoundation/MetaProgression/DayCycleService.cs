@@ -58,8 +58,8 @@ namespace GameFoundation.MetaProgression
         private const string Key="foundation.daycycle";
         private int totalPortalEntries;
         private bool firstPortalRun;
-        public static bool IsFirstPortalRun => Instance != null ? Instance.firstPortalRun :
-            JsonUtility.FromJson<Data>(PlayerPrefs.GetString(Key, "{}"))?.firstPortalRun == true;
+        public static bool IsFirstPortalRun => Instance != null ? Instance.firstPortalRun || Instance.totalPortalEntries == 0 :
+            (JsonUtility.FromJson<Data>(PlayerPrefs.GetString(Key, "{}")) ?? new Data()).totalPortalEntries == 0;
         private void OnEnable()
         {
             // Awake does not run again after a Play Mode script reload.
@@ -134,6 +134,7 @@ namespace GameFoundation.MetaProgression
             if (GameFoundation.Base.ForestForagingService.IsPending) return;
             DayResourceLedger.EnterShelter();
             int starved = ConsumeFood();
+            ApplyColdDeaths();
             MilitaryExperienceService.HealAll();
             UpdateCrowns(starved);
             DayResourceLedger.FinishDay(Day);
@@ -192,6 +193,20 @@ namespace GameFoundation.MetaProgression
                 return deaths;
             }
             return 0;
+        }
+
+        private void ApplyColdDeaths()
+        {
+            var resources = GlobalResourceManager.Instance;
+            var humans = Find("Human");
+            if (resources == null || humans == null) return;
+            int homeless = Mathf.Max(0, resources.GetResourceAmount(humans) - GameFoundation.Base.BuildingUpgradeService.Capacity("housing"));
+            int deaths = 0;
+            for (int i = 0; i < homeless; i++)
+                if (UnityEngine.Random.value < .5f) deaths++;
+            if (deaths == 0) return;
+            resources.TrySpendResource(humans, deaths);
+            DayResourceLedger.RecordColdDeaths(deaths);
         }
 
         private static void UpdateCrowns(int starvationDeaths)
@@ -281,8 +296,8 @@ namespace GameFoundation.MetaProgression
         }
 
         private void Save(){PlayerPrefs.SetString(Key,JsonUtility.ToJson(new Data{totalPortalEntries=totalPortalEntries,firstPortalRun=firstPortalRun,day=Day,searched=SearchedToday,entered=EnteredToday,refugees=RefugeesAvailable,selectedDifficulty=SelectedPortalDifficulty,selectedLocationId=SelectedPortalLocationId,portals=Portals}));PlayerPrefs.Save();}
-        private void Load(){if(!PlayerPrefs.HasKey(Key))return;var json=PlayerPrefs.GetString(Key);var d=JsonUtility.FromJson<Data>(json);if(d==null)return;totalPortalEntries=json.Contains("\"totalPortalEntries\"")?d.totalPortalEntries:(d.day>1||d.entered?1:0);firstPortalRun=d.firstPortalRun;Day=d.day;SearchedToday=d.searched;EnteredToday=d.entered;RefugeesAvailable=json.Contains("\"refugees\"")?d.refugees:2;SelectedPortalDifficulty=Mathf.Clamp(d.selectedDifficulty<=0?1:d.selectedDifficulty,1,5);SelectedPortalLocationId=string.IsNullOrEmpty(d.selectedLocationId)?"forest":d.selectedLocationId;Portals=d.portals??new();}
-        [Serializable] private class Data{public int totalPortalEntries;public bool firstPortalRun;public int day;public bool searched,entered;public int refugees=2;public int selectedDifficulty=1;public string selectedLocationId="forest";public List<PortalSite> portals;}
+        private void Load(){if(!PlayerPrefs.HasKey(Key))return;var json=PlayerPrefs.GetString(Key);var d=JsonUtility.FromJson<Data>(json);if(d==null)return;totalPortalEntries=json.Contains("\"totalPortalEntries\"")?d.totalPortalEntries:(d.day>1||d.entered?1:0);firstPortalRun=d.firstPortalRun;Day=Mathf.Max(1,d.day);SearchedToday=d.searched;EnteredToday=d.entered;RefugeesAvailable=json.Contains("\"refugees\"")?d.refugees:2;SelectedPortalDifficulty=Mathf.Clamp(d.selectedDifficulty<=0?1:d.selectedDifficulty,1,5);SelectedPortalLocationId=string.IsNullOrEmpty(d.selectedLocationId)?"forest":d.selectedLocationId;Portals=d.portals??new();}
+        [Serializable] private class Data{public int totalPortalEntries;public bool firstPortalRun;public int day=1;public bool searched,entered;public int refugees=2;public int selectedDifficulty=1;public string selectedLocationId="forest";public List<PortalSite> portals;}
     }
 }
 

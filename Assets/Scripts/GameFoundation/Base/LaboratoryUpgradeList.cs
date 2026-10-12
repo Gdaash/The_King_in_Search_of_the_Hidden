@@ -69,13 +69,13 @@ namespace GameFoundation.Base
             foreach (var row in rows.Where(r => r.gameObject.activeSelf && r.Entry != null)
                          .OrderBy(r => r.Entry.requiredPurchases).ThenBy(r => r.groupId, System.StringComparer.Ordinal))
                 row.transform.SetSiblingIndex(index++);
-            totalLabel.text = Tr("laboratory.total", "Изучено улучшений") + ": " + stats.PurchasedUpgradeCount + " / " + stats.UpgradeTable.entries.Count(e => e.IsAvailable);
+            totalLabel.text = Tr("laboratory.total", GameFoundation.Localization.GameText.Get("Изучено улучшений")) + ": " + stats.PurchasedUpgradeCount + " / " + stats.UpgradeTable.entries.Count(e => e.IsAvailable);
             if (selected == null || !selected.gameObject.activeSelf)
                 selected = rows.Where(r => r.gameObject.activeSelf).OrderBy(r => r.transform.GetSiblingIndex()).FirstOrDefault();
             if (selected != null) Select(selected);
             else
             {
-                detailTitle.text = "Исследования пока не открыты";
+                detailTitle.text = GameFoundation.Localization.GameText.Get("Исследования пока не открыты");
                 detailLevel.text = detailDescription.text = detailRequirement.text = detailStatus.text = "";
                 detailPrice.SetActive(false); detailIcon.enabled = false;
             }
@@ -91,19 +91,19 @@ namespace GameFoundation.Base
             var entry = row.Entry;
             var levels = stats.UpgradeTable.entries.Where(e => e.GroupId == entry.GroupId && e.IsAvailable).ToArray();
             detailTitle.text = Title(entry);
-            detailLevel.text = Tr("laboratory.learned_levels", "Изучено уровней") + ": " + levels.Count(e => stats.HasUpgrade(e.id)) + " / " + levels.Length;
+            detailLevel.text = Tr("laboratory.learned_levels", GameFoundation.Localization.GameText.Get("Изучено уровней")) + ": " + levels.Count(e => stats.HasUpgrade(e.id)) + " / " + levels.Length;
             detailDescription.text = Tr("skill." + entry.id + ".description", entry.description);
             ResourceIconSizing.Apply(detailIcon, entry.icon);
             detailIcon.enabled = entry.icon != null;
-            detailRequirement.text = Tr("laboratory.requirement", "Нужно изучить улучшений") + ": " + entry.requiredPurchases +
-                "\n" + Tr("laboratory.already", "Уже изучено") + ": " + stats.PurchasedUpgradeCount;
+            detailRequirement.text = Tr("laboratory.requirement", GameFoundation.Localization.GameText.Get("Нужно изучить улучшений")) + ": " + entry.requiredPurchases +
+                "\n" + Tr("laboratory.already", GameFoundation.Localization.GameText.Get("Уже изучено")) + ": " + stats.PurchasedUpgradeCount;
             detailPrice.SetActive(true);
             ResourceIconSizing.Apply(detailCostIcon, entry.costResource != null ? entry.costResource.resourceIcon : null);
             detailCost.text = entry.cost.ToString();
-            detailStatus.text = row.IsComplete ? Tr("laboratory.maximum", "Все уровни этого улучшения изучены") :
-                !stats.IsUpgradeUnlocked(entry) ? Tr("laboratory.unlock_hint", "Изучайте другие улучшения, чтобы открыть этот уровень") :
-                stats.CanPurchaseUpgrade(entry) ? Tr("laboratory.buy_hint", "Нажмите на улучшение слева, чтобы изучить") :
-                Tr("laboratory.no_resources", "Не хватает ресурсов");
+            detailStatus.text = row.IsComplete ? Tr("laboratory.maximum", GameFoundation.Localization.GameText.Get("Все уровни этого улучшения изучены")) :
+                !stats.IsUpgradeUnlocked(entry) ? Tr("laboratory.unlock_hint", GameFoundation.Localization.GameText.Get("Изучайте другие улучшения, чтобы открыть этот уровень")) :
+                stats.CanPurchaseUpgrade(entry) ? Tr("laboratory.buy_hint", GameFoundation.Localization.GameText.Get("Нажмите на улучшение слева, чтобы изучить")) :
+                Tr("laboratory.no_resources", GameFoundation.Localization.GameText.Get("Не хватает ресурсов"));
             detailStatus.color = row.statusLabel.color;
         }
         public bool Purchase(string id)
@@ -143,8 +143,8 @@ namespace GameFoundation.Base
                     icon = upgrade.icon, cost = 1, level = portalProgression.IsComplete(upgrade) ? rank : rank + 1 };
                 row.Refresh(entry, rank, upgrade.maximumRank, null);
             }
-            totalLabel.text = Text("Уровень башни: ", "Tower level: ") + portalProgression.Level +
-                Text("  ·  Очки улучшений: ", "  ·  Upgrade points: ") + portalProgression.LevelPoints;
+            totalLabel.text = Text(GameFoundation.Localization.GameText.Get("Уровень башни: "), "Tower level: ") + portalProgression.Level +
+                Text(GameFoundation.Localization.GameText.Get("  ·  Очки улучшений: "), "  ·  Upgrade points: ") + portalProgression.LevelPoints;
             var availableButtons = rows.Where(r => r.gameObject.activeSelf && r.purchaseButton.interactable)
                 .OrderBy(r => r.transform.GetSiblingIndex()).Select(r => r.purchaseButton).ToArray();
             for (int i = 0; i < availableButtons.Length; i++)
@@ -163,18 +163,18 @@ namespace GameFoundation.Base
             var upgrade = portalProgression.Balance.Find(row.Entry.id);
             int rank = portalProgression.Rank(upgrade.id);
             detailTitle.text = row.Entry.title;
-            detailLevel.text = Text("Улучшений: ", "Upgrades: ") + rank +
+            detailLevel.text = Text(GameFoundation.Localization.GameText.Get("Улучшений: "), "Upgrades: ") + rank +
                 (upgrade.maximumRank > 0 ? " / " + upgrade.maximumRank : " / ∞");
             detailDescription.text = row.Entry.description;
             ResourceIconSizing.Apply(detailIcon, upgrade.icon); detailIcon.enabled = upgrade.icon != null;
-            detailRequirement.text = Text("Очков уровня: ", "Level points: ") + portalProgression.LevelPoints +
-                (upgrade.requiresAttack && !portalProgression.CanAttack ? Text("\nСначала откройте стрельбу башни.", "\nUnlock tower attacks first.") : "");
+            detailRequirement.text = Text(GameFoundation.Localization.GameText.Get("Очков уровня: "), "Level points: ") + portalProgression.LevelPoints +
+                (upgrade.requiresAttack && !portalProgression.CanAttack ? Text(GameFoundation.Localization.GameText.Get("\nСначала откройте стрельбу башни."), "\nUnlock tower attacks first.") : "");
             detailPrice.SetActive(true);
             ResourceIconSizing.Apply(detailCostIcon, portalProgression.Balance.levelPointIcon);
             detailCost.text = "1";
-            detailStatus.text = row.IsComplete ? Text("Все уровни улучшения получены", "Upgrade fully learned") :
-                !portalProgression.IsUnlocked(upgrade) ? Text("Сначала откройте стрельбу башни", "Unlock tower attacks first") :
-                Text("Выберите улучшение слева. Цена — одно очко уровня.", "Choose an upgrade on the left. Cost: one level point.");
+            detailStatus.text = row.IsComplete ? Text(GameFoundation.Localization.GameText.Get("Все уровни улучшения получены"), "Upgrade fully learned") :
+                !portalProgression.IsUnlocked(upgrade) ? Text(GameFoundation.Localization.GameText.Get("Сначала откройте стрельбу башни"), "Unlock tower attacks first") :
+                Text(GameFoundation.Localization.GameText.Get("Выберите улучшение слева. Цена — одно очко уровня."), "Choose an upgrade on the left. Cost: one level point.");
             detailStatus.color = row.statusLabel.color;
         }
     }

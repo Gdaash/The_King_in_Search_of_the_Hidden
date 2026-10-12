@@ -7,6 +7,7 @@ namespace GameFoundation.Localization
     {
         public static LocalizationService Instance { get; private set; }
         [SerializeField] private LocalizationTable table;
+        public LocalizationTable Table => table;
         public string Language { get; private set; }
         public event Action LanguageChanged;
         private const string Key = "foundation.language";

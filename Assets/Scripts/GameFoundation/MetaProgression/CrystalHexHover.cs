@@ -149,7 +149,7 @@ namespace GameFoundation.MetaProgression
             string key = view.state == WorldFlashlightAvailability.HoverState.WaitingForResources ? "world.crystal.cancel" : null;
             string text = key == null ? "" : LocalizationService.Instance?.Get(key);
             if (key != null && (string.IsNullOrEmpty(text) || text == key))
-                text = "отменить действие";
+                text = GameFoundation.Localization.GameText.Get("отменить действие");
             if (view.caption.text != text) view.caption.text = text;
             bool canCancel = view.state == WorldFlashlightAvailability.HoverState.WaitingForResources;
             bool showMouseRow = canCancel || view.canRecall;
@@ -162,14 +162,14 @@ namespace GameFoundation.MetaProgression
             {
                 const string startKey = "world.lights.start_work";
                 string start = LocalizationService.Instance?.Get(startKey);
-                if (string.IsNullOrEmpty(start) || start == startKey) start = "Запустить работу";
+                if (string.IsNullOrEmpty(start) || start == startKey) start = GameFoundation.Localization.GameText.Get("Запустить работу");
                 view.startCaption.text = start;
             }
             if (view.recallCaption != null)
             {
                 const string recallKey = "world.crystal.recall_humans";
                 string recall = LocalizationService.Instance?.Get(recallKey);
-                if (string.IsNullOrEmpty(recall) || recall == recallKey) recall = "Вернуть людей в портал";
+                if (string.IsNullOrEmpty(recall) || recall == recallKey) recall = GameFoundation.Localization.GameText.Get("Вернуть людей в портал");
                 if (canCancel) recall = text;
                 if (view.recallCaption.text != recall) view.recallCaption.text = recall;
             }

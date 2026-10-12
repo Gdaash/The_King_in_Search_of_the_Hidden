@@ -19,6 +19,7 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private GameObject progressPanel;
         [SerializeField] private Image progressFill;
         [SerializeField] private TMP_Text progressLabel;
+        [SerializeField] private ReturnedPeopleView returnedPeople;
         [SerializeField] private ResourceType humanResource;
         [SerializeField] private FoodSufficiencyHint foodSufficiencyHint;
         [SerializeField] private WorldFlashlightAvailability flashlightAvailability;
@@ -62,7 +63,7 @@ namespace GameFoundation.MetaProgression
         private void Start()
         {
             DayResourceLedger.BeginRun();
-            GameFoundation.UI.GameNotifications.Post("Поход начался");
+            GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Поход начался"));
             _runStartedAt = Time.realtimeSinceStartup;
             if (humanResource == null && GlobalResourceManager.Instance != null)
                 foreach (ResourceType resource in GlobalResourceManager.Instance.AvailableResources)
@@ -85,7 +86,7 @@ namespace GameFoundation.MetaProgression
             if (progressPanel != null) progressPanel.SetActive(false);
             if (statisticsPanel != null) statisticsPanel.SetActive(false);
             if (defeatMessage != null) defeatMessage.gameObject.SetActive(false);
-            if (buttonLabel != null) buttonLabel.text = "Сбежать";
+            if (buttonLabel != null) buttonLabel.text = GameFoundation.Localization.GameText.Get("Вернуться");
             if (buttonLabel != null) _normalButtonLabelColor = buttonLabel.color;
             if (escapeButton != null) _buttonFeedback = escapeButton.GetComponent<UnifiedButtonFeedback>();
             ResolvePortalTowerHealth();
@@ -158,6 +159,7 @@ namespace GameFoundation.MetaProgression
                 progressFill.fillAmount = _startingHumans == 0 ? 1f : Mathf.Clamp01((float)returned / _startingHumans);
             if (progressLabel != null)
                 progressLabel.text = $"{returned}/{_startingHumans}";
+            if(returnedPeople) returnedPeople.Present(returned,_startingHumans,humanResource);
 
             bool militaryReturned = militaryDeployment == null || !militaryDeployment.HasReturningUnits;
             if (away == 0 && returned >= _startingHumans && militaryReturned)
@@ -182,7 +184,7 @@ namespace GameFoundation.MetaProgression
             }
 
             _escaping = true;
-            GameFoundation.UI.GameNotifications.Post("Отступление: возвращаемся в портал");
+            GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Отступление: возвращаемся в портал"));
             GameAudioController.PlayUI(GameAudioCue.Portal, 0.9f, 0.98f, 1.02f, 0.2f);
             StopWorldForEscape();
 
@@ -197,7 +199,7 @@ namespace GameFoundation.MetaProgression
             if (militaryDeployment != null)
                 militaryDeployment.BeginEscapeRecall();
 
-            if (buttonLabel != null) buttonLabel.text = "Сбежать немедленно";
+            if (buttonLabel != null) buttonLabel.text = GameFoundation.Localization.GameText.Get("Немедленно");
             if (progressPanel != null) progressPanel.SetActive(true);
             RefreshProgress();
         }
@@ -207,12 +209,12 @@ namespace GameFoundation.MetaProgression
             if (_loading || _showingStatistics) return;
             foodSufficiencyHint?.HideForEscape();
             DayCycleService.Instance?.DeactivateSelectedPortal();
-            GameFoundation.UI.GameNotifications.Post("Портал уничтожен", GameFoundation.UI.NotificationKind.Negative);
+            GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Портал уничтожен"), GameFoundation.UI.NotificationKind.Negative);
             _escaping = true;
             StopWorldForEscape();
             if (defeatMessage != null)
             {
-                defeatMessage.text = "Вы не успели сбежать, портал был уничтожен.";
+                defeatMessage.text = GameFoundation.Localization.GameText.Get("Вы не успели сбежать, портал был уничтожен.");
                 defeatMessage.color = new Color(0.9f, 0.16f, 0.16f, 1f);
                 defeatMessage.gameObject.SetActive(true);
             }
@@ -267,7 +269,7 @@ namespace GameFoundation.MetaProgression
             int seconds = Mathf.Max(0, Mathf.FloorToInt(Time.realtimeSinceStartup - _runStartedAt));
             _runDurationSeconds = seconds;
             if (durationLabel != null)
-                durationLabel.text = $"Длительность забега: {seconds / 3600:00}:{seconds / 60 % 60:00}:{seconds % 60:00}";
+                durationLabel.text = GameFoundation.Localization.GameText.Format("Длительность забега: {0}", $"{seconds / 3600:00}:{seconds / 60 % 60:00}:{seconds % 60:00}");
 
             StartCoroutine(RevealStatistics(CaptureResources()));
         }
@@ -332,6 +334,19 @@ namespace GameFoundation.MetaProgression
             GameSpeedControls.SetSimulationSpeed(1f);
             DayResourceLedger.EndRun(_runDurationSeconds);
             SceneManager.LoadScene(baseScene);
+        }
+
+        public void ExitToMainMenu()
+        {
+            if (_loading) return;
+            _loading = true;
+            StopWorldForEscape();
+            SettleUnreturnedHumans();
+            if (militaryDeployment != null) militaryDeployment.AbandonDeployedUnits();
+            DayResourceLedger.EndRun(Mathf.Max(0, Mathf.FloorToInt(Time.realtimeSinceStartup - _runStartedAt)));
+            GameFoundation.Saves.SaveSlotPrefs.Save();
+            SceneManager.LoadScene("MainMenu");
+            GameSpeedControls.SetSimulationSpeed(1f);
         }
     }
 }

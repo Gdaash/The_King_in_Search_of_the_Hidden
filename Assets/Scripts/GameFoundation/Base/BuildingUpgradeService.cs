@@ -65,7 +65,7 @@ namespace GameFoundation.Base
                 SaveSlotPrefs.SetInt("foundation.building." + id + ".upgradeLevel", Level(id) + 1);
                 SaveSlotPrefs.Save();
                 var definition = Catalog.Find(id);
-                GameFoundation.UI.GameNotifications.Post("Улучшено: " + definition.displayName + " · ур. " + Level(id), GameFoundation.UI.NotificationKind.Positive);
+                GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Улучшено: ") + definition.displayName + GameFoundation.Localization.GameText.Get(" · ур. ") + Level(id), GameFoundation.UI.NotificationKind.Positive);
             }
             finally { purchasing = false; NotifyChanged(); }
             return true;

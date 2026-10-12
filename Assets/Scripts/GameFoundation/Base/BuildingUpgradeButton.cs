@@ -57,7 +57,7 @@ namespace GameFoundation.Base
                 hovering = false;
                 BuildingConstructionTooltip.Instance?.Hide();
             }
-            label.text = (level < max ? Tr("base.upgrade.action", "Улучшить") : Tr("base.upgrade.max", "Максимум")) + " " + level + "/" + max;
+            label.text = (level < max ? Tr("base.upgrade.action", GameFoundation.Localization.GameText.Get("Улучшить")) : Tr("base.upgrade.max", GameFoundation.Localization.GameText.Get("Максимум"))) + " " + level + "/" + max;
             if (hovering) ShowTooltip();
         }
         public void OnPointerEnter(PointerEventData _) { hovering = true; ShowTooltip(); }
@@ -70,11 +70,11 @@ namespace GameFoundation.Base
             if (definition == null || next == null) { BuildingConstructionTooltip.Instance?.Hide(); return; }
             int capacity = BuildingUpgradeService.Capacity(buildingId);
             string effect = definition.effect == BuildingUpgradeCatalog.UpgradeEffect.PortalAccess
-                ? string.Format(Tr("base.portal.upgrade_effect", "Открывает локацию: {0}\nДоступ сохраняется между походами."), PortalProgression.DestinationsAt(BuildingUpgradeService.Level(buildingId) + 1))
-                : string.Format(Tr("base.upgrade.effect", "Дополнительные места: +{0}\nВместимость: {1} → {2}"), next.additionalCapacity, capacity, capacity + next.additionalCapacity);
+                ? string.Format(Tr("base.portal.upgrade_effect", GameFoundation.Localization.GameText.Get("Открывает локацию: {0}\nДоступ сохраняется между походами.")), PortalProgression.DestinationsAt(BuildingUpgradeService.Level(buildingId) + 1))
+                : string.Format(Tr("base.upgrade.effect", GameFoundation.Localization.GameText.Get("Дополнительные места: +{0}\nВместимость: {1} → {2}")), next.additionalCapacity, capacity, capacity + next.additionalCapacity);
             BuildingConstructionTooltip.Instance?.Show(Tr(definition.nameKey, definition.displayName),
                 effect,
-                Tr("base.upgrade.price", "Цена улучшения"), next.resourceA, next.costA, next.resourceB, next.costB);
+                Tr("base.upgrade.price", GameFoundation.Localization.GameText.Get("Цена улучшения")), next.resourceA, next.costA, next.resourceB, next.costB);
         }
         private static string Tr(string key, string fallback)
         {

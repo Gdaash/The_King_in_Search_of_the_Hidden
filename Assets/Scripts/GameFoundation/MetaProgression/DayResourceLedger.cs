@@ -25,6 +25,7 @@ namespace GameFoundation.MetaProgression
         [Serializable]
         public sealed class Report
         {
+            public int frozen;
             public int day;
             public int starved;
             public int runDurationSeconds;
@@ -34,6 +35,7 @@ namespace GameFoundation.MetaProgression
         [Serializable]
         private sealed class State
         {
+            public int frozen;
             public int day;
             public int starved;
             public int runDurationSeconds;
@@ -130,10 +132,19 @@ namespace GameFoundation.MetaProgression
             Save();
         }
 
+        public static void RecordColdDeaths(int deaths)
+        {
+            if (deaths <= 0) return;
+            GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Format("Умерли от холода: {0}", deaths), GameFoundation.UI.NotificationKind.Negative);
+            EnsureDay(DayCycleService.Instance != null ? DayCycleService.Instance.Day : 1);
+            _state.frozen += deaths;
+            Save();
+        }
+
         public static void RecordStarvation(int deaths)
         {
             if (deaths <= 0) return;
-            GameFoundation.UI.GameNotifications.Post("Умерли от голода: " + deaths, GameFoundation.UI.NotificationKind.Negative);
+            GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Умерли от голода: ") + deaths, GameFoundation.UI.NotificationKind.Negative);
             EnsureDay(DayCycleService.Instance != null ? DayCycleService.Instance.Day : 1);
             _state.starved += deaths;
             Save();
@@ -145,7 +156,7 @@ namespace GameFoundation.MetaProgression
             EndRun();
             var end = Snapshot();
             foreach (var pair in end) GetEntry(pair.Key);
-            var report = new Report { day = day, starved = _state.starved, runDurationSeconds = _state.runDurationSeconds };
+            var report = new Report { day = day, starved = _state.starved, frozen = _state.frozen, runDurationSeconds = _state.runDurationSeconds };
             foreach (var entry in _state.entries)
             {
                 end.TryGetValue(entry.resource, out int amount);
