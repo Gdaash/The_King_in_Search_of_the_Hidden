@@ -7,7 +7,7 @@ using UnityEngine.Rendering.Universal;
 namespace GameFoundation.MetaProgression
 {
     [DefaultExecutionOrder(-50)]
-    public sealed class PortalWeaponController : MonoBehaviour
+    public sealed partial class PortalWeaponController : MonoBehaviour
     {
         public PortalTowerProgression progression;
         public GameObject beamPrefab;
@@ -42,15 +42,17 @@ namespace GameFoundation.MetaProgression
         }
         private PortalTowerBalance.WeaponDefinition Def(PortalTowerBalance.Weapon w) => progression.Balance.FindWeapon(w);
         private float Range(PortalTowerBalance.Weapon w) => Mathf.Max(0,Def(w).range+(tower.GetStats()?.bonusAttackRange??0))*progression.Multiplier(w,PortalTowerBalance.Effect.Range);
-        private float Radius(PortalTowerBalance.Weapon w) => Def(w).radius*progression.Multiplier(w,PortalTowerBalance.Effect.Area);
+        private float Radius(PortalTowerBalance.Weapon w) => Def(w).radius*Mathf.Sqrt(progression.Multiplier(w,PortalTowerBalance.Effect.Area));
         private float Damage(PortalTowerBalance.Weapon w) => (Def(w).damage+(tower.GetStats()?.damageSettings.Find(d=>d.type==Def(w).damageType)?.bonusDamage??0))*progression.Multiplier(w,PortalTowerBalance.Effect.Damage);
         private float Cooldown(PortalTowerBalance.Weapon w) => Mathf.Max(.05f,Def(w).cooldown-(tower.GetStats()?.bonusAttackSpeed??0))/progression.Multiplier(w,PortalTowerBalance.Effect.AttackSpeed);
         private Transform Source => tower.GetComponent<TowerVisuals>()?.ShootPoint ?? tower.transform;
         private void Update()
         {
-            if(tower==null || progression.ExpeditionEnded){if(beam!=null)beam.transform.root.gameObject.SetActive(false);ClearLightTrails();return;}
+            if(tower==null || progression.ExpeditionEnded){if(beam!=null)beam.transform.root.gameObject.SetActive(false);ClearLightTrails();ClearFrostSeals();ClearPortalProjectiles();return;}
             if(Time.timeScale<=0){return;}
             if(Time.time>=cacheTime){enemies=FindObjectsByType<Health>(FindObjectsSortMode.None);RefreshEnemyHeights();cacheTime=Time.time+.15f;}
+            UpdateFrostSeals();
+            UpdatePortalProjectiles();
             if(progression.HasWeapon(PortalTowerBalance.Weapon.Beam)) UpdateBeam();
             else {if(beam!=null)beam.transform.root.gameObject.SetActive(false);ClearLightTrails();}
             if(progression.HasWeapon(PortalTowerBalance.Weapon.Rings) && Time.time>=ringTime)
@@ -214,8 +216,14 @@ namespace GameFoundation.MetaProgression
             foreach(var h in enemies)if(Enemy(h) && Vector2.Distance(tower.transform.position,h.transform.position)<=Range(w))candidates.Add(h);
             if(candidates.Count==0)return;
             lightningTime=Time.time+Cooldown(w);
-            for(int i=0;i<progression.Count(w) && candidates.Count>0;i++)
+            for(int i=0;i<progression.Count(w);i++)
             {
+                // Prefer different living targets; surplus strikes can hit the same survivor again.
+                if(candidates.Count==0)
+                    foreach(var enemy in enemies)
+                        if(Enemy(enemy) && Vector2.Distance(tower.transform.position,enemy.transform.position)<=Range(w)) candidates.Add(enemy);
+                candidates.RemoveAll(enemy => !Enemy(enemy));
+                if(candidates.Count==0) break;
                 int index=Random.Range(0,candidates.Count);var h=candidates[index];candidates.RemoveAt(index);
                 Vector3 end=h.transform.position;
                 h.TakeDamage(Damage(w),Def(w).damageType,tower.transform);
@@ -248,6 +256,8 @@ namespace GameFoundation.MetaProgression
         }
         private void OnDestroy()
         {
+            ClearPortalProjectiles();
+            ClearFrostSeals();
             if(Instance==this)Instance=null;
             if(beam!=null)Destroy(beam.transform.root.gameObject);
             foreach(var g in effects)if(g!=null)Destroy(g);

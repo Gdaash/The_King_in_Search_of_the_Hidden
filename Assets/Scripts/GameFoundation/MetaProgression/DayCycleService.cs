@@ -58,8 +58,8 @@ namespace GameFoundation.MetaProgression
         private const string Key="foundation.daycycle";
         private int totalPortalEntries;
         private bool firstPortalRun;
-        public static bool IsFirstPortalRun => Instance != null ? Instance.firstPortalRun || Instance.totalPortalEntries == 0 :
-            (JsonUtility.FromJson<Data>(PlayerPrefs.GetString(Key, "{}")) ?? new Data()).totalPortalEntries == 0;
+        public static bool IsFirstPortalRun => !PlaytestSettings.TutorialsAndQuestsDisabled && (Instance != null ? Instance.firstPortalRun || Instance.totalPortalEntries == 0 :
+            (JsonUtility.FromJson<Data>(PlayerPrefs.GetString(Key, "{}")) ?? new Data()).totalPortalEntries == 0);
         private void OnEnable()
         {
             // Awake does not run again after a Play Mode script reload.

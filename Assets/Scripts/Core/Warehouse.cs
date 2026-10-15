@@ -110,6 +110,8 @@ public class Warehouse : MonoBehaviour
 
     public void DepositResource(ResourceType type)
     {
+        var tower = GameFoundation.MetaProgression.PortalTowerProgression.Instance;
+        if (tower != null && tower.TryDeliverCrystal(type, transform.position)) return;
         if (GlobalResourceManager.Instance != null && type != null)
         {
             GlobalResourceManager.Instance.AddResource(type, 1);

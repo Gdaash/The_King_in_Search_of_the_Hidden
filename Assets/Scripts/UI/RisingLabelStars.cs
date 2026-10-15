@@ -16,6 +16,7 @@ namespace GameFoundation.UI
         private float next;
         public bool Emit { get; set; }
         public Sprite StarSprite => starSprite;
+        public void Configure(RectTransform source, Sprite sprite) { label = source; starSprite = sprite; SetAllDirty(); }
         public override Texture mainTexture => starSprite != null ? starSprite.texture : Texture2D.whiteTexture;
         protected override void OnEnable() { base.OnEnable(); raycastTarget = false; }
         protected override void OnDisable() { System.Array.Clear(particles, 0, particles.Length); next = 0; base.OnDisable(); }

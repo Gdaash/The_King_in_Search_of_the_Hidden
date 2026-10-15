@@ -12,7 +12,7 @@ namespace GameFoundation.Quests
         public static bool IsFailed(QuestDefinition quest) => quest != null && SaveSlotPrefs.GetInt("foundation.quest." + quest.id + ".failed", 0) == 1;
         public static int DeadlineDay(QuestDefinition quest) => SaveSlotPrefs.GetInt("foundation.quest." + quest.id + ".deadline", 0);
         public static int DaysRemaining(QuestDefinition quest) => UnityEngine.Mathf.Max(0, DeadlineDay(quest) - Today);
-        public static bool IsReadyToClaim(QuestDefinition quest, GlobalResourceManager resources) => quest != null && resources != null &&
+        public static bool IsReadyToClaim(QuestDefinition quest, GlobalResourceManager resources) => !PlaytestSettings.TutorialsAndQuestsDisabled && quest != null && resources != null &&
             IsAccepted(quest) && !IsClaimed(quest) && !IsFailed(quest) &&
             (quest.deadlineDays == 0 || DaysRemaining(quest) > 0) &&
             (quest.consumeRequirementsOnClaim ? quest.HasRequiredStock(resources.GetResourceAmount) : IsComplete(quest));
@@ -20,6 +20,7 @@ namespace GameFoundation.Quests
             (IsComplete(quest) || IsClaimed(quest) || SaveSlotPrefs.GetInt("foundation.quest." + quest.id + ".accepted", 0) == 1);
         public static bool Accept(QuestDefinition quest)
         {
+            if (PlaytestSettings.TutorialsAndQuestsDisabled) return false;
             if (quest == null || string.IsNullOrWhiteSpace(quest.id) || IsAccepted(quest)) return false;
             SaveSlotPrefs.SetInt("foundation.quest." + quest.id + ".accepted", 1);
             if (quest.deadlineDays > 0) SaveSlotPrefs.SetInt("foundation.quest." + quest.id + ".deadline", Today + quest.deadlineDays);
@@ -82,6 +83,7 @@ namespace GameFoundation.Quests
 
         public static bool TryComplete(QuestDefinition quest, GlobalResourceManager resources)
         {
+            if (PlaytestSettings.TutorialsAndQuestsDisabled) return false;
             if (quest == null || resources == null || string.IsNullOrWhiteSpace(quest.id) ||
                 !IsAccepted(quest) || IsComplete(quest) || !quest.HasRequiredStock(resources.GetResourceAmount)) return false;
             if (IsFailed(quest) || quest.consumeRequirementsOnClaim) return false;
@@ -98,6 +100,7 @@ namespace GameFoundation.Quests
 
         public static bool TryFail(QuestDefinition quest, GlobalResourceManager resources)
         {
+            if (PlaytestSettings.TutorialsAndQuestsDisabled) return false;
             if (quest == null || resources == null || quest.deadlineDays <= 0 || !IsAccepted(quest) || IsClaimed(quest) || IsFailed(quest) || DaysRemaining(quest) > 0) return false;
             using (SaveSlotPrefs.Batch())
             using (GameFoundation.UI.GameNotifications.BeginAction())
@@ -116,6 +119,7 @@ namespace GameFoundation.Quests
         }
         public static QuestDefinition Current(QuestCatalog catalog, bool parallel = false)
         {
+            if (PlaytestSettings.TutorialsAndQuestsDisabled) return null;
             if (catalog == null || catalog.quests == null) return null;
             foreach (var quest in catalog.quests)
             {

@@ -15,6 +15,30 @@ namespace GameFoundation.Quests
         public bool HasQuest => QuestProgress.Current(catalog, showParallelQuest) != null;
         public bool HasDeadline => (QuestProgress.Current(catalog, showParallelQuest)?.deadlineDays ?? 0) > 0;
         [SerializeField] private Text title;
+        [SerializeField] private Sprite completedStarSprite;
+        private RisingLabelStars completedStars;
+        private Color originalTitleColor;
+        private bool titleColorCaptured;
+        private bool CanClaimHere => gameObject.scene.name == "Base";
+        private void RefreshCompletionTitle(bool completed)
+        {
+            if (title == null || gameObject.scene.name != "World") return;
+            if (!titleColorCaptured) { originalTitleColor = title.color; titleColorCaptured = true; }
+            var theme = Resources.Load<ButtonVisualTheme>("UI/ButtonVisualTheme");
+            var green = theme != null ? theme.positiveLabelColor : new Color(.5f, .85f, .5f);
+            title.color = completed ? green : originalTitleColor;
+            if (completed && completedStars == null && completedStarSprite != null)
+            {
+                var effect = new GameObject("Completed Quest Stars", typeof(RectTransform), typeof(CanvasRenderer), typeof(RisingLabelStars));
+                var rect = (RectTransform)effect.transform;
+                rect.SetParent(title.transform, false);
+                rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one;
+                rect.offsetMin = rect.offsetMax = Vector2.zero;
+                completedStars = effect.GetComponent<RisingLabelStars>();
+                completedStars.Configure(title.rectTransform, completedStarSprite);
+            }
+            if (completedStars != null) { completedStars.color = green; completedStars.Emit = completed; completedStars.gameObject.SetActive(completed); }
+        }
         [SerializeField] private Text description;
         [SerializeField] private Text status;
         [SerializeField] private RectTransform objectives;
@@ -30,6 +54,7 @@ namespace GameFoundation.Quests
         [SerializeField] private List<QuestObjectiveRow> rewardRows = new();
         private void ClaimReward()
         {
+            if (!CanClaimHere) return;
             var quest = QuestProgress.Current(catalog, showParallelQuest);
             var canvas = GetComponentInParent<Canvas>()?.rootCanvas;
             var camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
@@ -67,6 +92,7 @@ namespace GameFoundation.Quests
         }
         private void OnDisable()
         {
+            if (completedStars != null) completedStars.Emit = false;
             if (claimButton != null) claimButton.onClick.RemoveListener(ClaimReward);
             GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
             QuestProgress.Changed -= Refresh;
@@ -106,13 +132,14 @@ namespace GameFoundation.Quests
             var quest = QuestProgress.Current(catalog, showParallelQuest);
             var visibility = GetComponent<CanvasGroup>();
             if (visibility != null) { visibility.alpha = quest != null ? 1 : 0; visibility.blocksRaycasts = quest != null; visibility.interactable = quest != null; }
-            if (quest == null) return;
+            if (quest == null) { RefreshCompletionTitle(false); if (claimButton != null) claimButton.gameObject.SetActive(false); return; }
             var resources = GlobalResourceManager.Instance;
             bool completed = QuestProgress.IsComplete(quest);
             title.text = GameFoundation.Localization.GameText.Get(quest.title);
             description.text = GameFoundation.Localization.GameText.Get(quest.description);
             bool claimed = QuestProgress.IsClaimed(quest);
             bool ready = QuestProgress.IsReadyToClaim(quest, resources);
+            RefreshCompletionTitle(completed || ready);
             if (deadlineLabel != null)
             {
                 deadlineLabel.gameObject.SetActive(quest.deadlineDays > 0);
@@ -127,7 +154,7 @@ namespace GameFoundation.Quests
             }
             if (claimButton != null)
             {
-                claimButton.gameObject.SetActive(ready); claimButton.interactable = ready;
+                claimButton.gameObject.SetActive(CanClaimHere && ready); claimButton.interactable = CanClaimHere && ready;
                 var label = claimButton.GetComponentInChildren<Text>(true);
                 if (label != null) label.text = quest.consumeRequirementsOnClaim ? GameFoundation.Localization.GameText.Get("Сдать руду") :
                     GameFoundation.Localization.GameText.Get(quest.resourceRewards.Count == 0 && quest.unlockRewards.Count == 0 ? "Завершить задание" : "Забрать награду");

@@ -17,6 +17,21 @@ public static class ProgressBarFlightValidation
     static ProgressBarFlightValidation()=>EditorApplication.playModeStateChanged+=State;
     public static void Run(){SessionState.SetBool(Key,true);BuildingUpgradeValidation.Begin();}
     static void Check(bool ok,string label){if(!ok)throw new Exception(label);}
+    static void DeliverEnemyCrystal(PortalTowerProgression tower)
+    {
+        var before = new HashSet<ResourceItem>(Object.FindObjectsByType<ResourceItem>(FindObjectsSortMode.None));
+        tower.AwardEnemyExperience(Vector3.zero);
+        var drops = Object.FindObjectsByType<ResourceItem>(FindObjectsSortMode.None).Where(item => !before.Contains(item)).ToArray();
+        Check(drops.Length == tower.Balance.experiencePerEnemy, "Enemy XP drops as transportable resources");
+        foreach (var drop in drops)
+        {
+            var type = drop.type;
+            int stock = GlobalResourceManager.Instance.GetResourceAmount(type);
+            Warehouse.Instance.DepositResource(type);
+            Check(GlobalResourceManager.Instance.GetResourceAmount(type) == stock, "Crystal bypasses global stock");
+            Object.Destroy(drop.gameObject);
+        }
+    }
     static async void State(PlayModeStateChange state)
     {
         if(!SessionState.GetBool(Key,false)||state!=PlayModeStateChange.EnteredPlayMode)return;
@@ -26,13 +41,20 @@ public static class ProgressBarFlightValidation
             var p=PortalTowerProgression.Instance;
             var bar=Object.FindFirstObjectByType<PortalTowerExperienceBar>();
             Check(bar!=null,"Experience bar exists");
+            var existing = new HashSet<ResourceItem>(Object.FindObjectsByType<ResourceItem>(FindObjectsSortMode.None));
             p.AwardHexExperience(Vector3.zero);
-            Check(p.Experience==0 && p.PendingExperience==3,"XP reserved, not credited before flight");
+            var ground = Object.FindObjectsByType<ResourceItem>(FindObjectsSortMode.None).Where(item => !existing.Contains(item)).ToArray();
+            Check(ground.Length >= 1 && ground.Length <= 5, "Empty hex drops 1 to 5 crystals");
+            Check(p.Experience == 0 && p.PendingExperience == 0, "Ground crystals do not credit or preview XP before delivery");
+            Check(!Object.FindObjectsByType<Image>(FindObjectsSortMode.None).Any(i => i.name == "Flying XP Crystal"), "No automatic crystal flight from hex");
+            foreach (var drop in ground) Object.Destroy(drop.gameObject);
+            for (int i = 0; i < 3; i++) DeliverEnemyCrystal(p);
+            Check(p.Experience==0 && p.PendingExperience==3,"Delivered XP reserved, not credited before flight");
             var preview=Object.FindObjectsByType<Image>(FindObjectsSortMode.None).First(i=>i.name=="Incoming XP");
             Check(preview.fillAmount>0 && preview.sprite==bar.fill.sprite && preview.material==bar.incomingFillMaterial,"Original fill sprite with cyan replacement material");
             await Task.Delay(100);
             var images=Object.FindObjectsByType<Image>(FindObjectsSortMode.None).Where(i=>i.name=="Flying XP Crystal").ToArray();
-            Check(images.Length==3,"Three UI crystals from hex");
+            Check(images.Length==3,"Three UI crystals from portal deliveries");
             Check(images.All(i=>i.rectTransform.sizeDelta==i.sprite.rect.size*2 && !i.raycastTarget),"Crystal UI size and raycast settings");
             var image=images[0];var canvas=bar.GetComponentInParent<Canvas>().rootCanvas;
             var camera=canvas.renderMode==RenderMode.ScreenSpaceOverlay?null:canvas.worldCamera;
@@ -50,7 +72,7 @@ public static class ProgressBarFlightValidation
             alarm.OnThresholdReached.AddListener(_=>waveAt=Time.realtimeSinceStartupAsDouble);
             alarm.OnAlarmChanged.AddListener(value=>{if(value>=1 && alarmAt==0)alarmAt=Time.realtimeSinceStartupAsDouble;});
             alarm.AddAlarmFromWorldPosition(8,Vector3.zero);
-            p.AwardHexExperience(Vector3.zero);
+            DeliverEnemyCrystal(p);
             Check(alarmAt==0 && waveAt==0,"Alarm and wave wait for arrival");
             await Task.Delay(450);
             ScreenCapture.CaptureScreenshot("Temp/TintedIncomingBars.png");
@@ -64,13 +86,13 @@ public static class ProgressBarFlightValidation
             p.AddExperience(p.RequiredExperience-p.Experience-1);
             int oldLevel=p.Level;double experienceAt=0,levelAt=0;
             p.Changed+=()=>{if(p.Experience>=p.RequiredExperience && experienceAt==0)experienceAt=Time.realtimeSinceStartupAsDouble;if(p.Level>oldLevel && levelAt==0)levelAt=Time.realtimeSinceStartupAsDouble;};
-            p.AwardEnemyExperience(Vector3.zero);
+            DeliverEnemyCrystal(p);
             Check(p.Level==oldLevel && p.PendingExperience==1,"Level waits for crystal arrival");
             await Task.Delay(1000);
             Check(p.Experience>=p.RequiredExperience && p.Level==oldLevel && !PortalTowerProgression.IsChoosingUpgrade,"XP fills before level popup");
             await Task.Delay(700);
             Check(levelAt-experienceAt>=.48 && PortalTowerProgression.IsChoosingUpgrade && Time.timeScale==0,"Level popup pauses after 0.5 seconds");
-            SessionState.SetString(Key+".result","PASS: 17 progress bar arrival and delayed event checks");
+            SessionState.SetString(Key+".result","PASS: crystal drops, portal deposits, progress bar arrival and delayed events");
         }
         catch(Exception e){SessionState.SetString(Key+".result","FAILED: "+e.Message);}
         finally{SessionState.SetBool(Key,false);Debug.Log(SessionState.GetString(Key+".result",""));EditorApplication.isPlaying=false;}

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -53,7 +53,7 @@ public static class PortalRoguelikeValidation
         catch(Exception e){Debug.LogException(e);Finish("FAILED: "+e.Message);}
     }
     static void Finish(string result){EditorApplication.update-=Tick;routine=null;SessionState.SetString(Key+".result",result);Debug.Log(result);EditorApplication.isPlaying=false;}
-    static void Check(bool ok,string message){if(!ok)throw new Exception(message);checks++;}
+    static void Check(bool ok,string message){if(!ok)throw new Exception(message);checks++;Debug.Log("Portal weapon audit PASS: "+message);}
     static IEnumerator Wait(float seconds){double end=EditorApplication.timeSinceStartup+seconds;while(EditorApplication.timeSinceStartup<end)yield return null;}
     static Health Enemy(Vector2 position)
     {
@@ -69,22 +69,44 @@ public static class PortalRoguelikeValidation
         var tower=Object.FindObjectsByType<ArcherTower>(FindObjectsSortMode.None).First(t=>t.GetStats()!=null && t.GetStats().IsPortalTower);
         var view=p.GetComponentInChildren<PortalUpgradeCards>(true);
         Check(p.WeaponCount==0 && p.Level==1,"Run starts without a weapon");
-        p.AddExperience(p.RequiredExperience);
+        Check(p.IsInitialWeaponChoice && p.LevelPoints == 1, "Free startup weapon choice at level one");
+        var lights=Object.FindFirstObjectByType<WorldFlashlightAvailability>();
+        Check(!lights.CanActivateLights && !lights.LightsActivated, "Light is blocked until a weapon is chosen");
+        lights.ActivateAvailableLights();
+        Check(!lights.LightsActivated, "Light activation cannot bypass starting choice");
         Check(Time.timeScale==0 && p.Offers.Count==3,"Three choices and pause");
         Check(UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject==null,"First card is not auto-selected");
         var modalCanvas=view.GetComponent<Canvas>();
         Check(modalCanvas.overrideSorting && modalCanvas.sortingOrder>=32760,"Upgrade modal above other UI");
         Check(p.Offers.All(u=>u.effect==PortalTowerBalance.Effect.UnlockWeapon) && p.Offers.Select(u=>u.weapon).Distinct().Count()==3,"First choice is three distinct weapons");
         Check(!p.Purchase("lights"),"Unshown upgrades cannot be purchased");
-        yield return Wait(.3f);ScreenCapture.CaptureScreenshot("Temp/PortalRoguelikeCards.png");yield return Wait(.2f);
+        foreach (var card in view.cards)
+        {
+            Check(card.description.text.Contains("Способ:") && card.description.text.Contains("Урон:") ||
+                card.description.text.Contains("Delivery:") && card.description.text.Contains("Damage:"), "Weapon card includes delivery and damage types");
+            Check(card.description.preferredHeight <= card.description.rectTransform.rect.height + 1, "Weapon description fits its card");
+        }
+        var authoredOffers = (List<PortalTowerBalance.Upgrade>)typeof(PortalTowerProgression).GetField("offers", Private).GetValue(p);
+        var originalOffers = authoredOffers.ToArray();
+        foreach(var definition in p.Balance.weapons.Where(w => !w.disabled))
+        {
+            authoredOffers[0] = p.Balance.Find("weapon_" + definition.weapon);
+            view.SendMessage("Refresh"); Canvas.ForceUpdateCanvases();
+            var card = view.cards[0];
+            Check(card.icon.sprite != null && card.title.text.Length > 0 && (card.description.text.Contains("Способ:") || card.description.text.Contains("Delivery:")), definition.weapon + " card has art and damage-delivery labels");
+            Check(card.description.preferredHeight <= card.description.rectTransform.rect.height + 1, definition.weapon + " full description fits the card");
+        }
+        authoredOffers.Clear(); authoredOffers.AddRange(originalOffers); view.SendMessage("Refresh");
+        yield return Wait(.3f);ScreenCapture.CaptureScreenshot("UserSettings/CodexValidation/PortalRoguelikeCards.png");yield return Wait(.2f);
         Check(view.cards.Count(c=>c.button.gameObject.activeInHierarchy && c.button.IsInteractable())==3,"All three UI cards are actionable");
         view.cards[0].button.onClick.Invoke();
-        Check(p.WeaponCount==1 && p.LevelPoints==0 && Time.timeScale>0,"Click grants exactly one weapon and resumes");
+        Check(p.WeaponCount==1 && p.LevelPoints==0 && p.Level==1 && !p.IsInitialWeaponChoice && Time.timeScale>0,"Free choice grants one weapon without gaining a level and resumes");
+        Check(lights.CanActivateLights, "Light is available after weapon choice");
         while(p.Level<10)
         {
             p.AddExperience(p.RequiredExperience);
             Check(p.Offers.Count==3,"Three cards at level "+p.Level);
-            Check(p.Offers.Where(u=>u.effect!=PortalTowerBalance.Effect.UnlockWeapon).All(u=>u.weapon==PortalTowerBalance.Weapon.None || p.HasWeapon(u.weapon)),"Only owned weapon upgrades at level "+p.Level);
+            Check(p.Offers.Where(u=>u.effect!=PortalTowerBalance.Effect.UnlockWeapon).All(p.IsUnlocked),"Offered upgrades match owned categories at level "+p.Level);
             if(p.Level%5==0)
             {
                 Check(p.Offers.Count(u=>u.effect==PortalTowerBalance.Effect.UnlockWeapon)==1,"Exactly one optional weapon on fifth level");
@@ -117,7 +139,7 @@ public static class PortalRoguelikeValidation
         var spotLight=Object.FindObjectsByType<UnityEngine.Rendering.Universal.Light2D>(FindObjectsSortMode.None).First(l=>l.name=="Burning Spot");
         Check(Mathf.Approximately(spotLight.intensity,2.25f),"Burning spot brightness increased by 50 percent");
         Check(Mathf.Approximately((float)typeof(PortalWeaponController).GetField("minimumEnemyHeight",Private).GetValue(controller),smallRenderer.bounds.size.y) && Mathf.Approximately((float)typeof(PortalWeaponController).GetField("maximumEnemyHeight",Private).GetValue(controller),tallRenderer.bounds.size.y),"Trail heights follow smallest and largest living enemy sprites");
-        ScreenCapture.CaptureScreenshot("Temp/PortalBurningBeamTrails.png");yield return Wait(.1f);
+        ScreenCapture.CaptureScreenshot("UserSettings/CodexValidation/PortalBurningBeamTrails.png");yield return Wait(.1f);
         beamEnemy.transform.position=origin+Vector2.left*2;yield return Wait(.1f);
         Check(Vector2.Distance(controller.BeamAim,beamEnemy.transform.position)<.01f,"Beam follows moving enemy");
         before=beamEnemy.CurrentHealth;Time.timeScale=0;yield return Wait(.6f);Check(beamEnemy.CurrentHealth==before,"Weapons stop during pause");Time.timeScale=1;
@@ -149,21 +171,30 @@ public static class PortalRoguelikeValidation
         typeof(PortalWeaponController).GetField("lightningTime",Private).SetValue(controller,Time.time+.2f);
         var la=Enemy((Vector2)tower.transform.position+Vector2.right*2);var lb=Enemy((Vector2)tower.transform.position+Vector2.up*2);var lf=Enemy((Vector2)tower.transform.position+Vector2.left*3);
         yield return Wait(.25f);
-        ScreenCapture.CaptureScreenshot("Temp/PortalPixelLightning.png");
+        ScreenCapture.CaptureScreenshot("UserSettings/CodexValidation/PortalPixelLightning.png");
         yield return Wait(.35f);
         Check(controller.lightningSprite!=null && p.Balance.FindWeapon(PortalTowerBalance.Weapon.Lightning).range<2.9f,"Pixel lightning uses short first-ring range");
         Check(Mathf.Approximately(la.CurrentHealth+lb.CurrentHealth,160) && lf.CurrentHealth==100,"Lightning guarantees one random in-range hit");
-        ranks["Lightning_Projectiles"]=1;
+        ranks["instant_targets"]=1;
         typeof(PortalWeaponController).GetField("lightningTime",Private).SetValue(controller,Time.time+.1f);
         yield return Wait(.4f);Check(la.CurrentHealth+lb.CurrentHealth==80,"Additional lightning hits another target");
         Object.Destroy(la.gameObject);Object.Destroy(lb.gameObject);Object.Destroy(lf.gameObject);
         Equip(PortalTowerBalance.Weapon.Bolts);tower.enabled=true;
         var boltEnemy=Enemy((Vector2)tower.transform.position+Vector2.right*3);
         yield return Wait(2.5f);Check(boltEnemy.CurrentHealth<100,"Original projectile weapon still fires and damages");
-        ranks["Bolts_Damage"]=1;ranks["Bolts_Projectiles"]=1;
-        Check(p.ProjectileCount==2 && p.DamageMultiplier==1.25f,"Bolt upgrades affect bolt stats");
-        ranks["weapon_Beam"]=1;ranks["Beam_Damage"]=1;
-        Check(p.Multiplier(PortalTowerBalance.Weapon.Beam,PortalTowerBalance.Effect.Damage)==1.25f && p.DamageMultiplier==1.25f,"Weapon modifiers remain independent");
+        ranks["all_damage"]=1;ranks["projectile_count"]=1;
+        Check(p.ProjectileCount==2 && Mathf.Approximately(p.DamageMultiplier,1.1f),"Projectile count and global damage apply to bolts");
+        ranks["weapon_Beam"]=1;ranks["damage_type_1"]=1;
+        Check(Mathf.Approximately(p.Multiplier(PortalTowerBalance.Weapon.Beam,PortalTowerBalance.Effect.Damage),1.3f) && Mathf.Approximately(p.DamageMultiplier,1.1f),"New beam inherits global damage and adds fire damage without changing magic bolts");
+        ranks["area_size"]=1;
+        Check(Mathf.Approximately(p.Multiplier(PortalTowerBalance.Weapon.Beam,PortalTowerBalance.Effect.Area),1.2f) && p.Multiplier(PortalTowerBalance.Weapon.Bolts,PortalTowerBalance.Effect.Area)==1,"Area upgrade affects area weapons only");
+        Check(p.Count(PortalTowerBalance.Weapon.Lightning)==1 && p.ProjectileCount==2,"Projectile upgrade does not add lightning targets");
+        ranks["weapon_Lightning"]=1;ranks["instant_targets"]=1;
+        Check(p.Count(PortalTowerBalance.Weapon.Lightning)==2 && p.ProjectileCount==2,"Instant targets and projectile counts are independent");
+        Check(Mathf.Approximately(p.Multiplier(PortalTowerBalance.Weapon.Lightning,PortalTowerBalance.Effect.Damage),1.1f),"Later lightning inherits global damage");
+        ranks["all_attack_speed"]=1;ranks["all_range"]=1;
+        foreach (var w in p.Balance.weapons.Where(w=>!w.disabled))
+            Check(Mathf.Approximately(p.Multiplier(w.weapon,PortalTowerBalance.Effect.AttackSpeed),1.1f) && Mathf.Approximately(p.Multiplier(w.weapon,PortalTowerBalance.Effect.Range),1.15f),"Shared attack speed and range reach "+w.weapon);
         foreach(var weapon in p.Balance.weapons)ranks["weapon_"+weapon.weapon]=1;
         var mixedEnemy=Enemy((Vector2)tower.transform.position+Vector2.left);
         yield return Wait(.8f);

@@ -17,6 +17,11 @@ public class EnemyProjectile : MonoBehaviour
     private float hitDamage;
     private DamageType hitType;
     private float _speedMultiplier = 1f;
+    public float BaseSpeed => speed;
+    public float CurrentSpeed => speed * _speedMultiplier;
+    public Vector3 Direction => _direction;
+    public DamageType HitType => hitType;
+    public float HitDamage => hitDamage;
 
     public void Setup(Vector3 dir, string targetTag, List<GlobalStats.DamageInfo> damageData, Transform owner = null, float damageMultiplier = 1f, float speedMultiplier = 1f, float minimumLifetime = 0f)
     {

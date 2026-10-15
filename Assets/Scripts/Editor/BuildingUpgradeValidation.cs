@@ -27,6 +27,9 @@ public static class BuildingUpgradeValidation
     public static void Begin()
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode || SessionState.GetString(BackupKey, "") != "" || File.Exists(BackupPath)) throw new Exception("Validation already active; restore its backup first");
+        if (BuildingUpgradeService.Catalog == null)
+            AssetDatabase.LoadAssetAtPath<ProjectReferences>("Assets/Resources/Project References.asset")?.Activate();
+        if (BuildingUpgradeService.Catalog == null) throw new Exception("Validation requires the project building catalog");
         const string key = "foundation.slot.3.saveData";
         var backup = new Backup { envelopeExists = PlayerPrefs.HasKey(key), envelope = PlayerPrefs.GetString(key), createdExists = PlayerPrefs.HasKey("foundation.slot.3.created"), created = PlayerPrefs.GetInt("foundation.slot.3.created"), selectedExists = PlayerPrefs.HasKey("foundation.selectedSaveSlot"), selected = PlayerPrefs.GetInt("foundation.selectedSaveSlot", 1) };
         string json = JsonUtility.ToJson(backup);

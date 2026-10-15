@@ -25,6 +25,7 @@ public static class PlayerHexNavigation
         foreach (Collider2D hit in hits)
         {
             if (hit == null) continue;
+            if (hit.GetComponent<Gex>() != null) return false;
             HexBlocker blocker = hit.GetComponent<HexBlocker>() ?? hit.GetComponentInParent<HexBlocker>();
             if (blocker != null && blocker.IsBlocked) return false;
         }

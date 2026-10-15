@@ -13,28 +13,36 @@ namespace GameFoundation.Quests
         private bool hovered;
         private bool keepExpanded;
         private float progress;
+        private bool IsWorld => gameObject.scene.name == "World";
         [SerializeField] private UnityEngine.UI.Button toggleButton;
         [SerializeField] private RectTransform toggleArrow;
         [SerializeField] private bool showObjectives = true;
         public bool Hovered => hovered || keepExpanded;
         public bool ShowObjectives => showObjectives;
         public float ExpansionAmount => progress * progress * (3 - 2 * progress);
-        public void ToggleObjectives() => showObjectives = !showObjectives;
-        public void OnPointerEnter(PointerEventData _) => SetExpanded(true);
-        public void OnPointerExit(PointerEventData _) => SetExpanded(false);
+        public void ToggleObjectives()
+        {
+            showObjectives = !showObjectives;
+            if (IsWorld) hovered = showObjectives;
+            Apply();
+        }
+        public void OnPointerEnter(PointerEventData _) { if (!IsWorld) SetExpanded(true); }
+        public void OnPointerExit(PointerEventData _) { if (!IsWorld) SetExpanded(false); }
         public void SetExpanded(bool expanded, bool immediately = false)
         {
+            if (IsWorld) return;
             if (keepExpanded) expanded = true;
             hovered = expanded;
             if (immediately) { progress = expanded ? 1 : 0; Apply(); }
         }
         public void KeepExpanded(bool value)
         {
+            if (IsWorld) return;
             keepExpanded = value;
             if (value) SetExpanded(true, true);
         }
         private void OnDisable() { if(toggleButton) toggleButton.onClick.RemoveListener(ToggleObjectives); hovered = false; progress = 0; Apply(); }
-        private void OnEnable() { if(toggleButton) toggleButton.onClick.AddListener(ToggleObjectives); hovered = false; progress = 0; Apply(); }
+        private void OnEnable() { if (IsWorld) { showObjectives = false; keepExpanded = false; } if(toggleButton) toggleButton.onClick.AddListener(ToggleObjectives); hovered = false; progress = 0; Apply(); }
         private void LateUpdate()
         {
             progress = Mathf.MoveTowards(progress, hovered ? 1 : 0, Time.unscaledDeltaTime / duration);
@@ -57,6 +65,7 @@ namespace GameFoundation.Quests
             float height = LayoutUtility.GetPreferredHeight(detailsContent) * eased;
             if (!Mathf.Approximately(detailsLayout.preferredHeight, height)) detailsLayout.preferredHeight = height;
             detailsGroup.alpha = eased;
+            if (IsWorld) { detailsGroup.blocksRaycasts = hovered; detailsGroup.interactable = hovered; }
         }
     }
 }

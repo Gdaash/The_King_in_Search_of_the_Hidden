@@ -90,10 +90,15 @@ namespace GameFoundation.MetaProgression
                 if (i < count && beam != null) available.Add(new LightAssignment { beam = beam });
             }
             lights = available.ToArray();
+            if (autoRepeatToggle == null)
+                foreach (var toggle in UnityEngine.Object.FindObjectsByType<UnityEngine.UI.Toggle>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                    if (toggle.gameObject.scene == gameObject.scene && toggle.name == "Light Auto Repeat") { autoRepeatToggle = toggle; break; }
             if (autoRepeatToggle != null)
             {
+                autoRepeatToggle.onValueChanged.RemoveListener(SetAutoRepeat);
                 autoRepeatToggle.SetIsOnWithoutNotify(autoRepeat);
                 autoRepeatToggle.onValueChanged.AddListener(SetAutoRepeat);
+                RefreshAutoRepeatVisual();
             }
             InitializeDragControls();
             if (PortalTowerProgression.Instance != null) PortalTowerProgression.Instance.Changed += RefreshAvailableLights;
@@ -163,6 +168,7 @@ namespace GameFoundation.MetaProgression
             bool changed = autoRepeat != enabled;
             autoRepeat = enabled;
             if (autoRepeatToggle != null) autoRepeatToggle.SetIsOnWithoutNotify(enabled);
+            RefreshAutoRepeatVisual();
             if (!changed) return;
             if (!enabled)
             {
@@ -178,6 +184,17 @@ namespace GameFoundation.MetaProgression
                 lights[i].restartAfterFrame = Time.frameCount + 1;
                 lights[i].retryAt = 0;
             }
+        }
+        private void RefreshAutoRepeatVisual()
+        {
+            if (autoRepeatToggle == null || autoRepeatToggle.graphic == null) return;
+            var check = autoRepeatToggle.graphic;
+            check.gameObject.SetActive(true);
+            check.enabled = autoRepeat;
+            check.canvasRenderer.SetAlpha(autoRepeat ? 1 : 0);
+            // Old HUD instances may still contain a second, decorative checkmark.
+            foreach (var graphic in autoRepeatToggle.GetComponentsInChildren<UnityEngine.UI.Graphic>(true))
+                if (graphic != check && (graphic.name == "Pixel Check" || graphic.name == "Checkmark")) graphic.gameObject.SetActive(false);
         }
         private void UpdateAutomaticWork()
         {

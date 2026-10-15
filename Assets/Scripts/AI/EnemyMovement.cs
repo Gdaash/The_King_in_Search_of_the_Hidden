@@ -1,6 +1,7 @@
 using GameFoundation.Combat;
 using UnityEngine;
 using GameFoundation.MetaProgression;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class EnemyMovement : MonoBehaviour
@@ -21,6 +22,17 @@ public class EnemyMovement : MonoBehaviour
     private float _initialScaleX;
     private float _finalSpeed;
     private float _individualVariation; // Персональное отклонение скорости
+    private readonly Dictionary<object, float> areaSlows = new();
+    public float AreaSlowMultiplier
+    {
+        get { float strongest = 0; foreach (var slow in areaSlows.Values) strongest = Mathf.Max(strongest, slow); return 1 - strongest; }
+    }
+    public void SetAreaSlow(object source, float fraction)
+    {
+        if (source == null) return;
+        if (fraction <= 0) areaSlows.Remove(source);
+        else areaSlows[source] = Mathf.Clamp(fraction, 0, .8f);
+    }
     public GlobalStats Stats => stats;
     public float SpeedVariation => speedVariation;
     // FixedUpdate currently uses this speed; the UI must describe actual movement.
@@ -31,7 +43,7 @@ public class EnemyMovement : MonoBehaviour
         get
         {
             if (_finalSpeed <= 0f) UpdateSpeed();
-            return Mathf.Max(0.1f, _finalSpeed * MilitaryExperience.Multiplier(this));
+            return Mathf.Max(0.1f, _finalSpeed * MilitaryExperience.Multiplier(this)) * AreaSlowMultiplier;
         }
     }
 
@@ -63,6 +75,7 @@ public class EnemyMovement : MonoBehaviour
 
     private void OnDisable() 
     {
+        areaSlows.Clear();
         if (stats != null) stats.OnStatsUpdated -= UpdateSpeed;
     }
 
@@ -112,7 +125,7 @@ public class EnemyMovement : MonoBehaviour
         Vector2 moveDirection = direction.normalized;
         if (CompareTag("Player"))
             moveDirection = PlayerHexNavigation.ResolveDirection(currentPos, moveDirection);
-        _rb.linearVelocity = moveDirection * _finalSpeed;
+        _rb.linearVelocity = moveDirection * _finalSpeed * AreaSlowMultiplier;
         HandleFlip();
     }
 

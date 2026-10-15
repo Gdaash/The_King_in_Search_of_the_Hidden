@@ -56,6 +56,7 @@ namespace GameFoundation.Quests
         }
         private void Start() => Evaluate();
         private bool Available(QuestDialogueDefinition d) => d != null && !string.IsNullOrWhiteSpace(d.id) &&
+            !PlaytestSettings.TutorialsAndQuestsDisabled &&
             !GameFoundation.Base.DayReportPopup.BlocksQuestDialogues &&
             d.BuildingNightPassed &&
             d.lines != null && d.lines.Length > 0 &&

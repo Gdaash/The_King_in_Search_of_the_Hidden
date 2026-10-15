@@ -29,6 +29,9 @@ public class ResourceRequester : MonoBehaviour {
     [SerializeField] private GameObject storageFullVisual; 
     [Tooltip("Максимальное количество циклов производства (0 = без ограничений)")]
     [SerializeField] private int maxProductionCycles = 0;
+    [SerializeField, Tooltip("После исчерпания и исчезновения объекта оставить кристаллы опыта на освобождённом гексе.")]
+    private bool releaseHexCrystalsOnDepletion;
+    private bool _depletionCrystalsRequested;
 
     [Header("Настройки флажка")]
     [SerializeField] protected bool ignoreFlag = false; 
@@ -319,6 +322,13 @@ public class ResourceRequester : MonoBehaviour {
         
         if (maxProductionCycles > 0 && _completedCycles >= maxProductionCycles) {
             Debug.Log($"[ResourceRequester] Достигнут лимит циклов: {_completedCycles}/{maxProductionCycles}");
+            if (releaseHexCrystalsOnDepletion && !_depletionCrystalsRequested)
+            {
+                _depletionCrystalsRequested = true;
+                var hex = GetDropHex();
+                GameFoundation.MetaProgression.PortalTowerProgression.Instance?.AwardDepletedHexExperience(
+                    gameObject, hex != null ? hex.transform.position : transform.position);
+            }
         }
         
         OnActionExecuted?.Invoke();

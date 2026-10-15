@@ -15,7 +15,7 @@ namespace GameFoundation.MetaProgression
         private bool pointerStartedInWorld, pointerMoved;
         private bool dragHadAssignment;
         public bool LightsActivated { get; private set; }
-        public bool CanActivateLights => !escaped && !LightsActivated && lights.Length > 0 &&
+        public bool CanActivateLights => !PortalTowerProgression.IsChoosingUpgrade && !escaped && !LightsActivated && lights.Length > 0 &&
             GameSpeedControls.SimulationSpeed > 0;
         public bool IsDragging => draggedLight >= 0;
         public Vector2 DragPosition => draggedLight >= 0 ? lights[draggedLight].beam.MarkerPosition : Vector2.zero;
@@ -39,7 +39,7 @@ namespace GameFoundation.MetaProgression
 
         public void ActivateAvailableLights()
         {
-            if (escaped || LightsActivated || lights.Length == 0 || GameSpeedControls.SimulationSpeed <= 0) return;
+            if (!CanActivateLights) return;
             LightsActivated = true;
             LightsTurnedOn?.Invoke();
             if (activationButton != null) activationButton.gameObject.SetActive(false);

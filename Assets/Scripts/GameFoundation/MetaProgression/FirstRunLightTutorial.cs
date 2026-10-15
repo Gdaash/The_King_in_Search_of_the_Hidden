@@ -26,6 +26,8 @@ namespace GameFoundation.MetaProgression
         private readonly List<Behaviour> suspended = new();
         private readonly List<(CanvasGroup group, bool created, bool previousBlocks)> blockers = new();
         private const string CompletedKey = "foundation.tutorial.light.completed";
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetState() { active = null; BlocksInput = false; AllowsLightDrag = false; }
         private void Awake()
         {
             if (window == null || instruction == null || lights == null || nextButton == null || continueHint == null)
@@ -44,9 +46,11 @@ namespace GameFoundation.MetaProgression
             if (!enabled) return;
             lights.LightsTurnedOn += OnActivated; lights.LightHexOpened += OnHexOpened; lights.LightDraggedToHex += OnLightMoved;
         }
-        private void Start()
+        private System.Collections.IEnumerator Start()
         {
-            if (!DayCycleService.IsFirstPortalRun || SaveSlotPrefs.GetInt(CompletedKey,0)!=0) return;
+            while (PortalTowerProgression.IsChoosingUpgrade) yield return null;
+            if (PlaytestSettings.TutorialsAndQuestsDisabled) yield break;
+            if (!DayCycleService.IsFirstPortalRun || SaveSlotPrefs.GetInt(CompletedKey,0)!=0) yield break;
             active=this; BlocksInput=true;
             foreach(var canvas in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
             {

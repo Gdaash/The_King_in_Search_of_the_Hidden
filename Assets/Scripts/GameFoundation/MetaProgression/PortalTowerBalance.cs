@@ -8,18 +8,28 @@ namespace GameFoundation.MetaProgression
     [CreateAssetMenu(menuName = "Game Foundation/Portal Tower Balance")]
     public sealed class PortalTowerBalance : ScriptableObject
     {
-        public enum Weapon { None, Bolts, Beam, Rings, Lightning }
-        public enum Effect { UnlockAttack, ExtraLight, Damage, AttackSpeed, Projectiles, Range, UnlockWeapon, Area, Duration, ExpansionSpeed }
+        public enum Weapon { None, Bolts, Beam, Rings, Lightning, FrostSeal, FireShot, ElectricOrb }
+        public enum DeliveryMethod { Projectile, Area, InstantHit }
+        public enum UpgradeScope { AllWeapons, DeliveryMethod, DamageType, Portal }
+        public enum Effect { UnlockAttack, ExtraLight, Damage, AttackSpeed, Projectiles, Range, UnlockWeapon, Area, Duration, ExpansionSpeed, Targets, SlowStrength }
         [Serializable]
         public sealed class WeaponDefinition
         {
             public Weapon weapon;
+            public DeliveryMethod deliveryMethod;
             public bool disabled;
             public string title, englishTitle;
             [TextArea] public string description, englishDescription;
             public Sprite icon;
             public CombatWeapon combat;
             [Min(.01f)] public float duration=.16f;
+            [Min(0)] public float damageTickInterval;
+            [Range(0, .8f)] public float slowFraction;
+            [Min(0)] public float placementLeadTime = .5f;
+            public GameObject projectilePrefab;
+            [Min(.01f)] public float projectileSpeedMultiplier = 1;
+            [Min(.1f)] public float projectileScale = 1;
+            [Range(0, 90)] public float spreadAngle;
             public float damage => combat!=null?combat.damage:0;
             public float cooldown => combat!=null?combat.interval:1;
             public float range => combat!=null?combat.range:0;
@@ -35,12 +45,17 @@ namespace GameFoundation.MetaProgression
             [TextArea(2, 5)] public string description, englishDescription;
             public Sprite icon;
             public Effect effect;
+            [Tooltip("Weapon используется только при получении нового оружия. Остальные улучшения выбирают общую категорию ниже.")]
             public Weapon weapon;
+            public UpgradeScope scope;
+            public DeliveryMethod deliveryMethod;
+            public DamageType damageType;
             [Min(0)] public float value = 1;
             [Tooltip("0 — можно улучшать без ограничения.")][Min(0)] public int maximumRank = 1;
             public bool requiresAttack;
         }
-        [Min(1)] public int experiencePerHex = 3;
+        [Range(1, 32)] public int minimumCrystalsPerEmptyHex = 1;
+        [Range(1, 32)] public int maximumCrystalsPerEmptyHex = 5;
         [Min(1)] public int experiencePerEnemy = 1;
         [Min(1)] public int firstLevelExperience = 12;
         [Min(0)] public int experienceIncreasePerLevel = 6;

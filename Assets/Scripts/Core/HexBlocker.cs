@@ -141,9 +141,10 @@ public class HexBlocker : MonoBehaviour
     {
         if (_isRemoved) return;
         _isRemoved = true;
-        if (!shouldAutoUnlock) GameFoundation.MetaProgression.PortalTowerProgression.Instance?.AwardHexExperience(transform.position);
         // Reserve content only when opening actually finishes, including empty steps.
         if (_hexManager != null) prefabToSpawn = _hexManager.ResolveOpeningContent(prefabToSpawn);
+        if (!shouldAutoUnlock && prefabToSpawn == null)
+            GameFoundation.MetaProgression.PortalTowerProgression.Instance?.AwardHexExperience(transform.position);
         RaiseAlarmForUnlock();
 
         if (prefabToSpawn != null)

@@ -33,6 +33,7 @@ namespace GameFoundation.Quests
         private void OnResourceChanged(ResourceType _, int __) => Evaluate();
         private void Evaluate()
         {
+            if (PlaytestSettings.TutorialsAndQuestsDisabled) return;
             if (evaluating || resources == null || GlobalResourceManager.Instance != resources) return;
             evaluating = true;
             try
