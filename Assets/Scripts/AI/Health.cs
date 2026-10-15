@@ -33,6 +33,8 @@ public class Health : MonoBehaviour
     public UnityEvent<float> OnHealthChanged;
     public UnityEvent OnDeath;
 
+    private Vector3 hitBaseScale = Vector3.one;
+    private bool hitScaleActive;
     private Color _orig = Color.white; 
     private bool _dead;
     private float _lastDamageTime;
@@ -77,6 +79,7 @@ public class Health : MonoBehaviour
         if (!targetSprite) targetSprite = GetComponentInChildren<SpriteRenderer>();
         if (targetSprite) 
         {
+            hitBaseScale = targetSprite.transform.localScale;
             _orig = targetSprite.color;
             if (_orig.a < 0.1f) _orig.a = 1f;
         }
@@ -95,7 +98,13 @@ public class Health : MonoBehaviour
     private void OnDisable() 
     {
         if (stats != null) stats.OnStatsUpdated -= HandleStatsUpgrade;
-        if (targetSprite) targetSprite.color = _orig;
+        if (targetSprite)
+        {
+            targetSprite.color = _orig;
+            if (hitScaleActive) targetSprite.transform.localScale = hitBaseScale;
+        }
+        hitScaleActive = false;
+        if (_flashCoroutine != null) { StopCoroutine(_flashCoroutine); _flashCoroutine = null; }
     }
 
     private void HandleStatsUpgrade() 
@@ -182,10 +191,12 @@ public class Health : MonoBehaviour
         flashColor.a = currentAlpha;
         targetSprite.color = flashColor;
         Transform visual = targetSprite.transform;
-        Vector3 baseScale = visual.localScale;
+        Vector3 baseScale = hitBaseScale;
+        baseScale.x = Mathf.Abs(baseScale.x) * Mathf.Sign(visual.localScale.x);
         // Ranged windup owns this transform's scale. A hit must not capture its
         // temporary stretch and restore it after the shooting animation ends.
         bool animateScale = _ai != null && !TryGetComponent<EnemyVisuals_Ranged>(out _);
+        hitScaleActive = animateScale;
         float elapsed = 0f;
         while (elapsed < hitFlashDuration)
         {
@@ -200,6 +211,8 @@ public class Health : MonoBehaviour
         resetColor.a = currentAlpha;
         targetSprite.color = resetColor;
         if (animateScale) visual.localScale = baseScale;
+        hitScaleActive = false;
+        _flashCoroutine = null;
     }
 
     private bool IsAIAttacking() 

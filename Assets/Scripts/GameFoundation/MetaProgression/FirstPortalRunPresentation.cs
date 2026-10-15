@@ -71,6 +71,17 @@ namespace GameFoundation.MetaProgression
             if (!alarm.ReleaseFirstRunWave()) released = false;
         }
 
+        public void RevealForEmergencyReturn()
+        {
+            revealing = true;
+            if (revealDelay != null) { StopCoroutine(revealDelay); revealDelay = null; }
+            introduction?.Complete(true);
+            escapeButton.gameObject.SetActive(true);
+            escapeButton.interactable = true;
+            var group = escapeButton.GetComponent<CanvasGroup>();
+            if (group != null) { group.alpha = 1f; group.blocksRaycasts = true; }
+        }
+
         private void RevealEscape()
         {
             if (!released || revealing || escapeButton == null) return;

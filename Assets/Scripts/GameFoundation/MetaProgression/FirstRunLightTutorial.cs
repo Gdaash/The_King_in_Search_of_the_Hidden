@@ -18,7 +18,7 @@ namespace GameFoundation.MetaProgression
         public static bool BlocksInput { get; private set; }
         public static bool AllowsLightDrag { get; private set; }
         private static FirstRunLightTutorial active;
-        enum Step { Inactive, Activate, Scout, Opening, Drag, Workers, Supplies, Complete }
+        enum Step { Inactive, Activate, Scout, Opening, Drag, Workers, Supplies, EmergencyReturn, Complete }
         private Step step;
         private Vector2 firstHex;
         private float previousSpeed;
@@ -39,7 +39,7 @@ namespace GameFoundation.MetaProgression
             window.SetActive(false); continueHint.SetActive(false); nextButton.gameObject.SetActive(false);
             var hold = nextButton.GetComponent<DialogueHoldButton>();
             if (hold == null) hold = nextButton.gameObject.AddComponent<DialogueHoldButton>();
-            hold.Configure(()=>step==Step.Scout || step==Step.Workers || step==Step.Supplies, OnNext, .7f, new Color(.55f,.7f,.85f,1));
+            hold.Configure(()=>step==Step.Scout || step==Step.Workers || step==Step.Supplies, OnNext);
         }
         private void OnEnable()
         {
@@ -51,6 +51,14 @@ namespace GameFoundation.MetaProgression
             while (PortalTowerProgression.IsChoosingUpgrade) yield return null;
             if (PlaytestSettings.TutorialsAndQuestsDisabled) yield break;
             if (!DayCycleService.IsFirstPortalRun || SaveSlotPrefs.GetInt(CompletedKey,0)!=0) yield break;
+            LockInput();
+            step=Step.Activate;
+            Show("Включи свет, чтобы начать разведку. Нажми кнопку включения света у башни портала.");
+            if(lights.LightsActivated)OnActivated();
+        }
+        private void LockInput()
+        {
+            if (active == this) return;
             active=this; BlocksInput=true;
             foreach(var canvas in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
             {
@@ -69,9 +77,35 @@ namespace GameFoundation.MetaProgression
                 if(behaviour.enabled&&(name=="ContentZoom"||name=="BuildingPlacer"||name=="CheatResourcePopup"||name=="FlashlightController"))
                 {suspended.Add(behaviour);behaviour.enabled=false;}
             }
-            step=Step.Activate;
-            Show("Включи свет, чтобы начать разведку. Нажми кнопку включения света у башни портала.");
-            if(lights.LightsActivated)OnActivated();
+        }
+        public bool EmergencyReturnActive => step == Step.EmergencyReturn;
+        private CanvasGroup emergencyButtonGroup;
+        private bool emergencyIgnoreParentGroups;
+        public void BeginEmergencyReturn(Button returnButton)
+        {
+            LockInput();
+            AllowsLightDrag = false;
+            step = Step.EmergencyReturn;
+            Pause();
+            Show("Портал серьёзно повреждён! Срочно возвращайся, пока монстры не разрушили его. Нажми «Вернуться» и дождись возвращения жителей в башню портала.");
+            emergencyButtonGroup = returnButton.GetComponent<CanvasGroup>();
+            if (emergencyButtonGroup == null) emergencyButtonGroup = returnButton.gameObject.AddComponent<CanvasGroup>();
+            emergencyIgnoreParentGroups = emergencyButtonGroup.ignoreParentGroups;
+            emergencyButtonGroup.ignoreParentGroups = true;
+            emergencyButtonGroup.interactable = true;
+            emergencyButtonGroup.blocksRaycasts = true;
+        }
+        public void CompleteEmergencyReturn()
+        {
+            if (!EmergencyReturnActive) return;
+            step = Step.Complete;
+            window.SetActive(false);
+            if (emergencyButtonGroup != null) emergencyButtonGroup.ignoreParentGroups = emergencyIgnoreParentGroups;
+            SaveSlotPrefs.SetInt(CompletedKey, 1);
+            SaveSlotPrefs.Save();
+            Unlock();
+            if (previousSpeed <= 0f) previousSpeed = 1f;
+            ResumeTime();
         }
         private void Pause()
         {

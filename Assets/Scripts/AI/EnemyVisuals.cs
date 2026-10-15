@@ -26,6 +26,7 @@ public class EnemyVisuals : MonoBehaviour
     [SerializeField, Min(0f)] private float impactHoldDuration = 0.06f;
     [SerializeField] private Vector2 windupScale = new(1.08f, 0.9f);
 
+    private Vector3 _baseScale;
     private Vector3 _startPos;
     private bool _isMoving;
     private SpriteRenderer _sr;
@@ -33,6 +34,7 @@ public class EnemyVisuals : MonoBehaviour
 
     void Awake()
     {
+        if (spriteParent != null) _baseScale = spriteParent.localScale;
         _ai = GetComponent<IEnemyAI>();
         movement = GetComponent<EnemyMovement>();
         _rb = GetComponent<Rigidbody2D>();
@@ -79,7 +81,8 @@ public class EnemyVisuals : MonoBehaviour
 
         Vector3 targetLocalPos = _startPos + localDir * jabDist;
 
-        Vector3 baseScale = spriteParent.localScale;
+        Vector3 baseScale = _baseScale;
+        baseScale.x = Mathf.Abs(baseScale.x) * Mathf.Sign(spriteParent.localScale.x);
         Vector3 preparedScale = new(baseScale.x * windupScale.x, baseScale.y * windupScale.y, baseScale.z);
         yield return AnimatePose(_startPos, _startPos - localDir * jabDist * 0.18f, baseScale, preparedScale, windupDuration);
 

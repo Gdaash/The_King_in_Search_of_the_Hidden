@@ -35,6 +35,18 @@ namespace GameFoundation.Quests
         public static bool IsClaimed(QuestDefinition quest) => quest != null && !string.IsNullOrWhiteSpace(quest.id) &&
             SaveSlotPrefs.GetInt("foundation.quest." + quest.id + ".claimed", 0) == 1;
 
+        public static bool NightAfterClaimPassed(QuestDefinition quest)
+        {
+            if (!IsClaimed(quest)) return false;
+            string dayKey = "foundation.quest." + quest.id + ".claimedDay";
+            // Older saves did not record this date: start their one-night wait on first observation.
+            if (!SaveSlotPrefs.HasKey(dayKey))
+            {
+                SaveSlotPrefs.SetInt(dayKey, Today);
+                SaveSlotPrefs.Save();
+            }
+            return Today > SaveSlotPrefs.GetInt(dayKey, Today);
+        }
         public static bool TryClaim(QuestDefinition quest, GlobalResourceManager resources)
         {
             if (!IsReadyToClaim(quest, resources)) return false;
@@ -65,6 +77,7 @@ namespace GameFoundation.Quests
             {
                 // Set before resource events to reject synchronous duplicate claims.
                 SaveSlotPrefs.SetInt("foundation.quest." + quest.id + ".claimed", 1);
+                SaveSlotPrefs.SetInt("foundation.quest." + quest.id + ".claimedDay", Today);
                 if (quest.consumeRequirementsOnClaim)
                 {
                     SaveSlotPrefs.SetInt(Key(quest), 1);

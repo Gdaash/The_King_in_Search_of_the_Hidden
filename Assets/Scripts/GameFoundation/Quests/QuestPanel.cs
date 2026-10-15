@@ -17,25 +17,44 @@ namespace GameFoundation.Quests
         [SerializeField] private Text title;
         [SerializeField] private Sprite completedStarSprite;
         private RisingLabelStars completedStars;
+        private Text completionTitle;
         private Color originalTitleColor;
         private bool titleColorCaptured;
         private bool CanClaimHere => gameObject.scene.name == "Base";
         private void RefreshCompletionTitle(bool completed)
         {
             if (title == null || gameObject.scene.name != "World") return;
-            if (!titleColorCaptured) { originalTitleColor = title.color; titleColorCaptured = true; }
+            if (completionTitle == null)
+            {
+                completionTitle = title;
+                titleColorCaptured = false;
+                foreach (var mirror in GetComponentsInChildren<QuestTitleMirror>(true))
+                {
+                    if (mirror.source != title || mirror.target == null) continue;
+                    completionTitle = mirror.target;
+                    // The source remains a transparent data label for the mirrored header.
+                    var hiddenColor = title.color; hiddenColor.a = 0; title.color = hiddenColor;
+                    break;
+                }
+            }
+            if (completedStars != null && completedStars.transform.parent != completionTitle.transform)
+            {
+                completedStars.transform.SetParent(completionTitle.transform, false);
+                completedStars.Configure(completionTitle.rectTransform, completedStarSprite);
+            }
+            if (!titleColorCaptured) { originalTitleColor = completionTitle.color; titleColorCaptured = true; }
             var theme = Resources.Load<ButtonVisualTheme>("UI/ButtonVisualTheme");
             var green = theme != null ? theme.positiveLabelColor : new Color(.5f, .85f, .5f);
-            title.color = completed ? green : originalTitleColor;
+            completionTitle.color = completed ? green : originalTitleColor;
             if (completed && completedStars == null && completedStarSprite != null)
             {
                 var effect = new GameObject("Completed Quest Stars", typeof(RectTransform), typeof(CanvasRenderer), typeof(RisingLabelStars));
                 var rect = (RectTransform)effect.transform;
-                rect.SetParent(title.transform, false);
+                rect.SetParent(completionTitle.transform, false);
                 rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one;
                 rect.offsetMin = rect.offsetMax = Vector2.zero;
                 completedStars = effect.GetComponent<RisingLabelStars>();
-                completedStars.Configure(title.rectTransform, completedStarSprite);
+                completedStars.Configure(completionTitle.rectTransform, completedStarSprite);
             }
             if (completedStars != null) { completedStars.color = green; completedStars.Emit = completed; completedStars.gameObject.SetActive(completed); }
         }

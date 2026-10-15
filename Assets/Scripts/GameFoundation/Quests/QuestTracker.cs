@@ -38,6 +38,7 @@ namespace GameFoundation.Quests
             evaluating = true;
             try
             {
+                ContentUnlocks.RestoreClaimedRewards(catalog);
                 if (catalog != null) foreach (var entry in catalog.quests) QuestProgress.TryFail(entry, resources);
                 var quest = QuestProgress.Current(catalog);
                 if (QuestProgress.TryComplete(quest, resources)) GameNotifications.Post(GameFoundation.Localization.GameText.Get("Задание выполнено: ") + quest.title, NotificationKind.Positive);

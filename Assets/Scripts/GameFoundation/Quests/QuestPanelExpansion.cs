@@ -23,14 +23,12 @@ namespace GameFoundation.Quests
         public void ToggleObjectives()
         {
             showObjectives = !showObjectives;
-            if (IsWorld) hovered = showObjectives;
             Apply();
         }
-        public void OnPointerEnter(PointerEventData _) { if (!IsWorld) SetExpanded(true); }
-        public void OnPointerExit(PointerEventData _) { if (!IsWorld) SetExpanded(false); }
+        public void OnPointerEnter(PointerEventData _) { SetExpanded(true); }
+        public void OnPointerExit(PointerEventData _) { SetExpanded(false); }
         public void SetExpanded(bool expanded, bool immediately = false)
         {
-            if (IsWorld) return;
             if (keepExpanded) expanded = true;
             hovered = expanded;
             if (immediately) { progress = expanded ? 1 : 0; Apply(); }

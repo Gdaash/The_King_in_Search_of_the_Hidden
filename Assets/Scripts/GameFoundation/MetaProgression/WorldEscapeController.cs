@@ -53,6 +53,8 @@ namespace GameFoundation.MetaProgression
         private float _runStartedAt;
         private int _runDurationSeconds;
         private bool _escaping;
+        private bool _firstExpeditionEmergencyEligible, _emergencyShown, _waitForTutorialRecall;
+        private FirstRunLightTutorial _returnTutorial;
         private bool _showingStatistics;
         private bool _loading;
         private bool _humanLossesSettled;
@@ -62,6 +64,8 @@ namespace GameFoundation.MetaProgression
 
         private void Start()
         {
+            _firstExpeditionEmergencyEligible = DayCycleService.IsFirstPortalRun &&
+                (DayCycleService.Instance == null || DayCycleService.Instance.Day == 1);
             DayResourceLedger.BeginRun();
             GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Поход начался"));
             _runStartedAt = Time.realtimeSinceStartup;
@@ -106,6 +110,7 @@ namespace GameFoundation.MetaProgression
 
         private void Update()
         {
+            TryShowEmergencyReturn();
             UpdateEscapeButtonWarning();
             if (!_escaping || _showingStatistics || _loading) return;
             RefreshProgress();
@@ -122,6 +127,20 @@ namespace GameFoundation.MetaProgression
         private void OnPortalHealthChanged(float normalizedHealth)
         {
             _portalHealthNormalized = Mathf.Clamp01(normalizedHealth);
+        }
+
+        private void TryShowEmergencyReturn()
+        {
+            if (!_firstExpeditionEmergencyEligible || _emergencyShown || _escaping || _showingStatistics || _loading ||
+                _portalHealthNormalized > 0.5f || _portalHealthNormalized <= 0f || escapeButton == null) return;
+            _returnTutorial = UnityEngine.Object.FindAnyObjectByType<FirstRunLightTutorial>();
+            if (_returnTutorial == null || !_returnTutorial.isActiveAndEnabled) return;
+            _emergencyShown = true;
+            var presentation = UnityEngine.Object.FindAnyObjectByType<FirstPortalRunPresentation>();
+            if (presentation != null) presentation.RevealForEmergencyReturn();
+            escapeButton.gameObject.SetActive(true);
+            escapeButton.interactable = true;
+            _returnTutorial.BeginEmergencyReturn(escapeButton);
         }
 
         private void UpdateEscapeButtonWarning()
@@ -179,10 +198,15 @@ namespace GameFoundation.MetaProgression
             foodSufficiencyHint?.HideForEscape();
             if (_escaping)
             {
-                ShowStatistics();
+                if (!_waitForTutorialRecall) ShowStatistics();
                 return;
             }
 
+            if (_returnTutorial != null && _returnTutorial.EmergencyReturnActive)
+            {
+                _waitForTutorialRecall = true;
+                _returnTutorial.CompleteEmergencyReturn();
+            }
             _escaping = true;
             GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Отступление: возвращаемся в портал"));
             GameAudioController.PlayUI(GameAudioCue.Portal, 0.9f, 0.98f, 1.02f, 0.2f);
@@ -199,7 +223,8 @@ namespace GameFoundation.MetaProgression
             if (militaryDeployment != null)
                 militaryDeployment.BeginEscapeRecall();
 
-            if (buttonLabel != null) buttonLabel.text = GameFoundation.Localization.GameText.Get("Немедленно");
+            if (_waitForTutorialRecall) escapeButton.interactable = false;
+            else if (buttonLabel != null) buttonLabel.text = GameFoundation.Localization.GameText.Get("Немедленно");
             if (progressPanel != null) progressPanel.SetActive(true);
             RefreshProgress();
         }

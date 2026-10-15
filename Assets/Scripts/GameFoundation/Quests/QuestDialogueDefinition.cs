@@ -16,6 +16,9 @@ namespace GameFoundation.Quests
         public QuestDefinition prerequisite;
         [Tooltip("Начать после принятия prerequisite, не дожидаясь его награды")]
         public bool prerequisiteAccepted;
+        [Tooltip("Дождаться следующего дня после получения награды за предыдущее задание.")]
+        public bool prerequisiteNextDay;
+        public bool PrerequisiteNightPassed => !prerequisiteNextDay || QuestProgress.NightAfterClaimPassed(prerequisite);
         [Tooltip("Дождаться следующего дня после строительства этого здания.")]
         public string requiredBuildingAfterNight;
         public bool BuildingNightPassed => string.IsNullOrEmpty(requiredBuildingAfterNight) ||

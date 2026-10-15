@@ -12,6 +12,7 @@ namespace GameFoundation.Base
         [SerializeField] private Button portalButton;
         [SerializeField] private Button laboratoryButton;
         [SerializeField] private Button nextDayButton;
+        [SerializeField] private GameObject nextDayPanel;
         [SerializeField] private Button confirmDayButton;
         [SerializeField] private Button cancelDayButton;
         [SerializeField] private Button closeDayButton;
@@ -117,6 +118,11 @@ namespace GameFoundation.Base
         }
         private void Refresh()
         {
+            bool housingBuilt = BuildingUpgradeService.IsBuilt("housing");
+            var dayBlock = nextDayPanel != null ? nextDayPanel : nextDayButton != null && nextDayButton.transform.parent.name == "Day Panel"
+                ? nextDayButton.transform.parent.gameObject : nextDayButton != null ? nextDayButton.gameObject : null;
+            if (dayBlock != null) dayBlock.SetActive(housingBuilt);
+            if (nextDayButton != null) nextDayButton.interactable = housingBuilt;
             var day = DayCycleService.Instance;
             var oreAmount = GlobalResourceManager.Instance != null && magicOre != null
                 ? GlobalResourceManager.Instance.GetResourceAmount(magicOre) : 0;
@@ -205,11 +211,11 @@ namespace GameFoundation.Base
         public void CloseRefugees() => Show(refugees, false);
         public void CloseBlacksmith() => Show(blacksmith, false);
         public void CloseMagicLibrary() => Show(magicLibrary, false);
-        public void NextDay() { if (DayCycleService.Instance == null) return; RefreshForecasts(); Show(nextDayConfirmation, true); }
+        public void NextDay() { if (!BuildingUpgradeService.IsBuilt("housing") || DayCycleService.Instance == null) return; RefreshForecasts(); Show(nextDayConfirmation, true); }
         public void CancelNextDay() { if (!ForestForagingService.IsPending) Show(nextDayConfirmation, false); }
         public void ConfirmNextDay()
         {
-            if (ForestForagingService.IsPending) return;
+            if (!BuildingUpgradeService.IsBuilt("housing") || ForestForagingService.IsPending) return;
             using var notification = GameFoundation.UI.GameNotifications.BeginAction();
             if (DayCycleService.Instance == null) return;
             Show(nextDayConfirmation, false);

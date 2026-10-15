@@ -10,6 +10,7 @@ namespace GameFoundation.MetaProgression
         public Image fill;
         public Text label;
         public Material incomingFillMaterial;
+        private CanvasGroup progressionVisibility;
         private Image incomingFill;
         private Image debtFill;
         private Material debtMaterial;
@@ -41,6 +42,12 @@ namespace GameFoundation.MetaProgression
         }
         private void Refresh()
         {
+            if (progressionVisibility == null) progressionVisibility = GetComponent<CanvasGroup>();
+            if (progressionVisibility == null) progressionVisibility = gameObject.AddComponent<CanvasGroup>();
+            progressionVisibility.alpha = progression.CrystalTechnologyAvailable ? 1 : 0;
+            progressionVisibility.interactable = progression.CrystalTechnologyAvailable;
+            progressionVisibility.blocksRaycasts = progression.CrystalTechnologyAvailable;
+            if (!progression.CrystalTechnologyAvailable) return;
             if(incomingFill==null)
             {
                 var go=new GameObject("Incoming XP",typeof(RectTransform),typeof(CanvasRenderer),typeof(Image));

@@ -27,9 +27,6 @@ namespace GameFoundation.Quests
         [Header("Печать по словам")]
         [SerializeField, Min(.02f)] private float wordInterval = .12f;
         [SerializeField, Range(0, 1)] private float wordSoundVolume = .2f;
-        [Header("Удержание кнопки диалога")]
-        [SerializeField, Min(.1f)] private float holdDuration = .7f;
-        [SerializeField] private Color holdFillColor = new Color(.55f, .7f, .85f, 1);
         private DialogueHoldButton holdButton;
         private Coroutine typing;
         private string displayedLanguage;
@@ -40,7 +37,7 @@ namespace GameFoundation.Quests
         {
             holdButton = nextButton.GetComponent<DialogueHoldButton>();
             if (holdButton == null) holdButton = nextButton.gameObject.AddComponent<DialogueHoldButton>();
-            holdButton.Configure(() => current != null && !presenting && !IsTyping, Advance, holdDuration, holdFillColor);
+            holdButton.Configure(() => current != null && !presenting && !IsTyping, Advance);
             window.SetActive(false);
         }
         private void RevealText() { if (holdButton != null && holdButton.ConsumeClick()) return; if (IsTyping) Advance(); }
@@ -58,7 +55,7 @@ namespace GameFoundation.Quests
         private bool Available(QuestDialogueDefinition d) => d != null && !string.IsNullOrWhiteSpace(d.id) &&
             !PlaytestSettings.TutorialsAndQuestsDisabled &&
             !GameFoundation.Base.DayReportPopup.BlocksQuestDialogues &&
-            d.BuildingNightPassed &&
+            d.BuildingNightPassed && d.PrerequisiteNightPassed &&
             d.lines != null && d.lines.Length > 0 &&
             (d.quest != null ? !QuestProgress.IsAccepted(d.quest) : SaveSlotPrefs.GetInt(DoneKey(d), 0) != 1) &&
             (d.prerequisite == null || (d.prerequisiteAccepted ? QuestProgress.IsAccepted(d.prerequisite) : QuestProgress.IsClaimed(d.prerequisite)));
@@ -140,6 +137,20 @@ namespace GameFoundation.Quests
             dialogue.maxVisibleCharacters = int.MaxValue; IsTyping = false; typing = null;
             holdButton?.ResetHold(); UpdateButtonLabel();
         }
+        private static void FitPresentation(RectTransform panel, RectTransform confirm, RectTransform viewport)
+        {
+            const float margin = 24, gap = 16;
+            float width = Mathf.Max(1, viewport.rect.width - margin * 2);
+            float height = Mathf.Max(1, viewport.rect.height - margin * 2);
+            float buttonScale = Mathf.Min(1, width / Mathf.Max(1, confirm.rect.width), height / Mathf.Max(1, confirm.rect.height));
+            confirm.localScale = Vector3.one * buttonScale;
+            float buttonHeight = confirm.rect.height * buttonScale;
+            float scale = Mathf.Max(.01f, Mathf.Min(1.35f, width / Mathf.Max(1, panel.rect.width),
+                Mathf.Max(1, height - buttonHeight - gap) / Mathf.Max(1, panel.rect.height)));
+            panel.localScale = Vector3.one * scale;
+            panel.anchoredPosition = new Vector2(0, (buttonHeight + gap) * .5f);
+            confirm.anchoredPosition = new Vector2(0, panel.anchoredPosition.y - panel.rect.height * scale * .5f - gap - buttonHeight * .5f);
+        }
         private IEnumerator PresentQuest(QuestPanel destinationPanel)
         {
             if (destinationPanel == null) { presenting = false; Evaluate(); yield break; }
@@ -180,6 +191,11 @@ namespace GameFoundation.Quests
             confirm.name = "Quest Presentation OK";
             var clonedHold = confirm.GetComponent<DialogueHoldButton>();
             if (clonedHold != null) { clonedHold.enabled = false; Destroy(clonedHold); }
+            foreach (string decoration in new[] { "Hold Progress", "Hold LMB Tooltip" })
+            {
+                var child = confirm.transform.Find(decoration);
+                if (child != null) { child.gameObject.SetActive(false); Destroy(child.gameObject); }
+            }
             confirm.gameObject.SetActive(true); confirm.interactable = true;
             confirm.onClick = new Button.ButtonClickedEvent();
             var label = confirm.GetComponentInChildren<TMP_Text>(true);
@@ -187,19 +203,20 @@ namespace GameFoundation.Quests
             var confirmRect = (RectTransform)confirm.transform;
             confirmRect.anchorMin = confirmRect.anchorMax = confirmRect.pivot = new Vector2(.5f, .5f);
             confirmRect.localScale = Vector3.one;
-            confirmRect.anchoredPosition = new Vector2(0, -rect.rect.height * 1.35f * .5f - confirmRect.rect.height * .5f - 16);
+            FitPresentation(rect, confirmRect, overlayRect);
             bool confirmed = false;
             confirm.onClick.AddListener(() => { confirmed = true; confirm.interactable = false; });
-            while (!confirmed) yield return null;
+            while (!confirmed) { FitPresentation(rect, confirmRect, overlayRect); yield return null; }
             confirm.gameObject.SetActive(false);
             if (expansion != null) expansion.KeepExpanded(false);
             var start = rect.position;
+            var presentationScale = rect.localScale;
             GameAudioController.PlayUI(GameAudioCue.QuestFly, .6f);
             for (float t = 0; t < 1; t += Time.unscaledDeltaTime / .85f)
             {
                 float eased = t * t * (3 - 2 * t);
                 rect.position = Vector3.Lerp(start, target.TransformPoint(target.rect.center), eased);
-                rect.localScale = Vector3.one * Mathf.Lerp(1.35f, 1, eased);
+                rect.localScale = Vector3.Lerp(presentationScale, Vector3.one, eased);
                 if (expansion != null && t > .65f) expansion.SetExpanded(false);
                 yield return null;
             }

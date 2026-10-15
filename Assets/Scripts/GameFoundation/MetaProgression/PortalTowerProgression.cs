@@ -29,7 +29,7 @@ namespace GameFoundation.MetaProgression
         public IReadOnlyList<PortalTowerBalance.Upgrade> Offers => offers;
         public bool IsInitialWeaponChoice { get; private set; }
         public int ChoiceLevel => IsInitialWeaponChoice ? 1 : Level - LevelPoints + 1;
-        public bool HasWeapon(PortalTowerBalance.Weapon weapon) => balance.IsWeaponEnabled(weapon) && balance.upgrades.Exists(u =>
+        public bool HasWeapon(PortalTowerBalance.Weapon weapon) => CrystalTechnologyAvailable && balance.IsWeaponEnabled(weapon) && balance.upgrades.Exists(u =>
             u.weapon == weapon && u.effect == PortalTowerBalance.Effect.UnlockWeapon && Rank(u.id) > 0);
         public int WeaponCount => balance.weapons.FindAll(w => HasWeapon(w.weapon)).Count;
         private float previousSpeed;
@@ -40,6 +40,7 @@ namespace GameFoundation.MetaProgression
         private GameObject previousSelection;
         public event Action Changed;
         public PortalTowerBalance Balance => balance;
+        public bool CrystalTechnologyAvailable { get; private set; }
         public int Level { get; private set; } = 1;
         public int Experience { get; private set; }
         public int PendingExperience { get; private set; }
@@ -47,7 +48,7 @@ namespace GameFoundation.MetaProgression
         private int rerollPriceStep;
         private int lastRerollChoiceLevel = 1;
         public long RerollCost => 1L << Mathf.Min(rerollPriceStep, 62);
-        public bool CanReroll => !expeditionEnded && LevelPoints > 0 && offers.Count > 0 && RerollCost <= RequiredExperience - CrystalDebt;
+        public bool CanReroll => CrystalTechnologyAvailable && !expeditionEnded && LevelPoints > 0 && offers.Count > 0 && RerollCost <= RequiredExperience - CrystalDebt;
         public int PreviewExperience(int incoming) => Experience + Mathf.Max(0, incoming - CrystalDebt);
         public bool Reroll()
         {
@@ -93,6 +94,8 @@ namespace GameFoundation.MetaProgression
         }
         private void Start()
         {
+            CrystalTechnologyAvailable = PlaytestSettings.TutorialsAndQuestsDisabled || (DayCycleService.Instance != null && DayCycleService.Instance.Day > 1);
+            if (!CrystalTechnologyAvailable) { Changed?.Invoke(); return; }
             if (balance == null || upgradeWindow == null) return;
             IsInitialWeaponChoice = true;
             LevelPoints = 1;
@@ -115,7 +118,7 @@ namespace GameFoundation.MetaProgression
         }
         public void GrantEditorLevel()
         {
-            if (!Application.isPlaying || expeditionEnded || LevelPoints > 0) return;
+            if (!CrystalTechnologyAvailable || !Application.isPlaying || expeditionEnded || LevelPoints > 0) return;
             AddExperience(CrystalDebt + RequiredExperience - Experience);
         }
 #endif
@@ -130,7 +133,7 @@ namespace GameFoundation.MetaProgression
             if (upgrade.scope == PortalTowerBalance.UpgradeScope.Portal) return true;
             return balance.weapons.Exists(w => HasWeapon(w.weapon) && PortalUpgradeModifiers.Applies(upgrade, w));
         }
-        public bool CanPurchase(PortalTowerBalance.Upgrade upgrade) => upgrade != null && LevelPoints > 0 && offers.Contains(upgrade) && !IsComplete(upgrade) && IsUnlocked(upgrade);
+        public bool CanPurchase(PortalTowerBalance.Upgrade upgrade) => CrystalTechnologyAvailable && upgrade != null && LevelPoints > 0 && offers.Contains(upgrade) && !IsComplete(upgrade) && IsUnlocked(upgrade);
         private void RollOffers()
         {
             offers.Clear();
@@ -176,7 +179,7 @@ namespace GameFoundation.MetaProgression
 
         public void AwardDepletedHexExperience(GameObject depletedObject, Vector3 hexCenter)
         {
-            if (!expeditionEnded && depletedObject != null && depletedObject.scene == gameObject.scene)
+            if (CrystalTechnologyAvailable && !expeditionEnded && depletedObject != null && depletedObject.scene == gameObject.scene)
                 StartCoroutine(WaitForClearedHex(depletedObject, hexCenter));
         }
 
@@ -189,7 +192,7 @@ namespace GameFoundation.MetaProgression
 
         private void DropExperienceCrystals(int amount, Vector3 position, bool spreadAcrossHex)
         {
-            if (expeditionEnded || amount <= 0) return;
+            if (!CrystalTechnologyAvailable || expeditionEnded || amount <= 0) return;
             var source = experienceCrystalPrefab != null ? experienceCrystalPrefab.GetComponent<SpriteRenderer>() : null;
             if (source == null || source.sprite == null)
             {
@@ -245,7 +248,7 @@ namespace GameFoundation.MetaProgression
         }
         private void AwardExperience(int amount, Vector3 position)
         {
-            if (expeditionEnded || amount <= 0) return;
+            if (!CrystalTechnologyAvailable || expeditionEnded || amount <= 0) return;
             if (experienceCrystalPrefab != null)
             {
                 var bar=FindFirstObjectByType<PortalTowerExperienceBar>();
@@ -270,7 +273,7 @@ namespace GameFoundation.MetaProgression
         }
         private void CommitIncomingExperience(int amount)
         {
-            if(expeditionEnded)return;
+            if(!CrystalTechnologyAvailable || expeditionEnded)return;
             PendingExperience=Mathf.Max(0,PendingExperience-amount);
             ReceiveExperience(amount);
             Changed?.Invoke();
@@ -286,7 +289,7 @@ namespace GameFoundation.MetaProgression
         }
         public void AddExperience(int amount)
         {
-            if (amount <= 0 || balance == null || expeditionEnded) return;
+            if (!CrystalTechnologyAvailable || amount <= 0 || balance == null || expeditionEnded) return;
             ReceiveExperience(amount);
             ProcessLevels(Experience+processedExperience);
         }

@@ -48,7 +48,7 @@ namespace GameFoundation.MetaProgression
         private Transform Source => tower.GetComponent<TowerVisuals>()?.ShootPoint ?? tower.transform;
         private void Update()
         {
-            if(tower==null || progression.ExpeditionEnded){if(beam!=null)beam.transform.root.gameObject.SetActive(false);ClearLightTrails();ClearFrostSeals();ClearPortalProjectiles();return;}
+            if(tower==null || !progression.CrystalTechnologyAvailable || progression.ExpeditionEnded){if(beam!=null)beam.transform.root.gameObject.SetActive(false);ClearLightTrails();ClearFrostSeals();ClearPortalProjectiles();return;}
             if(Time.timeScale<=0){return;}
             if(Time.time>=cacheTime){enemies=FindObjectsByType<Health>(FindObjectsSortMode.None);RefreshEnemyHeights();cacheTime=Time.time+.15f;}
             UpdateFrostSeals();

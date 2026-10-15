@@ -72,7 +72,7 @@ public static class FirstPortalRunValidation
         yield return null;
         var day = DayCycleService.Instance;
         Check(day != null && day.Enter(day.Portals[0]), "First portal entry succeeds");
-        Check(DayCycleService.IsFirstPortalRun, "First entry selects scripted layout");
+        Check(DayCycleService.IsFirstPortalRun, "First entry preserves tutorial state");
         var loadWorld = SceneManager.LoadSceneAsync("World");
         while (!loadWorld.isDone) yield return null;
         yield return null;
@@ -80,16 +80,15 @@ public static class FirstPortalRunValidation
         var royalPanel = UnityEngine.Object.FindObjectsByType<QuestPanel>(FindObjectsSortMode.None).First(RoyalTributeSetup.IsRoyal);
         Check(royalPanel.HasQuest && QuestProgress.DaysRemaining(royal) == 30, "Royal quest and saved deadline present after Base to World transition");
         var hexes = UnityEngine.Object.FindObjectsByType<HexBlocker>(FindObjectsSortMode.None).OrderByDescending(h => h.transform.position.x).ToArray();
-        Check(hexes.Length >= 8 && hexes.All(h => h.prefabToSpawn == null && !h.shouldAutoUnlock), "No random content or automatic reveals in first run");
-        var order = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Managers/First Portal Run Spawn Order.prefab").GetComponent<FirstPortalRunSpawnOrder>();
-        string[] expected = Enumerable.Range(0, 8).Select(i => order.ContentAt(i) != null ? order.ContentAt(i).name : null).ToArray();
+        Check(hexes.Length >= 8 && hexes.Any(h => h.prefabToSpawn != null) && hexes.Any(h => h.prefabToSpawn == null), "First run uses normal World content with resources and empty hexes");
+        string[] expected = hexes.Take(8).Select(h => h.prefabToSpawn != null ? h.prefabToSpawn.name : null).ToArray();
         for (int i = 0; i < expected.Length; i++)
         {
             hexes[i].RemoveHex();
             Check((hexes[i].prefabToSpawn != null ? hexes[i].prefabToSpawn.name : null) == expected[i], "Opening " + (i + 1) + " reveals " + (expected[i] ?? "empty"));
             if (expected[i] != null)
                 Check(UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None).Any(g => g.name == expected[i] + "(Clone)" && Vector3.Distance(g.transform.position, hexes[i].transform.position) < 0.01f), "Content spawned on chosen hex");
-            hexes[i].RemoveHex(); // Repeated completion must not advance the sequence.
+            hexes[i].RemoveHex(); // Repeated completion must not spawn the content twice.
             var towerProgression = PortalTowerProgression.Instance;
             while (towerProgression != null && towerProgression.LevelPoints > 0)
                 Check(towerProgression.Purchase(towerProgression.Offers[0].id), "Choose earned tower upgrade before continuing the run");
