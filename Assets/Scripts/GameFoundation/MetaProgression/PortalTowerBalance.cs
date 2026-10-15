@@ -11,7 +11,10 @@ namespace GameFoundation.MetaProgression
         public enum Weapon { None, Bolts, Beam, Rings, Lightning, FrostSeal, FireShot, ElectricOrb }
         public enum DeliveryMethod { Projectile, Area, InstantHit }
         public enum UpgradeScope { AllWeapons, DeliveryMethod, DamageType, Portal }
-        public enum Effect { UnlockAttack, ExtraLight, Damage, AttackSpeed, Projectiles, Range, UnlockWeapon, Area, Duration, ExpansionSpeed, Targets, SlowStrength }
+        public enum Effect { UnlockAttack, ExtraLight, Damage, AttackSpeed, Projectiles, Range, UnlockWeapon, Area, Duration, ExpansionSpeed, Targets, SlowStrength, TickInterval, AttackInterval }
+        public enum Quality { Common, Rare, Legendary }
+        public const float MinimumInterval = .1f;
+        public static Quality RollQuality(float roll) => roll < .6f ? Quality.Common : roll < .9f ? Quality.Rare : Quality.Legendary;
         [Serializable]
         public sealed class WeaponDefinition
         {
@@ -24,8 +27,12 @@ namespace GameFoundation.MetaProgression
             public CombatWeapon combat;
             [Min(.01f)] public float duration=.16f;
             [Min(0)] public float damageTickInterval;
+            public bool continuous;
+            public bool HasTicks => damageTickInterval > 0;
+            public bool HasDuration => HasTicks && !continuous && deliveryMethod == DeliveryMethod.Area;
             [Range(0, .8f)] public float slowFraction;
-            [Min(0)] public float placementLeadTime = .5f;
+            [Tooltip("Смещение центра области по ходу движения цели, в долях базового радиуса.")]
+            [Range(0, .5f)] public float placementRadiusFraction = .25f;
             public GameObject projectilePrefab;
             [Min(.01f)] public float projectileSpeedMultiplier = 1;
             [Min(.1f)] public float projectileScale = 1;
@@ -53,6 +60,16 @@ namespace GameFoundation.MetaProgression
             [Min(0)] public float value = 1;
             [Tooltip("0 — можно улучшать без ограничения.")][Min(0)] public int maximumRank = 1;
             public bool requiresAttack;
+            public bool hasQuality;
+            [Min(0)] public float rareValue, legendaryValue;
+            [NonSerialized] public Quality quality;
+            public float OfferedValue => !hasQuality || quality == Quality.Common ? value : quality == Quality.Rare ? rareValue : legendaryValue;
+            public Upgrade CreateOffer(Quality selectedQuality)
+            {
+                var offer = (Upgrade)MemberwiseClone();
+                offer.quality = selectedQuality;
+                return offer;
+            }
         }
         [Range(1, 32)] public int minimumCrystalsPerEmptyHex = 1;
         [Range(1, 32)] public int maximumCrystalsPerEmptyHex = 5;

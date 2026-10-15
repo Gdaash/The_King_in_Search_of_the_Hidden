@@ -64,7 +64,7 @@ public static class PortalFrostSealValidation
         var health = enemy.AddComponent<Health>(); health.OnDeath = new UnityEvent(); health.OnHealthChanged = new UnityEvent<float>();
         foreach (var weapon in new[] { PortalTowerBalance.Weapon.FireShot, PortalTowerBalance.Weapon.ElectricOrb })
         {
-            controller.SendMessage("ClearPortalProjectiles"); ranks.Clear(); ranks["weapon_" + weapon] = 1;
+            controller.SendMessage("ClearPortalProjectiles"); ranks.Clear(); ((Dictionary<string,float>)typeof(PortalTowerProgression).GetField("acquiredValues",Private).GetValue(p)).Clear(); ranks["weapon_" + weapon] = 1;
             var definition = p.Balance.FindWeapon(weapon);
             Check(definition != null && definition.deliveryMethod == PortalTowerBalance.DeliveryMethod.Projectile && definition.projectilePrefab != null, weapon + " is fully configured as projectile weapon");
             float before = health.CurrentHealth;
@@ -99,19 +99,44 @@ public static class PortalFrostSealValidation
             Check(Shots(weapon.ToString()).All(s => Mathf.Approximately(s.HitDamage, definition.damage * p.Multiplier(weapon, PortalTowerBalance.Effect.Damage))) && Shots(weapon.ToString())[0].HitDamage > definition.damage, weapon + " inherits shared damage upgrade");
             controller.SendMessage("ClearPortalProjectiles");
         }
-        ranks.Clear(); ranks["weapon_Lightning"] = 1; ranks["instant_targets"] = 1; ranks["instant_pair"] = 1;
-        Check(p.Count(PortalTowerBalance.Weapon.Lightning) == 4 && p.Count(PortalTowerBalance.Weapon.Bolts) == 1, "Instant strike pack stacks independently of projectile counts");
+        ranks.Clear(); ((Dictionary<string,float>)typeof(PortalTowerProgression).GetField("acquiredValues",Private).GetValue(p)).Clear(); ranks["weapon_Lightning"] = 1;
+        Check(p.Count(PortalTowerBalance.Weapon.Lightning) == 1 && p.Count(PortalTowerBalance.Weapon.Bolts) == 1, "Lightning keeps a single hit");
         enemy.transform.position = tower.transform.position + Vector3.right * 1.5f; body.position = enemy.transform.position;
         typeof(PortalWeaponController).GetField("lightningTime", Private).SetValue(controller, Time.time + 100);
         double cacheWait = Until(.25f); while (EditorApplication.timeSinceStartup < cacheWait) yield return null;
         float lightningHealth = health.CurrentHealth;
         controller.SendMessage("LightningVolley");
-        Check(Mathf.Approximately(lightningHealth - health.CurrentHealth, 80), "Four instant strikes really hit a single surviving enemy with resistance");
-        ranks["weapon_FrostSeal"] = 1; ranks["area_size"] = 1; ranks["area_size_wide"] = 1; ranks["area_size_great"] = 1;
-        Check(Mathf.Approximately(controller.FrostRadius, p.Balance.FindWeapon(PortalTowerBalance.Weapon.FrostSeal).radius * Mathf.Sqrt(2.05f)), "All area-size tiers stack by area rather than radius");
-        Check(p.Balance.Find("projectile_pair").maximumRank == 2 && p.Balance.Find("instant_barrage").maximumRank == 1, "Large count upgrades have bounded ranks");
-        ranks.Clear(); Object.Destroy(enemy); Object.Destroy(defense);
+        Check(Mathf.Approximately(lightningHealth - health.CurrentHealth, p.Balance.FindWeapon(PortalTowerBalance.Weapon.Lightning).damage * .5f), "Instant strike hits one enemy with resistance");
+        ranks["weapon_FrostSeal"] = 1; ranks["area_size"] = 1;
+        Check(Mathf.Approximately(controller.FrostRadius, p.Balance.FindWeapon(PortalTowerBalance.Weapon.FrostSeal).radius * 1.1f), "Area upgrade increases radius linearly");
+        Check(p.Balance.Find("projectile_count").maximumRank == 10 && p.Balance.Find("instant_barrage") == null, "Projectile family has ten ranks and instant count upgrades are absent");
+        ranks.Clear(); ((Dictionary<string,float>)typeof(PortalTowerProgression).GetField("acquiredValues",Private).GetValue(p)).Clear(); Object.Destroy(enemy); Object.Destroy(defense);
         double end = Until(.2f); while (EditorApplication.timeSinceStartup < end) yield return null;
+    }
+    static IEnumerator AuditAttackSlow()
+    {
+        foreach (bool ranged in new[] { false, true })
+        {
+            var target = new GameObject("Attack slow audit target"); target.tag="Player"; target.transform.position=new Vector3(80,80);
+            var enemy = new GameObject("Attack slow audit enemy"); enemy.tag="Enemy1"; enemy.transform.position=target.transform.position+Vector3.right*.1f;
+            var combat=enemy.AddComponent<Combatant>(); var weapon=ScriptableObject.CreateInstance<CombatWeapon>();weapon.interval=.2f;weapon.range=2;combat.weapon=weapon;
+            MonoBehaviour ai=ranged?(MonoBehaviour)enemy.AddComponent<EnemyAI_Ranged>():enemy.AddComponent<EnemyAI>();
+            var move=enemy.AddComponent<EnemyMovement>();
+            var so=new SerializedObject(ai);so.FindProperty("cooldownVariation").floatValue=0;so.ApplyModifiedPropertiesWithoutUndo();
+            int count=0;var onAttack=new UnityEvent();onAttack.AddListener(()=>{count++;((IEnemyAI)ai).FinishAttack();});ai.GetType().GetField("OnAttack").SetValue(ai,onAttack);
+            double wait=Until(.1f);while(EditorApplication.timeSinceStartup<wait)yield return null;
+            int[] hits=new int[3];object slowSource=new object();
+            for(int phase=0;phase<3;phase++)
+            {
+                move.SetAreaSlow(slowSource,phase==1?.5f:0);count=0;
+                ai.GetType().GetField("_nextAttackTime",Private).SetValue(ai,Time.time+.2f);
+                wait=Until(1.3f);while(EditorApplication.timeSinceStartup<wait)yield return null;hits[phase]=count;
+            }
+            Check(hits[0]>=5 && hits[1]>=2 && hits[1]<=hits[0]*.7f, (ranged?"Ranged":"Melee")+" actual attack frequency halves in slow area ("+string.Join(",",hits)+")");
+            Check(hits[2]>=hits[0]-1, (ranged?"Ranged":"Melee")+" actual attack rate restores after leaving");
+            Object.Destroy(enemy);Object.Destroy(target);Object.Destroy(weapon);
+            wait=Until(.1f);while(EditorApplication.timeSinceStartup<wait)yield return null;
+        }
     }
     static IEnumerator Audit()
     {
@@ -123,12 +148,13 @@ public static class PortalFrostSealValidation
         if (p.IsInitialWeaponChoice) p.Purchase(p.Offers[0].id);
         var shots = AuditProjectiles(p, controller, tower);
         while (shots.MoveNext()) yield return shots.Current;
+        var attacks=AuditAttackSlow(); while(attacks.MoveNext()) yield return attacks.Current;
         var definition = p.Balance.FindWeapon(PortalTowerBalance.Weapon.FrostSeal);
         Check(definition != null && definition.damageType == DamageType.Ice && definition.deliveryMethod == PortalTowerBalance.DeliveryMethod.Area, "Cold damage and area delivery authored");
         Check(definition.radius == p.Balance.FindWeapon(PortalTowerBalance.Weapon.Beam).radius, "Base radius matches burning beam");
         Check(controller.frostSealSprite != null && controller.frostSealSprite.texture.filterMode == FilterMode.Point, "Frost art is assigned and uses Point filtering");
         var ranks = (Dictionary<string, int>)typeof(PortalTowerProgression).GetField("ranks", Private).GetValue(p);
-        ranks.Clear(); ranks["weapon_FrostSeal"] = 1; tower.enabled = false;
+        ranks.Clear(); ((Dictionary<string,float>)typeof(PortalTowerProgression).GetField("acquiredValues",Private).GetValue(p)).Clear(); ranks["weapon_FrostSeal"] = 1; tower.enabled = false;
         typeof(PortalWeaponController).GetField("frostTime", Private).SetValue(controller, Time.time + 100);
         wait = Until(.2f); while (EditorApplication.timeSinceStartup < wait) yield return null;
         Check(controller.ActiveFrostSealCount == 0, "No seal without a target");
@@ -147,41 +173,46 @@ public static class PortalFrostSealValidation
         Check(controller.ActiveFrostSealCount == 1 && Seals().Length == 1, "Seal spawns for an in-range enemy");
         var seal = Seals()[0]; Vector2 center = seal.transform.position;
         Check(Vector2.Dot(center - before, (Vector2)tower.transform.position - before) > 0, "Seal is placed ahead of enemy toward portal");
+        Check(Vector2.Distance(center, before) < definition.radius * .5f && PortalWeaponController.ContainsFrostPoint(enemy.transform.position, center, controller.FrostRadius), "Short base-radius offset keeps target inside newly placed seal");
         movement.SetMove(false); body.position = center; enemy.transform.position = center;
         typeof(PortalWeaponController).GetField("frostTime", Private).SetValue(controller, Time.time + 100);
         wait = Until(.4f); while (EditorApplication.timeSinceStartup < wait) yield return null;
         Check(Mathf.Approximately(health.CurrentHealth, 1000), "Cold immunity blocks seal damage");
-        Check(Mathf.Approximately(movement.AreaSlowMultiplier, .65f), "Inside seal applies 35 percent slow");
+        Check(Mathf.Approximately(movement.AreaSlowMultiplier, .5f), "Inside seal applies 50 percent slow");
         Check((Vector2)seal.transform.position == center, "Ground seal stays stationary");
+        Check(Mathf.Approximately(agent.AttackSpeedMultiplier,.5f), "Seal slows melee attack speed by 50 percent");
+        Check(definition.damage == 5 && definition.damageTickInterval == 1, "Frost baseline DPS is five damage per second");
+        Check(Mathf.Approximately(seal.color.a, .5f), "Seal steady opacity is 50 percent");
         defense.iceMultiplier = .5f;
         float initialHealth = health.CurrentHealth;
-        wait = Until(.55f); while (EditorApplication.timeSinceStartup < wait) yield return null;
+        wait = Until(1.05f); while (EditorApplication.timeSinceStartup < wait) yield return null;
         Check(health.CurrentHealth < initialHealth && Mathf.Abs((initialHealth - health.CurrentHealth) % 2.5f) < .001f, "Periodic damage uses cold resistance");
         movement.SetMove(true);
         wait = Until(.1f); while (EditorApplication.timeSinceStartup < wait) yield return null;
-        Check(Mathf.Abs(body.linearVelocity.magnitude / movement.CombatSpeed - .65f) < .03f, "Slow affects actual movement velocity");
+        Check(Mathf.Abs(body.linearVelocity.magnitude / movement.CombatSpeed - .5f) < .03f, "Slow affects actual movement velocity");
         movement.SetMove(false); float pausedHealth = health.CurrentHealth; Time.timeScale = 0;
         wait = Until(.4f); while (EditorApplication.timeSinceStartup < wait) yield return null;
         Check(health.CurrentHealth == pausedHealth && seal != null, "Pause stops damage and seal lifetime"); Time.timeScale = 1;
         body.position = center + Vector2.up * 3; enemy.transform.position = body.position;
         wait = Until(.15f); while (EditorApplication.timeSinceStartup < wait) yield return null;
         Check(movement.AreaSlowMultiplier == 1, "Leaving area restores movement speed");
+        Check(agent.AttackSpeedMultiplier == 1, "Leaving area restores attack speed");
         Check(!PortalWeaponController.ContainsFrostPoint(center + new Vector2(controller.FrostRadius, controller.FrostRadius), center, controller.FrostRadius), "Hex corner outside footprint is not hit");
         controller.SendMessage("SpawnFrostSeal", center);
         body.position = center; enemy.transform.position = center;
         wait = Until(.15f); while (EditorApplication.timeSinceStartup < wait) yield return null;
-        Check(Mathf.Approximately(movement.AreaSlowMultiplier, .65f), "Overlapping seals do not multiply slow");
+        Check(Mathf.Approximately(movement.AreaSlowMultiplier, .5f), "Overlapping seals do not multiply slow");
         controller.SendMessage("RemoveFrostSeal", 0);
         wait = Until(.1f); while (EditorApplication.timeSinceStartup < wait) yield return null;
-        Check(Mathf.Approximately(movement.AreaSlowMultiplier, .65f), "Remaining seal keeps its slow after first expires");
+        Check(Mathf.Approximately(movement.AreaSlowMultiplier, .5f), "Remaining seal keeps its slow after first expires");
         controller.SendMessage("ClearFrostSeals");
         Check(movement.AreaSlowMultiplier == 1, "Clearing all seals restores speed");
-        ranks["area_size"] = 1; ranks["area_duration"] = 1; ranks["area_slow"] = 1; ranks["damage_type_2"] = 1;
-        Check(Mathf.Approximately(controller.FrostRadius, definition.radius * Mathf.Sqrt(1.2f)), "Shared area upgrade scales real footprint by area");
-        Check(Mathf.Approximately(p.Multiplier(PortalTowerBalance.Weapon.FrostSeal, PortalTowerBalance.Effect.Duration), 1.25f) && p.Multiplier(PortalTowerBalance.Weapon.Beam, PortalTowerBalance.Effect.Duration) == 1, "Duration upgrade applies only to persistent areas");
-        Check(Mathf.Approximately(p.Multiplier(PortalTowerBalance.Weapon.FrostSeal, PortalTowerBalance.Effect.SlowStrength), 1.2f), "Slow-strength upgrade applies");
-        Check(Mathf.Approximately(p.Multiplier(PortalTowerBalance.Weapon.FrostSeal, PortalTowerBalance.Effect.Damage), 1.2f) && p.DamageMultiplier == 1, "Cold upgrade excludes magic bolts");
-        ranks.Clear(); ranks["weapon_FrostSeal"] = 1;
+        ranks["area_size"] = 1; ranks["area_duration"] = 1; ranks["all_damage"] = 1;
+        Check(Mathf.Approximately(controller.FrostRadius, definition.radius * 1.1f), "Shared area upgrade scales real radius");
+        Check(Mathf.Approximately(p.Multiplier(PortalTowerBalance.Weapon.FrostSeal, PortalTowerBalance.Effect.Duration), 1.05f) && p.Multiplier(PortalTowerBalance.Weapon.Beam, PortalTowerBalance.Effect.Duration) == 1, "Duration upgrade applies only to persistent areas");
+        Check(Mathf.Approximately(p.Multiplier(PortalTowerBalance.Weapon.FrostSeal, PortalTowerBalance.Effect.SlowStrength), 1f), "Base slow strength remains fixed");
+        Check(Mathf.Approximately(p.Multiplier(PortalTowerBalance.Weapon.FrostSeal, PortalTowerBalance.Effect.Damage), 1.1f) && Mathf.Approximately(p.DamageMultiplier,1.1f), "Shared damage affects frost and magic bolts");
+        ranks.Clear(); ((Dictionary<string,float>)typeof(PortalTowerProgression).GetField("acquiredValues",Private).GetValue(p)).Clear(); ranks["weapon_FrostSeal"] = 1;
         controller.SendMessage("SpawnFrostSeal", center);
         wait = Until(3.2f); while (EditorApplication.timeSinceStartup < wait) yield return null;
         Check(controller.ActiveFrostSealCount == 0 && movement.AreaSlowMultiplier == 1, "Seal expires after three seconds and releases slow");

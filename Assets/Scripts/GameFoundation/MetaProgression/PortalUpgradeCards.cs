@@ -16,6 +16,13 @@ namespace GameFoundation.MetaProgression
         public PortalTowerProgression progression;
         public Text heading, hint;
         public Card[] cards;
+        public Button rerollButton;
+        public Text rerollLabel;
+        public GameObject rerollTooltip;
+        public Text rerollTooltipText;
+        public void Reroll() { progression.Reroll(); }
+        public void ShowRerollTooltip() { if (rerollTooltip != null) rerollTooltip.SetActive(true); }
+        public void HideRerollTooltip() { if (rerollTooltip != null) rerollTooltip.SetActive(false); }
         private LocalizationService language;
         private void OnEnable()
         {
@@ -30,6 +37,7 @@ namespace GameFoundation.MetaProgression
         }
         private void OnDisable()
         {
+            HideRerollTooltip();
             progression.Changed -= Refresh;
             if(language!=null) language.LanguageChanged -= Refresh;
         }
@@ -61,8 +69,16 @@ namespace GameFoundation.MetaProgression
         };
         private void Refresh()
         {
+            if (rerollButton != null)
+            {
+                rerollButton.interactable = progression.CanReroll;
+                rerollLabel.text = (English ? "Reroll" : "Переброс") + "  " + progression.RerollCost;
+                rerollTooltipText.text = English
+                    ? "You borrow crystals from the next level. Experience will not accumulate until this debt is repaid."
+                    : "Вы берёте кристаллы в долг из будущего уровня. Пока этот долг не отработан, опыт уровня не будет копиться.";
+            }
             heading.text = English ? "PORTAL TOWER — LEVEL " + progression.ChoiceLevel : GameFoundation.Localization.GameText.Get("БАШНЯ ПОРТАЛА — УРОВЕНЬ ") + progression.ChoiceLevel;
-            hint.text = progression.WeaponCount == 0
+            hint.text = progression.IsInitialWeaponChoice
                 ? (English ? "Choose your first weapon" : GameFoundation.Localization.GameText.Get("Выберите первое оружие"))
                 : (English ? "Choose one upgrade to continue" : GameFoundation.Localization.GameText.Get("Выберите одно улучшение, чтобы продолжить"));
             for(int i=0;i<cards.Length;i++)
@@ -82,15 +98,15 @@ namespace GameFoundation.MetaProgression
                 {
                     c.description.text += $"\n{(English ? "Delivery" : "Способ")}: {DeliveryName(w.deliveryMethod)}\n{(English ? "Damage" : "Урон")}: {DamageName(w.damageType)}";
                     float damage = w.damage * progression.Multiplier(w.weapon, PortalTowerBalance.Effect.Damage);
-                    float interval = w.cooldown / progression.Multiplier(w.weapon, PortalTowerBalance.Effect.AttackSpeed);
-                    if (w.damageTickInterval > 0)
+                    float interval = progression.AttackInterval(w.weapon);
+                    if (w.HasTicks)
                     {
                         float lifetime = w.duration * progression.Multiplier(w.weapon, PortalTowerBalance.Effect.Duration);
-                        c.description.text += $"\n{damage:0.##} / {w.damageTickInterval:0.##} {(English?"s":"с")} · {(English?"Life":"Жизнь")}: {lifetime:0.##} {(English?"s":"с")}";
+                        c.description.text += $"\n{damage:0.##} / {progression.TickInterval(w.weapon):0.##} {(English?"s":"с")}{(w.HasDuration ? $" · {(English ? "Life" : "Жизнь")}: {lifetime:0.##} {(English ? "s" : "с")}" : "")}";
                         if (w.slowFraction > 0)
                         {
                             float slow = Mathf.Min(.8f, w.slowFraction * progression.Multiplier(w.weapon, PortalTowerBalance.Effect.SlowStrength));
-                            c.description.text += English ? $"\n−{slow*100:0}% speed · every {interval:0.##} s" : $"\n−{slow*100:0}% скорости · раз в {interval:0.##} с";
+                            c.description.text += English ? $"\n−{slow*100:0}% move/attack · {interval:0.##} s" : $"\n−{slow*100:0}% движ./атак · {interval:0.##} с";
                         }
                     }
                     else
@@ -99,9 +115,24 @@ namespace GameFoundation.MetaProgression
                         c.description.text += $"\n{damage:0.##} / {interval:0.##} {(English?"s":"с")} · DPS: {dps:0.##}";
                     }
                 }
-                c.category.text=u.effect==PortalTowerBalance.Effect.UnlockWeapon
-                    ? (English?"NEW WEAPON":GameFoundation.Localization.GameText.Get("НОВОЕ ОРУЖИЕ"))
-                    : ScopeName(u) + " · " + (progression.Rank(u.id)+1);
+                bool weaponOffer = u.effect == PortalTowerBalance.Effect.UnlockWeapon;
+                string quality = u.quality switch
+                {
+                    PortalTowerBalance.Quality.Rare => English ? "Rare" : "Редкий",
+                    PortalTowerBalance.Quality.Legendary => English ? "Legendary" : "Легендарный",
+                    _ => English ? "Common" : "Обычный"
+                };
+                c.category.text = weaponOffer ? (English ? "NEW WEAPON" : "НОВОЕ ОРУЖИЕ")
+                    : (u.hasQuality ? quality : ScopeName(u)) + " · " + (progression.Rank(u.id) + 1) + "/" + u.maximumRank;
+                c.category.color = !weaponOffer && u.hasQuality && u.quality == PortalTowerBalance.Quality.Rare
+                    ? new Color(.45f,.75f,1) : !weaponOffer && u.hasQuality && u.quality == PortalTowerBalance.Quality.Legendary
+                    ? new Color(1,.78f,.3f) : new Color(1,.9f,.65f);
+                if (u.hasQuality)
+                {
+                    bool reduction = u.effect == PortalTowerBalance.Effect.TickInterval || u.effect == PortalTowerBalance.Effect.AttackInterval;
+                    bool flat = u.effect == PortalTowerBalance.Effect.Projectiles || u.effect == PortalTowerBalance.Effect.Range;
+                    c.description.text += "\n\n" + (reduction ? "−" : "+") + (flat ? u.OfferedValue.ToString("0.##") : (u.OfferedValue * 100).ToString("0.##") + "%");
+                }
                 c.button.interactable=progression.CanPurchase(u);
                 c.button.GetComponentInChildren<Text>().text=English?"Choose":"Выбрать";
             }

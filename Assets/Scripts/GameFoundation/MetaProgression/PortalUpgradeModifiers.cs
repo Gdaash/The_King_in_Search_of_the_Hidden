@@ -8,9 +8,10 @@ namespace GameFoundation.MetaProgression
     {
         private readonly IEnumerable<PortalTowerBalance.Upgrade> upgrades;
         private readonly Func<string, int> rank;
+        private readonly Func<PortalTowerBalance.Upgrade, float> acquiredValue;
 
-        public PortalUpgradeModifiers(IEnumerable<PortalTowerBalance.Upgrade> upgrades, Func<string, int> rank)
-        { this.upgrades = upgrades; this.rank = rank; }
+        public PortalUpgradeModifiers(IEnumerable<PortalTowerBalance.Upgrade> upgrades, Func<string, int> rank, Func<PortalTowerBalance.Upgrade, float> acquiredValue = null)
+        { this.upgrades = upgrades; this.rank = rank; this.acquiredValue = acquiredValue; }
 
         public static bool Applies(PortalTowerBalance.Upgrade upgrade, PortalTowerBalance.DeliveryMethod method, DamageType damage)
         {
@@ -19,7 +20,7 @@ namespace GameFoundation.MetaProgression
             if (upgrade.effect == PortalTowerBalance.Effect.Projectiles && method != PortalTowerBalance.DeliveryMethod.Projectile) return false;
             if (upgrade.effect == PortalTowerBalance.Effect.Area && method != PortalTowerBalance.DeliveryMethod.Area) return false;
             if (upgrade.effect == PortalTowerBalance.Effect.Targets && method != PortalTowerBalance.DeliveryMethod.InstantHit) return false;
-            if (upgrade.effect == PortalTowerBalance.Effect.ExpansionSpeed && method == PortalTowerBalance.DeliveryMethod.InstantHit) return false;
+            if (upgrade.effect == PortalTowerBalance.Effect.ExpansionSpeed && method != PortalTowerBalance.DeliveryMethod.Projectile) return false;
             if ((upgrade.effect == PortalTowerBalance.Effect.Duration || upgrade.effect == PortalTowerBalance.Effect.SlowStrength) && method != PortalTowerBalance.DeliveryMethod.Area) return false;
             return upgrade.scope switch
             {
@@ -33,7 +34,9 @@ namespace GameFoundation.MetaProgression
         public static bool Applies(PortalTowerBalance.Upgrade upgrade, PortalTowerBalance.WeaponDefinition weapon)
         {
             if (weapon == null || upgrade == null) return false;
-            if (upgrade.effect == PortalTowerBalance.Effect.Duration && weapon.damageTickInterval <= 0) return false;
+            if (upgrade.effect == PortalTowerBalance.Effect.TickInterval && !weapon.HasTicks) return false;
+            if (upgrade.effect == PortalTowerBalance.Effect.AttackInterval && weapon.continuous) return false;
+            if (upgrade.effect == PortalTowerBalance.Effect.Duration && !weapon.HasDuration) return false;
             if (upgrade.effect == PortalTowerBalance.Effect.SlowStrength && weapon.slowFraction <= 0) return false;
             return Applies(upgrade, weapon.deliveryMethod, weapon.damageType);
         }
@@ -42,7 +45,7 @@ namespace GameFoundation.MetaProgression
         {
             float value = 0;
             foreach (var upgrade in upgrades)
-                if (upgrade.effect == effect && Applies(upgrade, weapon)) value += upgrade.value * rank(upgrade.id);
+                if (upgrade.effect == effect && Applies(upgrade, weapon)) value += (acquiredValue != null ? acquiredValue(upgrade) : upgrade.value * rank(upgrade.id));
             return value;
         }
 
@@ -50,7 +53,7 @@ namespace GameFoundation.MetaProgression
         {
             float value = 0;
             foreach (var upgrade in upgrades)
-                if (upgrade.effect == effect && Applies(upgrade, method, damage)) value += upgrade.value * rank(upgrade.id);
+                if (upgrade.effect == effect && Applies(upgrade, method, damage)) value += (acquiredValue != null ? acquiredValue(upgrade) : upgrade.value * rank(upgrade.id));
             return value;
         }
 
@@ -59,7 +62,7 @@ namespace GameFoundation.MetaProgression
             float value = 0;
             foreach (var upgrade in upgrades)
                 if (upgrade.effect == effect && upgrade.scope == PortalTowerBalance.UpgradeScope.Portal)
-                    value += upgrade.value * rank(upgrade.id);
+                    value += (acquiredValue != null ? acquiredValue(upgrade) : upgrade.value * rank(upgrade.id));
             return value;
         }
     }

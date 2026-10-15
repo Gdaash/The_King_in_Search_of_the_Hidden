@@ -9,7 +9,6 @@ namespace GameFoundation.MetaProgression
         [Header("Морозная печать")]
         public Sprite frostSealSprite;
         [SerializeField, Range(.1f, 1)] private float frostSealArtWidth = 1;
-        [SerializeField, Min(1)] private int maximumFrostSeals = 24;
         private float frostTime;
         private sealed class FrostZone
         {
@@ -51,14 +50,14 @@ namespace GameFoundation.MetaProgression
                 {
                     Vector2 velocity = target.TryGetComponent<Rigidbody2D>(out var body) ? body.linearVelocity : Vector2.zero;
                     Vector2 direction = velocity.sqrMagnitude > .01f ? velocity.normalized : ((Vector2)tower.transform.position - (Vector2)target.transform.position).normalized;
-                    float lead = Mathf.Clamp(velocity.magnitude * definition.placementLeadTime, radius * .9f, radius * 1.5f);
+                    float lead = definition.radius * definition.placementRadiusFraction;
                     SpawnFrostSeal((Vector2)target.transform.position + direction * lead);
                     frostTime = Time.time + Cooldown(weapon);
                 }
             }
             float lifetime = definition.duration * progression.Multiplier(weapon, PortalTowerBalance.Effect.Duration);
             float slow = Mathf.Min(.8f, definition.slowFraction * progression.Multiplier(weapon, PortalTowerBalance.Effect.SlowStrength));
-            float tick = Mathf.Max(.05f, definition.damageTickInterval);
+            float tick = progression.TickInterval(PortalTowerBalance.Weapon.FrostSeal);
             for (int i = frostSeals.Count - 1; i >= 0; i--)
             {
                 var zone = frostSeals[i];
@@ -85,19 +84,19 @@ namespace GameFoundation.MetaProgression
                     float scale = radius * 2 / Mathf.Max(.01f, frostSealSprite.bounds.size.x * frostSealArtWidth);
                     zone.renderer.transform.localScale = Vector3.one * scale;
                     float alpha = Mathf.Min(1, zone.age / .1f) * Mathf.Clamp01((lifetime - zone.age) / .35f);
-                    zone.renderer.color = new Color(1, 1, 1, .85f * alpha);
+                    zone.renderer.color = new Color(1, 1, 1, .5f * alpha);
                 }
             }
         }
 
         private void SpawnFrostSeal(Vector2 center)
         {
-            if (frostSeals.Count >= maximumFrostSeals) RemoveFrostSeal(0);
             var go = new GameObject("Portal Frost Seal", typeof(SpriteRenderer));
             UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(go, tower.gameObject.scene);
             go.transform.position = center;
             var renderer = go.GetComponent<SpriteRenderer>();
             renderer.sprite = frostSealSprite;
+            renderer.color = new Color(1, 1, 1, .5f);
             renderer.sharedMaterial = effectMaterial;
             renderer.sortingOrder = 3;
             frostSeals.Add(new FrostZone { renderer = renderer, center = center, nextTick = Time.time });

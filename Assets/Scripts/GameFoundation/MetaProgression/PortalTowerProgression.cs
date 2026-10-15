@@ -21,8 +21,10 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private Sprite groundExperienceCrystal;
         private ResourceType crystalResource;
         private readonly Dictionary<string, int> ranks = new();
+        private readonly Dictionary<string, float> acquiredValues = new();
+        private float AcquiredValue(PortalTowerBalance.Upgrade u) => Rank(u.id) == 0 ? 0 : acquiredValues.TryGetValue(u.id, out float total) ? total : u.value * Rank(u.id);
         private PortalUpgradeModifiers modifiers;
-        private PortalUpgradeModifiers Modifiers => modifiers ??= new PortalUpgradeModifiers(balance.upgrades, Rank);
+        private PortalUpgradeModifiers Modifiers => modifiers ??= new PortalUpgradeModifiers(balance.upgrades, Rank, AcquiredValue);
         private readonly List<PortalTowerBalance.Upgrade> offers = new();
         public IReadOnlyList<PortalTowerBalance.Upgrade> Offers => offers;
         public bool IsInitialWeaponChoice { get; private set; }
@@ -41,14 +43,40 @@ namespace GameFoundation.MetaProgression
         public int Level { get; private set; } = 1;
         public int Experience { get; private set; }
         public int PendingExperience { get; private set; }
+        public int CrystalDebt { get; private set; }
+        private int rerollPriceStep;
+        private int lastRerollChoiceLevel = 1;
+        public long RerollCost => 1L << Mathf.Min(rerollPriceStep, 62);
+        public bool CanReroll => !expeditionEnded && LevelPoints > 0 && offers.Count > 0 && RerollCost <= RequiredExperience - CrystalDebt;
+        public int PreviewExperience(int incoming) => Experience + Mathf.Max(0, incoming - CrystalDebt);
+        public bool Reroll()
+        {
+            if (!CanReroll) return false;
+            CrystalDebt += (int)RerollCost;
+            rerollPriceStep++;
+            RollOffers();
+            EventSystem.current?.SetSelectedGameObject(null);
+            GameAudioController.PlayUI(GameAudioCue.UiConfirm);
+            Changed?.Invoke();
+            return true;
+        }
+        private void ReceiveExperience(int amount)
+        {
+            int repayment = Mathf.Min(CrystalDebt, amount);
+            CrystalDebt -= repayment;
+            Experience += amount - repayment;
+        }
         public int LevelPoints { get; private set; }
         public int RequiredExperience => balance.RequiredExperience(Level);
         public bool CanAttack => !expeditionEnded && HasWeapon(PortalTowerBalance.Weapon.Bolts);
         public int LightCount => Mathf.Clamp(1 + Mathf.RoundToInt(EffectTotal(PortalTowerBalance.Effect.ExtraLight)), 1, WorldFlashlightAvailability.MaximumCount);
         public int ProjectileCount => Count(PortalTowerBalance.Weapon.Bolts);
         public float DamageMultiplier => Multiplier(PortalTowerBalance.Weapon.Bolts, PortalTowerBalance.Effect.Damage);
-        public float AttackSpeedMultiplier => Multiplier(PortalTowerBalance.Weapon.Bolts, PortalTowerBalance.Effect.AttackSpeed);
-        public float RangeMultiplier => Multiplier(PortalTowerBalance.Weapon.Bolts, PortalTowerBalance.Effect.Range);
+        public float AttackSpeedMultiplier => (balance.FindWeapon(PortalTowerBalance.Weapon.Bolts)?.cooldown ?? 1) / AttackInterval(PortalTowerBalance.Weapon.Bolts);
+        public float RangeMultiplier => 1;
+        public float AddedRange(PortalTowerBalance.Weapon w) => EffectTotal(PortalTowerBalance.Effect.Range, w);
+        public float AttackInterval(PortalTowerBalance.Weapon w, float flatReduction = 0) => Mathf.Max(PortalTowerBalance.MinimumInterval, ((balance.FindWeapon(w)?.cooldown ?? 1) - flatReduction) * (1 - Mathf.Clamp01(EffectTotal(PortalTowerBalance.Effect.AttackInterval, w))));
+        public float TickInterval(PortalTowerBalance.Weapon w) => Mathf.Max(PortalTowerBalance.MinimumInterval, Mathf.Max(1, balance.FindWeapon(w)?.damageTickInterval ?? 1) * (1 - Mathf.Clamp01(EffectTotal(PortalTowerBalance.Effect.TickInterval, w))));
         public float Multiplier(PortalTowerBalance.Weapon weapon, PortalTowerBalance.Effect effect) => 1 + EffectTotal(effect, weapon);
         public int Count(PortalTowerBalance.Weapon weapon)
         {
@@ -73,7 +101,7 @@ namespace GameFoundation.MetaProgression
         }
         private void ShowChoice()
         {
-            RollOffers();
+            if (!RollPendingOffers()) return;
             previousSpeed = GameSpeedControls.SimulationSpeed;
             GameSpeedControls.SetSimulationSpeed(0);
             BlockInterface();
@@ -88,7 +116,7 @@ namespace GameFoundation.MetaProgression
         public void GrantEditorLevel()
         {
             if (!Application.isPlaying || expeditionEnded || LevelPoints > 0) return;
-            AddExperience(RequiredExperience - Experience);
+            AddExperience(CrystalDebt + RequiredExperience - Experience);
         }
 #endif
         public int Rank(string id) => ranks.TryGetValue(id, out int rank) ? rank : 0;
@@ -97,7 +125,8 @@ namespace GameFoundation.MetaProgression
         {
             if (upgrade == null) return false;
             if (upgrade.effect == PortalTowerBalance.Effect.UnlockWeapon)
-                return upgrade.weapon != PortalTowerBalance.Weapon.None && balance.IsWeaponEnabled(upgrade.weapon) && !HasWeapon(upgrade.weapon);
+                return (IsInitialWeaponChoice || (ChoiceLevel >= 5 && ChoiceLevel % 5 == 0)) &&
+                    upgrade.weapon != PortalTowerBalance.Weapon.None && balance.IsWeaponEnabled(upgrade.weapon) && !HasWeapon(upgrade.weapon);
             if (upgrade.scope == PortalTowerBalance.UpgradeScope.Portal) return true;
             return balance.weapons.Exists(w => HasWeapon(w.weapon) && PortalUpgradeModifiers.Applies(upgrade, w));
         }
@@ -111,15 +140,31 @@ namespace GameFoundation.MetaProgression
             {
                 while (count-- > 0 && pool.Count > 0)
                 {
-                    int index = UnityEngine.Random.Range(0,pool.Count); offers.Add(pool[index]); pool.RemoveAt(index);
+                    int index = UnityEngine.Random.Range(0,pool.Count); offers.Add(pool[index].CreateOffer(PortalTowerBalance.RollQuality(UnityEngine.Random.value))); pool.RemoveAt(index);
                 }
             }
-            if (WeaponCount == 0) Draw(weapons,3);
+            if (IsInitialWeaponChoice) Draw(weapons,3);
             else
             {
-                if (ChoiceLevel % 5 == 0) Draw(weapons,1);
+                if (ChoiceLevel >= 5 && ChoiceLevel % 5 == 0) Draw(weapons,1);
                 Draw(upgrades,3-offers.Count);
             }
+        }
+        private bool RollPendingOffers()
+        {
+            while (LevelPoints > 0)
+            {
+                int advancedLevels = ChoiceLevel - lastRerollChoiceLevel;
+                if (advancedLevels > 0)
+                {
+                    rerollPriceStep = Mathf.Max(0, rerollPriceStep - 3 * advancedLevels);
+                    lastRerollChoiceLevel = ChoiceLevel;
+                }
+                RollOffers();
+                if (offers.Count > 0) return true;
+                LevelPoints--;
+            }
+            return false;
         }
         public void AwardHexExperience(Vector3 position)
         {
@@ -214,7 +259,8 @@ namespace GameFoundation.MetaProgression
                     {
                         int units=amount/count+(i<amount%count?1:0);
                         targetExperience+=units;
-                        float targetFill=Mathf.Clamp01((float)targetExperience/RequiredExperience);
+                        int incoming = targetExperience - Experience;
+                        float targetFill=Mathf.Clamp01((float)(incoming < CrystalDebt ? CrystalDebt - incoming : PreviewExperience(incoming))/RequiredExperience);
                         Instantiate(experienceCrystalPrefab,position,Quaternion.identity).Launch(position,bar,i*.06f,i==count-1,()=>CommitIncomingExperience(units),targetFill);
                     }
                     return;
@@ -226,7 +272,7 @@ namespace GameFoundation.MetaProgression
         {
             if(expeditionEnded)return;
             PendingExperience=Mathf.Max(0,PendingExperience-amount);
-            Experience+=amount;
+            ReceiveExperience(amount);
             Changed?.Invoke();
             if(Experience>=RequiredExperience)StartCoroutine(DelayedLevel(Experience+processedExperience));
         }
@@ -241,12 +287,13 @@ namespace GameFoundation.MetaProgression
         public void AddExperience(int amount)
         {
             if (amount <= 0 || balance == null || expeditionEnded) return;
-            Experience += amount;
+            ReceiveExperience(amount);
             ProcessLevels(Experience+processedExperience);
         }
         private int processedExperience;
         private void ProcessLevels(int availableExperience)
         {
+            if (CrystalDebt > 0) { Changed?.Invoke(); return; }
             bool gainedLevel = false;
             int eligible=availableExperience-processedExperience;
             while (eligible >= RequiredExperience)
@@ -271,12 +318,13 @@ namespace GameFoundation.MetaProgression
         }
         public bool Purchase(string id)
         {
-            var upgrade = balance.Find(id);
+            var upgrade = offers.Find(u => u.id == id);
             if (!CanPurchase(upgrade)) return false;
+            acquiredValues[id] = AcquiredValue(upgrade) + upgrade.OfferedValue;
             ranks[id] = Rank(id) + 1;
             IsInitialWeaponChoice = false;
             LevelPoints--;
-            if (LevelPoints > 0) RollOffers(); else offers.Clear();
+            if (LevelPoints > 0) RollPendingOffers(); else offers.Clear();
             GameAudioController.PlayUI(GameAudioCue.UiConfirm);
             // Notify light ownership before closing the mandatory modal.
             Changed?.Invoke();

@@ -116,9 +116,13 @@ public class EnemyVisuals_Ranged : MonoBehaviour
             (parent != null ? parent.InverseTransformVector(worldOffset) : worldOffset);
     }
 
+    private EnemyMovement movement;
+    private float AttackRate => movement != null ? movement.AreaSlowMultiplier : 1f;
+
     private IEnumerator ShootRoutine() 
     {
         if (ai == null) yield break;
+        if (movement == null) movement = GetComponent<EnemyMovement>();
         Transform target = ai.GetTarget();
         if (target == null) { _isShooting = false; ai.FinishAttack(); yield break; }
 
@@ -129,7 +133,7 @@ public class EnemyVisuals_Ranged : MonoBehaviour
             Vector3 preparedScale = new(baseScale.x * windupScale.x, baseScale.y * windupScale.y, baseScale.z);
             while (elapsed < windupDuration)
             {
-                elapsed += Time.deltaTime;
+                elapsed += Time.deltaTime * AttackRate;
                 float t = windupDuration > 0f ? Mathf.Clamp01(elapsed / windupDuration) : 1f;
                 float eased = t * t * (3f - 2f * t);
                 spriteParent.localScale = Vector3.LerpUnclamped(baseScale, preparedScale, eased);
@@ -176,13 +180,13 @@ public class EnemyVisuals_Ranged : MonoBehaviour
             Vector3 kickbackOffset = -worldDir * kickbackDist;
             float p = 0;
             while (p < 1f) {
-                p += Time.deltaTime * shootSpeed;
+                p += Time.deltaTime * shootSpeed * AttackRate;
                 SetRecoilOffset(Vector3.Lerp(Vector3.zero, kickbackOffset, p));
                 yield return null;
             }
             p = 0;
             while (p < 1f) {
-                p += Time.deltaTime * shootSpeed * 0.5f;
+                p += Time.deltaTime * shootSpeed * 0.5f * AttackRate;
                 SetRecoilOffset(Vector3.Lerp(kickbackOffset, Vector3.zero, p));
                 yield return null;
             }

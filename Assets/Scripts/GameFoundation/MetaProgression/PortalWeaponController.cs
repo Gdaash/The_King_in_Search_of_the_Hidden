@@ -41,10 +41,10 @@ namespace GameFoundation.MetaProgression
             effectMaterial=new Material(Shader.Find("Sprites/Default"));
         }
         private PortalTowerBalance.WeaponDefinition Def(PortalTowerBalance.Weapon w) => progression.Balance.FindWeapon(w);
-        private float Range(PortalTowerBalance.Weapon w) => Mathf.Max(0,Def(w).range+(tower.GetStats()?.bonusAttackRange??0))*progression.Multiplier(w,PortalTowerBalance.Effect.Range);
-        private float Radius(PortalTowerBalance.Weapon w) => Def(w).radius*Mathf.Sqrt(progression.Multiplier(w,PortalTowerBalance.Effect.Area));
+        private float Range(PortalTowerBalance.Weapon w) => Mathf.Max(0,Def(w).range+(tower.GetStats()?.bonusAttackRange??0)+progression.AddedRange(w));
+        private float Radius(PortalTowerBalance.Weapon w) => Def(w).radius*progression.Multiplier(w,PortalTowerBalance.Effect.Area);
         private float Damage(PortalTowerBalance.Weapon w) => (Def(w).damage+(tower.GetStats()?.damageSettings.Find(d=>d.type==Def(w).damageType)?.bonusDamage??0))*progression.Multiplier(w,PortalTowerBalance.Effect.Damage);
-        private float Cooldown(PortalTowerBalance.Weapon w) => Mathf.Max(.05f,Def(w).cooldown-(tower.GetStats()?.bonusAttackSpeed??0))/progression.Multiplier(w,PortalTowerBalance.Effect.AttackSpeed);
+        private float Cooldown(PortalTowerBalance.Weapon w) => progression.AttackInterval(w,tower.GetStats()?.bonusAttackSpeed??0);
         private Transform Source => tower.GetComponent<TowerVisuals>()?.ShootPoint ?? tower.transform;
         private void Update()
         {
@@ -97,7 +97,7 @@ namespace GameFoundation.MetaProgression
             UpdateLightTrails();
             if(Time.time>=beamTime)
             {
-                beamTime=Time.time+Cooldown(PortalTowerBalance.Weapon.Beam);
+                beamTime=Time.time+progression.TickInterval(PortalTowerBalance.Weapon.Beam);
                 bool hit=false;
                 foreach(var h in enemies)if(Enemy(h) && Vector2.Distance(h.transform.position,aim)<=BeamRadius)
                 {h.TakeDamage(Damage(PortalTowerBalance.Weapon.Beam),Def(PortalTowerBalance.Weapon.Beam).damageType,tower.transform);hit=true;}

@@ -30,6 +30,11 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
     public UnityEvent OnAttack; 
 
     private Combatant combat;
+    private EnemyMovement movement;
+    public float AttackSpeedMultiplier
+    {
+        get { if (movement == null) movement = GetComponent<EnemyMovement>(); return movement != null ? movement.AreaSlowMultiplier : 1f; }
+    }
     private Transform _target;
     private Transform _homeTransform;
     
@@ -55,6 +60,7 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
     void Awake()
     {
         combat=GetComponent<Combatant>();
+        movement=GetComponent<EnemyMovement>();
         _personalOffset = Random.insideUnitCircle * positionVariation;
         _offsetAnchor = new GameObject($"RangedAnchor_{gameObject.name}");
     }
@@ -63,6 +69,8 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
 
     void Update()
     {
+        // Advance the existing attack cooldown at the slowed rate, including mid-cooldown entry/exit.
+        if (_nextAttackTime > Time.time) _nextAttackTime += Time.deltaTime * (1f - AttackSpeedMultiplier);
         FindClosestTarget();
 
         if (_target == null) ValidateOrFindHome();

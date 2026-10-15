@@ -106,6 +106,17 @@ public static class PortalRoguelikeValidation
         {
             p.AddExperience(p.RequiredExperience);
             Check(p.Offers.Count==3,"Three cards at level "+p.Level);
+            if(p.Level==2)
+            {
+                Check(p.Offers.All(u=>u.effect!=PortalTowerBalance.Effect.UnlockWeapon), "First experience level-up offers upgrades only");
+                Check(p.Balance.upgrades.Where(u=>u.effect==PortalTowerBalance.Effect.UnlockWeapon).All(u=>!p.IsUnlocked(u)), "Weapon unlocks are ineligible at level two");
+                var owned = (Dictionary<string,int>)typeof(PortalTowerProgression).GetField("ranks",Private).GetValue(p);
+                var snapshot = owned.ToArray(); owned.Clear();
+                typeof(PortalTowerProgression).GetMethod("RollOffers",Private).Invoke(p,null);
+                Check(p.Offers.All(u=>u.effect!=PortalTowerBalance.Effect.UnlockWeapon), "Missing weapon state cannot trigger another initial weapon choice");
+                foreach(var entry in snapshot)owned[entry.Key]=entry.Value;
+                typeof(PortalTowerProgression).GetMethod("RollOffers",Private).Invoke(p,null);
+            }
             Check(p.Offers.Where(u=>u.effect!=PortalTowerBalance.Effect.UnlockWeapon).All(p.IsUnlocked),"Offered upgrades match owned categories at level "+p.Level);
             if(p.Level%5==0)
             {
@@ -123,7 +134,7 @@ public static class PortalRoguelikeValidation
         p.Purchase(p.Offers[0].id);Check(p.LevelPoints==0 && Time.timeScale>0,"Queue resumes after final choice");
         var ranks=(Dictionary<string,int>)typeof(PortalTowerProgression).GetField("ranks",Private).GetValue(p);
         void Equip(PortalTowerBalance.Weapon w)
-        {ranks.Clear();ranks["weapon_"+w]=1;controller.StopAllCoroutines();}
+        {ranks.Clear(); ((Dictionary<string,float>)typeof(PortalTowerProgression).GetField("acquiredValues",Private).GetValue(p)).Clear();ranks["weapon_"+w]=1;controller.StopAllCoroutines();}
         tower.enabled=false;
         Equip(PortalTowerBalance.Weapon.Beam);yield return Wait(.2f);
         bool BeamVisible()=>Object.FindObjectsByType<UnityEngine.Rendering.Universal.Light2D>(FindObjectsSortMode.None).Any(l=>l.transform.root.name=="Portal Burning Beam");
@@ -174,30 +185,30 @@ public static class PortalRoguelikeValidation
         ScreenCapture.CaptureScreenshot("UserSettings/CodexValidation/PortalPixelLightning.png");
         yield return Wait(.35f);
         Check(controller.lightningSprite!=null && p.Balance.FindWeapon(PortalTowerBalance.Weapon.Lightning).range<2.9f,"Pixel lightning uses short first-ring range");
-        Check(Mathf.Approximately(la.CurrentHealth+lb.CurrentHealth,160) && lf.CurrentHealth==100,"Lightning guarantees one random in-range hit");
-        ranks["instant_targets"]=1;
+        Check(Mathf.Approximately(la.CurrentHealth+lb.CurrentHealth,200-p.Balance.FindWeapon(PortalTowerBalance.Weapon.Lightning).damage) && lf.CurrentHealth==100,"Lightning guarantees one random in-range hit");
+
         typeof(PortalWeaponController).GetField("lightningTime",Private).SetValue(controller,Time.time+.1f);
-        yield return Wait(.4f);Check(la.CurrentHealth+lb.CurrentHealth==80,"Additional lightning hits another target");
+        yield return Wait(.4f);Check(Mathf.Approximately(la.CurrentHealth+lb.CurrentHealth,200-2*p.Balance.FindWeapon(PortalTowerBalance.Weapon.Lightning).damage),"Next lightning attack makes one hit");
         Object.Destroy(la.gameObject);Object.Destroy(lb.gameObject);Object.Destroy(lf.gameObject);
         Equip(PortalTowerBalance.Weapon.Bolts);tower.enabled=true;
         var boltEnemy=Enemy((Vector2)tower.transform.position+Vector2.right*3);
         yield return Wait(2.5f);Check(boltEnemy.CurrentHealth<100,"Original projectile weapon still fires and damages");
         ranks["all_damage"]=1;ranks["projectile_count"]=1;
         Check(p.ProjectileCount==2 && Mathf.Approximately(p.DamageMultiplier,1.1f),"Projectile count and global damage apply to bolts");
-        ranks["weapon_Beam"]=1;ranks["damage_type_1"]=1;
-        Check(Mathf.Approximately(p.Multiplier(PortalTowerBalance.Weapon.Beam,PortalTowerBalance.Effect.Damage),1.3f) && Mathf.Approximately(p.DamageMultiplier,1.1f),"New beam inherits global damage and adds fire damage without changing magic bolts");
+        ranks["weapon_Beam"]=1;
+        Check(Mathf.Approximately(p.Multiplier(PortalTowerBalance.Weapon.Beam,PortalTowerBalance.Effect.Damage),1.1f) && Mathf.Approximately(p.DamageMultiplier,1.1f),"New beam inherits shared damage");
         ranks["area_size"]=1;
-        Check(Mathf.Approximately(p.Multiplier(PortalTowerBalance.Weapon.Beam,PortalTowerBalance.Effect.Area),1.2f) && p.Multiplier(PortalTowerBalance.Weapon.Bolts,PortalTowerBalance.Effect.Area)==1,"Area upgrade affects area weapons only");
+        Check(Mathf.Approximately(p.Multiplier(PortalTowerBalance.Weapon.Beam,PortalTowerBalance.Effect.Area),1.1f) && p.Multiplier(PortalTowerBalance.Weapon.Bolts,PortalTowerBalance.Effect.Area)==1,"Area upgrade affects area weapons only");
         Check(p.Count(PortalTowerBalance.Weapon.Lightning)==1 && p.ProjectileCount==2,"Projectile upgrade does not add lightning targets");
-        ranks["weapon_Lightning"]=1;ranks["instant_targets"]=1;
-        Check(p.Count(PortalTowerBalance.Weapon.Lightning)==2 && p.ProjectileCount==2,"Instant targets and projectile counts are independent");
+        ranks["weapon_Lightning"]=1;
+        Check(p.Count(PortalTowerBalance.Weapon.Lightning)==1 && p.ProjectileCount==2,"Lightning count remains independent of projectiles");
         Check(Mathf.Approximately(p.Multiplier(PortalTowerBalance.Weapon.Lightning,PortalTowerBalance.Effect.Damage),1.1f),"Later lightning inherits global damage");
-        ranks["all_attack_speed"]=1;ranks["all_range"]=1;
+        ranks["attack_interval"]=1;ranks["all_range"]=1;
         foreach (var w in p.Balance.weapons.Where(w=>!w.disabled))
-            Check(Mathf.Approximately(p.Multiplier(w.weapon,PortalTowerBalance.Effect.AttackSpeed),1.1f) && Mathf.Approximately(p.Multiplier(w.weapon,PortalTowerBalance.Effect.Range),1.15f),"Shared attack speed and range reach "+w.weapon);
+            Check(Mathf.Approximately(p.AttackInterval(w.weapon),w.cooldown*(w.continuous?1:.95f)) && Mathf.Approximately(p.AddedRange(w.weapon),.5f),"Attack interval and flat range reach "+w.weapon);
         foreach(var weapon in p.Balance.weapons)ranks["weapon_"+weapon.weapon]=1;
         var mixedEnemy=Enemy((Vector2)tower.transform.position+Vector2.left);
-        yield return Wait(.8f);
+        yield return Wait(2.2f);
         Check(p.WeaponCount==p.Balance.weapons.Count(w=>p.Balance.IsWeaponEnabled(w.weapon)) && mixedEnemy.CurrentHealth<100,"Multiple owned weapons operate together");
         tower.enabled=false;yield return Wait(.5f);
         p.EndExpedition();float stopped=mixedEnemy.CurrentHealth;yield return Wait(.7f);

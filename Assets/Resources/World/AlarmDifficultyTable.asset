@@ -16,19 +16,27 @@ MonoBehaviour:
   - level: 1
     maximumAlarm: 150
     thresholds:
+    - alarmValue: 20
+      minSpawnInterval: 8
+      maxSpawnInterval: 12
+      minEnemiesPerWave: 2
+      maxEnemiesPerWave: 3
+      enemies:
+      - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+        weight: 5
     - alarmValue: 40
       minSpawnInterval: 8
       maxSpawnInterval: 12
-      minEnemiesPerWave: 6
-      maxEnemiesPerWave: 12
+      minEnemiesPerWave: 4
+      maxEnemiesPerWave: 8
       enemies:
       - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
         weight: 5
     - alarmValue: 70
       minSpawnInterval: 8
       maxSpawnInterval: 12
-      minEnemiesPerWave: 7
-      maxEnemiesPerWave: 14
+      minEnemiesPerWave: 5
+      maxEnemiesPerWave: 9
       enemies:
       - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
         weight: 5
@@ -37,8 +45,8 @@ MonoBehaviour:
     - alarmValue: 100
       minSpawnInterval: 8
       maxSpawnInterval: 12
-      minEnemiesPerWave: 16
-      maxEnemiesPerWave: 32
+      minEnemiesPerWave: 11
+      maxEnemiesPerWave: 21
       enemies:
       - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
         weight: 5
@@ -47,8 +55,8 @@ MonoBehaviour:
     - alarmValue: 150
       minSpawnInterval: 8
       maxSpawnInterval: 12
-      minEnemiesPerWave: 40
-      maxEnemiesPerWave: 80
+      minEnemiesPerWave: 27
+      maxEnemiesPerWave: 53
       enemies:
       - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
         weight: 5

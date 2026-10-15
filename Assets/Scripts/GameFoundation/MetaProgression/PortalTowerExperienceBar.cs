@@ -11,6 +11,8 @@ namespace GameFoundation.MetaProgression
         public Text label;
         public Material incomingFillMaterial;
         private Image incomingFill;
+        private Image debtFill;
+        private Material debtMaterial;
         private GameFoundation.Localization.LocalizationService language;
         private void OnEnable()
         {
@@ -33,6 +35,10 @@ namespace GameFoundation.MetaProgression
             }
             Refresh();
         }
+        private void OnDestroy()
+        {
+            if (debtMaterial != null) Destroy(debtMaterial);
+        }
         private void Refresh()
         {
             if(incomingFill==null)
@@ -51,7 +57,36 @@ namespace GameFoundation.MetaProgression
                 incomingFill.fillClockwise=fill.fillClockwise;
                 incomingFill.color=Color.white;incomingFill.raycastTarget=false;
             }
-            incomingFill.fillAmount=Mathf.Clamp01((float)(progression.Experience+progression.PendingExperience)/progression.RequiredExperience);
+            if (debtFill == null)
+            {
+                var go = new GameObject("Crystal Debt", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                debtFill = go.GetComponent<Image>();
+                var rect = debtFill.rectTransform; var source = fill.rectTransform;
+                rect.SetParent(source.parent, false);
+                rect.anchorMin = source.anchorMin; rect.anchorMax = source.anchorMax; rect.pivot = source.pivot;
+                rect.sizeDelta = source.sizeDelta; rect.anchoredPosition = source.anchoredPosition;
+                rect.localScale = source.localScale; rect.localRotation = source.localRotation;
+                rect.SetSiblingIndex(source.GetSiblingIndex() + 1);
+                debtFill.sprite = fill.sprite; debtFill.type = fill.type;
+                debtFill.fillMethod = fill.fillMethod; debtFill.fillOrigin = fill.fillOrigin;
+                debtFill.fillClockwise = fill.fillClockwise; debtFill.raycastTarget = false;
+                if (incomingFillMaterial != null)
+                {
+                    debtMaterial = new Material(incomingFillMaterial);
+                    debtMaterial.SetColor("_Color", new Color(.65f, .65f, .65f, 1));
+                    debtMaterial.name = "Portal crystal debt tint";
+                    debtFill.material = debtMaterial;
+                }
+                else debtFill.color = new Color(.65f,.65f,.65f,1);
+            }
+            debtFill.fillAmount = Mathf.Clamp01((float)progression.CrystalDebt / progression.RequiredExperience);
+            debtFill.enabled = progression.CrystalDebt > 0;
+            if (debtFill.sprite == null)
+            {
+                debtFill.rectTransform.anchorMax = new Vector2(debtFill.fillAmount, 1);
+                debtFill.rectTransform.offsetMin = debtFill.rectTransform.offsetMax = Vector2.zero;
+            }
+            incomingFill.fillAmount=Mathf.Clamp01((float)progression.PreviewExperience(progression.PendingExperience)/progression.RequiredExperience);
             if(incomingFill.sprite==null)
             {
                 incomingFill.rectTransform.anchorMax=new Vector2(incomingFill.fillAmount,1);
@@ -66,6 +101,8 @@ namespace GameFoundation.MetaProgression
             }
             label.text = LaboratoryUpgradeList.Tr("portal_tower.experience", GameFoundation.Localization.GameText.Get("Башня портала")) + "  " +
                 LaboratoryUpgradeList.Tr("laboratory.level", GameFoundation.Localization.GameText.Get("ур.")) + progression.Level + "   " + progression.Experience + " / " + progression.RequiredExperience;
+            if (progression.CrystalDebt > 0)
+                label.text += (language != null && language.Language == "en" ? "  Debt: " : "  Долг: ") + progression.CrystalDebt;
         }
     }
 }

@@ -12,6 +12,8 @@ public class EnemyVisuals : MonoBehaviour
     [Header("Ссылки")]
     [SerializeField] private Transform spriteParent; 
     private IEnemyAI _ai;
+    private EnemyMovement movement;
+    private float AttackRate => movement != null ? movement.AreaSlowMultiplier : 1f;
 
     [Header("Прыжки (Движение)")]
     [SerializeField] private float bounceHeight = 0.3f;
@@ -32,6 +34,7 @@ public class EnemyVisuals : MonoBehaviour
     void Awake()
     {
         _ai = GetComponent<IEnemyAI>();
+        movement = GetComponent<EnemyMovement>();
         _rb = GetComponent<Rigidbody2D>();
     }
 
@@ -100,7 +103,8 @@ public class EnemyVisuals : MonoBehaviour
             }
         }
         CombatImpactBurst.Spawn(target.position, new Color(1f, 0.82f, 0.48f, 1f));
-        if (impactHoldDuration > 0f) yield return new WaitForSeconds(impactHoldDuration);
+        float hold = 0;
+        while (hold < impactHoldDuration) { hold += Time.deltaTime * AttackRate; yield return null; }
         yield return AnimatePose(spriteParent.localPosition, _startPos, spriteParent.localScale, baseScale,
             1.5f / Mathf.Max(0.01f, jabSpeed));
         RestorePose(baseScale);
@@ -112,7 +116,7 @@ public class EnemyVisuals : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < duration)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.deltaTime * AttackRate;
             float t = duration > 0f ? Mathf.Clamp01(elapsed / duration) : 1f;
             float eased = t * t * (3f - 2f * t);
             spriteParent.localPosition = Vector3.LerpUnclamped(fromPosition, toPosition, eased);

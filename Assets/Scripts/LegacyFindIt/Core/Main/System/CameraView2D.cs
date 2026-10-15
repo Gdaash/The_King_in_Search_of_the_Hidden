@@ -27,6 +27,10 @@ public class CameraView2D : MonoBehaviour
     [SerializeField] private float keyboardSpeed = 10f;
 
     private Camera _camera;
+    private GameFoundation.MetaProgression.WorldFlashlightAvailability worldLights;
+    private bool rightPanPending, rightPanActive;
+    private Vector2 rightPanStart, rightPanAnchor;
+    private const float RightPanThreshold = 8f;
     public static CameraView2D instance { get; private set; }
 
     // ВЕРНУТО: флаг состояния панорамирования для совместимости с другими скриптами
@@ -63,10 +67,16 @@ public class CameraView2D : MonoBehaviour
 
     private void Update()
     {
-        if (StopCameraFunc || _camera == null) return;
+        if (StopCameraFunc || _camera == null || GameFoundation.MetaProgression.FirstRunLightTutorial.BlocksInput ||
+            GameFoundation.MetaProgression.PortalTowerProgression.IsChoosingUpgrade)
+        {
+            rightPanPending = rightPanActive = false; IsPanning = false;
+            return;
+        }
         
         KeyboardPan(); 
         ZoomCamera();
+        ProcessRightPan(Input.mousePosition, Input.GetMouseButtonDown(1), Input.GetMouseButton(1), Input.GetMouseButtonUp(1));
 
         if (Screen.width != _lastScreenWidth || Screen.height != _lastScreenHeight)
         {
@@ -102,6 +112,40 @@ public class CameraView2D : MonoBehaviour
             IsPanning = false;
         }
     }
+
+    public void ProcessRightPan(Vector2 screenPoint, bool pressed, bool held, bool released)
+    {
+        if (gameObject.scene.name != "World" || !enablePan || StopCameraFunc || _camera == null ||
+            GameFoundation.MetaProgression.FirstRunLightTutorial.BlocksInput ||
+            GameFoundation.MetaProgression.PortalTowerProgression.IsChoosingUpgrade)
+        { rightPanPending = rightPanActive = false; return; }
+        if (pressed)
+        {
+            if (worldLights == null) worldLights = Object.FindFirstObjectByType<GameFoundation.MetaProgression.WorldFlashlightAvailability>();
+            bool overUi = worldLights != null ? worldLights.IsPointerOverBlockingUI(screenPoint) :
+                UnityEngine.EventSystems.EventSystem.current != null && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
+            bool activeHex = worldLights != null && (worldLights.IsDragging || worldLights.HasActiveActionAt(_camera.ScreenToWorldPoint(screenPoint)));
+            rightPanPending = !overUi && !activeHex && Object.FindFirstObjectByType<GameFoundation.Settings.GameMenuController>() == null;
+            rightPanActive = false;
+            rightPanStart = screenPoint;
+            rightPanAnchor = _camera.ScreenToWorldPoint(screenPoint);
+        }
+        if (rightPanPending && held)
+        {
+            if ((screenPoint - rightPanStart).sqrMagnitude >= RightPanThreshold * RightPanThreshold) rightPanActive = true;
+            if (rightPanActive)
+            {
+                Vector2 current = _camera.ScreenToWorldPoint(screenPoint);
+                Vector3 target = _camera.transform.position + (Vector3)(rightPanAnchor - current);
+                _camera.transform.position = infinitePan ? target : ClampCamera(target);
+                rightPanAnchor = _camera.ScreenToWorldPoint(screenPoint);
+                IsPanning = true;
+            }
+        }
+        if (released || !held) rightPanPending = rightPanActive = false;
+    }
+
+    private void OnDisable() { rightPanPending = rightPanActive = false; IsPanning = false; }
 
     private void ZoomCamera()
     {

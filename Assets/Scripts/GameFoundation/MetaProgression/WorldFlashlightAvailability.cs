@@ -155,7 +155,8 @@ namespace GameFoundation.MetaProgression
             if (!FirstRunLightTutorial.BlocksInput && Input.GetMouseButtonDown(1))
             {
                 rightPointerDown = Input.mousePosition;
-                rightPointerStartedInWorld = !IsPointerOverBlockingUI(Input.mousePosition);
+                rightPointerStartedInWorld = worldCamera != null && !IsPointerOverBlockingUI(Input.mousePosition) &&
+                    (IsDragging || HasActiveActionAt(worldCamera.ScreenToWorldPoint(Input.mousePosition)));
             }
             if (!FirstRunLightTutorial.BlocksInput && Input.GetMouseButtonUp(1) && rightPointerStartedInWorld &&
                 Vector2.Distance(rightPointerDown, Input.mousePosition) < 8 && !IsPointerOverBlockingUI(Input.mousePosition) && worldCamera != null)
@@ -360,6 +361,13 @@ namespace GameFoundation.MetaProgression
             if (target.State == HoverState.WaitingForResources) { Release(target.LightIndex); GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Действие отменено")); return true; }
             if (target.State != HoverState.Available) return false;
             return target.Hex != null ? OpenHex(target.LightIndex, target.Hex) : ReserveBuilding(target.LightIndex, target.Requester);
+        }
+        public bool HasActiveActionAt(Vector2 point)
+        {
+            var target = GetHoverTarget(point);
+            return target.State == HoverState.Working || target.State == HoverState.WaitingForResources ||
+                target.State == HoverState.RecallOnly || target.CanRecallHumans ||
+                (target.Hex != null && target.Hex.IsUnlocking());
         }
         public bool RecallHumansAt(Vector2 point)
         {
