@@ -69,6 +69,7 @@ public class EnemyMovement : MonoBehaviour
 
     private void OnEnable() 
     {
+        GameFoundation.Audio.GameAudioController.Register(this);
         // Подписываемся на обновление, чтобы скорость менялась мгновенно при покупке улучшения
         if (stats != null) stats.OnStatsUpdated += UpdateSpeed;
     }
@@ -77,6 +78,13 @@ public class EnemyMovement : MonoBehaviour
     {
         areaSlows.Clear();
         if (stats != null) stats.OnStatsUpdated -= UpdateSpeed;
+    }
+
+    public void ResetForSpawn()
+    {
+        areaSlows.Clear(); _canMove = false;
+        _individualVariation = Random.Range(-speedVariation, speedVariation);
+        UpdateSpeed();
     }
 
     private void UpdateSpeed()

@@ -40,6 +40,7 @@ namespace GameFoundation.UI
 
         private void Awake()
         {
+        GameFoundation.Audio.GameAudioController.Register(GetComponent<UnityEngine.UI.Button>());
             button = GetComponent<Button>();
             graphic = button.targetGraphic;
             if (graphic != null) outline = graphic.GetComponent<Outline>();

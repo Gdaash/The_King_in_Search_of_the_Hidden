@@ -35,6 +35,19 @@ namespace GameFoundation.MetaProgression
         {
             if (background == null) background = GetComponent<SpriteRenderer>();
             if (label == null) label = GetComponentInChildren<TMP_Text>(true);
+            // The hover frame uses OverLight orders 120-122. Keep this world
+            // button directly above that frame without raising it above HUD canvases.
+            if (background != null)
+            {
+                background.sortingLayerName = "OverLight";
+                background.sortingOrder = 130;
+            }
+            var labelRenderer = label != null ? label.GetComponent<Renderer>() : null;
+            if (labelRenderer != null)
+            {
+                labelRenderer.sortingLayerName = "OverLight";
+                labelRenderer.sortingOrder = 131;
+            }
             hitCollider = GetComponent<Collider2D>();
             transform.rotation = Quaternion.identity;
             originalScale = transform.localScale;

@@ -47,6 +47,8 @@ public class HumanUnit : MonoBehaviour, IEnemyAI
 
     private void OnEnable()
     {
+        GameFoundation.Audio.GameAudioController.Register(this);
+        CombatTargetRegistry.Register(gameObject);
         if (OrderManager.Instance != null)
         {
             OrderManager.Instance.RegisterHumanUnit(this);
@@ -60,6 +62,7 @@ public class HumanUnit : MonoBehaviour, IEnemyAI
 
     private void OnDisable()
     {
+        CombatTargetRegistry.Unregister(gameObject);
         if (OrderManager.Instance != null)
         {
             OrderManager.Instance.UnregisterHumanUnit(this);

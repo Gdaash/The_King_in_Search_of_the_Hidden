@@ -58,7 +58,7 @@ namespace GameFoundation.MetaProgression
             public DeliveryMethod deliveryMethod;
             public DamageType damageType;
             [Min(0)] public float value = 1;
-            [Tooltip("0 — можно улучшать без ограничения.")][Min(0)] public int maximumRank = 1;
+            [Tooltip("0 – можно улучшать без ограничения.")][Min(0)] public int maximumRank = 1;
             public bool requiresAttack;
             public bool hasQuality;
             [Min(0)] public float rareValue, legendaryValue;
@@ -73,9 +73,9 @@ namespace GameFoundation.MetaProgression
         }
         [Range(1, 32)] public int minimumCrystalsPerEmptyHex = 1;
         [Range(1, 32)] public int maximumCrystalsPerEmptyHex = 5;
-        [Min(1)] public int experiencePerEnemy = 1;
-        [Min(1)] public int firstLevelExperience = 12;
-        [Min(0)] public int experienceIncreasePerLevel = 6;
+        [Min(0)] public int experiencePerEnemy = 0;
+        [Min(1)] public int firstLevelExperience = 6;
+        [Min(0)] public int experienceIncreasePerLevel = 3;
         public Sprite levelPointIcon;
         public List<Upgrade> upgrades = new();
         public List<WeaponDefinition> weapons = new();

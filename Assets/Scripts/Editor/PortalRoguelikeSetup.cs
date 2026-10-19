@@ -65,7 +65,7 @@ public static class PortalRoguelikeSetup
             if(w.weapon==PortalTowerBalance.Weapon.Bolts)
                 Upgrade(w,PortalTowerBalance.Effect.ExpansionSpeed,"Быстрее снаряды","Faster bolts","+25% скорости полёта снарядов.","+25% projectile flight speed.",.25f,5);
         }
-        b.upgrades.Add(new(){id="lights",title="Дополнительный рабочий луч",englishTitle="Extra working beam",description="Добавляет рабочий луч для открытия гексов и добычи. Максимум — 6.",englishDescription="Adds a working light beam for opening hexes and gathering. Maximum: 6.",icon=Icon("Magic"),effect=PortalTowerBalance.Effect.ExtraLight,value=1,maximumRank=5});
+        b.upgrades.Add(new(){id="lights",title="Дополнительный рабочий луч",englishTitle="Extra working beam",description="Добавляет рабочий луч для открытия гексов и добычи. Максимум – 6.",englishDescription="Adds a working light beam for opening hexes and gathering. Maximum: 6.",icon=Icon("Magic"),effect=PortalTowerBalance.Effect.ExtraLight,value=1,maximumRank=5});
         EditorUtility.SetDirty(b);
     }
     static void Beam()

@@ -17,7 +17,7 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private string locationId;
         [SerializeField, Range(1, 5)] private int difficulty = 1;
         [SerializeField, HideInInspector] private int activationCost; // Legacy map data; access is purchased through portal upgrades.
-        [SerializeField, Min(0), Tooltip("Количество улучшений портала для доступа. 0 — доступно сразу.")]
+        [SerializeField, Min(0), Tooltip("Количество улучшений портала для доступа. 0 – доступно сразу.")]
         private int requiredPortalLevel;
         [SerializeField] private string nameKey;
         [SerializeField] private string fallbackName;

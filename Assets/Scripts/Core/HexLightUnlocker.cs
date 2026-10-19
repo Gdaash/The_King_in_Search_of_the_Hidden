@@ -49,6 +49,7 @@ public class HexLightUnlocker : MonoBehaviour
 
     private void OnEnable()
     {
+        GameFoundation.Audio.GameAudioController.Register(this);
         if (!ActiveInstances.Contains(this))
         {
             ActiveInstances.Add(this);

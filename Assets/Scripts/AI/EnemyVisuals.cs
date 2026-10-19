@@ -46,6 +46,8 @@ public class EnemyVisuals : MonoBehaviour
         _sr = spriteParent.GetComponent<SpriteRenderer>();
     }
 
+    public void ResetForSpawn() { _isMoving = false; }
+
     void Update() 
     {
         if (_rb != null && _rb.linearVelocity.magnitude < 0.1f) _isMoving = false;

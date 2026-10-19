@@ -44,6 +44,7 @@ namespace GameFoundation.Base
         [SerializeField] private ResourceType human;
         [SerializeField] private ResourceType magicOre;
         [SerializeField] private DayReportPopup dayReportPopup;
+        private bool CanAdvanceDay => PlaytestSettings.TutorialsAndQuestsDisabled || BuildingUpgradeService.IsBuilt("housing");
         private bool daySubscribed;
         private bool languageSubscribed;
 
@@ -118,11 +119,11 @@ namespace GameFoundation.Base
         }
         private void Refresh()
         {
-            bool housingBuilt = BuildingUpgradeService.IsBuilt("housing");
+            bool canAdvanceDay = CanAdvanceDay;
             var dayBlock = nextDayPanel != null ? nextDayPanel : nextDayButton != null && nextDayButton.transform.parent.name == "Day Panel"
                 ? nextDayButton.transform.parent.gameObject : nextDayButton != null ? nextDayButton.gameObject : null;
-            if (dayBlock != null) dayBlock.SetActive(housingBuilt);
-            if (nextDayButton != null) nextDayButton.interactable = housingBuilt;
+            if (dayBlock != null) dayBlock.SetActive(canAdvanceDay);
+            if (nextDayButton != null) nextDayButton.interactable = canAdvanceDay;
             var day = DayCycleService.Instance;
             var oreAmount = GlobalResourceManager.Instance != null && magicOre != null
                 ? GlobalResourceManager.Instance.GetResourceAmount(magicOre) : 0;
@@ -211,14 +212,17 @@ namespace GameFoundation.Base
         public void CloseRefugees() => Show(refugees, false);
         public void CloseBlacksmith() => Show(blacksmith, false);
         public void CloseMagicLibrary() => Show(magicLibrary, false);
-        public void NextDay() { if (!BuildingUpgradeService.IsBuilt("housing") || DayCycleService.Instance == null) return; RefreshForecasts(); Show(nextDayConfirmation, true); }
+        public void NextDay() { if (PortalCloudTransition.IsLoading || !CanAdvanceDay || DayCycleService.Instance == null) return; RefreshForecasts(); Show(nextDayConfirmation, true); }
         public void CancelNextDay() { if (!ForestForagingService.IsPending) Show(nextDayConfirmation, false); }
         public void ConfirmNextDay()
         {
-            if (!BuildingUpgradeService.IsBuilt("housing") || ForestForagingService.IsPending) return;
+            if (PortalCloudTransition.IsLoading || !CanAdvanceDay || ForestForagingService.IsPending || DayCycleService.Instance == null) return;
+            if (PortalCloudTransition.Cover(AdvanceDayUnderClouds)) Show(nextDayConfirmation, false);
+        }
+        private void AdvanceDayUnderClouds()
+        {
+            if (this == null || DayCycleService.Instance == null || ForestForagingService.IsPending) return;
             using var notification = GameFoundation.UI.GameNotifications.BeginAction();
-            if (DayCycleService.Instance == null) return;
-            Show(nextDayConfirmation, false);
             dayReportPopup?.PrepareForNextDay();
             DayCycleService.Instance.NextDay();
             dayReportPopup?.Open(DayResourceLedger.LastReport);

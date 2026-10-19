@@ -305,26 +305,26 @@ public static class UnitDescriptionSetup
         int r=table.languages.IndexOf("ru"),e=table.languages.IndexOf("en");if(r>=0)entry.values[r]=ru;if(e>=0)entry.values[e]=en;
     }
 
-    private static void ConfigureDefenseCells(UnitStatRowView row)
+    public static void ConfigureDefenseCells(UnitStatRowView row)
     {
         var group = row.transform.Find("Defense Values") as RectTransform;
         if(group==null)group=(RectTransform)Rect("Defense Values",row.transform,Vector2.zero,new Vector2(384,38)).transform;
-        group.anchorMin=new Vector2(1,0); group.anchorMax=Vector2.one; group.pivot=new Vector2(1,.5f); group.sizeDelta=new Vector2(384,0); group.anchoredPosition=new Vector2(-12,0);
+        group.anchorMin=new Vector2(1,0); group.anchorMax=Vector2.one; group.pivot=new Vector2(1,.5f); group.sizeDelta=new Vector2(420,0); group.anchoredPosition=new Vector2(-12,0);
         var so=new SerializedObject(row);so.FindProperty("defenseGroup").objectReferenceValue=group;
-        var cells=so.FindProperty("defenseCells");cells.arraySize=4;
-        string[] sprites={Art+"/Sword.png",Art+"/Fire.png","Assets/Sprites/Units/Evolution/IceState.png",Art+"/Magic.png"};
-        for(int i=0;i<4;i++)
+        var cells=so.FindProperty("defenseCells");cells.arraySize=5;so.FindProperty("defenseLabelRightInset").floatValue=444;
+        string[] sprites={Art+"/Sword.png",Art+"/Fire.png","Assets/Sprites/Units/Evolution/IceState.png",Art+"/Magic.png","Assets/Sprites/Ui/UIKit Stats/Lightning.png"};
+        for(int i=0;i<5;i++)
         {
             string name=((DamageType)i).ToString();var cell=group.Find(name) as RectTransform;
             if(cell==null)cell=(RectTransform)Rect(name,group,Vector2.zero,new Vector2(96,38)).transform;
-            cell.anchorMin=cell.anchorMax=cell.pivot=new Vector2(0,.5f);cell.anchoredPosition=new Vector2(i*96,0);cell.sizeDelta=new Vector2(96,38);
+            cell.anchorMin=cell.anchorMax=cell.pivot=new Vector2(0,.5f);cell.anchoredPosition=new Vector2(i*84,0);cell.sizeDelta=new Vector2(84,38);
             var icon=cell.Find("Icon")?.GetComponent<UnityEngine.UI.Image>();
             if(icon==null)icon=Rect("Icon",cell,Vector2.zero,new Vector2(32,32)).AddComponent<UnityEngine.UI.Image>();
             icon.rectTransform.anchorMin=icon.rectTransform.anchorMax=new Vector2(0,.5f);icon.rectTransform.anchoredPosition=new Vector2(16,0);icon.raycastTarget=false;
             ResourceIconSizing.Apply(icon,AssetDatabase.LoadAssetAtPath<Sprite>(sprites[i]));
             icon.color=i==2?Color.white:new Color(.78f,.7f,.88f);
             var amount=cell.Find("Amount")?.GetComponent<UnityEngine.UI.Text>()??Text("Amount",cell,"0%",18,TextAnchor.MiddleRight);
-            var rect=amount.rectTransform;rect.anchorMin=rect.anchorMax=rect.pivot=new Vector2(0,.5f);rect.anchoredPosition=new Vector2(34,0);rect.sizeDelta=new Vector2(56,34);amount.horizontalOverflow=HorizontalWrapMode.Overflow;
+            var rect=amount.rectTransform;rect.anchorMin=rect.anchorMax=rect.pivot=new Vector2(0,.5f);rect.anchoredPosition=new Vector2(34,0);rect.sizeDelta=new Vector2(50,34);amount.fontSize=16;amount.horizontalOverflow=HorizontalWrapMode.Overflow;
             var prop=cells.GetArrayElementAtIndex(i);prop.FindPropertyRelative("type").enumValueIndex=i;prop.FindPropertyRelative("icon").objectReferenceValue=icon;prop.FindPropertyRelative("amount").objectReferenceValue=amount;
         }
         so.ApplyModifiedPropertiesWithoutUndo();group.gameObject.SetActive(false);
@@ -412,7 +412,7 @@ public static class UnitDescriptionSetup
         Entry("unit.swordsman.description","Боец ближнего боя. Сближается с противником и защищает подступы к порталу.","A melee fighter. Closes in on enemies and defends the approaches to the portal.");
         Entry("unit.archer.description","Боец дальнего боя. Стреляет с расстояния и старается удерживать дистанцию.","A ranged fighter. Fires from afar and tries to keep a safe distance.");
         Entry("unit.details.recruit","Новобранец · без звёзд","Recruit · no stars");Entry("unit.details.progress","Уровень {0}/10 · опыт {1}","Level {0}/10 · XP {1}");Entry("unit.details.maximum","максимум","maximum");
-        Entry("unit.details.footer","За убийство: {0} опыта · за помощь: {1}\nНовый день полностью восстанавливает здоровье.\nКолесо мыши — прокрутка характеристик.","Kill: {0} XP · assist: {1} XP\nA new day restores health completely.\nMouse wheel — scroll statistics.");
+        Entry("unit.details.footer","За убийство: {0} опыта · за помощь: {1}\nНовый день полностью восстанавливает здоровье.\nКолесо мыши – прокрутка характеристик.","Kill: {0} XP · assist: {1} XP\nA new day restores health completely.\nMouse wheel – scroll statistics.");
         Entry("unit.details.weakest","Меньше % HP","Lowest % HP"); Entry("unit.details.nearest","Ближайший","Nearest");
         Entry("unit.details.heading","ХАРАКТЕРИСТИКИ","STATISTICS");Entry("unit.details.value_heading","ЗНАЧЕНИЕ","VALUE");
         Entry("unit.details.per_second"," / с"," / s");Entry("unit.details.seconds"," с"," s");Entry("unit.details.distance"," ед."," u");Entry("unit.details.speed_unit"," ед./с"," u/s");Entry("unit.details.hp_per_second"," HP/с"," HP/s");Entry("unit.details.percent_per_second","% HP/с","% HP/s");

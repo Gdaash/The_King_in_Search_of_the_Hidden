@@ -18,14 +18,14 @@ internal sealed class GlobalStatsEditor : Editor
             float multiplier = purchased ? stats.FindUpgradeDefinition(ScientificUpgrades.SharpAxes)?.effectValue ?? 1f : 1f;
             EditorGUILayout.HelpBox(
                 $"Базовое время задаётся в Duration таймера в префабе.\n" +
-                $"Модификатор «Заточить топоры»: " +
+                $"Модификатор \"Заточить топоры\": " +
                 (purchased ? $"куплено, ×{multiplier:0.##}" : "не куплено") +
                 $"; ячейка сохранения: {SaveSlotPrefs.SelectedSlot}.", MessageType.Info);
         }
 
         if(stats.usesPrefabCombatBases)
         {
-            EditorGUILayout.HelpBox("Базовые HP, скорость и броня находятся в Combatant префаба; атака — в CombatWeapon; сопротивления — в CombatDefenseProfile. Здесь только модификаторы.",MessageType.Info);
+            EditorGUILayout.HelpBox("Базовые HP, скорость и броня находятся в Combatant префаба; атака – в CombatWeapon; сопротивления – в CombatDefenseProfile. Здесь только модификаторы.",MessageType.Info);
             DrawPropertiesExcluding(serializedObject,"baseMaxHealth","baseSpeed","baseAttackCooldown","baseAttackRange","damageSettings","resistances");
             var damage=serializedObject.FindProperty("damageSettings");
             for(int i=0;i<damage.arraySize;i++){var d=damage.GetArrayElementAtIndex(i);EditorGUILayout.PropertyField(d.FindPropertyRelative("bonusDamage"),new GUIContent("Бонус урона "+(DamageType)d.FindPropertyRelative("type").enumValueIndex));}
@@ -61,7 +61,7 @@ internal sealed class GlobalStatsEditor : Editor
             foreach (var entry in table.entries)
             {
                 if (entry == null || string.IsNullOrEmpty(entry.id)) continue;
-                EditorGUILayout.ToggleLeft($"{entry.id} — {entry.title} ({entry.effectValue:g})", source.HasUpgrade(entry.id));
+                EditorGUILayout.ToggleLeft($"{entry.id} – {entry.title} ({entry.effectValue:g})", source.HasUpgrade(entry.id));
             }
         }
     }

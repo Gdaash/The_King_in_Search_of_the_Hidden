@@ -49,7 +49,22 @@ public class GlobalStats : ScriptableObject
     [Header("Производство (Таймеры)")]
     [Tooltip("На сколько секунд улучшения сокращают базовый цикл из префаба.")]
     public float bonusProductionSpeed = 0f;
-    public float ProductionTimeMultiplier => applySharpAxes ? ScientificMultiplier(ScientificUpgrades.SharpAxes) : 1f;
+    [SerializeField] private ScientificUpgrades.GatheringResource gatheringResource;
+    public ScientificUpgrades.GatheringResource GatheringResource => gatheringResource;
+    public float ProductionTimeMultiplier => gatheringResource != ScientificUpgrades.GatheringResource.None
+        ? ScientificMultiplier(ScientificUpgrades.SpeedUpgrade(gatheringResource))
+        : applySharpAxes ? ScientificMultiplier(ScientificUpgrades.SharpAxes) : 1f;
+    public float GatheringAlarmReduction => ScientificReduction(ScientificUpgrades.QuietUpgrade(gatheringResource));
+    public int CrystalEfficiencyRank
+    {
+        get
+        {
+            int rank = 0;
+            if (UpgradeTable != null) foreach (var entry in UpgradeTable.entries)
+                if (entry.GroupId == ScientificUpgrades.CrystalEfficiency && HasUpgrade(entry.id)) rank++;
+            return Mathf.Min(5, rank);
+        }
+    }
     public float ApplyProductionTimeModifiers(float baseDuration) =>
         Mathf.Max(0.2f, (baseDuration - bonusProductionSpeed) * ProductionTimeMultiplier);
 
@@ -58,11 +73,11 @@ public class GlobalStats : ScriptableObject
     [SerializeField] private ScientificUpgradeTable scientificUpgradeTable;
     [Tooltip("Источник купленных научных улучшений для статов конкретного объекта.")]
     [SerializeField] private GlobalStats scientificProgressStats;
-    [Tooltip("Стрельба разрешена после покупки «Магических стрел».")]
+    [Tooltip("Стрельба разрешена после покупки \"Магических стрел\".")]
     [SerializeField] private bool requiresPortalArrows;
-    [Tooltip("Умножать здоровье на эффект «Крепких стен».")]
+    [Tooltip("Умножать здоровье на эффект \"Крепких стен\".")]
     [SerializeField] private bool applyStrongWalls;
-    [Tooltip("Умножать время производства на эффект «Заточить топоры».")]
+    [Tooltip("Умножать время производства на эффект \"Заточить топоры\".")]
     [SerializeField] private bool applySharpAxes;
     [Tooltip("Умножать время открытия гекса на эффект ускорения.")]
     [SerializeField] private bool applyFastHex;
@@ -91,7 +106,7 @@ public class GlobalStats : ScriptableObject
         if (!CanPurchaseUpgrade(entry)) return false;
         if (entry.cost > 0 && !GlobalResourceManager.Instance.TrySpendResource(entry.costResource, entry.cost)) return false;
         UnlockUpgrade(id);
-        GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Изучено: ") + entry.title, GameFoundation.UI.NotificationKind.Positive);
+        GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Изучено: ") + GameFoundation.Localization.GameText.Get(entry.title), GameFoundation.UI.NotificationKind.Positive);
         return true;
     }
     public ScientificUpgradeTable.Entry FindUpgradeDefinition(string id) =>

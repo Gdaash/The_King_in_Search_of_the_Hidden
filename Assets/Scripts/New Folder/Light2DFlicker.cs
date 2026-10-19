@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
 /// <summary>
-/// Создаёт эффект «живого» 2D-источника света:
+/// Создаёт эффект "живого" 2D-источника света:
 /// дрожание позиции по X/Y и пульсация outer-radius
 /// на основе многооктавного шума Перлина.
 /// </summary>
@@ -164,7 +164,7 @@ public class Light2DFlicker : MonoBehaviour
     //  Публичные методы для runtime-настройки
     // ─────────────────────────────────────────────
 
-    /// <summary>Перезапоминает текущую позицию как «центр» дрожания.</summary>
+    /// <summary>Перезапоминает текущую позицию как "центр" дрожания.</summary>
     public void ResetOrigin() => _originLocalPos = transform.localPosition;
 
     /// <summary>Перезапоминает текущий outer-radius как базовый.</summary>

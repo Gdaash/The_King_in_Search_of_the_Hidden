@@ -64,6 +64,8 @@ public class TimerController : MonoBehaviour
     /// <summary>Оставшееся игровое время текущего цикла.</summary>
     public float TimeRemaining => Mathf.Max(0f, _currentTime);
 
+    private void OnEnable() => GameFoundation.Audio.GameAudioController.Register(this);
+
     void Start()
     {
         _currentTime = CurrentDuration;

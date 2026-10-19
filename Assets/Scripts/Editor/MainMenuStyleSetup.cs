@@ -37,8 +37,8 @@ public static class MainMenuStyleSetup
         var commonButton=common.Find("Settings").GetComponent<UnityEngine.UI.Button>();
         var background=canvas.Find("Background").GetComponent<UnityEngine.UI.Image>();background.color=new Color(.045f,.035f,.06f,1);
         var accent=canvas.Find("Accent");if(accent)accent.gameObject.SetActive(false);
-        var panel=Child(canvas,"Main Menu Panel");var panelImage=panel.GetComponent<UnityEngine.UI.Image>()??panel.gameObject.AddComponent<UnityEngine.UI.Image>();EditorUtility.CopySerialized(common.GetComponent<UnityEngine.UI.Image>(),panelImage);panelImage.raycastTarget=false;Place(panel,new Vector2(600,640),Vector2.zero);panel.SetSiblingIndex(background.transform.GetSiblingIndex()+1);
-        var logo=canvas.Find("Game Logo");if(!logo)logo=panel.Find("Game Logo");logo.SetParent(panel,false);var logoImage=logo.GetComponent<UnityEngine.UI.Image>();Place((RectTransform)logo,logoImage.sprite.rect.size*2,new Vector2(0,160));
+        var panel=Child(canvas,"Main Menu Panel");var panelImage=panel.GetComponent<UnityEngine.UI.Image>()??panel.gameObject.AddComponent<UnityEngine.UI.Image>();EditorUtility.CopySerialized(common.GetComponent<UnityEngine.UI.Image>(),panelImage);panelImage.raycastTarget=false;Place(panel,new Vector2(660,736),Vector2.zero);panel.SetSiblingIndex(background.transform.GetSiblingIndex()+1);
+        var logo=canvas.Find("Game Logo");if(!logo)logo=panel.Find("Game Logo");logo.SetParent(panel,false);var logoImage=logo.GetComponent<UnityEngine.UI.Image>();Place((RectTransform)logo,logoImage.sprite.rect.size*2,new Vector2(0,196));
         var subtitle=canvas.Find("Subtitle");if(!subtitle)subtitle=panel.Find("Subtitle");subtitle.SetParent(panel,false);Place((RectTransform)subtitle,new Vector2(512,56),new Vector2(0,4));Label(subtitle.GetComponent<TMP_Text>(),20,theme.neutralLabelColor);
         var buttons=new[]{play,settings,exit};for(int i=0;i<buttons.Length;i++)
         {

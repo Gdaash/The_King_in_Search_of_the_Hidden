@@ -23,7 +23,6 @@ namespace GameFoundation.Audio
         private readonly List<AudioSource> worldSources = new();
         private readonly Dictionary<ResourceType, int> resourceAmounts = new();
         private readonly Dictionary<GameAudioCue, float> lastPlayTime = new();
-        private float nextDiscoveryTime;
         private int nextWorldVoice;
         private GameSettingsService observedSettings;
 
@@ -51,7 +50,7 @@ namespace GameFoundation.Audio
 
         private void Start()
         {
-            OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
+            ObserveSettings();
         }
 
         private void OnDestroy()
@@ -79,9 +78,7 @@ namespace GameFoundation.Audio
         private void Update()
         {
             ObserveSettings();
-            if (Time.unscaledTime < nextDiscoveryTime) return;
-            nextDiscoveryTime = Time.unscaledTime + 0.75f;
-            DiscoverRuntimeObjects();
+
         }
 
         private void ObserveSettings()
@@ -105,7 +102,7 @@ namespace GameFoundation.Audio
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             resourceAmounts.Clear();
-            nextDiscoveryTime = 0f;
+            DiscoverRuntimeObjects();
             PlaySceneMusic(scene.name);
         }
 
@@ -125,33 +122,54 @@ namespace GameFoundation.Audio
             if (clip != null) musicSource.Play();
         }
 
+        // Scene bootstrap handles existing/inactive controls once. Runtime objects register from their lifecycle.
         private void DiscoverRuntimeObjects()
         {
-            foreach (Button button in FindObjectsByType<Button>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (button.GetComponent<ButtonAudioHook>() == null) button.gameObject.AddComponent<ButtonAudioHook>().Setup(button);
-            foreach (Health health in FindObjectsByType<Health>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (health.GetComponent<HealthAudioHook>() == null) health.gameObject.AddComponent<HealthAudioHook>().Setup(health);
-            foreach (EnemyAI ai in FindObjectsByType<EnemyAI>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (ai.GetComponent<CombatAudioHook>() == null) ai.gameObject.AddComponent<CombatAudioHook>().Setup(ai);
-            foreach (EnemyAI_Ranged ai in FindObjectsByType<EnemyAI_Ranged>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (ai.GetComponent<CombatAudioHook>() == null) ai.gameObject.AddComponent<CombatAudioHook>().Setup(ai);
-            foreach (ArcherTower tower in FindObjectsByType<ArcherTower>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (tower.GetComponent<CombatAudioHook>() == null) tower.gameObject.AddComponent<CombatAudioHook>().Setup(tower);
-            foreach (TimerController timer in FindObjectsByType<TimerController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (timer.GetComponent<TimerAudioHook>() == null) timer.gameObject.AddComponent<TimerAudioHook>().Setup(timer);
-            foreach (HexLightUnlocker hex in FindObjectsByType<HexLightUnlocker>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (hex.GetComponent<HexAudioHook>() == null) hex.gameObject.AddComponent<HexAudioHook>().Setup(hex);
-            foreach (AlarmSystem alarm in FindObjectsByType<AlarmSystem>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (alarm.GetComponent<AlarmAudioHook>() == null) alarm.gameObject.AddComponent<AlarmAudioHook>().Setup(alarm);
-            foreach (HumanUnit unit in FindObjectsByType<HumanUnit>(FindObjectsInactive.Include, FindObjectsSortMode.None)) AddFootsteps(unit.gameObject);
-            foreach (Porter unit in FindObjectsByType<Porter>(FindObjectsInactive.Include, FindObjectsSortMode.None)) AddFootsteps(unit.gameObject);
-            foreach (EnemyMovement unit in FindObjectsByType<EnemyMovement>(FindObjectsInactive.Include, FindObjectsSortMode.None)) AddFootsteps(unit.gameObject);
+            foreach (var root in SceneManager.GetActiveScene().GetRootGameObjects()) RegisterHierarchy(root);
             InitializeResourceSnapshot();
         }
 
-        private static void AddFootsteps(GameObject target)
+        public static void RegisterHierarchy(GameObject root)
         {
-            if (target.GetComponent<FootstepAudioHook>() == null) target.AddComponent<FootstepAudioHook>();
+            if (root == null) return;
+            foreach (var component in root.GetComponentsInChildren<MonoBehaviour>(true)) Register(component);
+        }
+
+        public static void Register(Component component)
+        {
+            if (component == null) return;
+            switch (component)
+            {
+                case Button value:
+                    if (!value.TryGetComponent<ButtonAudioHook>(out _)) value.gameObject.AddComponent<ButtonAudioHook>().Setup(value);
+                    break;
+                case Health value:
+                    if (!value.TryGetComponent<HealthAudioHook>(out _)) value.gameObject.AddComponent<HealthAudioHook>().Setup(value);
+                    break;
+                case EnemyAI value:
+                    if (!value.TryGetComponent<CombatAudioHook>(out _)) value.gameObject.AddComponent<CombatAudioHook>().Setup(value);
+                    break;
+                case EnemyAI_Ranged value:
+                    if (!value.TryGetComponent<CombatAudioHook>(out _)) value.gameObject.AddComponent<CombatAudioHook>().Setup(value);
+                    break;
+                case ArcherTower value:
+                    if (!value.TryGetComponent<CombatAudioHook>(out _)) value.gameObject.AddComponent<CombatAudioHook>().Setup(value);
+                    break;
+                case TimerController value:
+                    if (!value.TryGetComponent<TimerAudioHook>(out _)) value.gameObject.AddComponent<TimerAudioHook>().Setup(value);
+                    break;
+                case HexLightUnlocker value:
+                    if (!value.TryGetComponent<HexAudioHook>(out _)) value.gameObject.AddComponent<HexAudioHook>().Setup(value);
+                    break;
+                case AlarmSystem value:
+                    if (!value.TryGetComponent<AlarmAudioHook>(out _)) value.gameObject.AddComponent<AlarmAudioHook>().Setup(value);
+                    break;
+                case HumanUnit _:
+                case Porter _:
+                case EnemyMovement _:
+                    if (!component.TryGetComponent<FootstepAudioHook>(out _)) component.gameObject.AddComponent<FootstepAudioHook>();
+                    break;
+            }
         }
 
         private void InitializeResourceSnapshot()

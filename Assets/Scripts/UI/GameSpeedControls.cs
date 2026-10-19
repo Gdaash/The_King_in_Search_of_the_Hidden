@@ -58,6 +58,7 @@ public sealed class GameSpeedControls : MonoBehaviour
 
     private bool CanTogglePause()
     {
+        if (GameFoundation.MetaProgression.PortalCloudTransition.IsLoading) return false;
         if (GameFoundation.MetaProgression.PortalTowerProgression.IsChoosingUpgrade ||
             GameFoundation.MetaProgression.FirstRunLightTutorial.BlocksInput) return false;
         if (Object.FindFirstObjectByType<GameFoundation.Settings.GameMenuController>() != null) return false;

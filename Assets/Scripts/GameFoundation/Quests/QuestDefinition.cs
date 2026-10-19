@@ -34,7 +34,7 @@ namespace GameFoundation.Quests
             public ResourceType resource;
             [Min(1)] public int amount = 1;
         }
-        [Header("Награда — выдаётся только по кнопке")]
+        [Header("Награда – выдаётся только по кнопке")]
         public List<ResourceReward> resourceRewards = new();
         public List<ContentUnlockDefinition> unlockRewards = new();
         [Tooltip("Открыть наградной контент сразу после выполнения условий. Кнопка награды всё ещё завершает задание.")]

@@ -44,8 +44,8 @@ public class Porter : MonoBehaviour, IEnemyAI
         _rb = GetComponent<Rigidbody2D>();
     }
 
-    void OnEnable() => OrderManager.Instance?.RegisterPorter(this);
-    void OnDisable() => OrderManager.Instance?.UnregisterPorter(this);
+    void OnEnable() { CombatTargetRegistry.Register(gameObject); GameFoundation.Audio.GameAudioController.Register(this); OrderManager.Instance?.RegisterPorter(this); }
+    void OnDisable() { CombatTargetRegistry.Unregister(gameObject); OrderManager.Instance?.UnregisterPorter(this); }
 
     public static void NotifyAllPorters()
     {

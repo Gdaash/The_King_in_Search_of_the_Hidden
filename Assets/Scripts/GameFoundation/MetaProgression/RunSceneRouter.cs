@@ -7,7 +7,13 @@ namespace GameFoundation.MetaProgression
     {
         [SerializeField] private string baseScene = "Base";
         [SerializeField] private string runScene = "World";
-        public void EnterRun() { DayResourceLedger.BeginRun(); SceneManager.LoadScene(runScene); }
+        public bool CanEnterRun => PortalCloudTransition.CanLoad(runScene);
+        public void EnterRun()
+        {
+            if (!CanEnterRun) return;
+            DayResourceLedger.BeginRun();
+            PortalCloudTransition.Load(runScene);
+        }
         public void ReturnToBase() { DayResourceLedger.EndRun(); SceneManager.LoadScene(baseScene); }
     }
 }

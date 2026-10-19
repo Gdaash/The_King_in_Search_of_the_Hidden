@@ -38,6 +38,7 @@ namespace GameFoundation.Settings
         }
         private void Update()
         {
+            if (PortalCloudTransition.IsLoading) return;
             if (showingSettings && (!settings || !settings.gameObject.activeSelf))
             { showingSettings = false; RestoreSettingsParent(); window.SetActive(true); Refresh(); }
             if (Input.GetKeyDown(KeyCode.Escape)) { if (showingSettings) settings.Close(); else Cancel(); }

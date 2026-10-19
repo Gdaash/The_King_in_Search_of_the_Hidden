@@ -706,6 +706,7 @@ MonoBehaviour:
   maxProductionPool: 3
   storageFullVisual: {fileID: 0}
   maxProductionCycles: 0
+  releaseHexCrystalsOnDepletion: 0
   ignoreFlag: 0
   retainHumansBetweenCycles: 1
   humanSuccessor: {fileID: 0}
@@ -748,6 +749,7 @@ MonoBehaviour:
     count: 1
   spawnPoint: {fileID: 4755186361409629258}
   spawnSpread: 0.5
+  resourceDropHalfSize: {x: 1.5, y: 1.3}
   iconPrefab: {fileID: 2980702624733634541, guid: cffa8ac521b79ff438ccebad0e8c8c29, type: 3}
   inTransitIconPrefab: {fileID: 2980702624733634541, guid: aa2a03c0601580a459e8031acc320dc3, type: 3}
   iconsContainer: {fileID: 4582401977190987221}
@@ -1089,6 +1091,7 @@ MonoBehaviour:
   maxProductionPool: 999999
   storageFullVisual: {fileID: 0}
   maxProductionCycles: 1
+  releaseHexCrystalsOnDepletion: 0
   ignoreFlag: 0
   retainHumansBetweenCycles: 0
   humanSuccessor: {fileID: 4606251337823689033}
@@ -1127,6 +1130,7 @@ MonoBehaviour:
   outputResources: []
   spawnPoint: {fileID: 9127175738648567830}
   spawnSpread: 0.5
+  resourceDropHalfSize: {x: 1.5, y: 1.3}
   iconPrefab: {fileID: 2980702624733634541, guid: cffa8ac521b79ff438ccebad0e8c8c29, type: 3}
   inTransitIconPrefab: {fileID: 2980702624733634541, guid: aa2a03c0601580a459e8031acc320dc3, type: 3}
   iconsContainer: {fileID: 2436389970000279931}
@@ -1832,7 +1836,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 234f14723d9da124d9b7345cc2cba8ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stats: {fileID: 0}
+  stats: {fileID: 11400000, guid: fade4e4e36b4bb740a135771bd061dcd, type: 2}
   progressBarObject: {fileID: 238662740943902385}
   duration: 10
   loopInfinitely: 0
@@ -1878,6 +1882,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AlarmEmitter
   alarmAmount: 10
+  productionStats: {fileID: 11400000, guid: fade4e4e36b4bb740a135771bd061dcd, type: 2}
 --- !u!114 &4711197662543156532
 MonoBehaviour:
   m_ObjectHideFlags: 0

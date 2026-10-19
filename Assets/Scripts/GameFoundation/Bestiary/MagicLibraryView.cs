@@ -31,6 +31,7 @@ namespace GameFoundation.Bestiary
         private void OnEnable()
         {
             BestiaryService.Encountered += OnEncountered;
+            BestiaryService.ResearchChanged += OnResearchChanged;
             if (LocalizationService.Instance != null) LocalizationService.Instance.LanguageChanged += Refresh;
             subscribed = true;
             Refresh();
@@ -40,6 +41,7 @@ namespace GameFoundation.Bestiary
         {
             if (!subscribed) return;
             BestiaryService.Encountered -= OnEncountered;
+            BestiaryService.ResearchChanged -= OnResearchChanged;
             if (LocalizationService.Instance != null) LocalizationService.Instance.LanguageChanged -= Refresh;
             subscribed = false;
             if (detailsTooltip != null) detailsTooltip.Hide(null);
@@ -58,6 +60,7 @@ namespace GameFoundation.Bestiary
         }
 
         private void OnEncountered(string _) => Refresh();
+        private void OnResearchChanged(string _) { foreach (var entry in entries) if (entry != null) entry.RefreshResearch(); }
 
         public void Refresh()
         {

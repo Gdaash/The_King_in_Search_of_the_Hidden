@@ -19,6 +19,7 @@ namespace GameFoundation.MetaProgression
         [Header("Получение опыта")]
         [SerializeField] private PortalExperienceCrystal experienceCrystalPrefab;
         [SerializeField] private Sprite groundExperienceCrystal;
+        [SerializeField] private GlobalStats scientificStats;
         private ResourceType crystalResource;
         private readonly Dictionary<string, int> ranks = new();
         private readonly Dictionary<string, float> acquiredValues = new();
@@ -68,7 +69,7 @@ namespace GameFoundation.MetaProgression
             Experience += amount - repayment;
         }
         public int LevelPoints { get; private set; }
-        public int RequiredExperience => balance.RequiredExperience(Level);
+        public int RequiredExperience => ScientificUpgrades.RequiredCrystals(balance.RequiredExperience(Level), scientificStats != null ? scientificStats.CrystalEfficiencyRank : 0);
         public bool CanAttack => !expeditionEnded && HasWeapon(PortalTowerBalance.Weapon.Bolts);
         public int LightCount => Mathf.Clamp(1 + Mathf.RoundToInt(EffectTotal(PortalTowerBalance.Effect.ExtraLight)), 1, WorldFlashlightAvailability.MaximumCount);
         public int ProjectileCount => Count(PortalTowerBalance.Weapon.Bolts);
@@ -97,6 +98,13 @@ namespace GameFoundation.MetaProgression
             CrystalTechnologyAvailable = PlaytestSettings.TutorialsAndQuestsDisabled || (DayCycleService.Instance != null && DayCycleService.Instance.Day > 1);
             if (!CrystalTechnologyAvailable) { Changed?.Invoke(); return; }
             if (balance == null || upgradeWindow == null) return;
+            var tutorial = UnityEngine.Object.FindFirstObjectByType<FirstRunLightTutorial>();
+            if (tutorial != null && tutorial.TryExplainCrystals(BeginInitialWeaponChoice)) { Changed?.Invoke(); return; }
+            BeginInitialWeaponChoice();
+        }
+        private void BeginInitialWeaponChoice()
+        {
+            if (expeditionEnded) return;
             IsInitialWeaponChoice = true;
             LevelPoints = 1;
             ShowChoice();

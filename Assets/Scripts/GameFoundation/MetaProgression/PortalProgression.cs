@@ -11,11 +11,14 @@ namespace GameFoundation.MetaProgression
     public static class PortalProgression
     {
         public const string BuildingId = "portal";
+        public static bool DemoRestrictionsEnabled => true;
+        public const string DemoLocationId = "forest";
+        public static bool IsDemoLocked(PortalLocationDefinition location) => DemoRestrictionsEnabled && location != null && location.LocationId != DemoLocationId;
         private const string LevelKey = "foundation.building.portal.upgradeLevel";
         private const string MigrationKey = "foundation.portal.upgradesMigrated";
         public static int Level => BuildingUpgradeService.Level(BuildingId);
         public static int MaxLevel => BuildingUpgradeService.Catalog?.Find(BuildingId)?.levels.Count ?? 0;
-        public static bool IsUnlocked(PortalLocationDefinition location) => location != null && Level >= location.RequiredPortalLevel;
+        public static bool IsUnlocked(PortalLocationDefinition location) => location != null && !IsDemoLocked(location) && Level >= location.RequiredPortalLevel;
 
         public static string DestinationsAt(int level) => string.Join(", ", DayCycleService.GetPortalLocations()
             .Where(l => l.RequiredPortalLevel == level).Select(l => Name(l)));

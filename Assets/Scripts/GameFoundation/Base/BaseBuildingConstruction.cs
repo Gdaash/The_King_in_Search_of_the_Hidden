@@ -12,7 +12,7 @@ namespace GameFoundation.Base
     {
         [SerializeField] private string buildingId;
         [SerializeField] private ContentUnlockDefinition requiredUnlock;
-        public bool ConstructionUnlocked => ContentUnlocks.IsUnlocked(requiredUnlock);
+        public bool ConstructionUnlocked => PlaytestSettings.TutorialsAndQuestsDisabled || ContentUnlocks.IsUnlocked(requiredUnlock);
         public ContentUnlockDefinition RequiredUnlock => requiredUnlock;
         public Button ConstructionButton => buildButton;
         [SerializeField] private string nameKey;

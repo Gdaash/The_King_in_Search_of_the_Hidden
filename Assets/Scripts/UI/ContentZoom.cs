@@ -50,6 +50,7 @@ namespace Evolution_adventure.Scripts.UI
 
         void Update()
         {
+            if (GameFoundation.MetaProgression.PortalCloudTransition.IsLoading) return;
             float scroll = Input.mouseScrollDelta.y;
             if (scroll == 0) return;
 

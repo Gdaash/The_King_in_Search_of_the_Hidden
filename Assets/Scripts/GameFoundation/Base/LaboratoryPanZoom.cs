@@ -49,6 +49,7 @@ namespace GameFoundation.Base
 
         private void Update()
         {
+            if (GameFoundation.MetaProgression.PortalCloudTransition.IsLoading) return;
             if (content == null || interactionArea == null) return;
             Vector2 direction = Vector2.zero;
             if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) direction.x += 1f;

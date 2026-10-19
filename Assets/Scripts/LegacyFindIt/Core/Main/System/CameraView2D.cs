@@ -67,7 +67,7 @@ public class CameraView2D : MonoBehaviour
 
     private void Update()
     {
-        if (StopCameraFunc || _camera == null || GameFoundation.MetaProgression.FirstRunLightTutorial.BlocksInput ||
+        if (StopCameraFunc || _camera == null || GameFoundation.MetaProgression.PortalCloudTransition.IsLoading || GameFoundation.MetaProgression.FirstRunLightTutorial.BlocksInput ||
             GameFoundation.MetaProgression.PortalTowerProgression.IsChoosingUpgrade)
         {
             rightPanPending = rightPanActive = false; IsPanning = false;

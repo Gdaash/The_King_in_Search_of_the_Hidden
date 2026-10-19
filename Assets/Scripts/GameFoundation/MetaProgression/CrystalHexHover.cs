@@ -27,6 +27,7 @@ namespace GameFoundation.MetaProgression
             [NonSerialized] public WorldFlashlightAvailability.HoverState state;
             [NonSerialized] public float alpha, clickTime = -1, clickAlpha;
             [NonSerialized] public bool canRecall, canStart;
+            [NonSerialized] public bool unlit;
         }
         [SerializeField] private WorldFlashlightAvailability crystal;
         [SerializeField] private Camera worldCamera;
@@ -39,6 +40,7 @@ namespace GameFoundation.MetaProgression
         [SerializeField, Min(.01f)] private float fadeSeconds = .3f;
         [SerializeField, Min(.01f)] private float clickSeconds = .22f;
         [SerializeField, Range(0, .5f)] private float bumpAmount = .12f;
+        [SerializeField, Range(0, 1)] private float unlitFrameAlpha = .6f;
         [SerializeField] private View[] views;
         private int current = -1;
         private WorldFlashlightAvailability.HoverTarget desired;
@@ -72,6 +74,7 @@ namespace GameFoundation.MetaProgression
         public void Present(WorldFlashlightAvailability.HoverTarget target, float deltaTime)
         {
             desired = target;
+            bool unlit = desired.Anchor != null && !crystal.HasLightAt(desired.Anchor.position);
             if (desired.Anchor != null && (current < 0 || views[current].anchor != desired.Anchor))
             {
                 current = (current + 1) % views.Length;
@@ -80,7 +83,7 @@ namespace GameFoundation.MetaProgression
                 view.anchor = desired.Anchor;
                 view.alpha = 0;
                 view.clickTime = -1;
-                SetState(view, desired.State);
+                SetState(view, desired.State, unlit);
                 view.root.gameObject.SetActive(true);
             }
             float dt = Mathf.Max(0, deltaTime);
@@ -109,14 +112,14 @@ namespace GameFoundation.MetaProgression
                     float t = Mathf.Clamp01(view.clickTime / Mathf.Max(.01f, clickSeconds));
                     view.root.localScale = Vector3.one * (1 + bumpAmount * Mathf.Sin(t * Mathf.PI));
                     view.alpha = view.clickAlpha * (1 - t);
-                    if (t >= 1) { view.clickTime = -1; if (show) SetState(view, desired.State); }
+                    if (t >= 1) { view.clickTime = -1; if (show) SetState(view, desired.State, unlit); }
                 }
                 else
                 {
                     view.root.localScale = Vector3.one;
-                    bool stateChanged = show && view.state != desired.State;
+                    bool stateChanged = show && (view.state != desired.State || view.unlit != unlit);
                     view.alpha = Mathf.MoveTowards(view.alpha, show && !stateChanged ? 1 : 0, dt / Mathf.Max(.01f, fadeSeconds));
-                    if (view.alpha == 0 && stateChanged) SetState(view, desired.State);
+                    if (view.alpha == 0 && stateChanged) SetState(view, desired.State, unlit);
                 }
                 Paint(view, view.alpha);
                 if (!show && view.alpha == 0 && view.clickTime < 0)
@@ -131,10 +134,11 @@ namespace GameFoundation.MetaProgression
             view.clickAlpha = view.alpha;
             view.clickTime = 0;
         }
-        private void SetState(View view, WorldFlashlightAvailability.HoverState state)
+        private void SetState(View view, WorldFlashlightAvailability.HoverState state, bool unlit)
         {
             view.state = state;
-            view.frame.sprite = state switch
+            view.unlit = unlit;
+            view.frame.sprite = unlit ? busySprite : state switch
             {
                 WorldFlashlightAvailability.HoverState.WaitingForResources => cancelSprite,
                 WorldFlashlightAvailability.HoverState.RecallOnly => cancelSprite,
@@ -143,9 +147,9 @@ namespace GameFoundation.MetaProgression
                 _ => availableSprite
             };
         }
-        private static void Paint(View view, float alpha)
+        private void Paint(View view, float alpha)
         {
-            view.frame.color = new Color(1, 1, 1, alpha);
+            view.frame.color = new Color(1, 1, 1, alpha * (view.unlit ? unlitFrameAlpha : 1f));
             string key = view.state == WorldFlashlightAvailability.HoverState.WaitingForResources ? "world.crystal.cancel" : null;
             string text = key == null ? "" : LocalizationService.Instance?.Get(key);
             if (key != null && (string.IsNullOrEmpty(text) || text == key))

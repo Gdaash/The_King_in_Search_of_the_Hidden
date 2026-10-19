@@ -58,12 +58,15 @@ namespace GameFoundation.Base
                 BuildingConstructionTooltip.Instance?.Hide();
             }
             label.text = (level < max ? Tr("base.upgrade.action", GameFoundation.Localization.GameText.Get("Улучшить")) : Tr("base.upgrade.max", GameFoundation.Localization.GameText.Get("Максимум"))) + " " + level + "/" + max;
+            if (buildingId == PortalProgression.BuildingId && PortalProgression.DemoRestrictionsEnabled)
+                label.text = Tr("base.portal.demo_unavailable", "Недоступно в демо");
             if (hovering) ShowTooltip();
         }
         public void OnPointerEnter(PointerEventData _) { hovering = true; ShowTooltip(); }
         public void OnPointerExit(PointerEventData _) { hovering = false; BuildingConstructionTooltip.Instance?.Hide(); }
         private void ShowTooltip()
         {
+            if (buildingId == PortalProgression.BuildingId && PortalProgression.DemoRestrictionsEnabled) { BuildingConstructionTooltip.Instance?.Hide(); return; }
             if (!BuildingUpgradeService.IsBuilt(buildingId)) return;
             var definition = BuildingUpgradeService.Catalog?.Find(buildingId);
             var next = BuildingUpgradeService.Next(buildingId);

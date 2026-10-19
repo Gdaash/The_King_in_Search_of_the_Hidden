@@ -43,18 +43,7 @@ public static class LaboratoryListSetup
 
     public static void ConfigureCatalog(ScientificUpgradeTable table)
     {
-        table.entries.RemoveAll(e => e.id == ScientificUpgrades.WarriorRetreat);
-        var singles = new[] { ScientificUpgrades.PortalArrows, ScientificUpgrades.SharpAxes, ScientificUpgrades.QuietScouting,
-            ScientificUpgrades.StrongWalls, ScientificUpgrades.FastHex, ScientificUpgrades.WarriorBaseRegen };
-        string[] titles = { "Магические стрелы", "Острые топоры", "Тихая разведка", "Крепкие стены", "Открытие гексов", "Полевой лазарет" };
-        string[] icons = { "Magic", "Sword", "Eye", "Shield", "Hourglass", "Healing" };
-        int[] gates = { 0, 0, 0, 2, 3, 6 };
-        for (int i = 0; i < singles.Length; i++) Assign(table.Find(singles[i]), singles[i], titles[i], 1, gates[i], Icon(icons[i]));
-        for (int i = 0; i < 5; i++)
-        {
-            Assign(table.Find(ScientificUpgrades.Flashlights[i]), "light_beams", "Лучи света", i + 1, 1 + 2 * i, Icon("Magic"));
-        }
-        EditorUtility.SetDirty(table);
+        LaboratoryResourceResearchSetup.ConfigureCatalog(table);
     }
 
     public static void RefreshPopupCatalog(ScientificUpgradeTable table)
@@ -157,7 +146,7 @@ public static class LaboratoryListSetup
         var close = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/UI/Popup Close Icon.prefab"), window);
         close.name = "Close"; var cr = (RectTransform)close.transform; cr.anchorMin = cr.anchorMax = cr.pivot = new(.5f, .5f); cr.anchoredPosition = new(630, 378); cr.localScale = Vector3.one;
         view.totalLabel = Text("Total Learned", window, "Изучено улучшений: 0 / " + table.entries.Count, 690, 32, -292, 299, 22); view.totalLabel.color = Gold;
-        var hint = Text("Unlock Hint", window, "Замок — нужно изучить улучшений", 690, 26, -292, 264, 18); hint.color = Muted; Localize(hint, "laboratory.lock_legend");
+        var hint = Text("Unlock Hint", window, "Замок – нужно изучить улучшений", 690, 26, -292, 264, 18); hint.color = Muted; Localize(hint, "laboratory.lock_legend");
         Image(Rect("Header Divider", window, 1260, 2, 0, 236), new Color(.35f, .30f, .39f));
         var scroll = Rect("Upgrade List", window, 708, 598, -292, -78);
         var scrollRect = scroll.gameObject.AddComponent<ScrollRect>(); view.scroll = scrollRect;
@@ -172,7 +161,7 @@ public static class LaboratoryListSetup
         var handle = Rect("Handle", bar, 8, 100); Stretch(handle); var handleImage = Image(handle, new Color(.50f, .43f, .56f)); handleImage.raycastTarget = true;
         var scrollbar = bar.gameObject.AddComponent<Scrollbar>(); scrollbar.direction = Scrollbar.Direction.BottomToTop; scrollbar.handleRect = handle; scrollbar.targetGraphic = handleImage;
         scrollRect.verticalScrollbar = scrollbar; scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
-        var footer = Text("Scroll Hint", window, "Колесо мыши — прокрутка", 690, 24, -292, -397, 16); footer.color = Muted; Localize(footer, "laboratory.scroll_hint");
+        var footer = Text("Scroll Hint", window, "Колесо мыши – прокрутка", 690, 24, -292, -397, 16); footer.color = Muted; Localize(footer, "laboratory.scroll_hint");
         var detail = Rect("Upgrade Details", window, 520, 612, 368, -80); Image(detail, new Color(.12f, .095f, .145f));
         Image(Rect("Detail Top Rule", detail, 520, 3, 0, 306), new Color(.48f, .40f, .53f));
         view.detailIcon = Image(Rect("Upgrade Icon", detail, 32, 32, -212, 264), Gold);
@@ -249,8 +238,8 @@ public static class LaboratoryListSetup
         }
         Add("base.laboratory.title", "НАУЧНАЯ ЛАБОРАТОРИЯ", "SCIENTIFIC LABORATORY");
         Add("laboratory.total", "Изучено улучшений", "Upgrades learned");
-        Add("laboratory.lock_legend", "У замка — сколько улучшений нужно изучить", "Lock — upgrades required to unlock");
-        Add("laboratory.scroll_hint", "Колесо мыши — прокрутка", "Mouse wheel — scroll");
+        Add("laboratory.lock_legend", "У замка – сколько улучшений нужно изучить", "Lock – upgrades required to unlock");
+        Add("laboratory.scroll_hint", "Колесо мыши – прокрутка", "Mouse wheel – scroll");
         Add("laboratory.research", "ИССЛЕДОВАНИЕ", "RESEARCH");
         Add("laboratory.level", "ур.", "lv.");
         Add("laboratory.complete", "Изучено", "Learned");
@@ -268,6 +257,7 @@ public static class LaboratoryListSetup
             [ScientificUpgrades.QuietScouting] = "Quiet scouting", [ScientificUpgrades.StrongWalls] = "Strong walls", [ScientificUpgrades.FastHex] = "Hex exploration",
             [ScientificUpgrades.WarriorBaseRegen] = "Field infirmary", ["light_beams"] = "Light beams" };
         foreach (var g in table.entries.GroupBy(e => e.GroupId)) Add("laboratory.group." + g.Key, g.First().groupTitle, enNames.TryGetValue(g.Key, out string en) ? en : g.First().groupTitle);
+        LaboratoryResourceResearchSetup.Localize(table);
         EditorUtility.SetDirty(loc);
     }
 }

@@ -23,6 +23,7 @@ public class ResourceOutput {
 }
 
 public class ResourceRequester : MonoBehaviour {
+    public static event System.Action<ResourceRequester, ResourceItem> ResourceProduced;
     public static readonly HashSet<ResourceRequester> ActiveInstances = new();
     [Header("Настройки ограничений")]
     [SerializeField] private int maxProductionPool = 3;  
@@ -477,6 +478,7 @@ public class ResourceRequester : MonoBehaviour {
                 if (res.CompareTag("Untagged")) res.tag = "Resource";
                 _spawnedResources.Add(res);
                 StartCoroutine(TossResource(res.transform, origin, spawnTarget));
+                if (res.TryGetComponent<ResourceItem>(out var item)) ResourceProduced?.Invoke(this, item);
             }
         }
     }

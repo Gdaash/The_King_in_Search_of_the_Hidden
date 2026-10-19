@@ -1,6 +1,5 @@
 using GameFoundation.Combat;
 using UnityEngine;
-using System.Linq;
 using UnityEngine.Events;
 
 public class ArcherTower : MonoBehaviour
@@ -35,6 +34,8 @@ public class ArcherTower : MonoBehaviour
     public GameFoundation.MetaProgression.PortalTowerProgression PortalProgression =>
         stats != null && stats.IsPortalTower ? GameFoundation.MetaProgression.PortalTowerProgression.Instance : null;
 
+    private void OnEnable() => GameFoundation.Audio.GameAudioController.Register(this);
+
     void Start() => ResetCooldown();
 
     void Update()
@@ -53,37 +54,8 @@ public class ArcherTower : MonoBehaviour
 
     private void FindClosestTarget()
     {
-        var targets = GameObject.FindGameObjectsWithTag(targetTag);
-        
-        Collider2D closest = null;
-        float minDistance = CurrentRange; // Используем динамическую дальность
-
-        foreach (var t in targets)
-        {
-            if (!t.activeInHierarchy) continue;
-            var health = t.GetComponentInParent<Health>();
-            if (health != null && health.IsDead) continue;
-            var col = t.GetComponent<Collider2D>();
-            if (col == null) continue;
-
-            float dist = Vector2.Distance(transform.position, col.ClosestPoint(transform.position));
-            if (dist < minDistance)
-            {
-                minDistance = dist;
-                closest = col;
-            }
-        }
-
-        if (closest != null)
-        {
-            _target = closest.transform;
-            _targetCollider = closest;
-        }
-        else
-        {
-            _target = null;
-            _targetCollider = null;
-        }
+        _targetCollider = CombatTargetRegistry.ClosestCollider(targetTag, transform.position, CurrentRange);
+        _target = _targetCollider != null ? _targetCollider.transform : null;
     }
 
     // Добавляем метод для визуального скрипта TowerVisuals

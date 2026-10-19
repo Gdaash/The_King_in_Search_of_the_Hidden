@@ -6,7 +6,7 @@ namespace GameFoundation.MetaProgression
     public sealed class FirstPortalRunSpawnOrder : MonoBehaviour
     {
         [Header("Порядок открытия стартовых гексов")]
-        [Tooltip("Первый элемент — первое открытие. Пустая ссылка — пустой гекс. После списка все гексы пустые.")]
+        [Tooltip("Первый элемент – первое открытие. Пустая ссылка – пустой гекс. После списка все гексы пустые.")]
         [SerializeField] private GameObject[] buildings;
 
         public GameObject ContentAt(int openingIndex) => buildings != null &&

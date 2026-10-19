@@ -77,7 +77,7 @@ namespace GameFoundation.MetaProgression
                     ? "You borrow crystals from the next level. Experience will not accumulate until this debt is repaid."
                     : "Вы берёте кристаллы в долг из будущего уровня. Пока этот долг не отработан, опыт уровня не будет копиться.";
             }
-            heading.text = English ? "PORTAL TOWER — LEVEL " + progression.ChoiceLevel : GameFoundation.Localization.GameText.Get("БАШНЯ ПОРТАЛА — УРОВЕНЬ ") + progression.ChoiceLevel;
+            heading.text = English ? "PORTAL TOWER – LEVEL " + progression.ChoiceLevel : GameFoundation.Localization.GameText.Get("БАШНЯ ПОРТАЛА – УРОВЕНЬ ") + progression.ChoiceLevel;
             hint.text = progression.IsInitialWeaponChoice
                 ? (English ? "Choose your first weapon" : GameFoundation.Localization.GameText.Get("Выберите первое оружие"))
                 : (English ? "Choose one upgrade to continue" : GameFoundation.Localization.GameText.Get("Выберите одно улучшение, чтобы продолжить"));
@@ -92,7 +92,7 @@ namespace GameFoundation.MetaProgression
                 c.description.fontSize = 20;
                 c.description.horizontalOverflow = HorizontalWrapMode.Wrap;
                 c.icon.sprite=u.icon; c.icon.enabled=u.icon!=null;
-                if(u.icon!=null)c.icon.rectTransform.sizeDelta=u.icon.rect.size*Mathf.Min(2,64f/Mathf.Max(u.icon.rect.width,u.icon.rect.height));
+                if(u.icon!=null)c.icon.rectTransform.sizeDelta=u.icon.rect.size*(96f/Mathf.Max(u.icon.rect.width,u.icon.rect.height));
                 var w=progression.Balance.FindWeapon(u.weapon);
                 if(u.effect==PortalTowerBalance.Effect.UnlockWeapon && w!=null)
                 {

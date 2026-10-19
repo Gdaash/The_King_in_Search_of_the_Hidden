@@ -17,7 +17,7 @@ public static class QuestDialogueSetup
     static QuestDialogueDefinition Make(string path, string id, QuestDefinition quest, QuestDefinition prerequisite, params string[] lines)
     {
         var g = new GameObject(id); var d = g.AddComponent<QuestDialogueDefinition>();
-        d.id = id; d.speakerName = "Старик Пью"; d.portrait = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Ui/Dialogue/Old Pew.png"); d.quest = quest; d.prerequisite = prerequisite; d.lines = lines;
+        d.id = id; d.speakerName = "Стайк Пью"; d.portrait = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Ui/Dialogue/Old Pew.png"); d.quest = quest; d.prerequisite = prerequisite; d.lines = QuestNarrativeRevision.Lines(id, lines);
         var saved = PrefabUtility.SaveAsPrefabAsset(g, path).GetComponent<QuestDialogueDefinition>(); Object.DestroyImmediate(g); return saved;
     }
     public static void Install()

@@ -1,4 +1,7 @@
 using UnityEngine;
 
-// Просто маркер для поиска
-public class HomeBase : MonoBehaviour { }
+public class HomeBase : MonoBehaviour
+{
+    private void OnEnable() => CombatTargetRegistry.Register(this);
+    private void OnDisable() => CombatTargetRegistry.Unregister(this);
+}

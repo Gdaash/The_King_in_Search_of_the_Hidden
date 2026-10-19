@@ -13,6 +13,12 @@ namespace GameFoundation.MetaProgression
 
         private void Awake() => Initialize(AlarmSystem.Instance != null ? AlarmSystem.Instance.EnemyLevel : 1);
 
+        public void ResetForSpawn(int level)
+        {
+            initialized = false;
+            Initialize(level);
+        }
+
         public void Initialize(int level)
         {
             if (initialized) return;

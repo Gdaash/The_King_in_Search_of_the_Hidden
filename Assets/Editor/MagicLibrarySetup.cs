@@ -29,6 +29,7 @@ public static class MagicLibrarySetup
         if (AssetDatabase.LoadAssetAtPath<GameObject>(PopupPath) == null) CreatePopup();
         EnsureCloseButton();
         InstallInBaseHud();
+        EnemyResearchSetup.Apply();
         AssetDatabase.SaveAssets();
         Debug.Log("Magic Library: Base building, persistent bestiary and popup configured.");
     }

@@ -34,18 +34,7 @@ internal static class ScientificUpgradeSetup
         if (!AssetDatabase.IsValidFolder("Assets/Resources")) AssetDatabase.CreateFolder("Assets", "Resources");
         var table = AssetDatabase.LoadAssetAtPath<ScientificUpgradeTable>(TablePath);
         if (table == null) { table = ScriptableObject.CreateInstance<ScientificUpgradeTable>(); AssetDatabase.CreateAsset(table, TablePath); }
-        var ore = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/MagicOre.asset");
-        var stone = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/Stone.asset");
-        AddIfMissing(table, ScientificUpgrades.PortalArrows, "", "Магические стрелы", "Кристалл на башне портала теперь может стрелять.", ore, 1, 1f);
-        AddIfMissing(table, ScientificUpgrades.StrongWalls, ScientificUpgrades.PortalArrows, "Крепкие стены", "Повышает здоровье башни портала на 20%.", stone, 2, 1.2f);
-        AddIfMissing(table, ScientificUpgrades.FastHex, ScientificUpgrades.PortalArrows, "Уменьшение времени на открытие гекса на 50%", "Уменьшает время открытия гекса на 50%.", ore, 5, 0.5f);
-        AddIfMissing(table, ScientificUpgrades.SharpAxes, ScientificUpgrades.PortalArrows, "Заточить топоры", "Уменьшает время рубки леса на 20%.", stone, 2, 0.8f);
-        AddIfMissing(table, ScientificUpgrades.QuietScouting, ScientificUpgrades.PortalArrows, "Бесшумная разведка", "Уменьшает на 1 количество тревоги при открытии гекса.", ore, 1, 1f);
-        AddIfMissing(table, ScientificUpgrades.WarriorBaseRegen, "", "Полевой лазарет", "Воины у портала восстанавливают 1% здоровья в секунду.", ore, 5, 0.01f);
-        for (int i = 0; i < ScientificUpgrades.Flashlights.Length; i++)
-            AddIfMissing(table, ScientificUpgrades.Flashlights[i], i == 0 ? ScientificUpgrades.StrongWalls : ScientificUpgrades.Flashlights[i - 1],
-                "Луч света " + (i + 2), "Добавляет ещё один луч света. Всего лучей: " + (i + 2) + ".", ore, (i + 1) * 5, 1f);
-        EditorUtility.SetDirty(table);
+        LaboratoryResourceResearchSetup.ConfigureCatalog(table);
     }
 
     private static void AddIfMissing(ScientificUpgradeTable table, string id, string parentId, string title,

@@ -7,7 +7,7 @@ public sealed class QuestCatalogEditor : Editor
 {
     public override void OnInspectorGUI()
     {
-        EditorGUILayout.HelpBox("Задания — отдельные ассеты. Порядок в списке определяет порядок выдачи. Цели учитывают ресурсы в запасе одновременно.", MessageType.Info);
+        EditorGUILayout.HelpBox("Задания – отдельные ассеты. Порядок в списке определяет порядок выдачи. Цели учитывают ресурсы в запасе одновременно.", MessageType.Info);
         DrawDefaultInspector();
         if (GUILayout.Button("Создать задание и добавить в список"))
         {
@@ -27,7 +27,7 @@ public sealed class QuestDefinitionEditor : Editor
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
-        EditorGUILayout.HelpBox("Количество — требуемый запас. Пояснение цели и описание видны при наведении на панель. Ресурс задаётся прямой ссылкой на ResourceType.",MessageType.Info);
+        EditorGUILayout.HelpBox("Количество – требуемый запас. Пояснение цели и описание видны при наведении на панель. Ресурс задаётся прямой ссылкой на ResourceType.",MessageType.Info);
         using(new EditorGUI.DisabledScope(true))EditorGUILayout.PropertyField(serializedObject.FindProperty("id"),new GUIContent("Ключ сохранения"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("title"),new GUIContent("Заголовок"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("description"),new GUIContent("Подробное описание"));

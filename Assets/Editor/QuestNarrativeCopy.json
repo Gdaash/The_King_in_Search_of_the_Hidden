@@ -1,0 +1,5241 @@
+{
+  "quests": [
+    {
+      "path": "Assets/Resources/Quests/Build Blacksmith.asset",
+      "id": "build_blacksmith",
+      "title": "Огонь в кузнице",
+      "description": "Защитников станет больше, и каждому понадобится оружие. Построй кузницу. Стайк Пью приготовит две телеги для носильщиков и поможет наладить научную лабораторию.",
+      "status": "Построй кузницу",
+      "purposes": [
+        "Кузница для защитников"
+      ]
+    },
+    {
+      "path": "Assets/Resources/Quests/Build Smithy And Two Bows.asset",
+      "id": "build_smithy_two_bows",
+      "title": "Место для метких",
+      "description": "Поставь стрельбище из десяти связок дерева. Стайк Пью приберёг два лука для первых защитников и отдаст их, когда площадка будет готова.",
+      "status": "Построй стрельбище",
+      "purposes": [
+        "Готовое стрельбище"
+      ]
+    },
+    {
+      "path": "Assets/Resources/Quests/First Expedition.asset",
+      "id": "first_expedition_supplies",
+      "title": "Еда и крыша над головой",
+      "description": "Семерым поселенцам нужны ужин и тёплый ночлег. Добудь семь порций еды и пять связок дерева в Тёмных землях. С этими припасами Стайк Пью поможет начать строительство жилого квартала. Не оставляй людей без крыши к ночи: у каждого бездомного один шанс из двух погибнуть от холода.",
+      "status": "Добудь семь порций еды и пять связок дерева",
+      "purposes": [
+        "Ужин для семерых",
+        "Дерево для будущих домов"
+      ]
+    },
+    {
+      "path": "Assets/Resources/Quests/Recruit Two Archers.asset",
+      "id": "recruit_two_archers",
+      "title": "Первые защитники",
+      "description": "Два лука без дела не защитят даже капустную грядку. Найми двух лучников в стрельбище. С первой стражей можно будет взяться за кузницу и устроить лагерь для беженцев.",
+      "status": "Найми двух лучников",
+      "purposes": [
+        "Два лучника на страже"
+      ]
+    },
+    {
+      "path": "Assets/Resources/Quests/Royal Tribute.asset",
+      "id": "royal_magic_tribute",
+      "title": "Королевская норма",
+      "description": "Королевский писарь требует тридцать единиц магической руды в течение тридцати дней. За исполнение положено десять влияния. За просрочку корона конфискует припасы, материалы и оружие, а влияние уменьшится на тридцать. Людей и телеги пока оставят.",
+      "status": "Доставь тридцать единиц магической руды в срок",
+      "purposes": [
+        "Руда для королевской казны"
+      ]
+    },
+    {
+      "path": "Assets/Resources/Quests/Smithy Materials.asset",
+      "id": "smithy_materials",
+      "title": "Дерево для защитников",
+      "description": "Крыша над головой уже есть. Теперь людям нужно учиться защищать земли портала. Принеси десять связок дерева для стрельбища, и Стайк Пью подготовит всё для его строительства.",
+      "status": "Принеси десять связок дерева для стрельбища",
+      "purposes": [
+        "Дерево для стрельбища"
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "path": "Assets/Prefabs/Quests/00 Royal Tribute.prefab",
+      "id": "scribe_royal_magic_tribute",
+      "speaker": "Королевский писарь",
+      "lines": [
+        "Именем короля объявляю норму для земель портала: тридцать единиц магической руды в течение тридцати дней. Его Величество ожидает исправных поставок. Состояние ваших построек в расчёт не принимается.",
+        "За исполнение получите десять влияния. За просрочку будут изъяты припасы, материалы и оружие, а ваше влияние уменьшится на тридцать. Люди и телеги останутся в вашем распоряжении. Пока. Приступайте."
+      ]
+    },
+    {
+      "path": "Assets/Prefabs/Quests/01 First Supplies.prefab",
+      "id": "pew_first_supplies",
+      "speaker": "Стайк Пью",
+      "lines": [
+        "Хей, добро пожаловать в земли портала! Значит, ты наш новый владелец? Я Стайк Пью. Буду помогать тебе восстанавливать здешнее хозяйство. Работы хватает, зато на недостаток свежего воздуха никто не жалуется!",
+        "С тобой прибыли семеро поселенцев. Люди хорошие, только с дороги проголодались. На всех нужно семь порций еды. Да и ночевать под открытым небом им не годится – понадобится жилой квартал.",
+        "За порталом лежат Тёмные земли. Название неприветливое, но еда и древесина там найдутся. Принеси семь порций еды и пять связок дерева. Я пока подготовлю место для будущих домов. Начнём с малого – накормим людей и дадим им крышу над головой."
+      ]
+    },
+    {
+      "path": "Assets/Prefabs/Quests/02 Smithy And Bows.prefab",
+      "id": "pew_smithy_two_bows",
+      "speaker": "Стайк Пью",
+      "lines": [
+        "Вот это дерево! Из такого выйдет славное стрельбище. Всё для строительства готово, осталось взяться за дело.",
+        "Построй стрельбище из десяти связок. А я приберёг для тебя два лука – отдам, как только будет где учить лучников."
+      ]
+    },
+    {
+      "path": "Assets/Prefabs/Quests/02 Smithy Materials.prefab",
+      "id": "pew_smithy_materials",
+      "speaker": "Стайк Пью",
+      "lines": [
+        "Ну вот, первая ночь под крышей! Уже похоже на хозяйство, а не на привал. Теперь позаботимся о страже: в Тёмных землях не все рады соседям.",
+        "Принеси десять связок дерева для стрельбища. Я присмотрю подходящее место. А то учиться стрелять между домами – верный способ остаться без окон."
+      ]
+    },
+    {
+      "path": "Assets/Prefabs/Quests/02 Two Archers.prefab",
+      "id": "pew_two_archers",
+      "speaker": "Стайк Пью",
+      "lines": [
+        "Стрельбище готово! Держи обещанные два лука. Не новые, зато тетивы крепкие. И стреляют они всё ещё в ту сторону, куда целишься.",
+        "Найми двух лучников, пусть привыкают стоять на страже. Когда появится защита, возьмёмся за кузницу и устроим лагерь для тех, кто ищет безопасное место."
+      ]
+    },
+    {
+      "path": "Assets/Prefabs/Quests/03 Build Blacksmith.prefab",
+      "id": "pew_build_blacksmith",
+      "speaker": "Стайк Пью",
+      "lines": [
+        "Два лучника на страже – уже спокойнее. Только на старых луках далеко не уедешь. Нашим людям понадобится своё оружие, а для него – кузница.",
+        "Построй её, а я раздобуду две телеги для носильщиков. Потом устроим научную лабораторию. Голова ведь тоже полезный инструмент – особенно если молотком по ней не стучать."
+      ]
+    }
+  ],
+  "localization": [
+    {
+      "key": "base.base_panel.title",
+      "values": [
+        "УКРЫТИЕ",
+        "SHELTER"
+      ]
+    },
+    {
+      "key": "base.base_panel.next_day.label",
+      "values": [
+        "Следующий день",
+        "Next day"
+      ]
+    },
+    {
+      "key": "base.base_panel.portal.label",
+      "values": [
+        "Портал",
+        "Portal"
+      ]
+    },
+    {
+      "key": "base.base_panel.warehouse.label",
+      "values": [
+        "Склад",
+        "Warehouse"
+      ]
+    },
+    {
+      "key": "base.base_panel.laboratory.label",
+      "values": [
+        "Научная лаборатория",
+        "Laboratory"
+      ]
+    },
+    {
+      "key": "base.base_panel.housing.label",
+      "values": [
+        "Жилой квартал",
+        "Housing"
+      ]
+    },
+    {
+      "key": "base.base_panel.refugees.label",
+      "values": [
+        "Лагерь беженцев",
+        "Refugee camp"
+      ]
+    },
+    {
+      "key": "base.base_panel.square.label",
+      "values": [
+        "Площадь",
+        "Square"
+      ]
+    },
+    {
+      "key": "base.base_panel.settings.text_(legacy)",
+      "values": [
+        "Настройки",
+        "Settings"
+      ]
+    },
+    {
+      "key": "base.global_map.title",
+      "values": [
+        "ГЛОБАЛЬНАЯ КАРТА",
+        "WORLD MAP"
+      ]
+    },
+    {
+      "key": "base.global_map.castle",
+      "values": [
+        "ВАШ ЗАМОК",
+        "YOUR CASTLE"
+      ]
+    },
+    {
+      "key": "base.global_map.search_portals.label",
+      "values": [
+        "Искать порталы",
+        "Search portals"
+      ]
+    },
+    {
+      "key": "base.global_map.close.label",
+      "values": [
+        "×",
+        "×"
+      ]
+    },
+    {
+      "key": "base.laboratory_popup.title",
+      "values": [
+        "НАУЧНАЯ ЛАБОРАТОРИЯ – УЛУЧШЕНИЯ",
+        "LABORATORY – UPGRADES"
+      ]
+    },
+    {
+      "key": "base.laboratory_popup.close.label",
+      "values": [
+        "×",
+        "×"
+      ]
+    },
+    {
+      "key": "base.laboratory_popup.upgrade_1.text_(legacy)",
+      "values": [
+        "Воины",
+        "Warriors"
+      ]
+    },
+    {
+      "key": "base.laboratory_popup.upgrade_2.text_(legacy)",
+      "values": [
+        "Здания",
+        "Buildings"
+      ]
+    },
+    {
+      "key": "base.laboratory_popup.upgrade_3.text_(legacy)",
+      "values": [
+        "Экономика",
+        "Economy"
+      ]
+    },
+    {
+      "key": "base.laboratory_popup.upgrade_4.text_(legacy)",
+      "values": [
+        "Путь",
+        "Path"
+      ]
+    },
+    {
+      "key": "base.laboratory_popup.upgrade_5.text_(legacy)",
+      "values": [
+        "Скорость",
+        "Speed"
+      ]
+    },
+    {
+      "key": "base.laboratory_popup.upgrade_6.text_(legacy)",
+      "values": [
+        "Защита",
+        "Defense"
+      ]
+    },
+    {
+      "key": "base.settings_popup.title",
+      "values": [
+        "НАСТРОЙКИ",
+        "SETTINGS"
+      ]
+    },
+    {
+      "key": "base.settings_popup.close.label",
+      "values": [
+        "×",
+        "×"
+      ]
+    },
+    {
+      "key": "base.settings_popup.master_label",
+      "values": [
+        "Общая громкость",
+        "Master volume"
+      ]
+    },
+    {
+      "key": "base.settings_popup.music_label",
+      "values": [
+        "Музыка",
+        "Music"
+      ]
+    },
+    {
+      "key": "base.settings_popup.effects_label",
+      "values": [
+        "Эффекты",
+        "Effects"
+      ]
+    },
+    {
+      "key": "base.settings_popup.fullscreen.label",
+      "values": [
+        "Полный экран",
+        "Fullscreen"
+      ]
+    },
+    {
+      "key": "base.settings_popup.vsync.label",
+      "values": [
+        "VSync",
+        "VSync"
+      ]
+    },
+    {
+      "key": "base.settings_popup.russian.text_(legacy)",
+      "values": [
+        "Русский",
+        "Russian"
+      ]
+    },
+    {
+      "key": "base.settings_popup.english.text_(legacy)",
+      "values": [
+        "English",
+        "English"
+      ]
+    },
+    {
+      "key": "base.warehouse_popup.title",
+      "values": [
+        "СКЛАД",
+        "WAREHOUSE"
+      ]
+    },
+    {
+      "key": "base.warehouse_popup.close.text_(legacy)",
+      "values": [
+        "×",
+        "×"
+      ]
+    },
+    {
+      "key": "base.warehouse_popup.buy_cart.text_(legacy)",
+      "values": [
+        "Сделать телегу",
+        "Make cart"
+      ]
+    },
+    {
+      "key": "base.housing_popup.title",
+      "values": [
+        "ЖИЛОЙ КВАРТАЛ",
+        "HOUSING"
+      ]
+    },
+    {
+      "key": "base.housing_popup.close.text_(legacy)",
+      "values": [
+        "×",
+        "×"
+      ]
+    },
+    {
+      "key": "base.housing_popup.description",
+      "values": [
+        "Здесь живут ваши люди. Каждый житель потребляет одну еду в день.",
+        "Your people live here. Each resident consumes one food per day."
+      ]
+    },
+    {
+      "key": "base.refugees_popup.title",
+      "values": [
+        "ЛАГЕРЬ БЕЖЕНЦЕВ",
+        "REFUGEE CAMP"
+      ]
+    },
+    {
+      "key": "base.refugees_popup.close.text_(legacy)",
+      "values": [
+        "×",
+        "×"
+      ]
+    },
+    {
+      "key": "base.refugees_popup.admit.text_(legacy)",
+      "values": [
+        "Принять жителя",
+        "Admit resident"
+      ]
+    },
+    {
+      "key": "base.square_popup.title",
+      "values": [
+        "ПЛОЩАДЬ",
+        "SQUARE"
+      ]
+    },
+    {
+      "key": "base.square_popup.close.text_(legacy)",
+      "values": [
+        "×",
+        "×"
+      ]
+    },
+    {
+      "key": "base.square_popup.description",
+      "values": [
+        "Место отдыха жителей замка.",
+        "A place for castle residents to rest."
+      ]
+    },
+    {
+      "key": "base.day",
+      "values": [
+        "День",
+        "Day"
+      ]
+    },
+    {
+      "key": "base.waiting",
+      "values": [
+        "Ожидают:",
+        "Waiting:"
+      ]
+    },
+    {
+      "key": "base.enter",
+      "values": [
+        "Войти",
+        "Enter"
+      ]
+    },
+    {
+      "key": "base.level",
+      "values": [
+        "Ур.",
+        "Lv."
+      ]
+    },
+    {
+      "key": "base.ore",
+      "values": [
+        "руды",
+        "ore"
+      ]
+    },
+    {
+      "key": "skill.Forester's house1.description",
+      "values": [
+        "Уменьшает время добычи древесины вдвое.",
+        "Reduces wood harvesting time by half."
+      ]
+    },
+    {
+      "key": "skill.Sawmill1.description",
+      "values": [
+        "Уменьшает время производства досок вдвое.",
+        "Reduces planks production time by half."
+      ]
+    },
+    {
+      "key": "skill.Quarry1.description",
+      "values": [
+        "Уменьшает время добычи камня вдвое.",
+        "Reduces stone mining time by half."
+      ]
+    },
+    {
+      "key": "skill.Quarry2.description",
+      "values": [
+        "Восстанавливает каменоломню.",
+        "Repairs the quarry."
+      ]
+    },
+    {
+      "key": "skill.MillBuild1.description",
+      "values": [
+        "Восстанавливает мельницу.",
+        "Repairs the mill."
+      ]
+    },
+    {
+      "key": "skill.BoarTree1.description",
+      "values": [
+        "В лесах начинают водиться кабаны.",
+        "Boars begin to inhabit the forests."
+      ]
+    },
+    {
+      "key": "skill.AutoClickWorker1.description",
+      "values": [
+        "На втором круге появляется рабочий, который действует автоматически.",
+        "An automatic worker appears on the second ring."
+      ]
+    },
+    {
+      "key": "skill.RedSwordsman1.description",
+      "values": [
+        "Увеличивает здоровье мечника на 10.",
+        "Increases swordsman health by 10."
+      ]
+    },
+    {
+      "key": "skill.RedSwordsman2.description",
+      "values": [
+        "Увеличивает урон мечника на 5.",
+        "Increases swordsman damage by 5."
+      ]
+    },
+    {
+      "key": "skill.RedSwordsman3.description",
+      "values": [
+        "Даёт мечнику регенерацию вне боя: 5 здоровья в секунду.",
+        "Grants the swordsman 5 health per second outside combat."
+      ]
+    },
+    {
+      "key": "skill.RedArcher1.description",
+      "values": [
+        "Увеличивает здоровье лучника на 10.",
+        "Increases archer health by 10."
+      ]
+    },
+    {
+      "key": "skill.Archer0Hex1.description",
+      "values": [
+        "На первом круге гексов появляется лучник.",
+        "An archer appears on the first ring of hexes."
+      ]
+    },
+    {
+      "key": "skill.RedArcher2.description",
+      "values": [
+        "Увеличивает урон лучника на 10.",
+        "Increases archer damage by 10."
+      ]
+    },
+    {
+      "key": "skill.WorldSettingsTime1.description",
+      "values": [
+        "Увеличивает время до роста сложности.",
+        "Increases the time before difficulty rises."
+      ]
+    },
+    {
+      "key": "resource.Berry.name",
+      "values": [
+        "Еда",
+        "Food"
+      ]
+    },
+    {
+      "key": "resource.Board.name",
+      "values": [
+        "Доски",
+        "Boards"
+      ]
+    },
+    {
+      "key": "resource.Bow.name",
+      "values": [
+        "Луки",
+        "Bows"
+      ]
+    },
+    {
+      "key": "resource.Bread.name",
+      "values": [
+        "Хлеб",
+        "Bread"
+      ]
+    },
+    {
+      "key": "resource.Cart.name",
+      "values": [
+        "Телеги",
+        "Carts"
+      ]
+    },
+    {
+      "key": "resource.Club.name",
+      "values": [
+        "Дубины",
+        "Clubs"
+      ]
+    },
+    {
+      "key": "resource.Coal.name",
+      "values": [
+        "Уголь",
+        "Coal"
+      ]
+    },
+    {
+      "key": "resource.Coin.name",
+      "values": [
+        "Монеты",
+        "Coins"
+      ]
+    },
+    {
+      "key": "resource.Crown.name",
+      "values": [
+        "Влияние",
+        "Influence"
+      ]
+    },
+    {
+      "key": "resource.Flour.name",
+      "values": [
+        "Мука",
+        "Flour"
+      ]
+    },
+    {
+      "key": "resource.Gold.name",
+      "values": [
+        "Золото",
+        "Gold"
+      ]
+    },
+    {
+      "key": "resource.GoldOre.name",
+      "values": [
+        "Золотая руда",
+        "Gold ore"
+      ]
+    },
+    {
+      "key": "resource.Human.name",
+      "values": [
+        "Люди",
+        "People"
+      ]
+    },
+    {
+      "key": "resource.Iron.name",
+      "values": [
+        "Железо",
+        "Iron"
+      ]
+    },
+    {
+      "key": "resource.IronOre.name",
+      "values": [
+        "Железо",
+        "Iron"
+      ]
+    },
+    {
+      "key": "resource.MagicOre.name",
+      "values": [
+        "Магическая руда",
+        "Magic ore"
+      ]
+    },
+    {
+      "key": "resource.None.name",
+      "values": [
+        "Нет",
+        "None"
+      ]
+    },
+    {
+      "key": "resource.Recruit.name",
+      "values": [
+        "Рекруты",
+        "Recruits"
+      ]
+    },
+    {
+      "key": "resource.Stone.name",
+      "values": [
+        "Камень",
+        "Stone"
+      ]
+    },
+    {
+      "key": "resource.Sword.name",
+      "values": [
+        "Мечи",
+        "Swords"
+      ]
+    },
+    {
+      "key": "resource.Water.name",
+      "values": [
+        "Вода",
+        "Water"
+      ]
+    },
+    {
+      "key": "resource.Wheat.name",
+      "values": [
+        "Пшеница",
+        "Wheat"
+      ]
+    },
+    {
+      "key": "resource.Wine.name",
+      "values": [
+        "Вино",
+        "Wine"
+      ]
+    },
+    {
+      "key": "resource.Wood.name",
+      "values": [
+        "Древесина",
+        "Wood"
+      ]
+    },
+    {
+      "key": "skill.Flashlight2.description",
+      "values": [
+        "Открывает второй фонарь для работы с гексами.",
+        "Unlocks a second flashlight for working on hexes."
+      ]
+    },
+    {
+      "key": "skill.Flashlight3.description",
+      "values": [
+        "Открывает третий фонарь для работы с гексами.",
+        "Unlocks a third flashlight for working on hexes."
+      ]
+    },
+    {
+      "key": "skill.Flashlight4.description",
+      "values": [
+        "Открывает четвёртый фонарь для работы с гексами.",
+        "Unlocks a fourth flashlight for working on hexes."
+      ]
+    },
+    {
+      "key": "skill.Flashlight5.description",
+      "values": [
+        "Открывает пятый фонарь для работы с гексами.",
+        "Unlocks a fifth flashlight for working on hexes."
+      ]
+    },
+    {
+      "key": "skill.Flashlight6.description",
+      "values": [
+        "Открывает шестой фонарь для работы с гексами.",
+        "Unlocks a sixth flashlight for working on hexes."
+      ]
+    },
+    {
+      "key": "base.portal.travel_once",
+      "values": [
+        "Путешествовать через портал можно только один раз в день.",
+        "You can travel through a portal only once per day."
+      ]
+    },
+    {
+      "key": "base.portal.travel_used",
+      "values": [
+        "На сегодня вы исчерпали эту возможность.",
+        "You have used your chance for today."
+      ]
+    },
+    {
+      "key": "base.next_day_confirm.title",
+      "values": [
+        "Начать следующий день?",
+        "Start the next day?"
+      ]
+    },
+    {
+      "key": "base.next_day_confirm.confirm",
+      "values": [
+        "Начать день",
+        "Start day"
+      ]
+    },
+    {
+      "key": "base.next_day_confirm.cancel",
+      "values": [
+        "Отмена",
+        "Cancel"
+      ]
+    },
+    {
+      "key": "base.food_forecast.residents",
+      "values": [
+        "Жители и воины",
+        "Residents and warriors:"
+      ]
+    },
+    {
+      "key": "base.food_forecast.food",
+      "values": [
+        "Еда",
+        "Food:"
+      ]
+    },
+    {
+      "key": "base.food_forecast.deaths",
+      "values": [
+        "Умрёт от голода:",
+        "Will starve:"
+      ]
+    },
+    {
+      "key": "base.food_forecast.if_next_day",
+      "values": [
+        "Если начать новый день:",
+        "If you start a new day:"
+      ]
+    },
+    {
+      "key": "world.danger_level_notification.title",
+      "values": [
+        "Уровень опасности: {0}",
+        "Danger level: {0}"
+      ]
+    },
+    {
+      "key": "resource.Swordsman.name",
+      "values": [
+        "Мечники",
+        "Swordsmen"
+      ]
+    },
+    {
+      "key": "resource.Archer.name",
+      "values": [
+        "Лучники",
+        "Archers"
+      ]
+    },
+    {
+      "key": "base.base_panel.fort.label",
+      "values": [
+        "Форт",
+        "Fort"
+      ]
+    },
+    {
+      "key": "base.base_panel.archery_range.label",
+      "values": [
+        "Стрельбище",
+        "Archery range"
+      ]
+    },
+    {
+      "key": "base.fort_popup.title",
+      "values": [
+        "ФОРТ",
+        "FORT"
+      ]
+    },
+    {
+      "key": "base.archery_range_popup.title",
+      "values": [
+        "СТРЕЛЬБИЩЕ",
+        "ARCHERY RANGE"
+      ]
+    },
+    {
+      "key": "base.military_popup.arm",
+      "values": [
+        "Вооружить",
+        "Arm"
+      ]
+    },
+    {
+      "key": "base.military_popup.disarm",
+      "values": [
+        "Разоружить",
+        "Disarm"
+      ]
+    },
+    {
+      "key": "base.military_overview.title",
+      "values": [
+        "ВОЙСКА",
+        "ARMY"
+      ]
+    },
+    {
+      "key": "base.building.build",
+      "values": [
+        "Построить",
+        "Build"
+      ]
+    },
+    {
+      "key": "base.building.price",
+      "values": [
+        "Цена постройки",
+        "Construction cost"
+      ]
+    },
+    {
+      "key": "base.building.laboratory.description",
+      "values": [
+        "Открывает дерево научных улучшений.",
+        "Opens the scientific upgrade tree."
+      ]
+    },
+    {
+      "key": "base.building.housing.description",
+      "values": [
+        "Показывает число жителей, расход еды и возможные смерти от голода.",
+        "Shows population, food consumption, and possible starvation deaths."
+      ]
+    },
+    {
+      "key": "base.building.refugees.description",
+      "values": [
+        "Позволяет принимать новых жителей в поселение.",
+        "Allows new residents to join the settlement."
+      ]
+    },
+    {
+      "key": "base.building.square.description",
+      "values": [
+        "Место отдыха жителей поселения.",
+        "A resting place for settlement residents."
+      ]
+    },
+    {
+      "key": "base.building.fort.description",
+      "values": [
+        "Позволяет вооружать жителей мечами и создавать мечников.",
+        "Turns residents with swords into swordsmen."
+      ]
+    },
+    {
+      "key": "base.building.archery_range.description",
+      "values": [
+        "Позволяет вооружать жителей луками и создавать лучников.",
+        "Turns residents with bows into archers."
+      ]
+    },
+    {
+      "key": "base.base_panel.blacksmith.label",
+      "values": [
+        "Кузница",
+        "Blacksmith"
+      ]
+    },
+    {
+      "key": "base.blacksmith_popup.title",
+      "values": [
+        "КУЗНИЦА",
+        "BLACKSMITH"
+      ]
+    },
+    {
+      "key": "base.blacksmith_popup.sword",
+      "values": [
+        "Мечи",
+        "Swords"
+      ]
+    },
+    {
+      "key": "base.blacksmith_popup.bow",
+      "values": [
+        "Луки",
+        "Bows"
+      ]
+    },
+    {
+      "key": "base.blacksmith_popup.forge_sword",
+      "values": [
+        "Выковать меч",
+        "Forge sword"
+      ]
+    },
+    {
+      "key": "base.blacksmith_popup.make_bow",
+      "values": [
+        "Сделать лук",
+        "Make bow"
+      ]
+    },
+    {
+      "key": "base.building.blacksmith.description",
+      "values": [
+        "Куёт мечи из железной руды и изготавливает луки из дерева.",
+        "Forges swords from iron ore and makes bows from wood."
+      ]
+    },
+    {
+      "key": "base.portal.free",
+      "values": [
+        "Бесплатно",
+        "Free"
+      ]
+    },
+    {
+      "key": "base.portal.tooltip.danger",
+      "values": [
+        "Опасность",
+        "Danger"
+      ]
+    },
+    {
+      "key": "base.portal.abundance.many",
+      "values": [
+        "Много",
+        "Plentiful"
+      ]
+    },
+    {
+      "key": "base.portal.abundance.average",
+      "values": [
+        "Средне",
+        "Average"
+      ]
+    },
+    {
+      "key": "base.portal.abundance.few",
+      "values": [
+        "Мало",
+        "Scarce"
+      ]
+    },
+    {
+      "key": "base.portal.abundance.rare",
+      "values": [
+        "Редко",
+        "Rare"
+      ]
+    },
+    {
+      "key": "base.portal.abundance.sometimes",
+      "values": [
+        "Иногда",
+        "Occasional"
+      ]
+    },
+    {
+      "key": "base.portal.location.forest.name",
+      "values": [
+        "Лес",
+        "Forest"
+      ]
+    },
+    {
+      "key": "base.portal.location.forest.description",
+      "values": [
+        "Густые леса, в которых много дичи.",
+        "Dense forests teeming with game."
+      ]
+    },
+    {
+      "key": "base.portal.location.mountains.name",
+      "values": [
+        "Горы",
+        "Mountains"
+      ]
+    },
+    {
+      "key": "base.portal.location.mountains.description",
+      "values": [
+        "Каменистая горная локация с залежами руды.",
+        "A rocky mountain location rich in ore."
+      ]
+    },
+    {
+      "key": "base.portal.location.steppes.name",
+      "values": [
+        "Степи",
+        "Steppes"
+      ]
+    },
+    {
+      "key": "base.portal.location.steppes.description",
+      "values": [
+        "Открытая степная локация с редкими рощами.",
+        "An open steppe with sparse groves."
+      ]
+    },
+    {
+      "key": "base.portal.location.swamps.name",
+      "values": [
+        "Болота",
+        "Swamps"
+      ]
+    },
+    {
+      "key": "base.portal.location.swamps.description",
+      "values": [
+        "Опасная болотистая локация с вязкими тропами.",
+        "A dangerous swamp crossed by treacherous paths."
+      ]
+    },
+    {
+      "key": "base.portal.location.magic_mountains.name",
+      "values": [
+        "Магические горы",
+        "Magic Mountains"
+      ]
+    },
+    {
+      "key": "base.portal.location.magic_mountains.description",
+      "values": [
+        "Самая опасная локация, насыщенная магической рудой.",
+        "The most dangerous location, rich in magic ore."
+      ]
+    },
+    {
+      "key": "base.food_forecast.crowns",
+      "values": [
+        "Влияние",
+        "Influence"
+      ]
+    },
+    {
+      "key": "base.base_panel.castle.label",
+      "values": [
+        "Замок",
+        "Castle"
+      ]
+    },
+    {
+      "key": "base.building.castle.description",
+      "values": [
+        "Позволяет издавать указы, меняющие работу систем.",
+        "Issues decrees that change how game systems work."
+      ]
+    },
+    {
+      "key": "base.castle_popup.title",
+      "values": [
+        "ЗАМОК",
+        "CASTLE"
+      ]
+    },
+    {
+      "key": "base.castle_popup.decree.cautious.name",
+      "values": [
+        "Не трус, а осторожный",
+        "Not cowardly, but cautious"
+      ]
+    },
+    {
+      "key": "base.castle_popup.decree.cautious.description",
+      "values": [
+        "Если здоровье воина упало ниже 10%, то воин бежит с поля боя в портал.",
+        "If a warrior's health falls below 10%, they flee the battlefield through the portal."
+      ]
+    },
+    {
+      "key": "base.castle.decree.enabled",
+      "values": [
+        "Указ включён",
+        "Decree enabled"
+      ]
+    },
+    {
+      "key": "base.castle.decree.disabled",
+      "values": [
+        "Указ выключен",
+        "Decree disabled"
+      ]
+    },
+    {
+      "key": "base.castle.decree.turn_on",
+      "values": [
+        "Включить",
+        "Enable"
+      ]
+    },
+    {
+      "key": "base.castle.decree.turn_off",
+      "values": [
+        "Выключить",
+        "Disable"
+      ]
+    },
+    {
+      "key": "base.castle_popup.decree.finish_off.name",
+      "values": [
+        "Бей раненых",
+        "Finish off the wounded"
+      ]
+    },
+    {
+      "key": "base.castle_popup.decree.finish_off.description",
+      "values": [
+        "Лучники атакуют врагов с наименьшим процентом здоровья",
+        "Archers attack enemies with the lowest health percentage."
+      ]
+    },
+    {
+      "key": "unit.stat.Health",
+      "values": [
+        "Здоровье",
+        "Health"
+      ]
+    },
+    {
+      "key": "unit.stat.PhysicalDamage",
+      "values": [
+        "Физический урон",
+        "Physical damage"
+      ]
+    },
+    {
+      "key": "unit.stat.FireDamage",
+      "values": [
+        "Огненный урон",
+        "Fire damage"
+      ]
+    },
+    {
+      "key": "unit.stat.IceDamage",
+      "values": [
+        "Урон холодом",
+        "Ice damage"
+      ]
+    },
+    {
+      "key": "unit.stat.MagicDamage",
+      "values": [
+        "Магический урон",
+        "Magic damage"
+      ]
+    },
+    {
+      "key": "unit.stat.AttackRate",
+      "values": [
+        "Частота атак",
+        "Attack rate"
+      ]
+    },
+    {
+      "key": "unit.stat.AttackInterval",
+      "values": [
+        "Интервал атак",
+        "Attack interval"
+      ]
+    },
+    {
+      "key": "unit.stat.AttackRange",
+      "values": [
+        "Дальность атаки",
+        "Attack range"
+      ]
+    },
+    {
+      "key": "unit.stat.MovementSpeed",
+      "values": [
+        "Скорость движения",
+        "Movement speed"
+      ]
+    },
+    {
+      "key": "unit.stat.DetectionRange",
+      "values": [
+        "Радиус обнаружения",
+        "Detection range"
+      ]
+    },
+    {
+      "key": "unit.stat.PhysicalResistance",
+      "values": [
+        "Защита от физ. урона",
+        "Physical resistance"
+      ]
+    },
+    {
+      "key": "unit.stat.FireResistance",
+      "values": [
+        "Защита от огня",
+        "Fire resistance"
+      ]
+    },
+    {
+      "key": "unit.stat.IceResistance",
+      "values": [
+        "Защита от холода",
+        "Ice resistance"
+      ]
+    },
+    {
+      "key": "unit.stat.MagicResistance",
+      "values": [
+        "Защита от магии",
+        "Magic resistance"
+      ]
+    },
+    {
+      "key": "unit.stat.Regeneration",
+      "values": [
+        "Регенерация вне боя",
+        "Out-of-combat regen"
+      ]
+    },
+    {
+      "key": "unit.stat.RegenerationDelay",
+      "values": [
+        "Задержка регенерации",
+        "Regeneration delay"
+      ]
+    },
+    {
+      "key": "unit.stat.PortalHealing",
+      "values": [
+        "Лечение у портала",
+        "Healing at the portal"
+      ]
+    },
+    {
+      "key": "unit.stat.Retreat",
+      "values": [
+        "Отступление",
+        "Retreat"
+      ]
+    },
+    {
+      "key": "unit.stat.Food",
+      "values": [
+        "Пища на новый день",
+        "Food each new day"
+      ]
+    },
+    {
+      "key": "unit.swordsman.title",
+      "values": [
+        "Мечник",
+        "Swordsman"
+      ]
+    },
+    {
+      "key": "unit.archer.title",
+      "values": [
+        "Лучник",
+        "Archer"
+      ]
+    },
+    {
+      "key": "unit.swordsman.role",
+      "values": [
+        "БЛИЖНИЙ БОЙ",
+        "MELEE"
+      ]
+    },
+    {
+      "key": "unit.archer.role",
+      "values": [
+        "ДАЛЬНИЙ БОЙ",
+        "RANGED"
+      ]
+    },
+    {
+      "key": "unit.swordsman.description",
+      "values": [
+        "Боец ближнего боя. Сближается с противником и защищает подступы к порталу.",
+        "A melee fighter. Closes in on enemies and defends the approaches to the portal."
+      ]
+    },
+    {
+      "key": "unit.archer.description",
+      "values": [
+        "Боец дальнего боя. Стреляет с расстояния и старается удерживать дистанцию.",
+        "A ranged fighter. Fires from afar and tries to keep a safe distance."
+      ]
+    },
+    {
+      "key": "unit.details.recruit",
+      "values": [
+        "Новобранец · без звёзд",
+        "Recruit · no stars"
+      ]
+    },
+    {
+      "key": "unit.details.progress",
+      "values": [
+        "Уровень {0}/10 · опыт {1}",
+        "Level {0}/10 · XP {1}"
+      ]
+    },
+    {
+      "key": "unit.details.maximum",
+      "values": [
+        "максимум",
+        "maximum"
+      ]
+    },
+    {
+      "key": "unit.details.footer",
+      "values": [
+        "За убийство: {0} опыта · за помощь: {1}\nНовый день полностью восстанавливает здоровье.\nКолесо мыши – прокрутка характеристик.",
+        "Kill: {0} XP · assist: {1} XP\nA new day restores health completely.\nMouse wheel – scroll statistics."
+      ]
+    },
+    {
+      "key": "unit.details.heading",
+      "values": [
+        "ХАРАКТЕРИСТИКИ",
+        "STATISTICS"
+      ]
+    },
+    {
+      "key": "unit.details.value_heading",
+      "values": [
+        "ЗНАЧЕНИЕ",
+        "VALUE"
+      ]
+    },
+    {
+      "key": "unit.details.per_second",
+      "values": [
+        " / с",
+        " / s"
+      ]
+    },
+    {
+      "key": "unit.details.seconds",
+      "values": [
+        " с",
+        " s"
+      ]
+    },
+    {
+      "key": "unit.details.distance",
+      "values": [
+        " ед.",
+        " u"
+      ]
+    },
+    {
+      "key": "unit.details.speed_unit",
+      "values": [
+        " ед./с",
+        " u/s"
+      ]
+    },
+    {
+      "key": "unit.details.hp_per_second",
+      "values": [
+        " HP/с",
+        " HP/s"
+      ]
+    },
+    {
+      "key": "unit.details.percent_per_second",
+      "values": [
+        "% HP/с",
+        "% HP/s"
+      ]
+    },
+    {
+      "key": "unit.details.none",
+      "values": [
+        "Нет",
+        "None"
+      ]
+    },
+    {
+      "key": "unit.details.not_researched",
+      "values": [
+        "Не изучено",
+        "Not researched"
+      ]
+    },
+    {
+      "key": "unit.details.retreat_threshold",
+      "values": [
+        "При HP ≤ 10%",
+        "At HP ≤ 10%"
+      ]
+    },
+    {
+      "key": "unit.details.decree_off",
+      "values": [
+        "Указ выключен",
+        "Decree disabled"
+      ]
+    },
+    {
+      "key": "unit.details.food_amount",
+      "values": [
+        "1 / день",
+        "1 / day"
+      ]
+    },
+    {
+      "key": "unit.training.stock",
+      "values": [
+        "В запасе",
+        "In reserve"
+      ]
+    },
+    {
+      "key": "unit.training.available",
+      "values": [
+        "ДОСТУПНЫЕ РЕСУРСЫ",
+        "AVAILABLE RESOURCES"
+      ]
+    },
+    {
+      "key": "unit.training.price",
+      "values": [
+        "ЦЕНА ОДНОГО БОЙЦА",
+        "COST PER WARRIOR"
+      ]
+    },
+    {
+      "key": "unit.training.disarm_hint",
+      "values": [
+        "При разоружении житель и оружие возвращаются в запас.",
+        "Disarming returns the resident and their weapon to your reserves."
+      ]
+    },
+    {
+      "key": "unit.training.deploy_hint",
+      "values": [
+        "В начале забега весь отряд автоматически выходит из портала.",
+        "The whole squad leaves the portal automatically at the start of a run."
+      ]
+    },
+    {
+      "key": "unit.stat.TargetPriority",
+      "values": [
+        "Приоритет цели",
+        "Target priority"
+      ]
+    },
+    {
+      "key": "unit.details.weakest",
+      "values": [
+        "Меньше % HP",
+        "Lowest % HP"
+      ]
+    },
+    {
+      "key": "unit.details.nearest",
+      "values": [
+        "Ближайший",
+        "Nearest"
+      ]
+    },
+    {
+      "key": "unit.stat.Defense",
+      "values": [
+        "Защита",
+        "Defense"
+      ]
+    },
+    {
+      "key": "unit.training.food_per_unit",
+      "values": [
+        "Пища на бойца",
+        "Food per warrior"
+      ]
+    },
+    {
+      "key": "unit.training.food_total",
+      "values": [
+        "Пища отряда",
+        "Squad food"
+      ]
+    },
+    {
+      "key": "unit.training.food_daily",
+      "values": [
+        "{0} / день",
+        "{0} / day"
+      ]
+    },
+    {
+      "key": "world.enemies.title",
+      "values": [
+        "ВРАЖЕСКИЕ ВОЙСКА",
+        "ENEMY FORCES"
+      ]
+    },
+    {
+      "key": "world.enemies.subtitle",
+      "values": [
+        "Сейчас на карте",
+        "Currently on the map"
+      ]
+    },
+    {
+      "key": "unit.enemy.role",
+      "values": [
+        "ВРАГ",
+        "ENEMY"
+      ]
+    },
+    {
+      "key": "unit.details.enemy_type",
+      "values": [
+        "Характеристики типа врага",
+        "Enemy type statistics"
+      ]
+    },
+    {
+      "key": "unit.details.enemy_footer",
+      "values": [
+        "Базовые характеристики этого типа врагов.\nКолесо мыши – прокрутка характеристик.",
+        "Base statistics for this enemy type.\nMouse wheel – scroll statistics."
+      ]
+    },
+    {
+      "key": "unit.enemy.octopus.title",
+      "values": [
+        "Осьминог",
+        "Octopus"
+      ]
+    },
+    {
+      "key": "unit.enemy.cursedknight.title",
+      "values": [
+        "Проклятый рыцарь",
+        "Cursed Knight"
+      ]
+    },
+    {
+      "key": "unit.enemy.octopuswarrior.title",
+      "values": [
+        "Воин-осьминог",
+        "Octopus Warrior"
+      ]
+    },
+    {
+      "key": "unit.enemy.cursedmage.title",
+      "values": [
+        "Проклятый маг",
+        "Cursed Mage"
+      ]
+    },
+    {
+      "key": "unit.enemy.octopus.description",
+      "values": [
+        "Самый слабый наземный враг со средней скоростью. Атакует в ближнем бою.",
+        "The weakest ground enemy, with moderate movement speed. Attacks in melee."
+      ]
+    },
+    {
+      "key": "unit.enemy.cursedknight.description",
+      "values": [
+        "Тяжело бронированный рыцарь. Медленнее стража, но наносит редкие мощные удары.",
+        "A heavily armored knight. Slower than the guardian, with rare powerful strikes."
+      ]
+    },
+    {
+      "key": "unit.enemy.octopuswarrior.description",
+      "values": [
+        "Самый живучий враг. Медленно движется и наносит очень редкие сокрушительные удары.",
+        "The enemy with the most health. Moves slowly and delivers very rare devastating strikes."
+      ]
+    },
+    {
+      "key": "unit.enemy.cursedmage.description",
+      "values": [
+        "Хрупкий дальнобойный маг. Компенсирует малое здоровье высоким уроном.",
+        "A fragile ranged mage that compensates for low health with high damage."
+      ]
+    },
+    {
+      "key": "base.base_panel.magic_library.label",
+      "values": [
+        "Магическая библиотека",
+        "Magic library"
+      ]
+    },
+    {
+      "key": "base.building.magic_library.description",
+      "values": [
+        "Хранит бестиарий существ, встреченных в боях.",
+        "Keeps a bestiary of creatures encountered in battle."
+      ]
+    },
+    {
+      "key": "base.magic_library.title",
+      "values": [
+        "МАГИЧЕСКАЯ БИБЛИОТЕКА",
+        "MAGIC LIBRARY"
+      ]
+    },
+    {
+      "key": "base.magic_library.subtitle",
+      "values": [
+        "Бестиарий встреченных существ",
+        "Bestiary of encountered creatures"
+      ]
+    },
+    {
+      "key": "base.magic_library.count",
+      "values": [
+        "Открыто: {0}",
+        "Discovered: {0}"
+      ]
+    },
+    {
+      "key": "base.magic_library.empty",
+      "values": [
+        "В бестиарии пока нет записей.\nВстретьте монстра в бою, чтобы добавить его сюда.",
+        "The bestiary has no entries yet.\nEncounter a monster in battle to add it here."
+      ]
+    },
+    {
+      "key": "base.upgrade.action",
+      "values": [
+        "Улучшить",
+        "Upgrade"
+      ]
+    },
+    {
+      "key": "base.upgrade.max",
+      "values": [
+        "Максимум",
+        "Maximum"
+      ]
+    },
+    {
+      "key": "base.upgrade.price",
+      "values": [
+        "Цена улучшения",
+        "Upgrade cost"
+      ]
+    },
+    {
+      "key": "base.upgrade.effect",
+      "values": [
+        "Дополнительные места: +{0}\nВместимость: {1} → {2}",
+        "Additional slots: +{0}\nCapacity: {1} → {2}"
+      ]
+    },
+    {
+      "key": "base.housing.capacity",
+      "values": [
+        "Места для жителей",
+        "Civilian capacity"
+      ]
+    },
+    {
+      "key": "base.building.housing.extra_places",
+      "values": [
+        "Увеличивает количество жилых мест для людей на {0}.",
+        "Adds {0} housing places for people."
+      ]
+    },
+    {
+      "key": "skill.Scientific1.1.1.title",
+      "values": [
+        "Луч света 2",
+        "Light beam 2"
+      ]
+    },
+    {
+      "key": "skill.Scientific1.1.1.description",
+      "values": [
+        "Добавляет ещё один луч света. Всего лучей: 2.",
+        "Adds one more light beam. Total beams: 2."
+      ]
+    },
+    {
+      "key": "skill.Scientific1.1.1.1.title",
+      "values": [
+        "Луч света 3",
+        "Light beam 3"
+      ]
+    },
+    {
+      "key": "skill.Scientific1.1.1.1.description",
+      "values": [
+        "Добавляет ещё один луч света. Всего лучей: 3.",
+        "Adds one more light beam. Total beams: 3."
+      ]
+    },
+    {
+      "key": "skill.Scientific1.1.1.1.1.title",
+      "values": [
+        "Луч света 4",
+        "Light beam 4"
+      ]
+    },
+    {
+      "key": "skill.Scientific1.1.1.1.1.description",
+      "values": [
+        "Добавляет ещё один луч света. Всего лучей: 4.",
+        "Adds one more light beam. Total beams: 4."
+      ]
+    },
+    {
+      "key": "skill.Scientific1.1.1.1.1.1.title",
+      "values": [
+        "Луч света 5",
+        "Light beam 5"
+      ]
+    },
+    {
+      "key": "skill.Scientific1.1.1.1.1.1.description",
+      "values": [
+        "Добавляет ещё один луч света. Всего лучей: 5.",
+        "Adds one more light beam. Total beams: 5."
+      ]
+    },
+    {
+      "key": "skill.Scientific1.1.1.1.1.1.1.title",
+      "values": [
+        "Луч света 6",
+        "Light beam 6"
+      ]
+    },
+    {
+      "key": "skill.Scientific1.1.1.1.1.1.1.description",
+      "values": [
+        "Добавляет ещё один луч света. Всего лучей: 6.",
+        "Adds one more light beam. Total beams: 6."
+      ]
+    },
+    {
+      "key": "world.crystal.cancel",
+      "values": [
+        "отменить действие",
+        "cancel action"
+      ]
+    },
+    {
+      "key": "world.crystal.recall_humans",
+      "values": [
+        "Вернуть людей в портал",
+        "Return people to the portal"
+      ]
+    },
+    {
+      "key": "base.laboratory.title",
+      "values": [
+        "НАУЧНАЯ ЛАБОРАТОРИЯ",
+        "SCIENTIFIC LABORATORY"
+      ]
+    },
+    {
+      "key": "laboratory.total",
+      "values": [
+        "Изучено улучшений",
+        "Upgrades learned"
+      ]
+    },
+    {
+      "key": "laboratory.lock_legend",
+      "values": [
+        "У замка – сколько улучшений нужно изучить",
+        "Lock – upgrades required to unlock"
+      ]
+    },
+    {
+      "key": "laboratory.scroll_hint",
+      "values": [
+        "Колесо мыши – прокрутка",
+        "Mouse wheel – scroll"
+      ]
+    },
+    {
+      "key": "laboratory.research",
+      "values": [
+        "ИССЛЕДОВАНИЕ",
+        "RESEARCH"
+      ]
+    },
+    {
+      "key": "laboratory.level",
+      "values": [
+        "ур.",
+        "lv."
+      ]
+    },
+    {
+      "key": "laboratory.complete",
+      "values": [
+        "Изучено",
+        "Learned"
+      ]
+    },
+    {
+      "key": "laboratory.locked",
+      "values": [
+        "Заблокировано",
+        "Locked"
+      ]
+    },
+    {
+      "key": "laboratory.available",
+      "values": [
+        "Можно изучить",
+        "Ready to learn"
+      ]
+    },
+    {
+      "key": "laboratory.no_resources",
+      "values": [
+        "Не хватает ресурсов",
+        "Not enough resources"
+      ]
+    },
+    {
+      "key": "laboratory.learned_levels",
+      "values": [
+        "Изучено уровней",
+        "Levels learned"
+      ]
+    },
+    {
+      "key": "laboratory.requirement",
+      "values": [
+        "Нужно изучить улучшений",
+        "Upgrades required"
+      ]
+    },
+    {
+      "key": "laboratory.already",
+      "values": [
+        "Уже изучено",
+        "Already learned"
+      ]
+    },
+    {
+      "key": "laboratory.price",
+      "values": [
+        "Стоимость",
+        "Cost"
+      ]
+    },
+    {
+      "key": "laboratory.maximum",
+      "values": [
+        "Все уровни этого улучшения изучены",
+        "All levels of this upgrade learned"
+      ]
+    },
+    {
+      "key": "laboratory.unlock_hint",
+      "values": [
+        "Изучайте другие улучшения, чтобы открыть этот уровень",
+        "Learn other upgrades to unlock this level"
+      ]
+    },
+    {
+      "key": "laboratory.buy_hint",
+      "values": [
+        "Нажмите на улучшение слева, чтобы изучить",
+        "Click the upgrade on the left to learn it"
+      ]
+    },
+    {
+      "key": "laboratory.group.Scientific1",
+      "values": [
+        "Магические стрелы",
+        "Magic arrows"
+      ]
+    },
+    {
+      "key": "laboratory.group.Scientific1.1",
+      "values": [
+        "Крепкие стены",
+        "Strong walls"
+      ]
+    },
+    {
+      "key": "laboratory.group.Scientific1.2",
+      "values": [
+        "Быстрая разведка",
+        "Fast scouting"
+      ]
+    },
+    {
+      "key": "laboratory.group.Scientific1.3",
+      "values": [
+        "Острые топоры",
+        "Sharp axes"
+      ]
+    },
+    {
+      "key": "laboratory.group.Scientific1.4",
+      "values": [
+        "Тихая разведка",
+        "Quiet scouting"
+      ]
+    },
+    {
+      "key": "laboratory.group.Scientific1.2.1",
+      "values": [
+        "Тактическое отступление",
+        "Tactical retreat"
+      ]
+    },
+    {
+      "key": "laboratory.group.Scientific1.2.1.1",
+      "values": [
+        "Полевой лазарет",
+        "Field infirmary"
+      ]
+    },
+    {
+      "key": "base.portal.popup_title",
+      "values": [
+        "ПОРТАЛ",
+        "PORTAL"
+      ]
+    },
+    {
+      "key": "base.portal.level",
+      "values": [
+        "Уровень портала: {0} / {1}",
+        "Portal level: {0} / {1}"
+      ]
+    },
+    {
+      "key": "base.portal.locations",
+      "values": [
+        "ВЫБЕРИТЕ ЛОКАЦИЮ",
+        "CHOOSE A DESTINATION"
+      ]
+    },
+    {
+      "key": "base.portal.resources",
+      "values": [
+        "РЕСУРСЫ ЛОКАЦИИ",
+        "LOCATION RESOURCES"
+      ]
+    },
+    {
+      "key": "base.portal.available",
+      "values": [
+        "Доступно",
+        "Available"
+      ]
+    },
+    {
+      "key": "base.portal.requires_level",
+      "values": [
+        "Улучшите портал до ур. {0}",
+        "Upgrade portal to level {0}"
+      ]
+    },
+    {
+      "key": "base.portal.depart",
+      "values": [
+        "Отправиться",
+        "Travel"
+      ]
+    },
+    {
+      "key": "base.portal.ready",
+      "values": [
+        "Портал готов к переходу",
+        "The portal is ready"
+      ]
+    },
+    {
+      "key": "base.portal.upgrade_effect",
+      "values": [
+        "Открывает локацию: {0}\nДоступ сохраняется между походами.",
+        "Unlocks: {0}\nAccess is permanent between expeditions."
+      ]
+    },
+    {
+      "key": "day_report.shelter_gain",
+      "values": [
+        "Укрытие +",
+        "Shelter +"
+      ]
+    },
+    {
+      "key": "day_report.shelter_spent",
+      "values": [
+        "Укрытие −",
+        "Shelter −"
+      ]
+    },
+    {
+      "key": "base.portal.abundance.absent",
+      "values": [
+        "Отсутствует",
+        "Absent"
+      ]
+    },
+    {
+      "key": "unit.enemy.octopusraider.title",
+      "values": [
+        "Осьминог-налётчик",
+        "Octopus Raider"
+      ]
+    },
+    {
+      "key": "unit.enemy.octopusraider.description",
+      "values": [
+        "Быстрый наземный налётчик. Уступает в скорости только летучей мыши.",
+        "A fast ground raider. Only the bat moves faster."
+      ]
+    },
+    {
+      "key": "unit.enemy.octopusguardian.title",
+      "values": [
+        "Осьминог-страж",
+        "Octopus Guardian"
+      ]
+    },
+    {
+      "key": "unit.enemy.octopusguardian.description",
+      "values": [
+        "Бронированный страж со скоростью выше средней и сильными атаками.",
+        "An armored guardian with above-average speed and strong attacks."
+      ]
+    },
+    {
+      "key": "enemy.level.notification",
+      "values": [
+        "Враги достигли уровня {0}",
+        "Enemies reached level {0}"
+      ]
+    },
+    {
+      "key": "enemy.level.detail",
+      "values": [
+        "Уровень {0}/50 · без опыта",
+        "Level {0}/50 · no experience"
+      ]
+    },
+    {
+      "key": "enemy.level.footer",
+      "values": [
+        "Уровень фиксируется при появлении врага.\nВ панели показаны характеристики новых врагов.",
+        "Level is fixed when an enemy spawns.\nThe panel shows stats for newly spawned enemies."
+      ]
+    },
+    {
+      "key": "intro.summons",
+      "values": [
+        "Король призвал вас ко двору для награждения.",
+        "The king summoned you to court to receive an honour."
+      ]
+    },
+    {
+      "key": "intro.award",
+      "values": [
+        "Славный рыцарь! За боевые заслуги жалую вам земли портала и семерых поселенцев для обустройства вашего нового владения!",
+        "Noble knight! For your valour, I grant you the Portal Lands and seven settlers to establish your new holding!"
+      ]
+    },
+    {
+      "key": "intro.own_land",
+      "values": [
+        "Своя земля…",
+        "My own land…"
+      ]
+    },
+    {
+      "key": "intro.portal",
+      "values": [
+        "…с порталом в Тёмные земли.",
+        "…with a portal to the Dark Lands."
+      ]
+    },
+    {
+      "key": "intro.tribute",
+      "values": [
+        "Взамен земли портала будут исправно снабжать королевскую казну магической рудой. Уверен, вы оправдаете моё доверие.",
+        "In return, the Portal Lands shall supply the royal treasury with magical ore. I trust you will prove worthy of my confidence."
+      ]
+    },
+    {
+      "key": "intro.objection",
+      "values": [
+        "Но, Ваше Величество…",
+        "But, Your Majesty…"
+      ]
+    },
+    {
+      "key": "intro.continue",
+      "values": [
+        "Дальше",
+        "Continue"
+      ]
+    },
+    {
+      "key": "intro.begin",
+      "values": [
+        "В земли портала",
+        "To the Portal Lands"
+      ]
+    },
+    {
+      "key": "base.blacksmith.make_cart",
+      "values": [
+        "Сделать телегу",
+        "Make cart"
+      ]
+    },
+    {
+      "key": "base.blacksmith.column.product",
+      "values": [
+        "Изделие",
+        "Item"
+      ]
+    },
+    {
+      "key": "base.blacksmith.column.price",
+      "values": [
+        "Цена",
+        "Cost"
+      ]
+    },
+    {
+      "key": "base.blacksmith.column.stock",
+      "values": [
+        "В запасе",
+        "In stock"
+      ]
+    },
+    {
+      "key": "base.blacksmith.cart_title",
+      "values": [
+        "Телеги",
+        "Carts"
+      ]
+    },
+    {
+      "key": "world.lights.activate",
+      "values": [
+        "Включить свет",
+        "Turn on lights"
+      ]
+    },
+    {
+      "key": "laboratory.group.light_beams",
+      "values": [
+        "Лучи света",
+        "Light beams"
+      ]
+    },
+    {
+      "key": "world.lights.auto_repeat",
+      "values": [
+        "Автоповтор",
+        "Auto-repeat"
+      ]
+    },
+    {
+      "key": "world.lights.start_work",
+      "values": [
+        "Запустить работу",
+        "Start work"
+      ]
+    },
+    {
+      "key": "report.shelter",
+      "values": [
+        "Укрытие",
+        "Shelter"
+      ]
+    },
+    {
+      "key": "world.lights.manual_mode_hint",
+      "values": [
+        "Автоповтор выключен. ЛКМ по гексу с лучом запускает работу.",
+        "Auto-repeat is off. Left-click a lit hex to start work."
+      ]
+    },
+    {
+      "key": "portal_tower.title",
+      "values": [
+        "ПРОКАЧКА БАШНИ ПОРТАЛА",
+        "PORTAL TOWER UPGRADES"
+      ]
+    },
+    {
+      "key": "portal_tower.mandatory",
+      "values": [
+        "Выберите улучшение, чтобы продолжить забег",
+        "Choose an upgrade to continue the expedition"
+      ]
+    },
+    {
+      "key": "portal_tower.upgrade",
+      "values": [
+        "УЛУЧШЕНИЕ БАШНИ",
+        "TOWER UPGRADE"
+      ]
+    },
+    {
+      "key": "portal_tower.experience",
+      "values": [
+        "Башня портала",
+        "Portal tower"
+      ]
+    },
+    {
+      "key": "unit.details.armor",
+      "values": [
+        "Броня за попадание",
+        "Armor per hit"
+      ]
+    },
+    {
+      "key": "unit.details.dps",
+      "values": [
+        "Урон в секунду",
+        "Damage per second"
+      ]
+    },
+    {
+      "key": "unit.details.electric_damage",
+      "values": [
+        "Электрический урон",
+        "Electric damage"
+      ]
+    },
+    {
+      "key": "unit.details.electric_resistance",
+      "values": [
+        "Защита от электричества",
+        "Electric resistance"
+      ]
+    },
+    {
+      "key": "unit.details.footer_compact",
+      "values": [
+        "За убийство: {0} опыта · за помощь: {1}\nНовый день полностью восстанавливает здоровье.",
+        "Kill: {0} XP · assist: {1}\nA new day fully restores health."
+      ]
+    },
+    {
+      "key": "game.text.d59da639727e6631",
+      "values": [
+        "+15% дальности этого оружия.",
+        "+15% weapon range."
+      ]
+    },
+    {
+      "key": "game.text.f1f5faf0979827f3",
+      "values": [
+        "+20% радиуса пятна выжигающего луча.",
+        "+20% scorching beam area radius."
+      ]
+    },
+    {
+      "key": "game.text.7daf209b9ebd10b7",
+      "values": [
+        "+20% скорости атаки этого оружия.",
+        "+20% weapon attack speed."
+      ]
+    },
+    {
+      "key": "game.text.83f7766a619a8a60",
+      "values": [
+        "+20% толщины кольца силы.",
+        "+20% force ring thickness."
+      ]
+    },
+    {
+      "key": "game.text.27616cbbc124121a",
+      "values": [
+        "+25% базового урона этого оружия.",
+        "+25% base weapon damage."
+      ]
+    },
+    {
+      "key": "game.text.1c14744e3acf4408",
+      "values": [
+        "+25% скорости полёта снарядов.",
+        "+25% projectile speed."
+      ]
+    },
+    {
+      "key": "game.text.b45f03f9f656613c",
+      "values": [
+        "+25% скорости расширения колец.",
+        "+25% ring expansion speed."
+      ]
+    },
+    {
+      "key": "game.text.39fd5b38a70e08fe",
+      "values": [
+        "0 / день",
+        "0 / day"
+      ]
+    },
+    {
+      "key": "game.text.67abd04472ea2c03",
+      "values": [
+        "0.4 ед.",
+        "0.4 units"
+      ]
+    },
+    {
+      "key": "game.text.bf978ab52fa8f86e",
+      "values": [
+        "0.67 / с",
+        "0.67 / s"
+      ]
+    },
+    {
+      "key": "game.text.8b782cb5ac1fc2fa",
+      "values": [
+        "1.3–1.7 ед./с",
+        "1.3–1.7 units/s"
+      ]
+    },
+    {
+      "key": "game.text.c587f6f85505c6d2",
+      "values": [
+        "4 ед.",
+        "4 units"
+      ]
+    },
+    {
+      "key": "game.text.4b4d274a17354686",
+      "values": [
+        "50 ед.",
+        "50 units"
+      ]
+    },
+    {
+      "key": "game.text.1ce16bc0cd7d6f50",
+      "values": [
+        "Barbarian – атака",
+        "Barbarian – attack"
+      ]
+    },
+    {
+      "key": "game.text.56188aa649e4cbb7",
+      "values": [
+        "CursedKnight – атака",
+        "Cursed Knight – attack"
+      ]
+    },
+    {
+      "key": "game.text.308ac3dd31a98cb9",
+      "values": [
+        "CursedMage – атака",
+        "Cursed Mage – attack"
+      ]
+    },
+    {
+      "key": "game.text.52c4e7fe3908c210",
+      "values": [
+        "L или Esc – закрыть",
+        "L or Esc – close"
+      ]
+    },
+    {
+      "key": "game.text.a35c50237f73daad",
+      "values": [
+        "Octopus – атака",
+        "Octopus – attack"
+      ]
+    },
+    {
+      "key": "game.text.a0e3855d6fbcc6d9",
+      "values": [
+        "OctopusGuardian – атака",
+        "Octopus Guardian – attack"
+      ]
+    },
+    {
+      "key": "game.text.aee1475af4581996",
+      "values": [
+        "OctopusRaider – атака",
+        "Octopus Raider – attack"
+      ]
+    },
+    {
+      "key": "game.text.fd6169edc0136742",
+      "values": [
+        "OctopusWarrior – атака",
+        "Octopus Warrior – attack"
+      ]
+    },
+    {
+      "key": "game.text.d4049f6e9b9124c9",
+      "values": [
+        "БАШНЯ ПОРТАЛА",
+        "PORTAL TOWER"
+      ]
+    },
+    {
+      "key": "game.text.f1692fb32d096824",
+      "values": [
+        "Базовая лесная локация.",
+        "The first woodland location."
+      ]
+    },
+    {
+      "key": "game.text.fbee7e6f0578bb84",
+      "values": [
+        "Башня портала ур.1   0 / 12",
+        "Portal tower  Lv.1   0 / 12"
+      ]
+    },
+    {
+      "key": "game.text.2c52c9b209f368e8",
+      "values": [
+        "Бесшумная разведка",
+        "Silent scouting"
+      ]
+    },
+    {
+      "key": "game.text.ec445ee40cb9fcf9",
+      "values": [
+        "Библиотека",
+        "Library"
+      ]
+    },
+    {
+      "key": "game.text.f0ffd6fc0c7fd163",
+      "values": [
+        "Больше атак",
+        "More attacks"
+      ]
+    },
+    {
+      "key": "game.text.3c2ddcbd61c538b1",
+      "values": [
+        "Больше урона",
+        "More damage"
+      ]
+    },
+    {
+      "key": "game.text.ccaa9a26407a9e95",
+      "values": [
+        "Было",
+        "Before"
+      ]
+    },
+    {
+      "key": "game.text.71e2a5941a35ba3e",
+      "values": [
+        "Быстрее атаки",
+        "Faster attacks"
+      ]
+    },
+    {
+      "key": "game.text.59d492e96fe7ad50",
+      "values": [
+        "Быстрее кольца",
+        "Faster rings"
+      ]
+    },
+    {
+      "key": "game.text.f9891919ebef5016",
+      "values": [
+        "Быстрее снаряды",
+        "Faster projectiles"
+      ]
+    },
+    {
+      "key": "game.text.7e5e2354db351041",
+      "values": [
+        "Быстрый враг ближнего боя с клинком. Опасен в группе.",
+        "A fast melee enemy with a blade. Dangerous in groups."
+      ]
+    },
+    {
+      "key": "game.text.94d6a1118cf339fd",
+      "values": [
+        "Бьёт случайного врага в радиусе 2,6. Игнорирует броню; против бронированных +50%.",
+        "Strikes a random enemy within 2.6 units. Ignores armor; +50% damage against armored enemies."
+      ]
+    },
+    {
+      "key": "game.text.d87258280102fdf1",
+      "values": [
+        "В бестиарии пока нет записей.",
+        "No bestiary entries yet."
+      ]
+    },
+    {
+      "key": "game.text.7e266c8170b2f65b",
+      "values": [
+        "ВНИМАНИЕ! 50% шанс гибели.",
+        "WARNING! 50% chance of death."
+      ]
+    },
+    {
+      "key": "game.text.a6b627cff0852044",
+      "values": [
+        "Ваше Величество, укрытию нужны припасы.\nОтправьте людей через портал и добудьте еду, древесину и камень. Я подготовлю для вас первое поручение.",
+        "Your Majesty, the shelter needs supplies.\nSend people through the portal to gather food, wood and stone. I will prepare your first task."
+      ]
+    },
+    {
+      "key": "game.text.2018da51e5eb0907",
+      "values": [
+        "Вдвое уменьшает время добычи древисины",
+        "Halves wood harvesting time"
+      ]
+    },
+    {
+      "key": "game.text.2d28e89d164d9764",
+      "values": [
+        "Вернуться",
+        "Return"
+      ]
+    },
+    {
+      "key": "game.text.58125db67049aaef",
+      "values": [
+        "Воины возвращаются к порталу, когда их здоровье падает до 10%.",
+        "Warriors return to the portal when their health falls to 10%."
+      ]
+    },
+    {
+      "key": "game.text.0b21876c6f8cf08c",
+      "values": [
+        "Воины отступают к порталу, когда здоровье падает до 10%.",
+        "Warriors retreat to the portal when their health falls to 10%."
+      ]
+    },
+    {
+      "key": "game.text.02f2d60fe3a498c5",
+      "values": [
+        "Воины у портала восстанавливают 1% здоровья в секунду.",
+        "Warriors near the portal restore 1% health per second."
+      ]
+    },
+    {
+      "key": "game.text.37671b41b1a3e40f",
+      "values": [
+        "Время в забеге: 00:00:00",
+        "Run time: 00:00:00"
+      ]
+    },
+    {
+      "key": "game.text.47b30d2701356ff3",
+      "values": [
+        "Вы ещё помните как управлять подданными? Народу нужна ваша длань.",
+        "Do you still remember how to command your subjects? Your people need your guiding hand."
+      ]
+    },
+    {
+      "key": "game.text.497fc1306d467393",
+      "values": [
+        "Вы не успели сбежать, портал был уничтожен.",
+        "You did not escape in time. The portal was destroyed."
+      ]
+    },
+    {
+      "key": "game.text.658ef040dea83a32",
+      "values": [
+        "Выберите оружие",
+        "Choose a weapon"
+      ]
+    },
+    {
+      "key": "game.text.a9461184d75e4057",
+      "values": [
+        "Выберите сохранение",
+        "Choose a save"
+      ]
+    },
+    {
+      "key": "game.text.2114b213007e0a0a",
+      "values": [
+        "Выбрать",
+        "Choose"
+      ]
+    },
+    {
+      "key": "game.text.9e9068eeb8473535",
+      "values": [
+        "Выжигающий луч",
+        "Scorching beam"
+      ]
+    },
+    {
+      "key": "game.text.21cff3d1f22d2459",
+      "values": [
+        "Выжило: 0",
+        "Survived: 0"
+      ]
+    },
+    {
+      "key": "game.text.ed8795f2cc324247",
+      "values": [
+        "Выход",
+        "Exit"
+      ]
+    },
+    {
+      "key": "game.text.ea716fc312632dc0",
+      "values": [
+        "Гоблин",
+        "Goblin"
+      ]
+    },
+    {
+      "key": "game.text.1b22492bedaf3992",
+      "values": [
+        "Да",
+        "Yes"
+      ]
+    },
+    {
+      "key": "game.text.fc7af609df7741b6",
+      "values": [
+        "Далее",
+        "Next"
+      ]
+    },
+    {
+      "key": "game.text.084f61a960b68eac",
+      "values": [
+        "Дальнее атаки",
+        "Longer range"
+      ]
+    },
+    {
+      "key": "game.text.078053126cad00fb",
+      "values": [
+        "Два здания и один лук",
+        "Two buildings and one bow"
+      ]
+    },
+    {
+      "key": "game.text.28a0626c0dea70ec",
+      "values": [
+        "День 1",
+        "Day 1"
+      ]
+    },
+    {
+      "key": "game.text.acf91656fa9dc356",
+      "values": [
+        "Длительность забега: 00:00:00",
+        "Run duration: 00:00:00"
+      ]
+    },
+    {
+      "key": "game.text.18690a67f2a89a46",
+      "values": [
+        "Добавляет рабочий луч для открытия гексов и добычи. Максимум – 6.",
+        "Adds a work beam for revealing hexes and gathering resources. Maximum: 6."
+      ]
+    },
+    {
+      "key": "game.text.e605e588da56290d",
+      "values": [
+        "Доброе утро, ваше высочество. Хорошо спалось? Пока вы спали всё королевство снова покрылось гексами.",
+        "Good morning, Your Highness. Did you sleep well? While you slept, the entire kingdom was covered in hexes again."
+      ]
+    },
+    {
+      "key": "game.text.e89457b3ddaa8939",
+      "values": [
+        "Дополнительный рабочий луч",
+        "Extra work beam"
+      ]
+    },
+    {
+      "key": "game.text.b4f96d18dfc71c36",
+      "values": [
+        "Доставьте ресурсы в портал",
+        "Deliver resources to the portal"
+      ]
+    },
+    {
+      "key": "game.text.9072884f43533ea4",
+      "values": [
+        "Еда на ближайший день",
+        "Food for the next day"
+      ]
+    },
+    {
+      "key": "game.text.e3591acdead6c312",
+      "values": [
+        "Ещё один снаряд в каждом залпе.",
+        "One extra projectile in each volley."
+      ]
+    },
+    {
+      "key": "game.text.2f94b95acd6429c2",
+      "values": [
+        "Ещё одна молния по другому случайному врагу за атаку.",
+        "One extra lightning strike against another random enemy per attack."
+      ]
+    },
+    {
+      "key": "game.text.483f39e9f8394c15",
+      "values": [
+        "Ещё одно кольцо в каждой волне.",
+        "One extra ring in each wave."
+      ]
+    },
+    {
+      "key": "game.text.8d6ae19259c0fa01",
+      "values": [
+        "Живучий страж с длинным оружием. Атакует медленнее, но наносит сильные удары.",
+        "A tough guardian with a long weapon. Attacks slowly but hits hard."
+      ]
+    },
+    {
+      "key": "game.text.c8eba9027b59cfee",
+      "values": [
+        "Жилой\nквартал",
+        "Residential\nquarter"
+      ]
+    },
+    {
+      "key": "game.text.96c40cee6f118b10",
+      "values": [
+        "Жители",
+        "Residents"
+      ]
+    },
+    {
+      "key": "game.text.e4ea55e207f79a9c",
+      "values": [
+        "ЗАДАНИЕ",
+        "QUEST"
+      ]
+    },
+    {
+      "key": "game.text.4bb1468af47631ea",
+      "values": [
+        "За убийство: 10 опыта · за помощь: 3\nНовый день полностью восстанавливает здоровье.\nКолесо мыши – прокрутка характеристик.",
+        "Kill: 10 XP · assist: 3 XP\nA new day fully restores health.\nMouse wheel: scroll stats."
+      ]
+    },
+    {
+      "key": "game.text.a99af4a287820127",
+      "values": [
+        "Забег",
+        "Run"
+      ]
+    },
+    {
+      "key": "game.text.6dde1f15d04aafd8",
+      "values": [
+        "Забрать награду",
+        "Claim reward"
+      ]
+    },
+    {
+      "key": "game.text.c2b372c848e4d724",
+      "values": [
+        "Замок – нужно изучить улучшений",
+        "Castle – upgrades required"
+      ]
+    },
+    {
+      "key": "game.text.34f3aae77b01000d",
+      "values": [
+        "Запасы для укрытия",
+        "Shelter supplies"
+      ]
+    },
+    {
+      "key": "game.text.6d9157f0f28f6908",
+      "values": [
+        "Заточить топоры",
+        "Sharpen axes"
+      ]
+    },
+    {
+      "key": "game.text.06e4550ca73536f0",
+      "values": [
+        "Первые защитники",
+        "Our first defenders"
+      ]
+    },
+    {
+      "key": "game.text.ba139d0419681fa6",
+      "values": [
+        "Здание",
+        "Building"
+      ]
+    },
+    {
+      "key": "game.text.33997944494ed23f",
+      "values": [
+        "Играть",
+        "Play"
+      ]
+    },
+    {
+      "key": "game.text.7e0b3984eea41516",
+      "values": [
+        "Изготовить два лука",
+        "Craft two bows"
+      ]
+    },
+    {
+      "key": "game.text.654969d5572c6a05",
+      "values": [
+        "Изменение корон",
+        "Crown change"
+      ]
+    },
+    {
+      "key": "game.text.e6db6365e7f29676",
+      "values": [
+        "Изучено улучшений: 0 / 5",
+        "Upgrades researched: 0 / 5"
+      ]
+    },
+    {
+      "key": "game.text.125815381eec9b50",
+      "values": [
+        "Изучено уровней: 0 / 1",
+        "Levels researched: 0 / 1"
+      ]
+    },
+    {
+      "key": "game.text.90c9dc3f078d2984",
+      "values": [
+        "За исполнение получите десять влияния. За просрочку будут изъяты припасы, материалы и оружие, а ваше влияние уменьшится на тридцать. Люди и телеги останутся в вашем распоряжении. Пока. Приступайте.",
+        "Fulfil the order and you will receive ten influence. Fail, and your supplies, materials and weapons will be seized, with thirty influence deducted. The people and carts will remain at your disposal. For now. See to it."
+      ]
+    },
+    {
+      "key": "game.text.a099886290acae19",
+      "values": [
+        "Итоги дня",
+        "Day summary"
+      ]
+    },
+    {
+      "key": "game.text.614b352c4443f4c1",
+      "values": [
+        "Итоги забега",
+        "Run summary"
+      ]
+    },
+    {
+      "key": "game.text.8778097f2c0a29ca",
+      "values": [
+        "КНОПКА",
+        "BUTTON"
+      ]
+    },
+    {
+      "key": "game.text.8b3539ef808b3f28",
+      "values": [
+        "Камнеметательная башня",
+        "Stone thrower tower"
+      ]
+    },
+    {
+      "key": "game.text.1dfd0e2f1f1884f6",
+      "values": [
+        "Кольца силы",
+        "Force rings"
+      ]
+    },
+    {
+      "key": "game.text.7cc740213bec807e",
+      "values": [
+        "Кольцо каждые 1,5 секунды: 30 магического урона каждому пересечённому врагу.",
+        "A ring every 1.5 seconds: 30 magic damage to every enemy it touches."
+      ]
+    },
+    {
+      "key": "game.text.c457b07e49e5ea6f",
+      "values": [
+        "Королевская норма",
+        "The royal quota"
+      ]
+    },
+    {
+      "key": "game.text.ecea20a8818e6b20",
+      "values": [
+        "Королевский писарь",
+        "Royal scribe"
+      ]
+    },
+    {
+      "key": "game.text.30e3fd42e8b71ee9",
+      "values": [
+        "Крепкие стены ур.1",
+        "Strong walls  Lv.1"
+      ]
+    },
+    {
+      "key": "game.text.8fe75491ebb40e8e",
+      "values": [
+        "Кристалл на башне портала теперь может стрелять.",
+        "The portal tower crystal can now fire."
+      ]
+    },
+    {
+      "key": "game.text.1036031973ede49c",
+      "values": [
+        "Кузница и стрельбище",
+        "Forge and archery range"
+      ]
+    },
+    {
+      "key": "game.text.025f556da2fdac25",
+      "values": [
+        "Кузница, два лука и стрельбище",
+        "Forge, two bows and archery range"
+      ]
+    },
+    {
+      "key": "game.text.bffc6963215deb2a",
+      "values": [
+        "Купить телегу",
+        "Craft cart"
+      ]
+    },
+    {
+      "key": "game.text.499e572850af89f5",
+      "values": [
+        "Лагерь\nбеженцев",
+        "Refugee\ncamp"
+      ]
+    },
+    {
+      "key": "game.text.918633952f563b60",
+      "values": [
+        "Лук лучника",
+        "Archer's bow"
+      ]
+    },
+    {
+      "key": "game.text.eca43b7db257caf0",
+      "values": [
+        "Лук снайпера",
+        "Sniper's bow"
+      ]
+    },
+    {
+      "key": "game.text.533f8f7fe2a36350",
+      "values": [
+        "Лучники выбирают целью самого слабого врага.",
+        "Archers target the weakest enemy."
+      ]
+    },
+    {
+      "key": "game.text.a9bd3a45f1770afe",
+      "values": [
+        "Два лучника на страже",
+        "Two archers on watch"
+      ]
+    },
+    {
+      "key": "game.text.efc2dbdfb4e8811f",
+      "values": [
+        "Магическая\nбиблиотека",
+        "Magic\nlibrary"
+      ]
+    },
+    {
+      "key": "game.text.71a39f39ed5dc7f6",
+      "values": [
+        "Магическая башня",
+        "Magic tower"
+      ]
+    },
+    {
+      "key": "game.text.18a846b890560aca",
+      "values": [
+        "Магические снаряды",
+        "Magic projectiles"
+      ]
+    },
+    {
+      "key": "game.text.8d39234895a433bb",
+      "values": [
+        "Материалы для кузницы",
+        "Materials for the forge"
+      ]
+    },
+    {
+      "key": "game.text.5ab973ea27984105",
+      "values": [
+        "Меч воина",
+        "Warrior's sword"
+      ]
+    },
+    {
+      "key": "game.text.4d8b83a9c2b532a4",
+      "values": [
+        "Мне удалось отбить наш замок, дом лесорубов и сборщиков ягод.",
+        "I managed to reclaim our castle, woodcutters' lodge and berry gatherers' home."
+      ]
+    },
+    {
+      "key": "game.text.7b67488720ebba6c",
+      "values": [
+        "НОВОЕ ОРУЖИЕ",
+        "NEW WEAPON"
+      ]
+    },
+    {
+      "key": "game.text.d5a8c46bba3ac872",
+      "values": [
+        "Награда",
+        "Reward"
+      ]
+    },
+    {
+      "key": "game.text.058dd7b9c53518b5",
+      "values": [
+        "Назад",
+        "Back"
+      ]
+    },
+    {
+      "key": "game.text.6a82b2aad64d4c15",
+      "values": [
+        "Найми двух лучников",
+        "Recruit two archers"
+      ]
+    },
+    {
+      "key": "game.text.87ab64fcf366b227",
+      "values": [
+        "Наймите двух лучников в стрельбище и заберите награду, чтобы разблокировать строительство лагеря беженцев.",
+        "Recruit two archers at the archery range and claim your reward to unlock refugee camp construction."
+      ]
+    },
+    {
+      "key": "game.text.3bd6572e2b3babd1",
+      "values": [
+        "Научная\nлаборатория",
+        "Research\nlaboratory"
+      ]
+    },
+    {
+      "key": "game.text.646f0d85406ab733",
+      "values": [
+        "Начни следующий день",
+        "Start the next day"
+      ]
+    },
+    {
+      "key": "game.text.98af8efe29658dc0",
+      "values": [
+        "Нет войск",
+        "No troops"
+      ]
+    },
+    {
+      "key": "game.text.e49c4a2154fc990d",
+      "values": [
+        "Нужно изучить улучшений: 0\nУже изучено: 0",
+        "Upgrades required: 0\nAlready researched: 0"
+      ]
+    },
+    {
+      "key": "game.text.53fe928b110233dd",
+      "values": [
+        "ОК",
+        "OK"
+      ]
+    },
+    {
+      "key": "game.text.7f2fa2cd485e692d",
+      "values": [
+        "Обыщите пещеры гоблинов. Перетащите сундук в замок.",
+        "Search the goblin caves. Drag the chest to the castle."
+      ]
+    },
+    {
+      "key": "game.text.a80aec86ce150dff",
+      "values": [
+        "Ожидают: 2",
+        "Waiting: 2"
+      ]
+    },
+    {
+      "key": "game.text.e5a0b8ed4f0afe91",
+      "values": [
+        "Оружие готово. Построй стрельбище и найми двух лучников. За это ты получишь разрешение построить лагерь беженцев.",
+        "The weapons are ready. Build an archery range and recruit two archers. Then you will be allowed to build a refugee camp."
+      ]
+    },
+    {
+      "key": "game.text.7b419135bffe8f4d",
+      "values": [
+        "Оружие для защитников",
+        "Weapons for the defenders"
+      ]
+    },
+    {
+      "key": "game.text.5b43d711a7b7da72",
+      "values": [
+        "Осталось дней: 30 / 30",
+        "Days remaining: 30 / 30"
+      ]
+    },
+    {
+      "key": "game.text.97cb7b90e79e80c7",
+      "values": [
+        "Острые топоры ур.1",
+        "Sharp axes  Lv.1"
+      ]
+    },
+    {
+      "key": "game.text.a3cb411ad76bacbf",
+      "values": [
+        "От голода умерло людей: 0",
+        "People lost to starvation: 0"
+      ]
+    },
+    {
+      "key": "game.text.0c57369d488887d4",
+      "values": [
+        "Отключить",
+        "Disable"
+      ]
+    },
+    {
+      "key": "game.text.eb395642dde06c83",
+      "values": [
+        "Открытие гексов ур.1",
+        "Hex exploration  Lv.1"
+      ]
+    },
+    {
+      "key": "game.text.ca6c3ac40024e682",
+      "values": [
+        "Открыто: 0",
+        "Revealed: 0"
+      ]
+    },
+    {
+      "key": "game.text.d0d3cec1fe2ecb85",
+      "values": [
+        "Отправить",
+        "Send"
+      ]
+    },
+    {
+      "key": "game.text.f276d1961d869edd",
+      "values": [
+        "Отправить голодающих на поиски еды в лес",
+        "Send starving people to forage in the forest"
+      ]
+    },
+    {
+      "key": "game.text.5110175a46d65771",
+      "values": [
+        "Отправляйся через портал в Тёмные земли. Добудь еду и стройматериалы: древесину и камень. Они помогут нам обустроить укрытие.",
+        "Go through the portal to the Dark Lands. Gather food and building materials: wood and stone. They will help us establish the shelter."
+      ]
+    },
+    {
+      "key": "game.text.6caa06f32083d3ca",
+      "values": [
+        "ПРИКАЗ",
+        "ORDER"
+      ]
+    },
+    {
+      "key": "game.text.f003543a80084abe",
+      "values": [
+        "Руда для королевской казны",
+        "Ore for the royal treasury"
+      ]
+    },
+    {
+      "key": "game.text.561cda6d8701e9b2",
+      "values": [
+        "Перенеси корону в замок.",
+        "Move the crown to the castle."
+      ]
+    },
+    {
+      "key": "game.text.ecaf21e5cdfdc7b6",
+      "values": [
+        "Повышает здоровье башни портала на 20%.",
+        "Increases portal tower health by 20%."
+      ]
+    },
+    {
+      "key": "game.text.a165f7f4a5ca5014",
+      "values": [
+        "Погибло: 0",
+        "Died: 0"
+      ]
+    },
+    {
+      "key": "game.text.0334423120b1b007",
+      "values": [
+        "Подготовьте оружие для двух лучников",
+        "Prepare weapons for two archers"
+      ]
+    },
+    {
+      "key": "game.text.3a346efd70851e7b",
+      "values": [
+        "Поиски еды в лесу",
+        "Forest foraging"
+      ]
+    },
+    {
+      "key": "game.text.1043a9a86f1d0273",
+      "values": [
+        "Поиски еды… 2.0 с",
+        "Foraging… 2.0 s"
+      ]
+    },
+    {
+      "key": "game.text.ad556802aef129bc",
+      "values": [
+        "Полевой лазарет ур.1",
+        "Field infirmary  Lv.1"
+      ]
+    },
+    {
+      "key": "game.text.2634bbc8739aca3a",
+      "values": [
+        "Портал 1",
+        "Portal 1"
+      ]
+    },
+    {
+      "key": "game.text.69cf79272fa21dd1",
+      "values": [
+        "Портал 2",
+        "Portal 2"
+      ]
+    },
+    {
+      "key": "game.text.2848c2ddad937656",
+      "values": [
+        "Портал 3",
+        "Portal 3"
+      ]
+    },
+    {
+      "key": "game.text.4f32161f56c488a3",
+      "values": [
+        "Портал 4",
+        "Portal 4"
+      ]
+    },
+    {
+      "key": "game.text.cda831ea0fb41691",
+      "values": [
+        "Портал 5",
+        "Portal 5"
+      ]
+    },
+    {
+      "key": "game.text.ee43fc3672060123",
+      "values": [
+        "Построить \"Здание\"?",
+        "Build \"Building\"?"
+      ]
+    },
+    {
+      "key": "game.text.ec4b2eba42937f1e",
+      "values": [
+        "Кузница для защитников",
+        "A forge for our defenders"
+      ]
+    },
+    {
+      "key": "game.text.29307afae5b0143c",
+      "values": [
+        "Постройте кузницу и изготовьте два лука.",
+        "Build a forge and craft two bows."
+      ]
+    },
+    {
+      "key": "game.text.c89ca254ee88f65e",
+      "values": [
+        "Потраченное влияние не вернётся.",
+        "Spent influence will not be refunded."
+      ]
+    },
+    {
+      "key": "game.text.d01117e90522ea88",
+      "values": [
+        "Почти не встречается",
+        "Very rare"
+      ]
+    },
+    {
+      "key": "game.text.a8809b92aba0e615",
+      "values": [
+        "Королевский писарь требует тридцать единиц магической руды в течение тридцати дней. За исполнение положено десять влияния. За просрочку корона конфискует припасы, материалы и оружие, а влияние уменьшится на тридцать. Людей и телеги пока оставят.",
+        "The royal scribe demands thirty units of magical ore within thirty days. Fulfil the order to earn ten influence. Miss the deadline and the crown will confiscate your supplies, materials and weapons, and deduct thirty influence. The people and carts will be spared for now."
+      ]
+    },
+    {
+      "key": "game.text.6bc2bcb831b4ab52",
+      "values": [
+        "Пример уведомления",
+        "Example notification"
+      ]
+    },
+    {
+      "key": "game.text.e561a97244da75d9",
+      "values": [
+        "Принесли",
+        "Brought back"
+      ]
+    },
+    {
+      "key": "game.text.5998b23d66ff5c20",
+      "values": [
+        "Припасы собраны. Теперь построй кузницу и сделай два лука. Когда оружие будет готово, мы откроем стрельбище для обучения защитников.",
+        "The supplies are gathered. Now build a forge and craft two bows. Once the weapons are ready, we will open an archery range to train our defenders."
+      ]
+    },
+    {
+      "key": "game.text.935ee548ed696809",
+      "values": [
+        "Продолжите путь или начните новую историю",
+        "Continue your journey or start a new story"
+      ]
+    },
+    {
+      "key": "game.text.38d97a8b3d719074",
+      "values": [
+        "Продолжить",
+        "Continue"
+      ]
+    },
+    {
+      "key": "game.text.a8d969adc139820e",
+      "values": [
+        "РЕСУРСЫ – ЧИТЫ",
+        "RESOURCE CHEATS"
+      ]
+    },
+    {
+      "key": "game.text.efa3e4b4d18f7eae",
+      "values": [
+        "Разблокировать\nвсе здания",
+        "Unlock\nall buildings"
+      ]
+    },
+    {
+      "key": "game.text.7d30a97cd2b2a3c6",
+      "values": [
+        "Разница",
+        "Change"
+      ]
+    },
+    {
+      "key": "game.text.fda4a70c0d656784",
+      "values": [
+        "Разрешает раз в день отправлять голодающих жителей и воинов за едой. Отправка стоит 5 влияния. Каждый имеет 50% шанс погибнуть; выжившие приносят по 1–2 еды.",
+        "Once a day, send starving residents and warriors to forage. Costs 5 influence. Each has a 50% chance of dying; survivors bring back 1–2 food each."
+      ]
+    },
+    {
+      "key": "game.text.2cc14300a086ed7d",
+      "values": [
+        "Результаты поисков",
+        "Foraging results"
+      ]
+    },
+    {
+      "key": "game.text.c451e9381af32839",
+      "values": [
+        "Ресурс",
+        "Resource"
+      ]
+    },
+    {
+      "key": "game.text.8af8d8e37a50e7cf",
+      "values": [
+        "Рыцарь, добро пожаловать в новые владения. Прежде всего нам нужно собрать припасы, чтобы пережить первую ночь.",
+        "Knight, welcome to your new lands. First, we must gather enough supplies to survive the first night."
+      ]
+    },
+    {
+      "key": "game.text.ef7a834d9b279189",
+      "values": [
+        "Сбросить текущую\nячейку сохранения",
+        "Reset current\nsave slot"
+      ]
+    },
+    {
+      "key": "game.text.8ac9a5025ead3682",
+      "values": [
+        "Сегодня люди уже ходили за едой.",
+        "People have already foraged today."
+      ]
+    },
+    {
+      "key": "game.text.19aa90446bdfc9ab",
+      "values": [
+        "Сильные магические снаряды по ближайшему врагу.",
+        "Powerful magic projectiles aimed at the nearest enemy."
+      ]
+    },
+    {
+      "key": "game.text.10ec26baede146c2",
+      "values": [
+        "Следует за ближайшим врагом. Огненное пятно поражает всех врагов внутри.",
+        "Tracks the nearest enemy. The burning area damages all enemies inside."
+      ]
+    },
+    {
+      "key": "game.text.928e5ccf917c6aa5",
+      "values": [
+        "Случайная молния",
+        "Random lightning"
+      ]
+    },
+    {
+      "key": "game.text.d38f5905d7d9a41e",
+      "values": [
+        "Именем короля объявляю норму для земель портала: тридцать единиц магической руды в течение тридцати дней. Его Величество ожидает исправных поставок. Состояние ваших построек в расчёт не принимается.",
+        "By order of the king, the quota for the Portal Lands is thirty units of magical ore within thirty days. His Majesty expects punctual deliveries. The state of your buildings is not taken into consideration."
+      ]
+    },
+    {
+      "key": "game.text.a2918b1bcc6836af",
+      "values": [
+        "Соберите еду на день и материалы для кузницы, стрельбища и первого лучника.",
+        "Gather a day's food and materials for a forge, an archery range and your first archer."
+      ]
+    },
+    {
+      "key": "game.text.4af4705d9bb4fb04",
+      "values": [
+        "Соберите еду на первую ночь и материалы для кузницы, двух луков и стрельбища.",
+        "Gather food for the first night and materials for a forge, two bows and an archery range."
+      ]
+    },
+    {
+      "key": "game.text.c3901d75f52a1af1",
+      "values": [
+        "Доставь тридцать единиц магической руды в срок",
+        "Deliver thirty units of magical ore before the deadline"
+      ]
+    },
+    {
+      "key": "game.text.934cbb7e1f3628f2",
+      "values": [
+        "Стало",
+        "After"
+      ]
+    },
+    {
+      "key": "game.text.f5ed15b2ba496e73",
+      "values": [
+        "Стало и изменение",
+        "After and change"
+      ]
+    },
+    {
+      "key": "game.text.8470cd58d2ccbe9b",
+      "values": [
+        "Стайк Пью",
+        "Stike Pew"
+      ]
+    },
+    {
+      "key": "game.text.3c2fddef81aad805",
+      "values": [
+        "Стрелковая башня",
+        "Arrow tower"
+      ]
+    },
+    {
+      "key": "game.text.e9b3588dbf71a679",
+      "values": [
+        "Телега",
+        "Cart"
+      ]
+    },
+    {
+      "key": "game.text.e3ea0962024ca223",
+      "values": [
+        "Тихая разведка ур.1",
+        "Quiet scouting  Lv.1"
+      ]
+    },
+    {
+      "key": "game.text.c16031247c1ea154",
+      "values": [
+        "УКАЗЫ ЗАМКА",
+        "CASTLE DECREES"
+      ]
+    },
+    {
+      "key": "game.text.9cdf0432e41b9dae",
+      "values": [
+        "Улучшите портал до ур. 1",
+        "Upgrade the portal to Lv. 1"
+      ]
+    },
+    {
+      "key": "game.text.56a8360f53d2ab1b",
+      "values": [
+        "Улучшите портал до ур. 2",
+        "Upgrade the portal to Lv. 2"
+      ]
+    },
+    {
+      "key": "game.text.48ab73423128e5c4",
+      "values": [
+        "Улучшите портал до ур. 3",
+        "Upgrade the portal to Lv. 3"
+      ]
+    },
+    {
+      "key": "game.text.17105ebd3290c7de",
+      "values": [
+        "Улучшите портал до ур. 4",
+        "Upgrade the portal to Lv. 4"
+      ]
+    },
+    {
+      "key": "game.text.044a70434ca32a33",
+      "values": [
+        "Улучшить 0/4",
+        "Upgrade 0/4"
+      ]
+    },
+    {
+      "key": "game.text.8a9160dea6d52b6c",
+      "values": [
+        "Улучшить 0/7",
+        "Upgrade 0/7"
+      ]
+    },
+    {
+      "key": "game.text.93e991cb8cb90dde",
+      "values": [
+        "Уменьшает время открытия гекса на 50%.",
+        "Reduces hex exploration time by 50%."
+      ]
+    },
+    {
+      "key": "game.text.73e28d5025170c50",
+      "values": [
+        "Уменьшает время рубки леса на 20%.",
+        "Reduces wood harvesting time by 20%."
+      ]
+    },
+    {
+      "key": "game.text.ef1db9cac0754db4",
+      "values": [
+        "Уменьшает на 1 количество тревоги при открытии гекса.",
+        "Reduces alarm gained from revealing a hex by 1."
+      ]
+    },
+    {
+      "key": "game.text.e73230b080d95c09",
+      "values": [
+        "Уменьшение времени на открытие гекса на 50%",
+        "Reduces hex exploration time by 50%"
+      ]
+    },
+    {
+      "key": "game.text.b7174363066b8554",
+      "values": [
+        "Умрёт от голода",
+        "Will starve"
+      ]
+    },
+    {
+      "key": "game.text.3c90d60d12288768",
+      "values": [
+        "Уровень опасности: 1",
+        "Danger level: 1"
+      ]
+    },
+    {
+      "key": "game.text.5ee4110e0ce1db26",
+      "values": [
+        "Уровень портала: 0 / 4",
+        "Portal level: 0 / 4"
+      ]
+    },
+    {
+      "key": "game.text.2dff5304f8882ee7",
+      "values": [
+        "Характеристика",
+        "Stat"
+      ]
+    },
+    {
+      "key": "game.text.c5e729bdc7f16a7a",
+      "values": [
+        "Шире область",
+        "Wider area"
+      ]
+    },
+    {
+      "key": "game.text.a5c34babc1256db7",
+      "values": [
+        "Штраф",
+        "Penalty"
+      ]
+    },
+    {
+      "key": "game.text.b1834692f059125d",
+      "values": [
+        "Ячейка 1\nНовое сохранение",
+        "Slot 1\nNew save"
+      ]
+    },
+    {
+      "key": "game.text.c7f87f75c9aebb14",
+      "values": [
+        "Ячейка 2\nНовое сохранение",
+        "Slot 2\nNew save"
+      ]
+    },
+    {
+      "key": "game.text.23cf70a32bd4acbe",
+      "values": [
+        "Ячейка 3\nНовое сохранение",
+        "Slot 3\nNew save"
+      ]
+    },
+    {
+      "key": "game.text.80e356c1a0c57fdb",
+      "values": [
+        "\nСначала откройте стрельбу башни.",
+        "\nUnlock tower attacks first."
+      ]
+    },
+    {
+      "key": "game.text.b32c54bfae21e351",
+      "values": [
+        "  ·  Очки улучшений: ",
+        "  ·  Upgrade points: "
+      ]
+    },
+    {
+      "key": "game.text.677f9ec94e383e43",
+      "values": [
+        " · ур. ",
+        " · Lv. "
+      ]
+    },
+    {
+      "key": "game.text.2768b8308c15e0d1",
+      "values": [
+        "% шанс гибели.",
+        "% chance of death."
+      ]
+    },
+    {
+      "key": "game.text.bb277ba02ff5c0fd",
+      "values": [
+        ". Припасы конфискованы.",
+        ". Supplies confiscated."
+      ]
+    },
+    {
+      "key": "game.text.b203da02028534e9",
+      "values": [
+        "\"?\n\nПотраченное влияние не вернётся.\nПовторное включение снова потребует оплаты.",
+        "\"?\n\nSpent influence will not be refunded.\nEnabling it again will require another payment."
+      ]
+    },
+    {
+      "key": "game.text.164b5786f1fe9882",
+      "values": [
+        "БАШНЯ ПОРТАЛА – УРОВЕНЬ ",
+        "PORTAL TOWER – LEVEL "
+      ]
+    },
+    {
+      "key": "game.text.349489aff0b06311",
+      "values": [
+        "ВНИМАНИЕ! ",
+        "WARNING! "
+      ]
+    },
+    {
+      "key": "game.text.3a53dce539f91291",
+      "values": [
+        "Взять задание",
+        "Accept quest"
+      ]
+    },
+    {
+      "key": "game.text.4d5ba80b5172358d",
+      "values": [
+        "Воин",
+        "Warrior"
+      ]
+    },
+    {
+      "key": "game.text.d0f1cd1768c1469b",
+      "values": [
+        "Воин разоружён",
+        "Warrior disarmed"
+      ]
+    },
+    {
+      "key": "game.text.3c3348ce8136b8a5",
+      "values": [
+        "Вооружён: ",
+        "Armed: "
+      ]
+    },
+    {
+      "key": "game.text.03a97573556019ed",
+      "values": [
+        "Враг",
+        "Enemy"
+      ]
+    },
+    {
+      "key": "game.text.4a0a600ef888682d",
+      "values": [
+        "Все уровни улучшения получены",
+        "Upgrade fully learned"
+      ]
+    },
+    {
+      "key": "game.text.04720d4ec6c18ae4",
+      "values": [
+        "Выберите одно улучшение, чтобы продолжить",
+        "Choose one upgrade to continue"
+      ]
+    },
+    {
+      "key": "game.text.67a4df6e7de23260",
+      "values": [
+        "Выберите первое оружие",
+        "Choose your first weapon"
+      ]
+    },
+    {
+      "key": "game.text.86b0f9e5a3a195e8",
+      "values": [
+        "Выберите улучшение слева. Цена – одно очко уровня.",
+        "Choose an upgrade on the left. Cost: one level point."
+      ]
+    },
+    {
+      "key": "game.text.dc5f15c6c0d5d753",
+      "values": [
+        "Выжило: ",
+        "Survived: "
+      ]
+    },
+    {
+      "key": "game.text.f32584fd84e28f6e",
+      "values": [
+        "Гекс открыт",
+        "Hex revealed"
+      ]
+    },
+    {
+      "key": "game.text.25205e41e5d77790",
+      "values": [
+        "Действие отменено",
+        "Action canceled"
+      ]
+    },
+    {
+      "key": "game.text.d07ca613e4dd9c62",
+      "values": [
+        "Еды хватает",
+        "Enough food"
+      ]
+    },
+    {
+      "key": "game.text.4498e74acbea363a",
+      "values": [
+        "Задание выполнено",
+        "Quest complete"
+      ]
+    },
+    {
+      "key": "game.text.b5661f6ca723983a",
+      "values": [
+        "Задание выполнено: ",
+        "Quest complete: "
+      ]
+    },
+    {
+      "key": "game.text.a40b216fcc3ac42e",
+      "values": [
+        "Закрыть",
+        "Close"
+      ]
+    },
+    {
+      "key": "game.text.fe37994094da0b8b",
+      "values": [
+        "Здание начало работу",
+        "Building started working"
+      ]
+    },
+    {
+      "key": "game.text.444005e3044680ee",
+      "values": [
+        "Здание ожидает доставку ресурсов",
+        "Building is waiting for resources"
+      ]
+    },
+    {
+      "key": "game.text.88f2fb5db322c33f",
+      "values": [
+        "Изучено: ",
+        "Researched: "
+      ]
+    },
+    {
+      "key": "game.text.e33b5703d8741827",
+      "values": [
+        "Исследования пока не открыты",
+        "Research is not unlocked yet"
+      ]
+    },
+    {
+      "key": "game.text.5c4068c870846e55",
+      "values": [
+        "Люди возвращаются в портал",
+        "People are returning to the portal"
+      ]
+    },
+    {
+      "key": "game.text.3b520bc763eb1925",
+      "values": [
+        "Лёд",
+        "Ice"
+      ]
+    },
+    {
+      "key": "game.text.00ddfb03421035ff",
+      "values": [
+        "Магический",
+        "Magic"
+      ]
+    },
+    {
+      "key": "game.text.64dbff08a7b2e902",
+      "values": [
+        "Награда получена",
+        "Reward claimed"
+      ]
+    },
+    {
+      "key": "game.text.e9c25399b4df2fb6",
+      "values": [
+        "Награда получена: ",
+        "Reward claimed: "
+      ]
+    },
+    {
+      "key": "game.text.acfd98242dc49d3a",
+      "values": [
+        "Наступил следующий день",
+        "A new day has begun"
+      ]
+    },
+    {
+      "key": "game.text.d9307b462d87a3f0",
+      "values": [
+        "Начато открытие гекса",
+        "Hex exploration started"
+      ]
+    },
+    {
+      "key": "game.text.9f64cdd8b2c6551e",
+      "values": [
+        "Не назначена разблокировка",
+        "No unlock assigned"
+      ]
+    },
+    {
+      "key": "game.text.e05302f3bd67712e",
+      "values": [
+        "Недостаточно дерева для телеги",
+        "Not enough wood for a cart"
+      ]
+    },
+    {
+      "key": "game.text.8086ad49361c5abd",
+      "values": [
+        "Недостаточно еды",
+        "Not enough food"
+      ]
+    },
+    {
+      "key": "game.text.dac5d31acc0d5198",
+      "values": [
+        "Немедленно",
+        "Immediately"
+      ]
+    },
+    {
+      "key": "game.text.b2c44735726eb213",
+      "values": [
+        "Новый житель принят",
+        "New resident admitted"
+      ]
+    },
+    {
+      "key": "game.text.4ce15c8ad2e09b7c",
+      "values": [
+        "Огонь",
+        "Fire"
+      ]
+    },
+    {
+      "key": "game.text.12f98217aa4511fc",
+      "values": [
+        "Оружие изготовлено",
+        "Weapon crafted"
+      ]
+    },
+    {
+      "key": "game.text.210efbcc96f44e4a",
+      "values": [
+        "Осталось дней: ",
+        "Days remaining: "
+      ]
+    },
+    {
+      "key": "game.text.6ce06b77b0f3c117",
+      "values": [
+        "Отключить указ \"",
+        "Disable decree \""
+      ]
+    },
+    {
+      "key": "game.text.1411ffc9e6d8dd3b",
+      "values": [
+        "Открытие гекса продолжено",
+        "Hex exploration resumed"
+      ]
+    },
+    {
+      "key": "game.text.2be88921a88ee28e",
+      "values": [
+        "Отступление: возвращаемся в портал",
+        "Retreating: returning to the portal"
+      ]
+    },
+    {
+      "key": "game.text.6c27c78369a528e7",
+      "values": [
+        "Очков уровня: ",
+        "Level points: "
+      ]
+    },
+    {
+      "key": "game.text.3296041f44877434",
+      "values": [
+        "Погиб воин: ",
+        "Warrior died: "
+      ]
+    },
+    {
+      "key": "game.text.ebc50043f298de0b",
+      "values": [
+        "Погибло: ",
+        "Died: "
+      ]
+    },
+    {
+      "key": "game.text.73ec33b0f651a7d9",
+      "values": [
+        "Поиски еды… ",
+        "Foraging… "
+      ]
+    },
+    {
+      "key": "game.text.860fd5e778b6f5f9",
+      "values": [
+        "Портал уничтожен",
+        "Portal destroyed"
+      ]
+    },
+    {
+      "key": "game.text.f864abf876eecf8b",
+      "values": [
+        "Построено: ",
+        "Built: "
+      ]
+    },
+    {
+      "key": "game.text.28cdbe63f7080172",
+      "values": [
+        "Построить \"",
+        "Build \""
+      ]
+    },
+    {
+      "key": "game.text.a0d6639e68fd2561",
+      "values": [
+        "Поход начался",
+        "The expedition has begun"
+      ]
+    },
+    {
+      "key": "game.text.926a221cf91bace9",
+      "values": [
+        "Провалено: ",
+        "Failed: "
+      ]
+    },
+    {
+      "key": "game.text.2d6ec75eb987ab95",
+      "values": [
+        "Работа здания завершена",
+        "Building finished working"
+      ]
+    },
+    {
+      "key": "game.text.e2c4eb5a1eabe79e",
+      "values": [
+        "Работа приостановлена",
+        "Work paused"
+      ]
+    },
+    {
+      "key": "game.text.2f29e0155f17b7c8",
+      "values": [
+        "Раненый воин отступает в портал",
+        "Wounded warrior is retreating to the portal"
+      ]
+    },
+    {
+      "key": "game.text.fdf7a6dc9093236c",
+      "values": [
+        "Руда готова к сдаче",
+        "Ore is ready for delivery"
+      ]
+    },
+    {
+      "key": "game.text.146088e514260b5e",
+      "values": [
+        "Сдать руду",
+        "Deliver ore"
+      ]
+    },
+    {
+      "key": "game.text.34d74a8da4140527",
+      "values": [
+        "Сегодня уже был поход",
+        "Already traveled today"
+      ]
+    },
+    {
+      "key": "game.text.53df9fe546f6ef73",
+      "values": [
+        "Сначала откройте стрельбу башни",
+        "Unlock tower attacks first"
+      ]
+    },
+    {
+      "key": "game.text.4d32b5ecc13c1edc",
+      "values": [
+        "Убит враг: ",
+        "Enemy killed: "
+      ]
+    },
+    {
+      "key": "game.text.c47ffae1b513813d",
+      "values": [
+        "Указ",
+        "Decree"
+      ]
+    },
+    {
+      "key": "game.text.99d70f4bea162060",
+      "values": [
+        "Указ включён: ",
+        "Decree enabled: "
+      ]
+    },
+    {
+      "key": "game.text.b9d64cc8c3a64d54",
+      "values": [
+        "Указ выключен: ",
+        "Decree disabled: "
+      ]
+    },
+    {
+      "key": "game.text.710f727638468c7c",
+      "values": [
+        "Улучшений: ",
+        "Upgrades: "
+      ]
+    },
+    {
+      "key": "game.text.6fb4dbac2f8d204b",
+      "values": [
+        "Улучшено: ",
+        "Upgraded: "
+      ]
+    },
+    {
+      "key": "game.text.f4b2badfb78781c0",
+      "values": [
+        "Улучшите портал для доступа к этой локации",
+        "Upgrade the portal to access this location"
+      ]
+    },
+    {
+      "key": "game.text.ceea22225de3071d",
+      "values": [
+        "Умерли от голода: ",
+        "Died of starvation: "
+      ]
+    },
+    {
+      "key": "game.text.98e81e2887f6a479",
+      "values": [
+        "Уровень башни: ",
+        "Tower level: "
+      ]
+    },
+    {
+      "key": "game.text.ecc8e33f03a861e2",
+      "values": [
+        "Уровень тревоги: ",
+        "Alarm level: "
+      ]
+    },
+    {
+      "key": "game.text.73a2071a196cc2b9",
+      "values": [
+        "Физический",
+        "Physical"
+      ]
+    },
+    {
+      "key": "game.text.5e8a005533ff72be",
+      "values": [
+        "Электрический",
+        "Electric"
+      ]
+    },
+    {
+      "key": "game.text.5fb66d41187065e9",
+      "values": [
+        "Время в забеге: {0}",
+        "Run time: {0}"
+      ]
+    },
+    {
+      "key": "game.text.54672ac9e04f2670",
+      "values": [
+        "Длительность забега: {0}",
+        "Run duration: {0}"
+      ]
+    },
+    {
+      "key": "game.text.d07878496cdb1fbe",
+      "values": [
+        "Итоги дня {0}",
+        "Day {0} summary"
+      ]
+    },
+    {
+      "key": "game.text.aab3470e4b1c1bbb",
+      "values": [
+        "От голода умерло жителей и воинов: {0}",
+        "Residents and warriors lost to starvation: {0}"
+      ]
+    },
+    {
+      "key": "game.text.3e8d34a829977ea6",
+      "values": [
+        "Поиски еды: выжило {0}, погибло {1}",
+        "Foraging: {0} survived, {1} died"
+      ]
+    },
+    {
+      "key": "game.text.351636a1caad1901",
+      "values": [
+        "Ячейка {0}\nНовое сохранение",
+        "Slot {0}\nNew save"
+      ]
+    },
+    {
+      "key": "game.text.cc88fe8d5cce1079",
+      "values": [
+        "Ячейка {0}\n{1}  ·  Люди: {2}  ·  Магическая руда: {3}",
+        "Slot {0}\n{1}  ·  People: {2}  ·  Magic ore: {3}"
+      ]
+    },
+    {
+      "key": "game.text.2c695dc00fe77d12",
+      "values": [
+        "Автоповтор выключен. ЛКМ по гексу с лучом запускает работу.",
+        "Auto repeat is off. Left-click a hex with a beam to start work."
+      ]
+    },
+    {
+      "key": "game.text.f914eb36b39e2c41",
+      "values": [
+        "Не трус, а осторожный",
+        "Cautious, not cowardly"
+      ]
+    },
+    {
+      "key": "game.text.6c7e26e0698cf653",
+      "values": [
+        "Построить \"{0}\"?",
+        "Build \"{0}\"?"
+      ]
+    },
+    {
+      "key": "game.text.8998362898bf890b",
+      "values": [
+        "День {0}",
+        "Day {0}"
+      ]
+    },
+    {
+      "key": "game.text.512a4392a9cacdae",
+      "values": [
+        "Уровень башни: {0}",
+        "Tower level: {0}"
+      ]
+    },
+    {
+      "key": "game.text.38addde80c222795",
+      "values": [
+        "Секунд",
+        "Seconds"
+      ]
+    },
+    {
+      "key": "game.text.92a59d0324f3900e",
+      "values": [
+        "Журнал",
+        "Journal"
+      ]
+    },
+    {
+      "key": "game.text.e5660ddce26a1d43",
+      "values": [
+        "Телега изготовлена",
+        "Cart crafted"
+      ]
+    },
+    {
+      "key": "game.text.d4460ff37b9e090f",
+      "values": [
+        "ALT – показать/скрыть / ",
+        "ALT - show/hide      / "
+      ]
+    },
+    {
+      "key": "game.text.f69a892d094de5c7",
+      "values": [
+        "Ягоды",
+        "Berry"
+      ]
+    },
+    {
+      "key": "game.text.6fb86c45f123a5ef",
+      "values": [
+        "Лук",
+        "Bow"
+      ]
+    },
+    {
+      "key": "game.text.4773b93c453df5c9",
+      "values": [
+        "Корона",
+        "Crown"
+      ]
+    },
+    {
+      "key": "game.text.493858e0ffdac2e8",
+      "values": [
+        "Человек",
+        "Human"
+      ]
+    },
+    {
+      "key": "game.text.b932150bacab9994",
+      "values": [
+        "Магическая руда",
+        "MagicOre"
+      ]
+    },
+    {
+      "key": "game.text.37c8535a61f24662",
+      "values": [
+        "Спрайт",
+        "Sprite"
+      ]
+    },
+    {
+      "key": "game.text.17f1d68ec568364a",
+      "values": [
+        "Это\nдиалоговая панель",
+        "This is a \nDialog Panel"
+      ]
+    },
+    {
+      "key": "menu.title",
+      "values": [
+        "Меню",
+        "Menu"
+      ]
+    },
+    {
+      "key": "menu.resume",
+      "values": [
+        "Продолжить игру",
+        "Resume game"
+      ]
+    },
+    {
+      "key": "menu.main",
+      "values": [
+        "В главное меню",
+        "Main menu"
+      ]
+    },
+    {
+      "key": "menu.exit.question",
+      "values": [
+        "Выйти в главное меню?",
+        "Exit to main menu?"
+      ]
+    },
+    {
+      "key": "menu.exit.warning",
+      "values": [
+        "Все люди, оставшиеся в портале, погибнут. Продолжить?",
+        "Everyone left in the portal will die. Continue?"
+      ]
+    },
+    {
+      "key": "menu.exit.confirm",
+      "values": [
+        "Выйти",
+        "Exit"
+      ]
+    },
+    {
+      "key": "menu.slot.number",
+      "values": [
+        "Ячейка {0}",
+        "Slot {0}"
+      ]
+    },
+    {
+      "key": "world.tutorial.drag_light",
+      "values": [
+        "Переведи луч на соседний гекс. Подхвати его <size=64><sprite=0></size> и укажи, куда двигаться дальше – пора разведать ещё немного земли.",
+        "Guide the beam to a neighbouring hex. Take hold of it <size=64><sprite=0></size> and lead it onward. Time to scout a little farther."
+      ]
+    },
+    {
+      "key": "world.tutorial.activate_light",
+      "values": [
+        "Включи свет у башни портала. Посмотрим, что Тёмные земли приберегли для нас сегодня.",
+        "Light the portal tower. Let's see what the Dark Lands have in store for us today."
+      ]
+    },
+    {
+      "key": "world.tutorial.scouting",
+      "values": [
+        "Этот луч – наши глаза в Тёмных землях. Куда он доберётся, там и узнаем, что нас ждёт. Хорошая разведка сбережёт немало жизней.",
+        "That beam is our eyes in the Dark Lands. Wherever it reaches, we'll learn what awaits us. A little scouting can save a great many lives."
+      ]
+    },
+    {
+      "key": "world.tutorial.any_key",
+      "values": [
+        "Продолжим",
+        "Let's continue"
+      ]
+    },
+    {
+      "key": "world.tutorial.drag_neighbor",
+      "values": [
+        "Переведи луч на соседний гекс. Подхвати его <size=64><sprite=0></size> и укажи, куда двигаться дальше – пора разведать ещё немного земли.",
+        "Guide the beam to a neighbouring hex. Take hold of it <size=64><sprite=0></size> and lead it onward. Time to scout a little farther."
+      ]
+    },
+    {
+      "key": "world.tutorial.workers",
+      "values": [
+        "Люди трудятся только там, где светло. Хочешь добыть дерево, камень или еду – направь луч на нужный участок. В темноту я бы и сам без нужды не полез!",
+        "Our people can only work in the light. Need timber, stone or food? Guide the beam to the right patch of ground. I wouldn't venture into that darkness without good reason either!"
+      ]
+    },
+    {
+      "key": "world.tutorial.supplies",
+      "values": [
+        "Отлично, теперь дело пойдёт! Добудь еду для наших семерых и дерево для домов. На сытый желудок даже Тёмные земли кажутся чуть приветливее.",
+        "Splendid, now we're getting somewhere! Gather food for our seven settlers and timber for their homes. Even the Dark Lands look a little friendlier on a full stomach."
+      ]
+    },
+    {
+      "key": "tutorial.housing.624",
+      "values": [
+        "Еда и крыша над головой",
+        "Food and a roof overhead"
+      ]
+    },
+    {
+      "key": "tutorial.housing.625",
+      "values": [
+        "Семерым поселенцам нужны ужин и тёплый ночлег. Добудь семь порций еды и пять связок дерева в Тёмных землях. С этими припасами Стайк Пью поможет начать строительство жилого квартала. Не оставляй людей без крыши к ночи: у каждого бездомного один шанс из двух погибнуть от холода.",
+        "Seven settlers need supper and a warm place to sleep. Bring back seven portions of food and five bundles of wood from the Dark Lands. With these supplies, Stike Pew can help you begin building the housing quarter. Give everyone a roof before nightfall: each unhoused settler has a one-in-two chance of freezing to death."
+      ]
+    },
+    {
+      "key": "tutorial.housing.626",
+      "values": [
+        "Добудь семь порций еды и пять связок дерева",
+        "Gather seven portions of food and five bundles of wood"
+      ]
+    },
+    {
+      "key": "tutorial.housing.627",
+      "values": [
+        "Ужин для семерых",
+        "Supper for seven"
+      ]
+    },
+    {
+      "key": "tutorial.housing.628",
+      "values": [
+        "Дерево для будущих домов",
+        "Wood for new homes"
+      ]
+    },
+    {
+      "key": "tutorial.housing.629",
+      "values": [
+        "Дерево для защитников",
+        "Timber for our defenders"
+      ]
+    },
+    {
+      "key": "tutorial.housing.630",
+      "values": [
+        "Крыша над головой уже есть. Теперь людям нужно учиться защищать земли портала. Принеси десять связок дерева для стрельбища, и Стайк Пью подготовит всё для его строительства.",
+        "Our people have a roof. Now they must learn to defend the Portal Lands. Bring ten bundles of wood for an archery range, and Stike Pew will prepare everything needed to build it."
+      ]
+    },
+    {
+      "key": "tutorial.housing.631",
+      "values": [
+        "Принеси десять связок дерева для стрельбища",
+        "Bring ten bundles of wood for the archery range"
+      ]
+    },
+    {
+      "key": "tutorial.housing.632",
+      "values": [
+        "Умерли от холода: {0}",
+        "Frozen to death: {0}"
+      ]
+    },
+    {
+      "key": "tutorial.housing.633",
+      "values": [
+        "Постройки укрытия",
+        "Shelter buildings"
+      ]
+    },
+    {
+      "key": "tutorial.housing.634",
+      "values": [
+        "Строительство кузницы",
+        "Smithy construction"
+      ]
+    },
+    {
+      "key": "tutorial.housing.635",
+      "values": [
+        "Хей, добро пожаловать в земли портала! Значит, ты наш новый владелец? Я Стайк Пью. Буду помогать тебе восстанавливать здешнее хозяйство. Работы хватает, зато на недостаток свежего воздуха никто не жалуется!",
+        "Hey, welcome to the Portal Lands! So, you must be our new lord? I'm Stike Pew. I'll help you get this place back on its feet. Plenty of work ahead, but at least nobody complains about a lack of fresh air!"
+      ]
+    },
+    {
+      "key": "tutorial.housing.636",
+      "values": [
+        "Ну вот, первая ночь под крышей! Уже похоже на хозяйство, а не на привал. Теперь позаботимся о страже: в Тёмных землях не все рады соседям.",
+        "There we are, our first night under a roof! Beginning to look like a settlement rather than a campsite. Time to think about a guard. Not everything in the Dark Lands welcomes neighbours."
+      ]
+    },
+    {
+      "key": "tutorial.housing.637",
+      "values": [
+        "Вот это дерево! Из такого выйдет славное стрельбище. Всё для строительства готово, осталось взяться за дело.",
+        "Now that's good timber! It'll make a fine archery range. Everything is ready for building; we just need to get to work."
+      ]
+    },
+    {
+      "key": "quest.complete.no_reward",
+      "values": [
+        "Завершить задание",
+        "Complete quest"
+      ]
+    },
+    {
+      "key": "tutorial.crystal_aegis",
+      "values": [
+        "Я открою тебе секрет \"Кристальной эгиды\". Кристаллы, найденные за порталом, питают оружие башни. Носильщики доставят их к порталу, а ты выберешь оружие и улучшения, чтобы дать отпор чудовищам. Перед следующим походом башня предложит тебе первое оружие.",
+        "I will reveal the secret of the Crystal Aegis. Crystals found beyond the portal power the tower's weapons. Porters will carry them to the portal, and you will choose weapons and upgrades to fight the monsters. Before your next expedition, the tower will offer your first weapon."
+      ]
+    },
+    {
+      "key": "tutorial.emergency_portal_return",
+      "values": [
+        "Рыцарь, портал едва держится! Возвращайся немедленно, пока эти твари не разрушили башню. Соберём людей у портала и уйдём вместе – живыми мы ещё всё восстановим.",
+        "Knight, the portal is barely holding! Turn back now, before those creatures bring the tower down. Gather our people at the portal and leave together. We can rebuild, as long as we're alive."
+      ]
+    },
+    {
+      "key": "skill.Scientific1.3.description",
+      "values": [
+        "Уменьшает время добычи дерева на 20%.",
+        "Reduces wood gathering time by 20%."
+      ]
+    },
+    {
+      "key": "skill.Scientific1.3.title",
+      "values": [
+        "Острые топоры",
+        "Sharp axes"
+      ]
+    },
+    {
+      "key": "skill.Scientific1.4.description",
+      "values": [
+        "Уменьшает опасность открытия гекса на 1 череп. Не менее 1 черепа.",
+        "Reduces hex exploration danger by 1 skull, to a minimum of 1 skull."
+      ]
+    },
+    {
+      "key": "skill.Scientific1.4.title",
+      "values": [
+        "Тихая разведка",
+        "Quiet scouting"
+      ]
+    },
+    {
+      "key": "skill.Scientific1.1.description",
+      "values": [
+        "Повышает здоровье башни портала на 20%.",
+        "Increases portal tower health by 20%."
+      ]
+    },
+    {
+      "key": "skill.Scientific1.1.title",
+      "values": [
+        "Крепкие стены",
+        "Strong walls"
+      ]
+    },
+    {
+      "key": "skill.science.crystal_efficiency.1.description",
+      "values": [
+        "Уменьшает требование кристаллов для каждого уровня башни ещё на 10%. Всего: −10%. Округление вверх, минимум 1 кристалл.",
+        "Reduces crystals required for every tower level by another 10%. Total reduction: 10%. Rounded up, minimum 1 crystal."
+      ]
+    },
+    {
+      "key": "skill.science.crystal_efficiency.1.title",
+      "values": [
+        "Кристальная настройка 1",
+        "Crystal attunement 1"
+      ]
+    },
+    {
+      "key": "laboratory.group.science.crystal_efficiency",
+      "values": [
+        "Кристальная настройка",
+        "Crystal attunement"
+      ]
+    },
+    {
+      "key": "skill.science.quiet_axes.description",
+      "values": [
+        "Уменьшает опасность каждого цикла добычи дерева на 1 череп. Не менее 1 черепа.",
+        "Reduces danger per wood gathering cycle by 1 skull, to a minimum of 1 skull."
+      ]
+    },
+    {
+      "key": "skill.science.quiet_axes.title",
+      "values": [
+        "Тихие топоры",
+        "Quiet axes"
+      ]
+    },
+    {
+      "key": "laboratory.group.science.quiet_axes",
+      "values": [
+        "Тихие топоры",
+        "Quiet axes"
+      ]
+    },
+    {
+      "key": "skill.science.sharp_knives.description",
+      "values": [
+        "Уменьшает время добычи еды на 20%.",
+        "Reduces food gathering time by 20%."
+      ]
+    },
+    {
+      "key": "skill.science.sharp_knives.title",
+      "values": [
+        "Острые ножи",
+        "Sharp knives"
+      ]
+    },
+    {
+      "key": "laboratory.group.science.sharp_knives",
+      "values": [
+        "Острые ножи",
+        "Sharp knives"
+      ]
+    },
+    {
+      "key": "skill.science.sharp_pickaxes.description",
+      "values": [
+        "Уменьшает время добычи камня на 20%.",
+        "Reduces stone gathering time by 20%."
+      ]
+    },
+    {
+      "key": "skill.science.sharp_pickaxes.title",
+      "values": [
+        "Острые кирки",
+        "Sharp pickaxes"
+      ]
+    },
+    {
+      "key": "laboratory.group.science.sharp_pickaxes",
+      "values": [
+        "Острые кирки",
+        "Sharp pickaxes"
+      ]
+    },
+    {
+      "key": "skill.Scientific1.2.description",
+      "values": [
+        "Уменьшает время открытия гекса на 50%.",
+        "Reduces hex exploration time by 50%."
+      ]
+    },
+    {
+      "key": "skill.Scientific1.2.title",
+      "values": [
+        "Быстрая разведка",
+        "Fast scouting"
+      ]
+    },
+    {
+      "key": "skill.science.crystal_efficiency.2.description",
+      "values": [
+        "Уменьшает требование кристаллов для каждого уровня башни ещё на 10%. Всего: −20%. Округление вверх, минимум 1 кристалл.",
+        "Reduces crystals required for every tower level by another 10%. Total reduction: 20%. Rounded up, minimum 1 crystal."
+      ]
+    },
+    {
+      "key": "skill.science.crystal_efficiency.2.title",
+      "values": [
+        "Кристальная настройка 2",
+        "Crystal attunement 2"
+      ]
+    },
+    {
+      "key": "skill.science.hardened_pickaxes.description",
+      "values": [
+        "Уменьшает время добычи железной руды на 20%.",
+        "Reduces iron ore gathering time by 20%."
+      ]
+    },
+    {
+      "key": "skill.science.hardened_pickaxes.title",
+      "values": [
+        "Закалённые кирки",
+        "Hardened pickaxes"
+      ]
+    },
+    {
+      "key": "laboratory.group.science.hardened_pickaxes",
+      "values": [
+        "Закалённые кирки",
+        "Hardened pickaxes"
+      ]
+    },
+    {
+      "key": "skill.science.quiet_hunting.description",
+      "values": [
+        "Уменьшает опасность каждого цикла добычи еды на 1 череп. Не менее 1 черепа.",
+        "Reduces danger per food gathering cycle by 1 skull, to a minimum of 1 skull."
+      ]
+    },
+    {
+      "key": "skill.science.quiet_hunting.title",
+      "values": [
+        "Тихая охота",
+        "Quiet hunting"
+      ]
+    },
+    {
+      "key": "laboratory.group.science.quiet_hunting",
+      "values": [
+        "Тихая охота",
+        "Quiet hunting"
+      ]
+    },
+    {
+      "key": "skill.science.quiet_quarries.description",
+      "values": [
+        "Уменьшает опасность каждого цикла добычи камня на 1 череп. Не менее 1 черепа.",
+        "Reduces danger per stone gathering cycle by 1 skull, to a minimum of 1 skull."
+      ]
+    },
+    {
+      "key": "skill.science.quiet_quarries.title",
+      "values": [
+        "Тихие каменоломни",
+        "Quiet quarries"
+      ]
+    },
+    {
+      "key": "laboratory.group.science.quiet_quarries",
+      "values": [
+        "Тихие каменоломни",
+        "Quiet quarries"
+      ]
+    },
+    {
+      "key": "skill.Scientific1.2.1.1.description",
+      "values": [
+        "Воины у портала восстанавливают 1% здоровья в секунду.",
+        "Warriors at the portal recover 1% of maximum health per second."
+      ]
+    },
+    {
+      "key": "skill.Scientific1.2.1.1.title",
+      "values": [
+        "Полевой лазарет",
+        "Field infirmary"
+      ]
+    },
+    {
+      "key": "skill.science.crystal_cutters.description",
+      "values": [
+        "Уменьшает время добычи магической руды на 20%.",
+        "Reduces magic ore gathering time by 20%."
+      ]
+    },
+    {
+      "key": "skill.science.crystal_cutters.title",
+      "values": [
+        "Кристальные резцы",
+        "Crystal cutters"
+      ]
+    },
+    {
+      "key": "laboratory.group.science.crystal_cutters",
+      "values": [
+        "Кристальные резцы",
+        "Crystal cutters"
+      ]
+    },
+    {
+      "key": "skill.science.crystal_efficiency.3.description",
+      "values": [
+        "Уменьшает требование кристаллов для каждого уровня башни ещё на 10%. Всего: −30%. Округление вверх, минимум 1 кристалл.",
+        "Reduces crystals required for every tower level by another 10%. Total reduction: 30%. Rounded up, minimum 1 crystal."
+      ]
+    },
+    {
+      "key": "skill.science.crystal_efficiency.3.title",
+      "values": [
+        "Кристальная настройка 3",
+        "Crystal attunement 3"
+      ]
+    },
+    {
+      "key": "skill.science.quiet_mines.description",
+      "values": [
+        "Уменьшает опасность каждого цикла добычи железной и магической руды на 1 череп. Не менее 1 черепа.",
+        "Reduces danger per iron and magic ore gathering cycle by 1 skull, to a minimum of 1 skull."
+      ]
+    },
+    {
+      "key": "skill.science.quiet_mines.title",
+      "values": [
+        "Тихие шахты",
+        "Quiet mines"
+      ]
+    },
+    {
+      "key": "laboratory.group.science.quiet_mines",
+      "values": [
+        "Тихие шахты",
+        "Quiet mines"
+      ]
+    },
+    {
+      "key": "skill.science.crystal_efficiency.4.description",
+      "values": [
+        "Уменьшает требование кристаллов для каждого уровня башни ещё на 10%. Всего: −40%. Округление вверх, минимум 1 кристалл.",
+        "Reduces crystals required for every tower level by another 10%. Total reduction: 40%. Rounded up, minimum 1 crystal."
+      ]
+    },
+    {
+      "key": "skill.science.crystal_efficiency.4.title",
+      "values": [
+        "Кристальная настройка 4",
+        "Crystal attunement 4"
+      ]
+    },
+    {
+      "key": "skill.science.crystal_efficiency.5.description",
+      "values": [
+        "Уменьшает требование кристаллов для каждого уровня башни ещё на 10%. Всего: −50%. Округление вверх, минимум 1 кристалл.",
+        "Reduces crystals required for every tower level by another 10%. Total reduction: 50%. Rounded up, minimum 1 crystal."
+      ]
+    },
+    {
+      "key": "skill.science.crystal_efficiency.5.title",
+      "values": [
+        "Кристальная настройка 5",
+        "Crystal attunement 5"
+      ]
+    },
+    {
+      "key": "cheats.all.add100",
+      "values": [
+        "+100 всех\nресурсов",
+        "+100 all\nresources"
+      ]
+    },
+    {
+      "key": "cheats.all.subtract100",
+      "values": [
+        "-100 всех\nресурсов",
+        "-100 all\nresources"
+      ]
+    },
+    {
+      "key": "tutorial.light.drag_icon",
+      "values": [
+        "Переведи луч на соседний гекс. Подхвати его <size=64><sprite=0></size> и укажи, куда двигаться дальше – пора разведать ещё немного земли.",
+        "Guide the beam to a neighbouring hex. Take hold of it <size=64><sprite=0></size> and lead it onward. Time to scout a little farther."
+      ]
+    },
+    {
+      "key": "tutorial.light.workers_before_drag",
+      "values": [
+        "Люди трудятся только там, где светло. Хочешь добыть дерево, камень или еду – направь луч на нужный участок. В темноту я бы и сам без нужды не полез!",
+        "Our people can only work in the light. Need timber, stone or food? Guide the beam to the right patch of ground. I wouldn't venture into that darkness without good reason either!"
+      ]
+    },
+    {
+      "key": "tutorial.light.resource_delivery",
+      "values": [
+        "Вот и первая добыча! Теперь носильщики подкатят телеги и отвезут её в портал. Дождёмся первой доставки – припасы ещё должны добраться до наших складов.",
+        "Our first haul! The porters will bring their carts and carry it to the portal. Let's wait for the first delivery. Those supplies still have to reach our warehouses."
+      ]
+    },
+    {
+      "key": "quest.archery_materials.title",
+      "values": [
+        "Дерево для стрельбища",
+        "Timber for the archery range"
+      ]
+    },
+    {
+      "key": "quest.archery_materials.description",
+      "values": [
+        "Крыша над головой уже есть. Теперь людям нужно учиться защищать земли портала. Принеси десять связок дерева для стрельбища, и Стайк Пью подготовит всё для его строительства.",
+        "Our people have a roof. Now they must learn to defend the Portal Lands. Bring ten bundles of wood for an archery range, and Stike Pew will prepare everything needed to build it."
+      ]
+    },
+    {
+      "key": "quest.archery_materials.status",
+      "values": [
+        "Принеси десять связок дерева для стрельбища",
+        "Bring ten bundles of wood for the archery range"
+      ]
+    },
+    {
+      "key": "quest.archery_materials.purpose",
+      "values": [
+        "Дерево для стрельбища",
+        "Timber for the archery range"
+      ]
+    },
+    {
+      "key": "quest.build_range.title",
+      "values": [
+        "Построй стрельбище",
+        "Build the archery range"
+      ]
+    },
+    {
+      "key": "quest.build_range.description",
+      "values": [
+        "Поставь стрельбище из десяти связок дерева. Стайк Пью приберёг два лука для первых защитников и отдаст их, когда площадка будет готова.",
+        "Build the archery range with ten bundles of wood. Stike Pew has set aside two bows for our first defenders and will hand them over when the range is ready."
+      ]
+    },
+    {
+      "key": "quest.build_range.purpose",
+      "values": [
+        "Готовое стрельбище",
+        "A completed archery range"
+      ]
+    },
+    {
+      "key": "quest.recruit_archers.new_description",
+      "values": [
+        "Два лука без дела не защитят даже капустную грядку. Найми двух лучников в стрельбище. С первой стражей можно будет взяться за кузницу и устроить лагерь для беженцев.",
+        "Two idle bows cannot guard so much as a cabbage patch. Recruit two archers at the range. With our first watch in place, we can turn to a blacksmith and a camp for refugees."
+      ]
+    },
+    {
+      "key": "quest.archery_materials.dialogue",
+      "values": [
+        "Ну вот, первая ночь под крышей! Уже похоже на хозяйство, а не на привал. Теперь позаботимся о страже: в Тёмных землях не все рады соседям.",
+        "There we are, our first night under a roof! Beginning to look like a settlement rather than a campsite. Time to think about a guard. Not everything in the Dark Lands welcomes neighbours."
+      ]
+    },
+    {
+      "key": "quest.build_range.dialogue",
+      "values": [
+        "Вот это дерево! Из такого выйдет славное стрельбище. Всё для строительства готово, осталось взяться за дело.",
+        "Now that's good timber! It'll make a fine archery range. Everything is ready for building; we just need to get to work."
+      ]
+    },
+    {
+      "key": "quest.recruit_archers.new_dialogue",
+      "values": [
+        "Стрельбище готово! Держи обещанные два лука. Не новые, зато тетивы крепкие. И стреляют они всё ещё в ту сторону, куда целишься.",
+        "The range is ready! Here are the two bows I promised. Not new, but the strings are sound. And they still shoot in the direction you aim."
+      ]
+    },
+    {
+      "key": "tutorial.crystals.world_intro",
+      "values": [
+        "А теперь маленький секрет: башню можно вооружить. Я называю это Кристальной эгидой. Кристаллы встречаются на открытых участках Тёмных земель; носильщики привезут их к порталу, и башня станет сильнее. Для начала выбери ей оружие. Соседям с клыками такой поворот вряд ли понравится!",
+        "Now for a little secret: we can arm the tower. I call it the Crystal Aegis. Crystals can be found on cleared ground in the Dark Lands. Our porters will bring them to the portal and help the tower grow stronger. First, choose its weapon. Our fanged neighbours probably won't approve!"
+      ]
+    },
+    {
+      "key": "tutorial.food_return.warning1",
+      "values": [
+        "Погоди, рыцарь, еды на всех ещё не хватит! Вернёмся с пустыми телегами – кто-нибудь не переживёт голодную ночь. Добудь ещё припасов, а потом отправимся домой.",
+        "Hold on, knight, we still haven't enough food for everyone! Go home with empty carts and someone may not survive the hungry night. Gather more supplies before we head back."
+      ]
+    },
+    {
+      "key": "tutorial.food_return.warning2",
+      "values": [
+        "Я тебя предупредил, рыцарь. Решение за тобой, но людям от этого сытнее не станет. Больше удерживать не буду.",
+        "I've warned you, knight. The choice is yours, but it won't fill anyone's belly. I won't hold you back again."
+      ]
+    },
+    {
+      "key": "quest.blacksmith_build.title",
+      "values": [
+        "Построй кузницу",
+        "Build the blacksmith"
+      ]
+    },
+    {
+      "key": "quest.blacksmith_build.description",
+      "values": [
+        "Защитников станет больше, и каждому понадобится оружие. Построй кузницу. Стайк Пью приготовит две телеги для носильщиков и поможет наладить научную лабораторию.",
+        "Our guard will grow, and every defender will need a weapon. Build the blacksmith. Stike Pew will provide two carts for the porters and help establish a scientific laboratory."
+      ]
+    },
+    {
+      "key": "quest.blacksmith_build.purpose",
+      "values": [
+        "Кузница для защитников",
+        "A forge for our defenders"
+      ]
+    },
+    {
+      "key": "quest.blacksmith_build.dialogue",
+      "values": [
+        "Два лучника на страже – уже спокойнее. Только на старых луках далеко не уедешь. Нашим людям понадобится своё оружие, а для него – кузница.",
+        "Two archers on watch. That's a comfort. But old bows will only take us so far. Our people need weapons of their own, and that means a blacksmith."
+      ]
+    },
+    {
+      "key": "unit.enemy.skeletonslime.title",
+      "values": [
+        "Скелет-слизь",
+        "Skeleton slime"
+      ]
+    },
+    {
+      "key": "unit.enemy.skeletonslime.description",
+      "values": [
+        "Крайне медленный, но живучий скелет, поглощённый слизью. Атакует в ближнем бою.",
+        "An extremely slow but resilient skeleton engulfed in slime. Attacks in melee."
+      ]
+    },
+    {
+      "key": "unit.enemy.flyingeye.title",
+      "values": [
+        "Летающий глаз",
+        "Flying eye"
+      ]
+    },
+    {
+      "key": "unit.enemy.flyingeye.description",
+      "values": [
+        "Медленный летающий враг. Обстреливает цель с большой дистанции.",
+        "A slow flying enemy that fires at targets from long range."
+      ]
+    },
+    {
+      "key": "unit.enemy.skeleton.title",
+      "values": [
+        "Скелет",
+        "Skeleton"
+      ]
+    },
+    {
+      "key": "unit.enemy.skeleton.description",
+      "values": [
+        "Наземный воин со средними здоровьем, скоростью и силой атаки.",
+        "A ground warrior with moderate health, movement speed and attack damage."
+      ]
+    },
+    {
+      "key": "unit.enemy.demon.title",
+      "values": [
+        "Демон",
+        "Demon"
+      ]
+    },
+    {
+      "key": "unit.enemy.demon.description",
+      "values": [
+        "Здоровья меньше, чем у воина-осьминога, но сильные частые атаки делают демона опаснее.",
+        "Has less health than the octopus warrior, but strong frequent attacks make it more dangerous."
+      ]
+    },
+    {
+      "key": "unit.enemy.toxicdemon.title",
+      "values": [
+        "Токсичный демон",
+        "Toxic demon"
+      ]
+    },
+    {
+      "key": "unit.enemy.toxicdemon.description",
+      "values": [
+        "Самый опасный враг. Быстрее обычного демона и наносит ещё больше урона.",
+        "The most dangerous enemy. Faster than the ordinary demon and deals even more damage."
+      ]
+    },
+    {
+      "key": "unit.enemy.bat.title",
+      "values": [
+        "Летучая мышь",
+        "Bat"
+      ]
+    },
+    {
+      "key": "unit.enemy.bat.description",
+      "values": [
+        "Самый быстрый летающий враг с небольшим запасом здоровья. Стреляет с короткой дистанции.",
+        "The fastest flying enemy, with little health. Fires at short range."
+      ]
+    },
+    {
+      "key": "unit.enemy.role.ground",
+      "values": [
+        "НАЗЕМНЫЙ ВРАГ",
+        "GROUND ENEMY"
+      ]
+    },
+    {
+      "key": "unit.enemy.role.flying",
+      "values": [
+        "ЛЕТАЮЩИЙ ВРАГ",
+        "FLYING ENEMY"
+      ]
+    },
+    {
+      "key": "narrative.quest.build_blacksmith.title",
+      "values": [
+        "Огонь в кузнице",
+        "Fire in the forge"
+      ]
+    },
+    {
+      "key": "narrative.quest.build_smithy_two_bows.title",
+      "values": [
+        "Место для метких",
+        "A place to take aim"
+      ]
+    },
+    {
+      "key": "narrative.dialogue.pew_first_supplies.1",
+      "values": [
+        "С тобой прибыли семеро поселенцев. Люди хорошие, только с дороги проголодались. На всех нужно семь порций еды. Да и ночевать под открытым небом им не годится – понадобится жилой квартал.",
+        "Seven settlers have arrived with you. Good folk, just hungry after the journey. Seven portions of food should feed the lot. And sleeping under the stars won't do – they'll need a housing quarter."
+      ]
+    },
+    {
+      "key": "narrative.dialogue.pew_first_supplies.2",
+      "values": [
+        "За порталом лежат Тёмные земли. Название неприветливое, но еда и древесина там найдутся. Принеси семь порций еды и пять связок дерева. Я пока подготовлю место для будущих домов. Начнём с малого – накормим людей и дадим им крышу над головой.",
+        "Beyond the portal lie the Dark Lands. An unwelcoming name, but there's food and timber to be found there. Bring seven portions of food and five bundles of wood. I'll prepare a place for our new homes. One thing at a time – let's feed our people and put a roof over their heads."
+      ]
+    },
+    {
+      "key": "narrative.dialogue.pew_smithy_two_bows.1",
+      "values": [
+        "Построй стрельбище из десяти связок. А я приберёг для тебя два лука – отдам, как только будет где учить лучников.",
+        "Build the range with ten bundles. I've set aside two bows for you. They're yours as soon as we have somewhere to train our archers."
+      ]
+    },
+    {
+      "key": "narrative.dialogue.pew_smithy_materials.1",
+      "values": [
+        "Принеси десять связок дерева для стрельбища. Я присмотрю подходящее место. А то учиться стрелять между домами – верный способ остаться без окон.",
+        "Bring ten bundles of wood for an archery range. I'll find a suitable spot. Practising between the houses is a fine way to run out of windows."
+      ]
+    },
+    {
+      "key": "narrative.dialogue.pew_two_archers.1",
+      "values": [
+        "Найми двух лучников, пусть привыкают стоять на страже. Когда появится защита, возьмёмся за кузницу и устроим лагерь для тех, кто ищет безопасное место.",
+        "Recruit two archers and let them settle into watch duty. Once we have a guard, we can build a blacksmith and make a camp for folk seeking somewhere safe."
+      ]
+    },
+    {
+      "key": "narrative.dialogue.pew_build_blacksmith.1",
+      "values": [
+        "Построй её, а я раздобуду две телеги для носильщиков. Потом устроим научную лабораторию. Голова ведь тоже полезный инструмент – особенно если молотком по ней не стучать.",
+        "Build it, and I'll find two carts for our porters. Then we can establish a scientific laboratory. A head is a useful tool too, provided you don't test it with a hammer."
+      ]
+    }
+  ]
+}

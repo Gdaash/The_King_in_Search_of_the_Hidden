@@ -134,7 +134,7 @@ public static class ShelterInteractionSetup
             var background=window.gameObject.AddComponent<Image>();background.sprite=frameSprite;background.type=Image.Type.Sliced;
             Text Label(string name,Vector2 size,Vector2 pos,int fontSize,string content)
             {var t=Rect(name,window,size,pos).gameObject.AddComponent<Text>();t.font=font;t.fontSize=fontSize;t.alignment=TextAnchor.MiddleCenter;t.color=Theme.neutralLabelColor;t.text=content;t.raycastTarget=false;return t;}
-            var title=Label("Title",new Vector2(680,100),new Vector2(0,96),30,"Построить «Здание»?");title.color=new Color(.89f,.78f,.47f);
+            var title=Label("Title",new Vector2(680,100),new Vector2(0,96),30,"Построить \"Здание\"?");title.color=new Color(.89f,.78f,.47f);
             var a=Rect("Wood Icon",window,new Vector2(48,48),new Vector2(-125,5)).gameObject.AddComponent<Image>();a.raycastTarget=false;
             var b=Rect("Stone Icon",window,new Vector2(48,48),new Vector2(75,5)).gameObject.AddComponent<Image>();b.raycastTarget=false;
             var at=Label("Wood Cost",new Vector2(100,50),new Vector2(-48,5),28,"0");var bt=Label("Stone Cost",new Vector2(100,50),new Vector2(152,5),28,"0");

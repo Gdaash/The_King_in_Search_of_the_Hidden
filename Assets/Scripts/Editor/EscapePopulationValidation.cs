@@ -48,7 +48,7 @@ public static class EscapePopulationValidation
             guard.SetValue(controller, false);
             settle.Invoke(controller, null);
             Check(manager.GetResourceAmount(resource) == 0, "losses cannot make population negative");
-            Debug.Log("PASS: escape population — returned, porter + worker losses, repeat guard, zero floor.");
+            Debug.Log("PASS: escape population – returned, porter + worker losses, repeat guard, zero floor.");
         }
         finally { Object.DestroyImmediate(root); }
     }

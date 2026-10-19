@@ -40,6 +40,8 @@ public class EnemyVisuals_Ranged : MonoBehaviour
         if (spriteParent != null) _startPos = spriteParent.localPosition;
     }
 
+    public void ResetForSpawn() { _isMoving = false; _isShooting = false; }
+
     void Update()
     {
         HandleFlip();

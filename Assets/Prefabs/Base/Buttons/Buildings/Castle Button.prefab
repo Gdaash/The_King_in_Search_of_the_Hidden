@@ -461,6 +461,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4355781941448677211, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2108559023422561491}
+    - targetCorrespondingSourceObject: {fileID: 4355781941448677211, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1082873167104747415}
     - targetCorrespondingSourceObject: {fileID: 4427634738440944126, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
       insertIndex: 3
       addedObject: {fileID: 543372063827337162}
@@ -533,6 +536,28 @@ MonoBehaviour:
   stoneCost: 280
   confirmation: {fileID: 0}
   constructionEffect: {fileID: 0}
+--- !u!114 &1082873167104747415
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7499795994441662784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70a2a78a448ff3346ac73874032e0d35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Base.BuildingActionAvailabilityIndicator
+  marker: {fileID: 0}
+  actionType: 7
+  construction: {fileID: 2108559023422561491}
+  warehouse: {fileID: 0}
+  blacksmith: {fileID: 0}
+  training: {fileID: 0}
+  laboratorySkills: []
+  laboratoryStats: {fileID: 0}
+  highlight: {fileID: 8547811985863693922}
+  upgradeBuildingId: 
 --- !u!1 &7571789537496035301 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4427634738440944126, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
@@ -564,3 +589,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Localization.LocalizedText
   key: base.base_panel.castle.label
+--- !u!114 &8547811985863693922 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2520209942861873273, guid: 058fe73ec1401de44bda68785718dfa5, type: 3}
+  m_PrefabInstance: {fileID: 6081680432683537947}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7499795994441662784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c9ded87684daab4dbbdf2a2ac1b32bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.BuildingButtonHighlight

@@ -55,6 +55,9 @@ namespace GameFoundation.MetaProgression
         private bool _escaping;
         private bool _firstExpeditionEmergencyEligible, _emergencyShown, _waitForTutorialRecall;
         private FirstRunLightTutorial _returnTutorial;
+        private GameFoundation.Quests.QuestDefinition _woodQuest;
+        private const string FoodWarningKey = "foundation.tutorial.food_return.warnings";
+        private int _foodWarningCount;
         private bool _showingStatistics;
         private bool _loading;
         private bool _humanLossesSettled;
@@ -64,6 +67,8 @@ namespace GameFoundation.MetaProgression
 
         private void Start()
         {
+            _woodQuest = Resources.Load<GameFoundation.Quests.QuestDefinition>("Quests/Smithy Materials");
+            _foodWarningCount = Mathf.Clamp(GameFoundation.Saves.SaveSlotPrefs.GetInt(FoodWarningKey, 0), 0, 2);
             _firstExpeditionEmergencyEligible = DayCycleService.IsFirstPortalRun &&
                 (DayCycleService.Instance == null || DayCycleService.Instance.Day == 1);
             DayResourceLedger.BeginRun();
@@ -195,12 +200,15 @@ namespace GameFoundation.MetaProgression
         private void OnEscapeClicked()
         {
             if (_loading || _showingStatistics || PortalTowerProgression.IsChoosingUpgrade) return;
-            foodSufficiencyHint?.HideForEscape();
+            if (FirstRunLightTutorial.BlocksInput && (_returnTutorial == null || !_returnTutorial.EmergencyReturnActive)) return;
             if (_escaping)
             {
                 if (!_waitForTutorialRecall) ShowStatistics();
                 return;
             }
+
+            if (TryShowFoodWarning()) return;
+            foodSufficiencyHint?.HideForEscape();
 
             if (_returnTutorial != null && _returnTutorial.EmergencyReturnActive)
             {
@@ -227,6 +235,24 @@ namespace GameFoundation.MetaProgression
             else if (buttonLabel != null) buttonLabel.text = GameFoundation.Localization.GameText.Get("Немедленно");
             if (progressPanel != null) progressPanel.SetActive(true);
             RefreshProgress();
+        }
+
+        private bool TryShowFoodWarning()
+        {
+            if (PlaytestSettings.TutorialsAndQuestsDisabled || _foodWarningCount >= 2 ||
+                !GameFoundation.Quests.QuestProgress.IsAccepted(_woodQuest) ||
+                GameFoundation.Quests.QuestProgress.IsClaimed(_woodQuest) ||
+                (_returnTutorial != null && _returnTutorial.EmergencyReturnActive)) return false;
+            bool enough = foodSufficiencyHint != null ? foodSufficiencyHint.HasEnoughFood() :
+                DayCycleService.Instance == null || DayCycleService.Instance.GetFoodForecast().Starving == 0;
+            if (enough) return false;
+            if (_returnTutorial == null) _returnTutorial = UnityEngine.Object.FindAnyObjectByType<FirstRunLightTutorial>();
+            if (_returnTutorial == null || !_returnTutorial.TryWarnAboutFood(_foodWarningCount == 1)) return false;
+            _foodWarningCount++;
+            GameFoundation.Saves.SaveSlotPrefs.SetInt(FoodWarningKey, _foodWarningCount);
+            GameFoundation.Saves.SaveSlotPrefs.Save();
+            foodSufficiencyHint?.HideForDialogue();
+            return true;
         }
 
         public void ShowPortalDestroyedStatistics()

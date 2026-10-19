@@ -13,7 +13,7 @@ internal sealed class TimerControllerEditor : Editor
         EditorGUILayout.HelpBox(
             $"БАЗОВОЕ ВРЕМЯ ИЗ ПРЕФАБА: {baseDuration:0.##} с.\n" +
             $"С УЛУЧШЕНИЯМИ: {effectiveDuration:0.##} с. " +
-            (stats != null ? $"Модификаторы из GlobalStats «{stats.name}»: −{stats.bonusProductionSpeed:0.##} с, ×{stats.ProductionTimeMultiplier:0.##}."
+            (stats != null ? $"Модификаторы из GlobalStats \"{stats.name}\": −{stats.bonusProductionSpeed:0.##} с, ×{stats.ProductionTimeMultiplier:0.##}."
                 : "Модификаторы не назначены."), MessageType.Info);
 
         if (Application.isPlaying)

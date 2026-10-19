@@ -1,6 +1,5 @@
 using GameFoundation.Combat;
 using UnityEngine;
-using System.Linq;
 using UnityEngine.Events;
 using GameFoundation.MetaProgression;
 
@@ -30,6 +29,7 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
     {
         get { if (movement == null) movement = GetComponent<EnemyMovement>(); return movement != null ? movement.AreaSlowMultiplier : 1f; }
     }
+    private float nextTargetSearch, nextHomeSearch;
     private Transform _target;
     private Transform _boundaryTarget;
     private PortalMeleeBoundary _portalBoundary;
@@ -64,10 +64,26 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
         _offsetAnchor = new GameObject($"Anchor_{gameObject.name}");
     }
 
+    private void OnEnable()
+    {
+        GameFoundation.Audio.GameAudioController.Register(this);
+        nextTargetSearch = Time.time + CombatTargetRegistry.Stagger;
+    }
+
+    public void ResetForSpawn()
+    {
+        _target = null; _homeTransform = null; _isAttacking = false; _nextAttackTime = 0;
+        _hasAssignedHomePoint = false; nextHomeSearch = 0;
+        nextTargetSearch = Time.time + CombatTargetRegistry.Stagger;
+        ResetCooldown();
+        _boundaryTarget = null; _portalBoundary = null;
+    }
+
     void Start() => ResetCooldown();
 
     void Update()
     {
+        if (Time.timeScale <= 0f) return;
         // Advance the existing attack cooldown at the slowed rate, including mid-cooldown entry/exit.
         if (_nextAttackTime > Time.time) _nextAttackTime += Time.deltaTime * (1f - AttackSpeedMultiplier);
         FindClosestTarget();
@@ -100,12 +116,9 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
         }
         if (_homeTransform == null || !_homeTransform.gameObject.activeInHierarchy)
         {
-            var home = Object.FindObjectsByType<HomeBase>(FindObjectsSortMode.None)
-                .Where(h => h.gameObject.activeInHierarchy)
-                .OrderBy(h => Vector2.SqrMagnitude(h.transform.position - transform.position))
-                .FirstOrDefault();
-
-            if (home != null) _homeTransform = home.transform;
+            if (Time.time < nextHomeSearch) return;
+            nextHomeSearch = Time.time + .5f;
+            _homeTransform = CombatTargetRegistry.ClosestHome(transform.position);
         }
     }
 
@@ -164,13 +177,10 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
 
     private void FindClosestTarget()
     {
-        var targets = GameObject.FindGameObjectsWithTag(targetTag);
-        
-        _target = targets
-            .Where(t => t.activeInHierarchy && (t.GetComponentInParent<Health>() == null || !t.GetComponentInParent<Health>().IsDead))
-            .OrderBy(t => Vector2.SqrMagnitude(t.transform.position - transform.position))
-            .Select(t => t.transform)
-            .FirstOrDefault();
+        if (_target != null && !CombatTargetRegistry.IsAlive(_target)) _target = null;
+        if (Time.time < nextTargetSearch) return;
+        nextTargetSearch = Time.time + .15f;
+        _target = CombatTargetRegistry.Closest(targetTag, transform.position );
     }
 
     public void OnTakeDamage(Transform attacker = null)

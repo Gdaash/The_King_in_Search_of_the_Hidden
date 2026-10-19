@@ -28,11 +28,17 @@ namespace GameFoundation.Base
         }
 
         public static void Toggle(string decreeId) => SetEnabled(decreeId, !IsEnabled(decreeId));
-        public static bool TryEnable(RoyalDecreeDefinition decree)
+        public static bool CanEnable(RoyalDecreeDefinition decree)
         {
             if (decree == null || !decree.IsAvailable || string.IsNullOrWhiteSpace(decree.id) || IsEnabled(decree.id) || ForestForagingService.IsPending) return false;
             var resources = GlobalResourceManager.Instance;
-            if (resources == null || decree.influence == null || decree.activationCost < 0 || resources.GetResourceAmount(decree.influence) < decree.activationCost) return false;
+            return resources != null && decree.influence != null && decree.activationCost >= 0 && resources.GetResourceAmount(decree.influence) >= decree.activationCost;
+        }
+
+        public static bool TryEnable(RoyalDecreeDefinition decree)
+        {
+            if (!CanEnable(decree)) return false;
+            var resources = GlobalResourceManager.Instance;
             using var save = SaveSlotPrefs.Batch();
             using var notification = GameFoundation.UI.GameNotifications.BeginAction();
             if (!resources.TrySpendResource(decree.influence, decree.activationCost)) return false;

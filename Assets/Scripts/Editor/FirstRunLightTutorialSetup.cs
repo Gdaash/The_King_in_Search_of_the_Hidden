@@ -58,8 +58,9 @@ public static class FirstRunLightTutorialSetup
         nextRect.sizeDelta=new Vector2(240,56);nextRect.anchoredPosition=new Vector2(-120,-12);
         var body = bubble.Find("Dialogue Text").GetComponent<TMP_Text>();
         body.spriteAsset = MouseSpriteAsset(); body.richText = true;
-        body.text = "Зажми левую кнопку мыши <size=64><sprite=0></size> на луче света и перетащи его на другой гекс.";
-        bubble.Find("Speaker Name").GetComponent<TMP_Text>().text = "Старик Пью";
+        body.text = "Переведи луч на соседний гекс. Подхвати его <size=64><sprite=0></size> и укажи, куда двигаться дальше – пора разведать ещё немного земли.";
+        Set(root.GetComponent<FirstRunLightTutorial>(), "firstHexForest", AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Buildings/Forest 1.prefab"));
+        bubble.Find("Speaker Name").GetComponent<TMP_Text>().text = "Стайк Пью";
         foreach (var text in window.GetComponentsInChildren<TMP_Text>(true)) text.transform.localScale = new Vector3(-1,1,1);
         foreach(var text in next.GetComponentsInChildren<TMP_Text>(true))text.transform.localScale=Vector3.one;
         var portrait = bubble.Find("Scribe").GetComponent<Image>();
@@ -71,7 +72,7 @@ public static class FirstRunLightTutorialSetup
         var label=new GameObject("Label",typeof(RectTransform),typeof(TextMeshProUGUI)); label.transform.SetParent(hint.transform,false);
         var labelRect=(RectTransform)label.transform; labelRect.anchorMin=Vector2.zero; labelRect.anchorMax=Vector2.one;labelRect.offsetMin=new Vector2(12,4);labelRect.offsetMax=new Vector2(-12,-4);
         var hintText = label.GetComponent<TMP_Text>(); hintText.font=body.font; hintText.fontSize=body.fontSize; hintText.color=body.color;
-        hintText.text="Нажми любую клавишу"; hintText.alignment=TextAlignmentOptions.Center;
+        hintText.text="Продолжим"; hintText.alignment=TextAlignmentOptions.Center;
         var hr=(RectTransform)hint.transform; hr.anchorMin=hr.anchorMax=new Vector2(1,0); hr.pivot=new Vector2(1,1);
         hr.anchoredPosition=new Vector2(0,-12); hr.sizeDelta=new Vector2(380,48); labelRect.localScale=new Vector3(-1,1,1);
         hint.SetActive(false);
@@ -99,20 +100,20 @@ public static class FirstRunLightTutorialSetup
         const string key = "world.tutorial.drag_light";
         var entry = table.entries.FirstOrDefault(e=>e.key==key);
         if(entry==null){entry = new LocalizationTable.Entry{key=key};table.entries.Add(entry);}
-        entry.values = new(){"Зажми левую кнопку мыши <size=64><sprite=0></size> на луче света и перетащи его на другой гекс.","Hold the left mouse button <size=64><sprite=0></size> on the light beam and drag it to another hex."};
+        entry.values = new(){"Переведи луч на соседний гекс. Подхвати его <size=64><sprite=0></size> и укажи, куда двигаться дальше – пора разведать ещё немного земли.","Guide the beam to a neighbouring hex. Take hold of it <size=64><sprite=0></size> and lead it onward. Time to scout a little farther."};
         foreach(var translation in new[]{
-            new[]{"world.tutorial.activate_light","Включи свет, чтобы начать разведку. Нажми кнопку включения света у башни портала.","Turn on the light to start scouting. Press the light activation button by the portal tower."},
-            new[]{"world.tutorial.scouting","Луч света — наша разведка. С его помощью можно разведывать территорию вокруг башни портала.","The light beam is our scout. Use it to explore the territory around the portal tower."},
-            new[]{"world.tutorial.any_key","Нажми любую клавишу","Press any key"}})
+            new[]{"world.tutorial.activate_light","Включи свет у башни портала. Посмотрим, что Тёмные земли приберегли для нас сегодня.","Light the portal tower. Let's see what the Dark Lands have in store for us today."},
+            new[]{"world.tutorial.scouting","Этот луч – наши глаза в Тёмных землях. Куда он доберётся, там и узнаем, что нас ждёт. Хорошая разведка сбережёт немало жизней.","That beam is our eyes in the Dark Lands. Wherever it reaches, we'll learn what awaits us. A little scouting can save a great many lives."},
+            new[]{"world.tutorial.any_key","Продолжим","Let's continue"}})
         {
             var item=table.entries.FirstOrDefault(e=>e.key==translation[0]);
             if(item==null){item=new LocalizationTable.Entry{key=translation[0]};table.entries.Add(item);}
             item.values=new(){translation[1],translation[2]};
         }
         foreach(var translation in new[]{
-            new[]{"world.tutorial.drag_neighbor","Зажми левую кнопку мыши <size=64><sprite=0></size> на луче света и перетащи его на соседний гекс.","Hold the left mouse button <size=64><sprite=0></size> on the light beam and drag it to a neighboring hex."},
-            new[]{"world.tutorial.workers","Люди могут работать только на освещённых гексах. Чтобы добыть ресурс, перенеси луч света на гекс с этим ресурсом.","People can only work on illuminated hexes. To gather a resource, move the light beam onto the hex with that resource."},
-            new[]{"world.tutorial.supplies","Собери припасы для укрытия, чтобы никто не умер с голоду.","Gather supplies for the shelter so nobody starves."}})
+            new[]{"world.tutorial.drag_neighbor","Переведи луч на соседний гекс. Подхвати его <size=64><sprite=0></size> и укажи, куда двигаться дальше – пора разведать ещё немного земли.","Guide the beam to a neighbouring hex. Take hold of it <size=64><sprite=0></size> and lead it onward. Time to scout a little farther."},
+            new[]{"world.tutorial.workers","Люди трудятся только там, где светло. Хочешь добыть дерево, камень или еду – направь луч на нужный участок. В темноту я бы и сам без нужды не полез!","Our people can only work in the light. Need timber, stone or food? Guide the beam to the right patch of ground. I wouldn't venture into that darkness without good reason either!"},
+            new[]{"world.tutorial.supplies","Отлично, теперь дело пойдёт! Добудь еду для наших семерых и дерево для домов. На сытый желудок даже Тёмные земли кажутся чуть приветливее.","Splendid, now we're getting somewhere! Gather food for our seven settlers and timber for their homes. Even the Dark Lands look a little friendlier on a full stomach."}})
         {
             var item=table.entries.FirstOrDefault(e=>e.key==translation[0]);
             if(item==null){item=new LocalizationTable.Entry{key=translation[0]};table.entries.Add(item);}

@@ -7,7 +7,9 @@ public class AlarmEmitter : MonoBehaviour
 {
     [Tooltip("Значение, которое добавляет метод AddConfiguredAlarm.")]
     [SerializeField, Min(0f)] private float alarmAmount = 5f;
-    public float ConfiguredAmount => Mathf.Max(0f, alarmAmount);
+    [SerializeField] private GlobalStats productionStats;
+    public float ConfiguredAmount => ScientificUpgrades.ReduceAlarm(Mathf.Max(0f, alarmAmount),
+        productionStats != null ? productionStats.GatheringAlarmReduction : 0f);
 
     public static float Preview(UnityEngine.Events.UnityEvent action)
     {

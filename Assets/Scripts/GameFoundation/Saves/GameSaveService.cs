@@ -15,6 +15,7 @@ namespace GameFoundation.Saves
         private static bool LegacyAllowed(int slot) => !UnityEngine.PlayerPrefs.HasKey(Prefix(slot) + "reset");
         internal static void ResetSlot(int slot)
         {
+            GameFoundation.Bestiary.BestiaryService.ResetCache();
             pendingSaves.Remove(slot);
             LoadedSlots[slot] = new SlotData();
             UnityEngine.PlayerPrefs.SetInt(Prefix(slot) + "reset", 1);
@@ -67,6 +68,6 @@ namespace GameFoundation.Saves
         internal static void Set(int slot, string key, string type, string value) { if (WritesSuspended) return; Entry entry = Find(slot, key); if (entry == null) { entry = new Entry { key = key }; Data(slot).entries.Add(entry); } entry.type = type; entry.value = value; }
         internal static void Delete(int slot, string key) { if (WritesSuspended) return; Data(slot).entries.RemoveAll(item => item != null && item.key == key); UnityEngine.PlayerPrefs.DeleteKey(Prefix(slot) + key); if (slot == 1) UnityEngine.PlayerPrefs.DeleteKey(key); }
         internal static void Save(int slot) { if (WritesSuspended) return; if (batchDepth > 0) { pendingSaves.Add(slot); return; } UnityEngine.PlayerPrefs.SetString(EnvelopeKey(slot), JsonUtility.ToJson(Data(slot))); UnityEngine.PlayerPrefs.Save(); }
-        internal static void ResetCache() => LoadedSlots.Clear();
+        internal static void ResetCache() { LoadedSlots.Clear(); GameFoundation.Bestiary.BestiaryService.ResetCache(); }
     }
 }

@@ -20,6 +20,8 @@ namespace GameFoundation.Bestiary
         private bool hovering;
         private bool showing;
         private float showAt;
+        private EnemyResearchBadge research;
+        private bool researchHovered;
 
         public void Bind(UnitDescriptionDefinition data, UnitDescriptionTooltip detailsTooltip)
         {
@@ -33,6 +35,22 @@ namespace GameFoundation.Bestiary
             }
             if (title != null) title.text = data != null ? data.Title : string.Empty;
             if (role != null) role.text = data != null ? data.Role : string.Empty;
+            research = GetComponentInChildren<EnemyResearchBadge>(true);
+            RefreshResearch();
+        }
+
+        public void RefreshResearch()
+        {
+            var identity = definition != null && definition.unitPrefab != null ? definition.unitPrefab.GetComponent<EnemyIdentity>() : null;
+            if (research != null) research.Bind(identity, this);
+        }
+
+        public void SetResearchHover(bool value, PointerEventData pointer)
+        {
+            researchHovered = value;
+            HideDetails();
+            if (!value && pointer != null && RectTransformUtility.RectangleContainsScreenPoint((RectTransform)transform, pointer.position, pointer.enterEventCamera))
+                BeginHover(tooltipDelay);
         }
 
         public void OnPointerEnter(PointerEventData eventData) => BeginHover(tooltipDelay);
@@ -46,7 +64,7 @@ namespace GameFoundation.Bestiary
 
         private void Update()
         {
-            if (!hovering || showing || definition == null || tooltip == null || Time.unscaledTime < showAt) return;
+            if (researchHovered || !hovering || showing || definition == null || tooltip == null || Time.unscaledTime < showAt) return;
             tooltip.Show(this, definition, null, null);
             showing = true;
         }
@@ -58,7 +76,7 @@ namespace GameFoundation.Bestiary
             if (background != null) background.color = hoverBackground;
         }
 
-        private void OnDisable() => HideDetails();
+        private void OnDisable() { researchHovered = false; HideDetails(); }
 
         private void HideDetails()
         {

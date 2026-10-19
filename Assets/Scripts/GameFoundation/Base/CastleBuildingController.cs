@@ -12,6 +12,8 @@ namespace GameFoundation.Base
         private void Awake()
         {
             if (castleButton != null) castleButton.onClick.AddListener(Open);
+            if (castleButton != null)
+                castleButton.GetComponent<BuildingActionAvailabilityIndicator>()?.SetRoyalDecrees(popup);
             if (popup != null) popup.gameObject.SetActive(false);
         }
 

@@ -22,13 +22,13 @@ public static class IntroComicSceneBuilder
     public static readonly string[,] Translations =
     {
         { "intro.summons", "Король призвал вас ко двору для награждения.", "The king summoned you to court to receive an honour." },
-        { "intro.award", "Славный рыцарь! За боевые заслуги вы награждаетесь собственным наделом земли!", "Noble knight! For your valour in battle, you are awarded a plot of land of your own!" },
+        { "intro.award", "Славный рыцарь! За боевые заслуги жалую вам земли портала и семерых поселенцев для обустройства вашего нового владения!", "Noble knight! For your valour, I grant you the Portal Lands and seven settlers to establish your new holding!" },
         { "intro.own_land", "Своя земля…", "My own land…" },
         { "intro.portal", "…с порталом в Тёмные земли.", "…with a portal to the Dark Lands." },
-        { "intro.tribute", "С этого дня вы обязаны в знак благодарности за такой подарок приносить ко двору магическую руду.", "From this day forth, in gratitude for this gift, you are obliged to bring magical ore to the royal court." },
+        { "intro.tribute", "Взамен земли портала будут исправно снабжать королевскую казну магической рудой. Уверен, вы оправдаете моё доверие.", "In return, the Portal Lands shall supply the royal treasury with magical ore. I trust you will prove worthy of my confidence." },
         { "intro.objection", "Но, Ваше Величество…", "But, Your Majesty…" },
-        { "intro.continue", "Нажмите, чтобы продолжить", "Click to continue" },
-        { "intro.begin", "Нажмите, чтобы начать игру", "Click to begin your adventure" }
+        { "intro.continue", "Дальше", "Continue" },
+        { "intro.begin", "В земли портала", "To the Portal Lands" }
     };
 
     [MenuItem("Tools/Intro Comic/Create Scene")]

@@ -14,61 +14,95 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.MetaProgression.PortalTowerBalance
   minimumCrystalsPerEmptyHex: 1
   maximumCrystalsPerEmptyHex: 5
-  experiencePerEnemy: 1
-  firstLevelExperience: 12
-  experienceIncreasePerLevel: 6
+  experiencePerEnemy: 0
+  firstLevelExperience: 6
+  experienceIncreasePerLevel: 3
   levelPointIcon: {fileID: 5805521837006356492, guid: 9e71229e5a58ffb44ae6e8391e08b832, type: 2}
   upgrades:
   - id: weapon_Bolts
     title: "\u041C\u0430\u0433\u0438\u0447\u0435\u0441\u043A\u0438\u0435 \u0441\u043D\u0430\u0440\u044F\u0434\u044B"
     englishTitle: Magic bolts
-    description: "Точный магический снаряд."
-    englishDescription: "A precise magic projectile."
-    icon: {fileID: 21300000, guid: 8adb5bd61209f83408731b099e983f6f, type: 3}
+    description: "\u0422\u043E\u0447\u043D\u044B\u0439 \u043C\u0430\u0433\u0438\u0447\u0435\u0441\u043A\u0438\u0439
+      \u0441\u043D\u0430\u0440\u044F\u0434."
+    englishDescription: A precise magic projectile.
+    icon: {fileID: 1283276840, guid: 295986a285184d946b764c306af9d889, type: 3}
     effect: 6
     weapon: 1
+    scope: 0
+    deliveryMethod: 0
+    damageType: 0
     value: 1
     maximumRank: 1
     requiresAttack: 0
+    hasQuality: 0
+    rareValue: 0
+    legendaryValue: 0
   - id: weapon_Beam
     title: "\u0412\u044B\u0436\u0438\u0433\u0430\u044E\u0449\u0438\u0439 \u043B\u0443\u0447"
     englishTitle: Burning beam
-    description: "Выжигает врагов в пятне света."
-    englishDescription: "Burns enemies within its light."
-    icon: {fileID: 21300000, guid: 5017c295e5698de4c8404d83a3c8a365, type: 3}
+    description: "\u0412\u044B\u0436\u0438\u0433\u0430\u0435\u0442 \u0432\u0440\u0430\u0433\u043E\u0432
+      \u0432 \u043F\u044F\u0442\u043D\u0435 \u0441\u0432\u0435\u0442\u0430."
+    englishDescription: Burns enemies within its light.
+    icon: {fileID: 2092582053, guid: 295986a285184d946b764c306af9d889, type: 3}
     effect: 6
     weapon: 2
+    scope: 0
+    deliveryMethod: 0
+    damageType: 0
     value: 1
     maximumRank: 1
     requiresAttack: 0
+    hasQuality: 0
+    rareValue: 0
+    legendaryValue: 0
   - id: weapon_Rings
     title: "\u041A\u043E\u043B\u044C\u0446\u0430 \u0441\u0438\u043B\u044B"
     englishTitle: Force rings
-    description: "Кольца поражают врагов при касании."
-    englishDescription: "Expanding rings hit enemies on contact."
-    icon: {fileID: 21300000, guid: 82e42f6a2df074f44ba7eeff80af415a, type: 3}
+    description: "\u041A\u043E\u043B\u044C\u0446\u0430 \u043F\u043E\u0440\u0430\u0436\u0430\u044E\u0442
+      \u0432\u0440\u0430\u0433\u043E\u0432 \u043F\u0440\u0438 \u043A\u0430\u0441\u0430\u043D\u0438\u0438."
+    englishDescription: Expanding rings hit enemies on contact.
+    icon: {fileID: -829011090, guid: 295986a285184d946b764c306af9d889, type: 3}
     effect: 6
     weapon: 3
+    scope: 0
+    deliveryMethod: 0
+    damageType: 0
     value: 1
     maximumRank: 1
     requiresAttack: 0
+    hasQuality: 0
+    rareValue: 0
+    legendaryValue: 0
   - id: weapon_Lightning
     title: "\u0421\u043B\u0443\u0447\u0430\u0439\u043D\u0430\u044F \u043C\u043E\u043B\u043D\u0438\u044F"
     englishTitle: Random lightning
-    description: "Бьёт случайного врага. Игнорирует броню; +50% против бронированных."
-    englishDescription: "Hits a random enemy. Ignores armor; +50% vs armored targets."
-    icon: {fileID: 21300000, guid: 62e3b8368a9697742b7d644a07fa23f3, type: 3}
+    description: "\u0411\u044C\u0451\u0442 \u0441\u043B\u0443\u0447\u0430\u0439\u043D\u043E\u0433\u043E
+      \u0432\u0440\u0430\u0433\u0430. \u0418\u0433\u043D\u043E\u0440\u0438\u0440\u0443\u0435\u0442
+      \u0431\u0440\u043E\u043D\u044E; +50% \u043F\u0440\u043E\u0442\u0438\u0432 \u0431\u0440\u043E\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u044B\u0445."
+    englishDescription: Hits a random enemy. Ignores armor; +50% vs armored targets.
+    icon: {fileID: 1569442137, guid: 295986a285184d946b764c306af9d889, type: 3}
     effect: 6
     weapon: 4
+    scope: 0
+    deliveryMethod: 0
+    damageType: 0
     value: 1
     maximumRank: 1
     requiresAttack: 0
+    hasQuality: 0
+    rareValue: 0
+    legendaryValue: 0
   - id: lights
-    title: "Дополнительный рабочий луч"
-    englishTitle: "Extra working beam"
-    description: "Добавляет рабочий луч для разведки и добычи. Максимум — 6."
-    englishDescription: "Adds a working light for scouting and gathering. Maximum: 6."
-    icon: {fileID: 21300000, guid: 5017c295e5698de4c8404d83a3c8a365, type: 3}
+    title: "\u0414\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u044B\u0439
+      \u0440\u0430\u0431\u043E\u0447\u0438\u0439 \u043B\u0443\u0447"
+    englishTitle: Extra working beam
+    description: "\u0414\u043E\u0431\u0430\u0432\u043B\u044F\u0435\u0442 \u0440\u0430\u0431\u043E\u0447\u0438\u0439
+      \u043B\u0443\u0447 \u0434\u043B\u044F \u0440\u0430\u0437\u0432\u0435\u0434\u043A\u0438
+      \u0438 \u0434\u043E\u0431\u044B\u0447\u0438. \u041C\u0430\u043A\u0441\u0438\u043C\u0443\u043C
+      \u2013 6."
+    englishDescription: 'Adds a working light for scouting and gathering. Maximum:
+      6.'
+    icon: {fileID: -455233756, guid: 295986a285184d946b764c306af9d889, type: 3}
     effect: 1
     weapon: 0
     scope: 3
@@ -77,12 +111,16 @@ MonoBehaviour:
     value: 1
     maximumRank: 5
     requiresAttack: 0
+    hasQuality: 0
+    rareValue: 0
+    legendaryValue: 0
   - id: weapon_FrostSeal
-    title: "Морозная печать"
-    englishTitle: "Frost seal"
-    description: "Печать на пути врага."
-    englishDescription: "Places a seal ahead of an enemy."
-    icon: {fileID: 21300000, guid: 6e49ff47fadd49618a6c205b980996cf, type: 3}
+    title: "\u041C\u043E\u0440\u043E\u0437\u043D\u0430\u044F \u043F\u0435\u0447\u0430\u0442\u044C"
+    englishTitle: Frost seal
+    description: "\u041F\u0435\u0447\u0430\u0442\u044C \u043D\u0430 \u043F\u0443\u0442\u0438
+      \u0432\u0440\u0430\u0433\u0430."
+    englishDescription: Places a seal ahead of an enemy.
+    icon: {fileID: -2106738089, guid: 295986a285184d946b764c306af9d889, type: 3}
     effect: 6
     weapon: 5
     scope: 0
@@ -91,12 +129,16 @@ MonoBehaviour:
     value: 1
     maximumRank: 1
     requiresAttack: 0
+    hasQuality: 0
+    rareValue: 0
+    legendaryValue: 0
   - id: weapon_FireShot
-    title: "Огненная дробь"
-    englishTitle: "Fire scattershot"
-    description: "Три огненных снаряда узким веером."
-    englishDescription: "Three fire pellets in a narrow fan."
-    icon: {fileID: 21300000, guid: 83d2e8a0cc4503842a1d1d7fac85e711, type: 3}
+    title: "\u041E\u0433\u043D\u0435\u043D\u043D\u0430\u044F \u0434\u0440\u043E\u0431\u044C"
+    englishTitle: Fire scattershot
+    description: "\u0422\u0440\u0438 \u043E\u0433\u043D\u0435\u043D\u043D\u044B\u0445
+      \u0441\u043D\u0430\u0440\u044F\u0434\u0430 \u0443\u0437\u043A\u0438\u043C \u0432\u0435\u0435\u0440\u043E\u043C."
+    englishDescription: Three fire pellets in a narrow fan.
+    icon: {fileID: -52137233, guid: 295986a285184d946b764c306af9d889, type: 3}
     effect: 6
     weapon: 6
     scope: 0
@@ -105,12 +147,17 @@ MonoBehaviour:
     value: 1
     maximumRank: 1
     requiresAttack: 0
+    hasQuality: 0
+    rareValue: 0
+    legendaryValue: 0
   - id: weapon_ElectricOrb
-    title: "Грозовая сфера"
-    englishTitle: "Storm orb"
-    description: "Крупный медленный электрический снаряд."
-    englishDescription: "A large, slow electric projectile."
-    icon: {fileID: 21300000, guid: 88941b78b0897ad4187d7eb426252282, type: 3}
+    title: "\u0413\u0440\u043E\u0437\u043E\u0432\u0430\u044F \u0441\u0444\u0435\u0440\u0430"
+    englishTitle: Storm orb
+    description: "\u041A\u0440\u0443\u043F\u043D\u044B\u0439 \u043C\u0435\u0434\u043B\u0435\u043D\u043D\u044B\u0439
+      \u044D\u043B\u0435\u043A\u0442\u0440\u0438\u0447\u0435\u0441\u043A\u0438\u0439
+      \u0441\u043D\u0430\u0440\u044F\u0434."
+    englishDescription: A large, slow electric projectile.
+    icon: {fileID: 664326782, guid: 295986a285184d946b764c306af9d889, type: 3}
     effect: 6
     weapon: 7
     scope: 0
@@ -119,12 +166,15 @@ MonoBehaviour:
     value: 1
     maximumRank: 1
     requiresAttack: 0
+    hasQuality: 0
+    rareValue: 0
+    legendaryValue: 0
   - id: all_damage
-    title: "Урон"
-    englishTitle: "Damage"
-    description: "Урон всего оружия."
-    englishDescription: "Damage of all weapons."
-    icon: {fileID: 21300000, guid: 8adb5bd61209f83408731b099e983f6f, type: 3}
+    title: "\u0423\u0440\u043E\u043D"
+    englishTitle: Damage
+    description: "\u0423\u0440\u043E\u043D \u0432\u0441\u0435\u0433\u043E \u043E\u0440\u0443\u0436\u0438\u044F."
+    englishDescription: Damage of all weapons.
+    icon: {fileID: 1095426139, guid: 295986a285184d946b764c306af9d889, type: 3}
     effect: 2
     weapon: 0
     scope: 0
@@ -137,11 +187,14 @@ MonoBehaviour:
     rareValue: 0.2
     legendaryValue: 0.3
   - id: projectile_count
-    title: "Дополнительные снаряды"
-    englishTitle: "Extra projectiles"
-    description: "Снаряды за атаку для всего оружия со снарядами."
-    englishDescription: "Projectiles per attack for all projectile weapons."
-    icon: {fileID: 21300000, guid: 8adb5bd61209f83408731b099e983f6f, type: 3}
+    title: "\u0414\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u044B\u0435
+      \u0441\u043D\u0430\u0440\u044F\u0434\u044B"
+    englishTitle: Extra projectiles
+    description: "\u0421\u043D\u0430\u0440\u044F\u0434\u044B \u0437\u0430 \u0430\u0442\u0430\u043A\u0443
+      \u0434\u043B\u044F \u0432\u0441\u0435\u0433\u043E \u043E\u0440\u0443\u0436\u0438\u044F
+      \u0441\u043E \u0441\u043D\u0430\u0440\u044F\u0434\u0430\u043C\u0438."
+    englishDescription: Projectiles per attack for all projectile weapons.
+    icon: {fileID: -1205968170, guid: 295986a285184d946b764c306af9d889, type: 3}
     effect: 4
     weapon: 0
     scope: 1
@@ -154,11 +207,13 @@ MonoBehaviour:
     rareValue: 2
     legendaryValue: 3
   - id: tick_interval
-    title: "Частота тиков"
-    englishTitle: "Tick frequency"
-    description: "Уменьшение интервала тиков. Минимум 0.1 с."
-    englishDescription: "Reduce tick interval. Minimum 0.1 s."
-    icon: {fileID: 21300000, guid: 8adb5bd61209f83408731b099e983f6f, type: 3}
+    title: "\u0427\u0430\u0441\u0442\u043E\u0442\u0430 \u0442\u0438\u043A\u043E\u0432"
+    englishTitle: Tick frequency
+    description: "\u0423\u043C\u0435\u043D\u044C\u0448\u0435\u043D\u0438\u0435 \u0438\u043D\u0442\u0435\u0440\u0432\u0430\u043B\u0430
+      \u0442\u0438\u043A\u043E\u0432. \u041C\u0438\u043D\u0438\u043C\u0443\u043C
+      0.1 \u0441."
+    englishDescription: Reduce tick interval. Minimum 0.1 s.
+    icon: {fileID: 250543933, guid: 295986a285184d946b764c306af9d889, type: 3}
     effect: 12
     weapon: 0
     scope: 0
@@ -171,11 +226,16 @@ MonoBehaviour:
     rareValue: 0.1
     legendaryValue: 0.2
   - id: attack_interval
-    title: "Частота атаки"
-    englishTitle: "Attack frequency"
-    description: "Уменьшение интервала атак и создания. Не действует на непрерывный луч. Минимум 0.1 с."
-    englishDescription: "Reduce attack and creation intervals, except continuous beam. Minimum 0.1 s."
-    icon: {fileID: 21300000, guid: 8adb5bd61209f83408731b099e983f6f, type: 3}
+    title: "\u0427\u0430\u0441\u0442\u043E\u0442\u0430 \u0430\u0442\u0430\u043A\u0438"
+    englishTitle: Attack frequency
+    description: "\u0423\u043C\u0435\u043D\u044C\u0448\u0435\u043D\u0438\u0435 \u0438\u043D\u0442\u0435\u0440\u0432\u0430\u043B\u0430
+      \u0430\u0442\u0430\u043A \u0438 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u044F.
+      \u041D\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0443\u0435\u0442 \u043D\u0430
+      \u043D\u0435\u043F\u0440\u0435\u0440\u044B\u0432\u043D\u044B\u0439 \u043B\u0443\u0447.
+      \u041C\u0438\u043D\u0438\u043C\u0443\u043C 0.1 \u0441."
+    englishDescription: Reduce attack and creation intervals, except continuous beam.
+      Minimum 0.1 s.
+    icon: {fileID: -1057039955, guid: 295986a285184d946b764c306af9d889, type: 3}
     effect: 13
     weapon: 0
     scope: 0
@@ -188,11 +248,14 @@ MonoBehaviour:
     rareValue: 0.1
     legendaryValue: 0.2
   - id: area_duration
-    title: "Длительность области"
-    englishTitle: "Area duration"
-    description: "Увеличение времени жизни временных областей."
-    englishDescription: "Increase lifetime of temporary areas."
-    icon: {fileID: 21300000, guid: 8adb5bd61209f83408731b099e983f6f, type: 3}
+    title: "\u0414\u043B\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0441\u0442\u044C
+      \u043E\u0431\u043B\u0430\u0441\u0442\u0438"
+    englishTitle: Area duration
+    description: "\u0423\u0432\u0435\u043B\u0438\u0447\u0435\u043D\u0438\u0435 \u0432\u0440\u0435\u043C\u0435\u043D\u0438
+      \u0436\u0438\u0437\u043D\u0438 \u0432\u0440\u0435\u043C\u0435\u043D\u043D\u044B\u0445
+      \u043E\u0431\u043B\u0430\u0441\u0442\u0435\u0439."
+    englishDescription: Increase lifetime of temporary areas.
+    icon: {fileID: 1954335509, guid: 295986a285184d946b764c306af9d889, type: 3}
     effect: 8
     weapon: 0
     scope: 1
@@ -205,11 +268,13 @@ MonoBehaviour:
     rareValue: 0.1
     legendaryValue: 0.2
   - id: all_range
-    title: "Дальность"
-    englishTitle: "Range"
-    description: "Дальность выбора цели для всего оружия."
-    englishDescription: "Target range for all weapons."
-    icon: {fileID: 21300000, guid: 8adb5bd61209f83408731b099e983f6f, type: 3}
+    title: "\u0414\u0430\u043B\u044C\u043D\u043E\u0441\u0442\u044C"
+    englishTitle: Range
+    description: "\u0414\u0430\u043B\u044C\u043D\u043E\u0441\u0442\u044C \u0432\u044B\u0431\u043E\u0440\u0430
+      \u0446\u0435\u043B\u0438 \u0434\u043B\u044F \u0432\u0441\u0435\u0433\u043E
+      \u043E\u0440\u0443\u0436\u0438\u044F."
+    englishDescription: Target range for all weapons.
+    icon: {fileID: -720862789, guid: 295986a285184d946b764c306af9d889, type: 3}
     effect: 5
     weapon: 0
     scope: 0
@@ -222,11 +287,12 @@ MonoBehaviour:
     rareValue: 1
     legendaryValue: 2
   - id: projectile_speed
-    title: "Скорость снарядов"
-    englishTitle: "Projectile speed"
-    description: "Скорость полёта всех снарядов."
-    englishDescription: "Flight speed of all projectiles."
-    icon: {fileID: 21300000, guid: 8adb5bd61209f83408731b099e983f6f, type: 3}
+    title: "\u0421\u043A\u043E\u0440\u043E\u0441\u0442\u044C \u0441\u043D\u0430\u0440\u044F\u0434\u043E\u0432"
+    englishTitle: Projectile speed
+    description: "\u0421\u043A\u043E\u0440\u043E\u0441\u0442\u044C \u043F\u043E\u043B\u0451\u0442\u0430
+      \u0432\u0441\u0435\u0445 \u0441\u043D\u0430\u0440\u044F\u0434\u043E\u0432."
+    englishDescription: Flight speed of all projectiles.
+    icon: {fileID: -1642772323, guid: 295986a285184d946b764c306af9d889, type: 3}
     effect: 9
     weapon: 0
     scope: 1
@@ -239,11 +305,12 @@ MonoBehaviour:
     rareValue: 0.2
     legendaryValue: 0.35
   - id: area_size
-    title: "Радиус области"
-    englishTitle: "Area radius"
-    description: "Радиус всех областей поражения."
-    englishDescription: "Radius of all damage areas."
-    icon: {fileID: 21300000, guid: 8adb5bd61209f83408731b099e983f6f, type: 3}
+    title: "\u0420\u0430\u0434\u0438\u0443\u0441 \u043E\u0431\u043B\u0430\u0441\u0442\u0438"
+    englishTitle: Area radius
+    description: "\u0420\u0430\u0434\u0438\u0443\u0441 \u0432\u0441\u0435\u0445 \u043E\u0431\u043B\u0430\u0441\u0442\u0435\u0439
+      \u043F\u043E\u0440\u0430\u0436\u0435\u043D\u0438\u044F."
+    englishDescription: Radius of all damage areas.
+    icon: {fileID: -574796693, guid: 295986a285184d946b764c306af9d889, type: 3}
     effect: 7
     weapon: 0
     scope: 1
@@ -261,66 +328,112 @@ MonoBehaviour:
     disabled: 0
     title: "\u041C\u0430\u0433\u0438\u0447\u0435\u0441\u043A\u0438\u0435 \u0441\u043D\u0430\u0440\u044F\u0434\u044B"
     englishTitle: Magic bolts
-    description: "Точный магический снаряд."
-    englishDescription: "A precise magic projectile."
-    icon: {fileID: 21300000, guid: 8adb5bd61209f83408731b099e983f6f, type: 3}
+    description: "\u0422\u043E\u0447\u043D\u044B\u0439 \u043C\u0430\u0433\u0438\u0447\u0435\u0441\u043A\u0438\u0439
+      \u0441\u043D\u0430\u0440\u044F\u0434."
+    englishDescription: A precise magic projectile.
+    icon: {fileID: 1283276840, guid: 295986a285184d946b764c306af9d889, type: 3}
     combat: {fileID: 11400000, guid: 7befa6aac377fc74c9b17da017b4f9f3, type: 2}
     duration: 0.16
+    damageTickInterval: 0
+    continuous: 0
+    slowFraction: 0
+    placementRadiusFraction: 0.25
+    projectilePrefab: {fileID: 0}
+    projectileSpeedMultiplier: 1
+    projectileScale: 1
+    spreadAngle: 0
   - weapon: 2
     deliveryMethod: 1
     disabled: 0
     title: "\u0412\u044B\u0436\u0438\u0433\u0430\u044E\u0449\u0438\u0439 \u043B\u0443\u0447"
     englishTitle: Burning beam
-    description: "Выжигает врагов в пятне света."
-    englishDescription: "Burns enemies within its light."
-    icon: {fileID: 21300000, guid: 5017c295e5698de4c8404d83a3c8a365, type: 3}
+    description: "\u0412\u044B\u0436\u0438\u0433\u0430\u0435\u0442 \u0432\u0440\u0430\u0433\u043E\u0432
+      \u0432 \u043F\u044F\u0442\u043D\u0435 \u0441\u0432\u0435\u0442\u0430."
+    englishDescription: Burns enemies within its light.
+    icon: {fileID: 2092582053, guid: 295986a285184d946b764c306af9d889, type: 3}
     combat: {fileID: 11400000, guid: 3d9e5001edd896a4c8e448571dd69829, type: 2}
     duration: 0.16
     damageTickInterval: 1
     continuous: 1
+    slowFraction: 0
+    placementRadiusFraction: 0.25
+    projectilePrefab: {fileID: 0}
+    projectileSpeedMultiplier: 1
+    projectileScale: 1
+    spreadAngle: 0
   - weapon: 3
     deliveryMethod: 1
     disabled: 1
     title: "\u041A\u043E\u043B\u044C\u0446\u0430 \u0441\u0438\u043B\u044B"
     englishTitle: Force rings
-    description: "Кольца поражают врагов при касании."
-    englishDescription: "Expanding rings hit enemies on contact."
-    icon: {fileID: 21300000, guid: 82e42f6a2df074f44ba7eeff80af415a, type: 3}
+    description: "\u041A\u043E\u043B\u044C\u0446\u0430 \u043F\u043E\u0440\u0430\u0436\u0430\u044E\u0442
+      \u0432\u0440\u0430\u0433\u043E\u0432 \u043F\u0440\u0438 \u043A\u0430\u0441\u0430\u043D\u0438\u0438."
+    englishDescription: Expanding rings hit enemies on contact.
+    icon: {fileID: -829011090, guid: 295986a285184d946b764c306af9d889, type: 3}
     combat: {fileID: 11400000, guid: f56db31814204b14580d1097567b33fb, type: 2}
     duration: 0.16
+    damageTickInterval: 0
+    continuous: 0
+    slowFraction: 0
+    placementRadiusFraction: 0.25
+    projectilePrefab: {fileID: 0}
+    projectileSpeedMultiplier: 1
+    projectileScale: 1
+    spreadAngle: 0
   - weapon: 4
     deliveryMethod: 2
     disabled: 0
     title: "\u0421\u043B\u0443\u0447\u0430\u0439\u043D\u0430\u044F \u043C\u043E\u043B\u043D\u0438\u044F"
     englishTitle: Random lightning
-    description: "Бьёт случайного врага. Игнорирует броню; +50% против бронированных."
-    englishDescription: "Hits a random enemy. Ignores armor; +50% vs armored targets."
-    icon: {fileID: 21300000, guid: 62e3b8368a9697742b7d644a07fa23f3, type: 3}
+    description: "\u0411\u044C\u0451\u0442 \u0441\u043B\u0443\u0447\u0430\u0439\u043D\u043E\u0433\u043E
+      \u0432\u0440\u0430\u0433\u0430. \u0418\u0433\u043D\u043E\u0440\u0438\u0440\u0443\u0435\u0442
+      \u0431\u0440\u043E\u043D\u044E; +50% \u043F\u0440\u043E\u0442\u0438\u0432 \u0431\u0440\u043E\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u044B\u0445."
+    englishDescription: Hits a random enemy. Ignores armor; +50% vs armored targets.
+    icon: {fileID: 1569442137, guid: 295986a285184d946b764c306af9d889, type: 3}
     combat: {fileID: 11400000, guid: 7ff40e5b49221d246bd17838fe092df1, type: 2}
     duration: 0.16
+    damageTickInterval: 0
+    continuous: 0
+    slowFraction: 0
+    placementRadiusFraction: 0.25
+    projectilePrefab: {fileID: 0}
+    projectileSpeedMultiplier: 1
+    projectileScale: 1
+    spreadAngle: 0
   - weapon: 5
     deliveryMethod: 1
     disabled: 0
-    title: "Морозная печать"
+    title: "\u041C\u043E\u0440\u043E\u0437\u043D\u0430\u044F \u043F\u0435\u0447\u0430\u0442\u044C"
     englishTitle: Frost seal
-    description: "Печать на пути врага."
+    description: "\u041F\u0435\u0447\u0430\u0442\u044C \u043D\u0430 \u043F\u0443\u0442\u0438
+      \u0432\u0440\u0430\u0433\u0430."
     englishDescription: Places a seal ahead of an enemy.
-    icon: {fileID: 21300000, guid: 6e49ff47fadd49618a6c205b980996cf, type: 3}
+    icon: {fileID: -2106738089, guid: 295986a285184d946b764c306af9d889, type: 3}
     combat: {fileID: 11400000, guid: c806af24753845e6813f768cf809723f, type: 2}
     duration: 3
     damageTickInterval: 1
+    continuous: 0
     slowFraction: 0.5
     placementRadiusFraction: 0.25
+    projectilePrefab: {fileID: 0}
+    projectileSpeedMultiplier: 1
+    projectileScale: 1
+    spreadAngle: 0
   - weapon: 6
     deliveryMethod: 0
     disabled: 0
-    title: "Огненная дробь"
-    englishTitle: "Fire scattershot"
-    description: "Три огненных снаряда узким веером."
-    englishDescription: "Three fire pellets in a narrow fan."
-    icon: {fileID: 21300000, guid: 83d2e8a0cc4503842a1d1d7fac85e711, type: 3}
+    title: "\u041E\u0433\u043D\u0435\u043D\u043D\u0430\u044F \u0434\u0440\u043E\u0431\u044C"
+    englishTitle: Fire scattershot
+    description: "\u0422\u0440\u0438 \u043E\u0433\u043D\u0435\u043D\u043D\u044B\u0445
+      \u0441\u043D\u0430\u0440\u044F\u0434\u0430 \u0443\u0437\u043A\u0438\u043C \u0432\u0435\u0435\u0440\u043E\u043C."
+    englishDescription: Three fire pellets in a narrow fan.
+    icon: {fileID: -52137233, guid: 295986a285184d946b764c306af9d889, type: 3}
     combat: {fileID: 11400000, guid: 8d609cc8a5fe41f3b6e3c7177825db56, type: 2}
     duration: 0.16
+    damageTickInterval: 0
+    continuous: 0
+    slowFraction: 0
+    placementRadiusFraction: 0.25
     projectilePrefab: {fileID: 2562531662790480983, guid: 6c9c6fdd81dd4343975ed0b71df6efe1, type: 3}
     projectileSpeedMultiplier: 3
     projectileScale: 0.55
@@ -328,13 +441,19 @@ MonoBehaviour:
   - weapon: 7
     deliveryMethod: 0
     disabled: 0
-    title: "Грозовая сфера"
-    englishTitle: "Storm orb"
-    description: "Крупный медленный электрический снаряд."
-    englishDescription: "A large, slow electric projectile."
-    icon: {fileID: 21300000, guid: 88941b78b0897ad4187d7eb426252282, type: 3}
+    title: "\u0413\u0440\u043E\u0437\u043E\u0432\u0430\u044F \u0441\u0444\u0435\u0440\u0430"
+    englishTitle: Storm orb
+    description: "\u041A\u0440\u0443\u043F\u043D\u044B\u0439 \u043C\u0435\u0434\u043B\u0435\u043D\u043D\u044B\u0439
+      \u044D\u043B\u0435\u043A\u0442\u0440\u0438\u0447\u0435\u0441\u043A\u0438\u0439
+      \u0441\u043D\u0430\u0440\u044F\u0434."
+    englishDescription: A large, slow electric projectile.
+    icon: {fileID: 664326782, guid: 295986a285184d946b764c306af9d889, type: 3}
     combat: {fileID: 11400000, guid: a6bab05138774727b2b10da464071bab, type: 2}
     duration: 0.16
+    damageTickInterval: 0
+    continuous: 0
+    slowFraction: 0
+    placementRadiusFraction: 0.25
     projectilePrefab: {fileID: 2562531662790480983, guid: cd49c313bc4b4f6f8791c658bd290652, type: 3}
     projectileSpeedMultiplier: 0.4
     projectileScale: 2

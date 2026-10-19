@@ -128,7 +128,7 @@ public static class QuestDialogueValidation
         view.gameObject.SetActive(false);view.ActivateIfNeeded();
         Check(!view.gameObject.activeSelf,"accepted quest does not reactivate disabled dialogue");
         var plainGo=new GameObject("Temporary plain conversation");
-        var plain=plainGo.AddComponent<QuestDialogueDefinition>();plain.id="validation_plain_conversation";plain.speakerName="Старик Пью";plain.lines=new[]{"Хорошего пути, рыцарь."};
+        var plain=plainGo.AddComponent<QuestDialogueDefinition>();plain.id="validation_plain_conversation";plain.speakerName="Стайк Пью";plain.lines=new[]{"Хорошего пути, рыцарь."};
         var config=new SerializedObject(view);var conversations=config.FindProperty("conversations");conversations.arraySize=1;conversations.GetArrayElementAtIndex(0).objectReferenceValue=plain;config.ApplyModifiedPropertiesWithoutUndo();
         int closes=0;System.Action<GameFoundation.Audio.GameAudioCue> onClose=c=>{if(c==GameFoundation.Audio.GameAudioCue.DialogueClose)closes++;};audio.CuePlayed+=onClose;
         view.ActivateIfNeeded();next=view.GetComponentInChildren<Button>();

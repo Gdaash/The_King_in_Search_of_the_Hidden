@@ -38,6 +38,7 @@ namespace GameFoundation.Base
         }
         public static bool CanUpgrade(string id)
         {
+            if (id == GameFoundation.MetaProgression.PortalProgression.BuildingId && GameFoundation.MetaProgression.PortalProgression.DemoRestrictionsEnabled) return false;
             var cost = Next(id);
             var manager = GlobalResourceManager.Instance;
             if (purchasing || !IsBuilt(id) || cost == null || manager == null) return false;

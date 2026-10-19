@@ -26,7 +26,8 @@ namespace GameFoundation.MetaProgression
             public float age, duration, height, drift;
         }
         private readonly List<LightTrail> lightTrails=new();
-        private Health[] enemies = System.Array.Empty<Health>();
+        private readonly List<Health> enemies = new();
+        private readonly Dictionary<Health, SpriteRenderer[]> enemySprites = new();
         private Material effectMaterial;
         private readonly List<GameObject> effects = new();
         public static PortalWeaponController Instance { get; private set; }
@@ -50,7 +51,7 @@ namespace GameFoundation.MetaProgression
         {
             if(tower==null || !progression.CrystalTechnologyAvailable || progression.ExpeditionEnded){if(beam!=null)beam.transform.root.gameObject.SetActive(false);ClearLightTrails();ClearFrostSeals();ClearPortalProjectiles();return;}
             if(Time.timeScale<=0){return;}
-            if(Time.time>=cacheTime){enemies=FindObjectsByType<Health>(FindObjectsSortMode.None);RefreshEnemyHeights();cacheTime=Time.time+.15f;}
+            if(Time.time>=cacheTime){CombatTargetRegistry.CollectHealth("Enemy1",enemies);RefreshEnemyHeights();cacheTime=Time.time+.15f;}
             UpdateFrostSeals();
             UpdatePortalProjectiles();
             if(progression.HasWeapon(PortalTowerBalance.Weapon.Beam)) UpdateBeam();
@@ -111,9 +112,11 @@ namespace GameFoundation.MetaProgression
             {
                 if(!Enemy(h))continue;
                 bool found=false;Bounds bounds=default;
-                foreach(var renderer in h.GetComponentsInChildren<SpriteRenderer>())
+                if(!enemySprites.TryGetValue(h,out var renderers))
+                    enemySprites[h]=renderers=h.GetComponentsInChildren<SpriteRenderer>(true);
+                foreach(var renderer in renderers)
                 {
-                    if(!renderer.enabled || renderer.sprite==null)continue;
+                    if(renderer==null || !renderer.enabled || !renderer.gameObject.activeInHierarchy || renderer.sprite==null)continue;
                     if(!found){bounds=renderer.bounds;found=true;}else bounds.Encapsulate(renderer.bounds);
                 }
                 if(!found || bounds.size.y<=0)continue;

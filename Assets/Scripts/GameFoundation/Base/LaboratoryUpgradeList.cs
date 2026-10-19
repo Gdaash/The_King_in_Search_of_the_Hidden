@@ -174,7 +174,7 @@ namespace GameFoundation.Base
             detailCost.text = "1";
             detailStatus.text = row.IsComplete ? Text(GameFoundation.Localization.GameText.Get("Все уровни улучшения получены"), "Upgrade fully learned") :
                 !portalProgression.IsUnlocked(upgrade) ? Text(GameFoundation.Localization.GameText.Get("Сначала откройте стрельбу башни"), "Unlock tower attacks first") :
-                Text(GameFoundation.Localization.GameText.Get("Выберите улучшение слева. Цена — одно очко уровня."), "Choose an upgrade on the left. Cost: one level point.");
+                Text(GameFoundation.Localization.GameText.Get("Выберите улучшение слева. Цена – одно очко уровня."), "Choose an upgrade on the left. Cost: one level point.");
             detailStatus.color = row.statusLabel.color;
         }
     }

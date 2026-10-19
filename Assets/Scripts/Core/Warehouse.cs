@@ -4,6 +4,7 @@ using System.Linq;
 
 public class Warehouse : MonoBehaviour
 {
+    public static event System.Action<ResourceType> ResourceDeposited;
     public static Warehouse Instance { get; private set; }
     public static List<Warehouse> AllWarehouses = new List<Warehouse>();
 
@@ -115,6 +116,7 @@ public class Warehouse : MonoBehaviour
         if (GlobalResourceManager.Instance != null && type != null)
         {
             GlobalResourceManager.Instance.AddResource(type, 1);
+            ResourceDeposited?.Invoke(type);
         }
     }
 

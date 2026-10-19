@@ -167,7 +167,7 @@ public static class EnemyRosterSetup
         Add(table,"world.enemies.subtitle","Сейчас на карте","Currently on the map");
         Add(table,"unit.enemy.role","ВРАГ","ENEMY");
         Add(table,"unit.details.enemy_type","Характеристики типа врага","Enemy type statistics");
-        Add(table,"unit.details.enemy_footer","Базовые характеристики этого типа врагов.\nКолесо мыши — прокрутка характеристик.","Base statistics for this enemy type.\nMouse wheel — scroll statistics.");
+        Add(table,"unit.details.enemy_footer","Базовые характеристики этого типа врагов.\nКолесо мыши – прокрутка характеристик.","Base statistics for this enemy type.\nMouse wheel – scroll statistics.");
         Add(table,"unit.enemy.octopus.title","Осьминог","Octopus");
         Add(table,"unit.enemy.cursedmage.title","Проклятый маг","Cursed mage");
         Add(table,"unit.enemy.cursedknight.title","Проклятый рыцарь","Cursed knight");

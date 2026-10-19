@@ -20,6 +20,7 @@ public class TowerVisuals : MonoBehaviour
     [SerializeField, Min(0f)] private float windupDuration = 0.2f;
 
     private Vector3 _startPos;
+    private float projectileBaseSpeed;
     public Transform ShootPoint => shootPoint;
 
     void Start() 
@@ -29,6 +30,8 @@ public class TowerVisuals : MonoBehaviour
         _startPos = spriteTransform.localPosition;
 
         if (tower == null) tower = GetComponent<ArcherTower>();
+        if (projectilePrefab != null && projectilePrefab.TryGetComponent<EnemyProjectile>(out var projectile))
+            projectileBaseSpeed = projectile.BaseSpeed;
     }
 
     public void StartShoot() => StartCoroutine(ShootRoutine());
@@ -50,6 +53,18 @@ public class TowerVisuals : MonoBehaviour
         
         if (projectilePrefab)
         {
+            if (tower.PortalProgression != null && projectileBaseSpeed > 0)
+            {
+                var body = target.GetComponentInParent<Rigidbody2D>();
+                if (body != null)
+                {
+                    float speed = projectileBaseSpeed * tower.PortalProgression.Multiplier(
+                        GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Bolts,
+                        GameFoundation.MetaProgression.PortalTowerBalance.Effect.ExpansionSpeed);
+                    Vector2 predicted = ProjectileAim.Predict(shootPoint.position, target.position, body.linearVelocity, speed);
+                    worldDir = ((Vector3)predicted - shootPoint.position).normalized;
+                }
+            }
             var combat=GetComponent<Combatant>();
             int count = tower.PortalProgression != null ? tower.PortalProgression.ProjectileCount : combat?.weapon?.count??1;
             for (int i = 0; i < count; i++)

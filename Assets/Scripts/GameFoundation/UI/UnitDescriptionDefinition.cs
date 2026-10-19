@@ -23,7 +23,9 @@ namespace GameFoundation.UI
 
         public Sprite Portrait => portraitIcon != null ? portraitIcon : resource != null ? resource.resourceIcon : null;
         public string Title => UnitDescriptionText.Get(titleKey, !string.IsNullOrEmpty(fallbackTitle) ? fallbackTitle : resource != null ? resource.resourceName : name);
-        public string Role => UnitDescriptionText.Get(roleKey, fallbackRole);
+        public string Role => isEnemy && unitPrefab != null && unitPrefab.TryGetComponent<GameFoundation.Bestiary.EnemyIdentity>(out var identity)
+            ? UnitDescriptionText.Get(identity.IsFlying ? "unit.enemy.role.flying" : "unit.enemy.role.ground", identity.IsFlying ? "ЛЕТАЮЩИЙ ВРАГ" : "НАЗЕМНЫЙ ВРАГ")
+            : UnitDescriptionText.Get(roleKey, fallbackRole);
         public string Description => UnitDescriptionText.Get(descriptionKey, fallbackDescription);
     }
 

@@ -36,6 +36,14 @@ public class HealthBar : MonoBehaviour
         _targetProgress = 1f;
     }
 
+    public void ResetForSpawn()
+    {
+        StopAllCoroutines(); _fadeRoutine = null; _targetProgress = 1f;
+        if (mainBar != null) mainBar.fillAmount = 1f;
+        if (bufferBar != null) bufferBar.fillAmount = 1f;
+        if (_canvasGroup != null) _canvasGroup.alpha = 0f;
+    }
+
     private void LateUpdate()
     {
         // 1. BILLBOARD: Поворот к камере

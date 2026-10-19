@@ -57,7 +57,7 @@ namespace GameFoundation.Base
         public void Close() => gameObject.SetActive(false);
         public void Select(PortalLocationDefinition location)
         {
-            if (location == null || !locations.Any(row => row != null && row.location == location)) return;
+            if (location == null || PortalProgression.IsDemoLocked(location) || !locations.Any(row => row != null && row.location == location)) return;
             Selected = location;
             Refresh();
         }
@@ -67,6 +67,9 @@ namespace GameFoundation.Base
             if (Selected == null)
                 Selected = locations.FirstOrDefault(row => row != null && row.location != null && row.location.LocationId == DayCycleService.CurrentPortalLocationId)?.location
                     ?? locations.FirstOrDefault(row => row != null && row.location != null)?.location;
+            if (Selected == null) return;
+            if (PortalProgression.IsDemoLocked(Selected))
+                Selected = locations.FirstOrDefault(row => row != null && row.location != null && !PortalProgression.IsDemoLocked(row.location))?.location;
             if (Selected == null) return;
             foreach (var row in locations) if (row != null && row.location != null) row.Refresh(Selected);
             portalLevel.text = string.Format(Tr("base.portal.level", GameFoundation.Localization.GameText.Get("Уровень портала: {0} / {1}")), PortalProgression.Level, PortalProgression.MaxLevel);
@@ -95,9 +98,10 @@ namespace GameFoundation.Base
         }
         public void Travel()
         {
+            if (PortalCloudTransition.IsLoading || (travelButton != null && !travelButton.IsInteractable())) return;
             var service = DayCycleService.Instance;
             var router = FindFirstObjectByType<RunSceneRouter>();
-            if (service == null || router == null || Selected == null) return;
+            if (service == null || router == null || Selected == null || !router.CanEnterRun) return;
             var site = service.Portals.FirstOrDefault(s => s.locationId == Selected.LocationId);
             if (service.Enter(site)) router.EnterRun();
             else Refresh();

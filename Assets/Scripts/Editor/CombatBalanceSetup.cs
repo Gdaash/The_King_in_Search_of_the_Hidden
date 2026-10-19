@@ -93,7 +93,7 @@ public static class CombatBalanceSetup
                     float damage=stats.damageSettings.Sum(d=>d.baseDamage);
                     float range=melee!=null?new SerializedObject(melee).FindProperty("attackRange").floatValue:stats.baseAttackRange;
                     float interval=melee!=null?new SerializedObject(melee).FindProperty("baseAttackCooldown").floatValue:stats.baseAttackCooldown;
-                    c.weapon=Weapon(root.name+" Attack",root.name+" — атака",root.name+" attack",type,damage,interval,range);
+                    c.weapon=Weapon(root.name+" Attack",root.name+" – атака",root.name+" attack",type,damage,interval,range);
                 }
                 stats.usesPrefabCombatBases=true;
                 foreach(DamageType type in Enum.GetValues(typeof(DamageType)))

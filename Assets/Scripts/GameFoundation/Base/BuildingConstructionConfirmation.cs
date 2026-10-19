@@ -46,7 +46,7 @@ namespace GameFoundation.Base
         {
             if (target == null) return;
             bool en = LocalizationService.Instance?.Language == "en";
-            title.text = (en ? "Build “" : GameFoundation.Localization.GameText.Get("Построить «")) + target.DisplayName + (en ? "”?" : "»?");
+            title.text = (en ? "Build \"" : GameFoundation.Localization.GameText.Get("Построить \"")) + target.DisplayName + (en ? "\"?" : "\"?");
             confirmLabel.text = en ? "Yes" : GameFoundation.Localization.GameText.Get("Да");
             cancelLabel.text = en ? "No" : GameFoundation.Localization.GameText.Get("Нет");
             bool first = SetPrice(woodIcon, woodAmount, target.Wood, target.WoodCost);

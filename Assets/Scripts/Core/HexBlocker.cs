@@ -7,6 +7,11 @@ using System.Collections;
 
 public class HexBlocker : MonoBehaviour
 {
+    public static readonly System.Collections.Generic.HashSet<HexBlocker> ActiveInstances = new();
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetRegistry() => ActiveInstances.Clear();
+    private void OnEnable() => ActiveInstances.Add(this);
+    private void OnDisable() => ActiveInstances.Remove(this);
     [Header("Настройки группы")]
     public int groupID; 
 
@@ -49,8 +54,8 @@ public class HexBlocker : MonoBehaviour
     private AlarmSystem _alarmSystem;
 
     public bool IsBlocked => !_isRemoved && gameObject.activeInHierarchy && !_isCurrentlyUnlocked;
-    public float UnlockAlarmAmount => _alarmRaised ? 0f : Mathf.Max(0f,
-        alarmOnUnlock - (_hexManager != null && _hexManager.Stats != null ? _hexManager.Stats.HexAlarmReduction : 0f));
+    public float UnlockAlarmAmount => _alarmRaised ? 0f : ScientificUpgrades.ReduceAlarm(alarmOnUnlock,
+        _hexManager != null && _hexManager.Stats != null ? _hexManager.Stats.HexAlarmReduction : 0f);
     private bool StartsUnlocked => unlockedAtStart ||
         (GetComponentInParent<HexMapGenerator>() is HexMapGenerator generator && generator.IsFirstRingHex(transform));
 

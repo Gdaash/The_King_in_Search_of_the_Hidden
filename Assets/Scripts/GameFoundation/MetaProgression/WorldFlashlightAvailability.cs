@@ -18,7 +18,7 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private bool autoRepeat = true;
         [SerializeField] private UnityEngine.UI.Toggle autoRepeatToggle;
         public enum LightState { Ready, WaitingForResources, Working }
-        public enum HoverState { None, Available, WaitingForResources, Working, RecallOnly, LightsBusy }
+        public enum HoverState { None, Available, WaitingForResources, Working, RecallOnly, LightsBusy, IdleLight, UnlitHex }
         public readonly struct HoverTarget
         {
             public readonly Transform Anchor;
@@ -139,6 +139,7 @@ namespace GameFoundation.MetaProgression
         }
         private void Update()
         {
+            if (PortalCloudTransition.IsLoading) return;
             if (escaped) return;
             for (int i = 0; i < lights.Length; i++)
             {
@@ -237,7 +238,39 @@ namespace GameFoundation.MetaProgression
             return false;
         }
         // Both input and the hover view resolve the same target and state.
-        public HoverTarget GetHoverTarget(Vector2 point) => ResolveTarget(point, draggedLight);
+        public HoverTarget GetHoverTarget(Vector2 point)
+        {
+            var target = ResolveTarget(point, draggedLight);
+            if (target.Anchor != null || escaped || IsDragging) return target;
+            int closest = -1;
+            float nearest = float.PositiveInfinity;
+            for (int i = 0; i < lights.Length; i++)
+            {
+                var beam = lights[i].beam;
+                if (!LightsActivated || beam == null || !beam.ContainsMarkerPoint(point) || beam.Flag == null) continue;
+                float distance = (point - beam.MarkerPosition).sqrMagnitude;
+                if (distance < nearest) { nearest = distance; closest = i; }
+            }
+            if (closest >= 0)
+                return new HoverTarget(HexAnchor(lights[closest].beam.Flag.transform), HoverState.IdleLight, lightIndex: closest);
+            HexMagnet hoveredHex = null;
+            nearest = float.PositiveInfinity;
+            foreach (var hex in HexMagnet.ActiveInstances)
+            {
+                if (hex == null || !hex.IsPointOverMagnet(point)) continue;
+                float distance = (point - (Vector2)hex.transform.position).sqrMagnitude;
+                if (distance < nearest) { nearest = distance; hoveredHex = hex; }
+            }
+            return hoveredHex != null ? new HoverTarget(hoveredHex.transform, HoverState.UnlitHex) : target;
+        }
+        public bool HasLightAt(Vector2 position)
+        {
+            if (!LightsActivated || escaped) return false;
+            foreach (var light in lights)
+                if (light.beam != null && light.beam.MarkerVisible &&
+                    (light.beam.MarkerPosition - position).sqrMagnitude < .75f * .75f) return true;
+            return false;
+        }
         public bool CanStartManually(HoverTarget target)
         {
             if (escaped || !LightsActivated || IsDragging || target.Anchor == null || target.State != HoverState.Available)
@@ -410,6 +443,7 @@ namespace GameFoundation.MetaProgression
             assignment.position = hex.transform.position;
             assignment.alarm = AlarmSystem.Instance;
             var blocker = hex.GetComponentInParent<HexBlocker>();
+            FirstRunLightTutorial.PrepareFirstHex(blocker);
             if (blocker != null) assignment.alarmSources[blocker] = blocker.UnlockAlarmAmount;
             if (!resuming) ReserveAlarm(assignment);
             SetAlarmPaused(assignment, false);

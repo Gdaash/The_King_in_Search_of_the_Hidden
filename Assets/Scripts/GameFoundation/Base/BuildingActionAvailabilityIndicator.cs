@@ -20,6 +20,13 @@ namespace GameFoundation.Base
         [SerializeField] private string upgradeBuildingId;
 
         private bool daySubscribed;
+        private RoyalDecreeRow[] royalDecrees;
+
+        public void SetRoyalDecrees(RoyalDecreePopupView popup)
+        {
+            royalDecrees = popup != null ? popup.GetComponentsInChildren<RoyalDecreeRow>(true) : null;
+            Refresh();
+        }
 
         private void Awake()
         {
@@ -34,6 +41,7 @@ namespace GameFoundation.Base
                 if (laboratoryStats != null) laboratoryStats.OnStatsUpdated += Refresh;
             }
             GlobalResourceManager.OnResourceChanged += OnResourceChanged;
+            RoyalDecreeService.Changed += OnDecreeChanged;
             BuildingUpgradeService.Changed += Refresh;
             GameFoundation.Quests.ContentUnlocks.Changed += Refresh;
             SubscribeDay();
@@ -50,12 +58,14 @@ namespace GameFoundation.Base
         {
             if (laboratoryStats != null) laboratoryStats.OnStatsUpdated -= Refresh;
             GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
+            RoyalDecreeService.Changed -= OnDecreeChanged;
             BuildingUpgradeService.Changed -= Refresh;
             GameFoundation.Quests.ContentUnlocks.Changed -= Refresh;
             if (daySubscribed && DayCycleService.Instance != null) DayCycleService.Instance.Changed -= Refresh;
             daySubscribed = false;
         }
         private void OnResourceChanged(ResourceType _, int __) => Refresh();
+        private void OnDecreeChanged(string _, bool __) => Refresh();
 
         private void SubscribeDay()
         {
@@ -76,11 +86,19 @@ namespace GameFoundation.Base
                 ActionType.LaboratoryUpgrade => HasAvailableLaboratoryUpgrade(),
                 ActionType.PortalTravel => DayCycleService.Instance != null && !DayCycleService.Instance.EnteredToday,
                 ActionType.RefugeeAdmission => DayCycleService.Instance != null && DayCycleService.Instance.RefugeesAvailable > 0 && BuildingUpgradeService.CanAdmitResident,
-                _ => false
+                _ => HasAvailableDecree()
             };
             bool buildingReady = actionType == ActionType.BuildingConstruction || construction == null || construction.IsBuilt;
             bool upgrade = !string.IsNullOrEmpty(upgradeBuildingId) && BuildingUpgradeService.CanUpgrade(upgradeBuildingId);
             if (highlight != null) highlight.SetAvailable(buildingReady && (actionAvailable || upgrade));
+        }
+
+        private bool HasAvailableDecree()
+        {
+            if (royalDecrees == null) return false;
+            foreach (var row in royalDecrees)
+                if (row != null && RoyalDecreeService.CanEnable(row.decree)) return true;
+            return false;
         }
 
         private bool HasAvailableLaboratoryUpgrade()

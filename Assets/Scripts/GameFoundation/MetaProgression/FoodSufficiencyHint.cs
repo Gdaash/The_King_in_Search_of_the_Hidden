@@ -53,6 +53,7 @@ namespace GameFoundation.MetaProgression
             suppressed = true;
             HideTooltip();
         }
+        public void HideForDialogue() => HideTooltip();
 
         private void OnResourceChanged(ResourceType resource, int amount)
         {
@@ -70,7 +71,7 @@ namespace GameFoundation.MetaProgression
             return false;
         }
 
-        private bool HasEnoughFood()
+        public bool HasEnoughFood()
         {
             GlobalResourceManager resources = GlobalResourceManager.Instance;
             if (resources == null || foodResource == null || dailyFoodConsumers == null) return false;

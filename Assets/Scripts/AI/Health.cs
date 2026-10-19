@@ -41,6 +41,8 @@ public class Health : MonoBehaviour
     private IEnemyAI _ai; 
     private Coroutine _regenCoroutine;
     private Coroutine _flashCoroutine;
+    private Transform[] combatTargets;
+    private GameFoundation.Bestiary.EnemyIdentity bestiaryIdentity;
     private readonly Dictionary<MilitaryExperience, float> _contributors = new();
     private MilitaryExperience _lastContributor;
 
@@ -72,6 +74,8 @@ public class Health : MonoBehaviour
 
     void Awake() 
     {
+        if (CompareTag("Enemy1")) bestiaryIdentity = GetComponent<GameFoundation.Bestiary.EnemyIdentity>();
+        combatTargets = GetComponentsInChildren<Transform>(true);
         _ai = GetComponent<IEnemyAI>();
         // Runtime units always begin a new spawn at full health. This must not depend on
         // a stats asset being assigned, otherwise a serialized _cur value leaks into battle.
@@ -87,24 +91,38 @@ public class Health : MonoBehaviour
 
     void Start() 
     {
-        _regenCoroutine = StartCoroutine(RegenTickRoutine());
+        if (_regenCoroutine == null) _regenCoroutine = StartCoroutine(RegenTickRoutine());
     }
 
     private void OnEnable() 
     {
+        GameFoundation.Audio.GameAudioController.Register(this);
+        foreach (var target in combatTargets) if (target != null) CombatTargetRegistry.Register(target.gameObject);
+        if (_regenCoroutine == null && !_dead) _regenCoroutine = StartCoroutine(RegenTickRoutine());
         if (stats != null) stats.OnStatsUpdated += HandleStatsUpgrade;
     }
 
     private void OnDisable() 
     {
+        foreach (var target in combatTargets) if (target != null) CombatTargetRegistry.Unregister(target.gameObject);
         if (stats != null) stats.OnStatsUpdated -= HandleStatsUpgrade;
         if (targetSprite)
         {
             targetSprite.color = _orig;
             if (hitScaleActive) targetSprite.transform.localScale = hitBaseScale;
         }
+        StopAllCoroutines(); _regenCoroutine = null;
         hitScaleActive = false;
         if (_flashCoroutine != null) { StopCoroutine(_flashCoroutine); _flashCoroutine = null; }
+    }
+
+    public void ResetForSpawn()
+    {
+        _dead = false; _cur = MaxHealth; _lastDamageTime = Time.time;
+        _contributors.Clear(); _lastContributor = null;
+        _regenCoroutine = null; _flashCoroutine = null; hitScaleActive = false;
+        if (targetSprite != null) { targetSprite.color = _orig; targetSprite.transform.localScale = hitBaseScale; }
+        OnHealthChanged?.Invoke(1f);
     }
 
     private void HandleStatsUpgrade() 
@@ -119,6 +137,7 @@ public class Health : MonoBehaviour
         if (_dead) return;
         float multiplier = GetGlobalMultiplier(type);
         float final = CombatDamage.Calculate(amt,type,Armor,multiplier);
+        if (bestiaryIdentity != null) final *= GameFoundation.Bestiary.BestiaryService.DamageMultiplier(bestiaryIdentity);
         
         if (final > 0) 
         {
@@ -234,6 +253,7 @@ public class Health : MonoBehaviour
     { 
         if (_dead) return;
         _dead = true; 
+        if (bestiaryIdentity != null) GameFoundation.Bestiary.BestiaryService.RegisterKill(bestiaryIdentity);
         if (CompareTag("Enemy1")) GameFoundation.MetaProgression.PortalTowerProgression.Instance?.AwardEnemyExperience(transform.position);
         AwardMilitaryExperience();
         if (_regenCoroutine != null) StopCoroutine(_regenCoroutine);

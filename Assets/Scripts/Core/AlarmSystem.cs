@@ -259,10 +259,27 @@ public class AlarmSystem : MonoBehaviour
     private void OnDestroy()
     {
         if (Instance == this) Instance = null;
+        if (spawnPool != null) Destroy(spawnPool.gameObject);
     }
+
+    private WorldSpawnPool spawnPool;
 
     private void Start()
     {
+        cachedMapGenerator = UnityEngine.Object.FindFirstObjectByType<HexMapGenerator>();
+        var poolRoot = new GameObject("World Spawn Pool");
+        UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(poolRoot, gameObject.scene);
+        spawnPool = poolRoot.AddComponent<WorldSpawnPool>();
+        var warmed = new HashSet<GameObject>();
+        int simultaneousWaves = Mathf.Max(1, thresholds.Count);
+        int enemyReserve = Mathf.Max(4, simultaneousWaves);
+        foreach (var threshold in thresholds)
+            if (threshold.enemies != null) foreach (var enemy in threshold.enemies)
+                if (enemy.prefab != null && warmed.Add(enemy.prefab)) spawnPool.Prewarm(enemy.prefab, enemyReserve);
+        if (firstRunWaveTemplate?.enemies != null) foreach (var enemy in firstRunWaveTemplate.enemies)
+            if (enemy.prefab != null && warmed.Add(enemy.prefab)) spawnPool.Prewarm(enemy.prefab, enemyReserve);
+        if (monsterSpawnWarningPrefab != null) spawnPool.Prewarm(monsterSpawnWarningPrefab.gameObject, nearestBlockedHexesToUse * simultaneousWaves);
+        GameAudioController.Register(this);
         CreateRuntimeUiIfNeeded();
         _displayedFill = Mathf.Clamp01(currentAlarm / maximumAlarm);
         ApplyFill(_displayedFill);
@@ -287,7 +304,7 @@ public class AlarmSystem : MonoBehaviour
             if (routine != null) StopCoroutine(routine);
         _waveRoutines.Clear();
         foreach (GameObject warning in _activeSpawnWarnings)
-            if (warning != null) Destroy(warning);
+            if (warning != null) WorldSpawnPool.Release(warning);
         _activeSpawnWarnings.Clear();
         _dangerNotificationQueue.Clear();
         if (_dangerNotificationRoutine != null) StopCoroutine(_dangerNotificationRoutine);
@@ -418,9 +435,10 @@ public class AlarmSystem : MonoBehaviour
         if (threshold.enemies == null || threshold.enemies.Count == 0)
             yield break;
 
-        List<HexBlocker> candidates = UnityEngine.Object.FindObjectsByType<HexBlocker>(FindObjectsSortMode.None)
+        Vector2 center = GetMapCenter();
+        List<HexBlocker> candidates = HexBlocker.ActiveInstances
             .Where(hex => hex.IsBlocked)
-            .OrderBy(hex => ((Vector2)hex.transform.position - (Vector2)GetMapCenter()).sqrMagnitude)
+            .OrderBy(hex => ((Vector2)hex.transform.position - center).sqrMagnitude)
             .Take(nearestBlockedHexesToUse)
             .ToList();
 
@@ -454,7 +472,7 @@ public class AlarmSystem : MonoBehaviour
         {
             MonsterSpawnWarningView warning = warnings[entry.Hex];
             yield return PrepareMonsterSpawn(warning);
-            GameObject enemy = Instantiate(entry.Prefab, entry.Position, Quaternion.identity);
+            GameObject enemy = spawnPool.Rent(entry.Prefab, entry.Position, Quaternion.identity);
             RegisterSpawnedEnemy(entry.Prefab, enemy);
             if (warning != null) warning.HideLightImmediate();
             yield return BumpWarning(warning);
@@ -470,7 +488,7 @@ public class AlarmSystem : MonoBehaviour
             Debug.LogError("[AlarmSystem] Не назначен префаб эффекта появления монстров.", this);
             return null;
         }
-        MonsterSpawnWarningView warning = Instantiate(monsterSpawnWarningPrefab, position, Quaternion.identity);
+        MonsterSpawnWarningView warning = spawnPool.Rent(monsterSpawnWarningPrefab.gameObject, position, Quaternion.identity).GetComponent<MonsterSpawnWarningView>();
         warning.name = monsterSpawnWarningPrefab.name;
         warning.Prepare();
         _activeSpawnWarnings.Add(warning.gameObject);
@@ -556,7 +574,7 @@ public class AlarmSystem : MonoBehaviour
         {
             if (warning == null) continue;
             _activeSpawnWarnings.Remove(warning.gameObject);
-            Destroy(warning.gameObject);
+            WorldSpawnPool.Release(warning.gameObject);
         }
     }
 
@@ -589,11 +607,12 @@ public class AlarmSystem : MonoBehaviour
         return null;
     }
 
+    private HexMapGenerator cachedMapGenerator;
     private Vector3 GetMapCenter()
     {
         if (mapCenter != null) return mapCenter.position;
-        HexMapGenerator generator = UnityEngine.Object.FindFirstObjectByType<HexMapGenerator>();
-        return generator != null ? generator.centerPosition : Vector3.zero;
+        if (cachedMapGenerator == null) cachedMapGenerator = UnityEngine.Object.FindFirstObjectByType<HexMapGenerator>();
+        return cachedMapGenerator != null ? cachedMapGenerator.centerPosition : Vector3.zero;
     }
 
     private void ApplyFill(float value)

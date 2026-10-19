@@ -63,6 +63,8 @@ namespace GameFoundation.UI
         private GlobalStats healthStats, movementStats, damageStats;
         private LocalizationService localization;
         private float nextRefresh;
+        private float visibleRowsHeight;
+        private float authoredBottomInset = -1;
         public UnitDescriptionDefinition Definition => definition;
 
         private void OnEnable()
@@ -135,11 +137,14 @@ namespace GameFoundation.UI
                     string.Format(T("progress", GameFoundation.Localization.GameText.Get("Уровень {0}/10 · опыт {1}")), stars,
                         stars >= 10 ? T("maximum", GameFoundation.Localization.GameText.Get("максимум")) : (profile.experience - earned) + " / " + MilitaryExperienceService.ExperienceForNextStar(stars));
             }
-            if (footer != null) footer.text = definition.isEnemy
-                ? UnitDescriptionText.Get("enemy.level.footer", GameFoundation.Localization.GameText.Get("Уровень фиксируется при появлении врага.\nВ панели показаны характеристики новых врагов."))
-                : string.Format(T("footer_compact", GameFoundation.Localization.GameText.Get("За убийство: {0} опыта · за помощь: {1}\nНовый день полностью восстанавливает здоровье.")), MilitaryExperience.KillExperience, MilitaryExperience.AssistExperience);
+            if (footer != null)
+            {
+                footer.gameObject.SetActive(!definition.isEnemy);
+                footer.text = definition.isEnemy ? string.Empty : string.Format(T("footer_compact", GameFoundation.Localization.GameText.Get("За убийство: {0} опыта · за помощь: {1}\nНовый день полностью восстанавливает здоровье.")), MilitaryExperience.KillExperience, MilitaryExperience.AssistExperience);
+            }
 
             int visible = 0;
+            visibleRowsHeight = 0;
             foreach (UnitStatPresentation entry in stats)
             {
                 if (entry != null && entry.stat == UnitStat.Food && !showFoodStat) continue;
@@ -155,7 +160,9 @@ namespace GameFoundation.UI
                 view.gameObject.SetActive(true);
                 Sprite icon = entry.stat == UnitStat.Food && definition.food != null ? definition.food.resourceIcon : entry.icon;
                 var layout = view.GetComponent<UnityEngine.UI.LayoutElement>();
-                if (layout != null) layout.preferredHeight = Mathf.Max(34f, icon != null ? icon.rect.height * 2f + 6f : 34f);
+                float rowHeight = Mathf.Max(34f, icon != null ? icon.rect.height * 2f + 6f : 34f);
+                if (layout != null) layout.preferredHeight = rowHeight;
+                visibleRowsHeight += rowHeight;
                 string caption = UnitDescriptionText.Get(entry.labelKey, entry.fallbackLabel);
                 Color stripe = visible % 2 == 0 ? stripeColor : Color.clear;
                 if (entry.stat == UnitStat.Defense)
@@ -165,6 +172,19 @@ namespace GameFoundation.UI
                 visible++;
             }
             for (int i = visible; i < rowViews.Count; i++) rowViews[i].gameObject.SetActive(false);
+            var rowLayout = rows.GetComponent<UnityEngine.UI.VerticalLayoutGroup>();
+            if (rowLayout != null) visibleRowsHeight += rowLayout.padding.vertical + Mathf.Max(0, visible - 1) * rowLayout.spacing;
+        }
+
+        public float FitTooltipHeight()
+        {
+            if (scroll == null) return ((RectTransform)transform).rect.height;
+            var viewport = (RectTransform)scroll.transform;
+            if (authoredBottomInset < 0) authoredBottomInset = viewport.offsetMin.y;
+            float bottom = footer != null && footer.gameObject.activeSelf ? authoredBottomInset : 26f;
+            var offset = viewport.offsetMin;
+            if (!Mathf.Approximately(offset.y, bottom)) { offset.y = bottom; viewport.offsetMin = offset; }
+            return Mathf.Ceil(Mathf.Max(0, -viewport.offsetMax.y) + visibleRowsHeight + bottom);
         }
 
         private bool TryValue(UnitStatPresentation entry, float multiplier, out string value, out Color color)

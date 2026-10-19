@@ -17,18 +17,23 @@ public sealed class CheatResourcePopup : MonoBehaviour
         public Image icon;
         public Text nameText;
         public Text amountText;
+        public Button subtractHundred;
         public Button subtractTen;
         public Button subtractFive;
         public Button subtractOne;
         public Button addOne;
         public Button addFive;
         public Button addTen;
+        public Button addHundred;
     }
 
     [SerializeField] private GameObject window;
     [SerializeField] private GameObject dimmer;
     [SerializeField] private Button closeButton;
     [SerializeField] private Button unlockAllBuildingsButton;
+    [SerializeField] private Button addAllHundredButton;
+    [SerializeField] private Button subtractAllHundredButton;
+    private bool changingAllResources;
     [SerializeField] private Button resetCurrentSaveButton;
     [SerializeField] private ContentUnlockDefinition[] buildingUnlocks;
     [SerializeField] private List<ResourceRow> rows = new List<ResourceRow>();
@@ -36,6 +41,8 @@ public sealed class CheatResourcePopup : MonoBehaviour
     private void Awake()
     {
         unlockAllBuildingsButton?.onClick.AddListener(UnlockAllBuildings);
+        addAllHundredButton?.onClick.AddListener(AddAllHundred);
+        subtractAllHundredButton?.onClick.AddListener(SubtractAllHundred);
         resetCurrentSaveButton?.onClick.AddListener(CurrentSaveReset.Reload);
         if (closeButton != null)
             closeButton.onClick.AddListener(Close);
@@ -43,12 +50,14 @@ public sealed class CheatResourcePopup : MonoBehaviour
         foreach (ResourceRow row in rows)
         {
             if (row == null || row.resource == null) continue;
+            Bind(row.subtractHundred, row.resource, -100);
             Bind(row.subtractTen, row.resource, -10);
             Bind(row.subtractFive, row.resource, -5);
             Bind(row.subtractOne, row.resource, -1);
             Bind(row.addOne, row.resource, 1);
             Bind(row.addFive, row.resource, 5);
             Bind(row.addTen, row.resource, 10);
+            Bind(row.addHundred, row.resource, 100);
 
             if (row.icon != null)
             {
@@ -77,6 +86,7 @@ public sealed class CheatResourcePopup : MonoBehaviour
 
     private void Update()
     {
+        if (GameFoundation.MetaProgression.PortalCloudTransition.IsLoading) return;
         if (GameFoundation.Base.ForestForagingService.IsPending || GameFoundation.MetaProgression.PortalTowerProgression.IsChoosingUpgrade) return;
         if (Input.GetKeyDown(KeyCode.L) && !IsEditingText())
         {
@@ -122,22 +132,44 @@ public sealed class CheatResourcePopup : MonoBehaviour
         Refresh();
     }
 
+    private void AddAllHundred() => ChangeAll(100);
+    private void SubtractAllHundred() => ChangeAll(-100);
+    private void ChangeAll(int delta)
+    {
+        var manager = GlobalResourceManager.Instance;
+        if (manager == null) return;
+        var changed = new HashSet<ResourceType>();
+        changingAllResources = true;
+        try
+        {
+            foreach (var row in rows)
+            {
+                if (row?.resource == null || !changed.Add(row.resource)) continue;
+                int next = (int)Math.Max(0L, Math.Min(int.MaxValue, (long)manager.GetResourceAmount(row.resource) + delta));
+                manager.SetResourceAmount(row.resource, next);
+            }
+        }
+        finally { changingAllResources = false; Refresh(); }
+    }
+
     private void OnResourceChanged(ResourceType _, int __)
     {
-        if (window != null && window.activeSelf)
+        if (!changingAllResources && window != null && window.activeSelf)
             Refresh();
     }
 
     private void Refresh()
     {
         _lastManager = GlobalResourceManager.Instance;
+        SetInteractable(addAllHundredButton, _lastManager != null);
+        SetInteractable(subtractAllHundredButton, _lastManager != null);
         foreach (ResourceRow row in rows)
         {
             if (row == null) continue;
             bool available = _lastManager != null && row.resource != null;
             int amount = available ? _lastManager.GetResourceAmount(row.resource) : 0;
             if (row.amountText != null)
-                row.amountText.text = available ? amount.ToString() : "—";
+                row.amountText.text = available ? amount.ToString() : "–";
             if (row.nameText != null && row.resource != null)
             {
                 string key = "resource." + row.resource.Id + ".name";
@@ -145,12 +177,14 @@ public sealed class CheatResourcePopup : MonoBehaviour
                 row.nameText.text = translated != key ? translated : row.resource.resourceName;
             }
 
+            SetInteractable(row.subtractHundred, available && amount >= 100);
             SetInteractable(row.subtractTen, available && amount >= 10);
             SetInteractable(row.subtractFive, available && amount >= 5);
             SetInteractable(row.subtractOne, available && amount >= 1);
             SetInteractable(row.addOne, available && amount < int.MaxValue);
             SetInteractable(row.addFive, available && amount <= int.MaxValue - 5);
             SetInteractable(row.addTen, available && amount <= int.MaxValue - 10);
+            SetInteractable(row.addHundred, available && amount <= int.MaxValue - 100);
         }
     }
 
@@ -172,6 +206,8 @@ public sealed class CheatResourcePopup : MonoBehaviour
     private void OnDestroy()
     {
         unlockAllBuildingsButton?.onClick.RemoveListener(UnlockAllBuildings);
+        addAllHundredButton?.onClick.RemoveListener(AddAllHundred);
+        subtractAllHundredButton?.onClick.RemoveListener(SubtractAllHundred);
         resetCurrentSaveButton?.onClick.RemoveListener(CurrentSaveReset.Reload);
     }
 

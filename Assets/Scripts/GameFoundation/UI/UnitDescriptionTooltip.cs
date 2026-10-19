@@ -76,12 +76,13 @@ namespace GameFoundation.UI
                     RectTransformUtility.WorldToScreenPoint(panelCamera, panelCorners[3]).y);
                 upperEdge = Mathf.Min(upperEdge, bottom - resourcePanelGap * scale);
             }
+            Vector2 contentSize = new(preferredSize.x, card.FitTooltipHeight());
             float fit = Mathf.Clamp(Mathf.Min(
-                (Screen.width - screenMargin * 2f) / (preferredSize.x * scale),
-                Mathf.Max(1f, upperEdge - screenMargin) / (preferredSize.y * scale)), .01f, 1f);
+                (Screen.width - screenMargin * 2f) / (contentSize.x * scale),
+                Mathf.Max(1f, upperEdge - screenMargin) / (contentSize.y * scale)), .01f, 1f);
             rect.localScale = new Vector3(fit, fit, 1f);
             scale *= fit;
-            rect.sizeDelta = preferredSize;
+            if (rect.sizeDelta != contentSize) rect.sizeDelta = contentSize;
             Vector2 pointer = Input.mousePosition;
             // Prefer above the troop row; flip to the left near the right screen edge.
             float x = pointer.x + offset.x * scale;
