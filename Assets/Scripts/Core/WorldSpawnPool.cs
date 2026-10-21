@@ -18,12 +18,19 @@ public sealed class WorldSpawnPool : MonoBehaviour
 
     public void Prewarm(GameObject prefab, int count)
     {
+        PlanReserve(prefab, count);
+        if (prefab == null) return;
+        var queue = available[prefab];
+        while (queue.Count < count) Create(prefab);
+    }
+
+    public void PlanReserve(GameObject prefab, int count)
+    {
         if (prefab == null) return;
         if (!available.TryGetValue(prefab, out var queue)) available[prefab] = queue = new();
         var reserve = reserves.Find(r => r.prefab == prefab);
         if (reserve == null) reserves.Add(new Reserve { prefab = prefab, count = count, available = queue });
         else reserve.count = Mathf.Max(reserve.count, count);
-        while (queue.Count < count) Create(prefab);
     }
 
     private void LateUpdate()

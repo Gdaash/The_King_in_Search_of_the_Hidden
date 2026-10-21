@@ -32,7 +32,7 @@ public static class CombatTargetRegistry
     }
     public static void Register(GameObject value)
     {
-        if (value == null || value.CompareTag("Untagged") || targets.ContainsKey(value)) return;
+        if (value == null || (value.CompareTag("Untagged") && !WorldCivilianTarget.Contains(value)) || targets.ContainsKey(value)) return;
         targets.Add(value, new Entry { gameObject = value, transform = value.transform, health = value.GetComponentInParent<Health>(), collider = value.GetComponent<Collider2D>() });
     }
     public static void Unregister(GameObject value) { if (value != null) targets.Remove(value); }
@@ -59,6 +59,23 @@ public static class CombatTargetRegistry
             if (lowestHealth && health > bestHealth) continue;
             if ((!lowestHealth || health == bestHealth) && distance >= bestDistance) continue;
             best = entry.transform; bestDistance = distance; bestHealth = health;
+        }
+        return best;
+    }
+
+    public static Transform ClosestHostileTarget(Vector2 origin, float civilianRange)
+    {
+        Transform best = null; float nearest = float.PositiveInfinity;
+        foreach (var entry in targets.Values)
+        {
+            if (entry.gameObject == null || !entry.gameObject.activeInHierarchy ||
+                (entry.health != null && entry.health.IsDead)) continue;
+            bool civilian = WorldCivilianTarget.Contains(entry.gameObject);
+            if (!civilian && !entry.gameObject.CompareTag("Player")) continue;
+            float distance = ((Vector2)entry.transform.position - origin).sqrMagnitude;
+            if (civilian && distance > civilianRange * civilianRange) continue;
+            if (distance >= nearest) continue;
+            nearest = distance; best = entry.transform;
         }
         return best;
     }

@@ -12,6 +12,14 @@ using UnityEngine.UI;
 
 public static class FirstRunLightTutorialSetup
 {
+    public static void UpdateCarrierLocalization()
+    {
+        var table=AssetDatabase.LoadAssetAtPath<LocalizationTable>("Assets/Resources/Localization/Base Localization.asset");
+        var item=table.entries.FirstOrDefault(e=>e.key=="world.tutorial.carriers");
+        if(item==null){item=new LocalizationTable.Entry{key="world.tutorial.carriers"};table.entries.Add(item);}
+        item.values=new(){FirstRunLightTutorial.CarrierInstruction,"There's our first haul! The carriers will bring their carts and take it to the portal. They collect supplies only on lit ground – they won't find anything in the dark. Let's wait until at least two units of resources reach the portal."};
+        EditorUtility.SetDirty(table);AssetDatabase.SaveAssets();
+    }
     public const string Path = "Assets/Prefabs/UI/Dialogue/First Run Light Tutorial.prefab";
     static TMP_SpriteAsset MouseSpriteAsset()
     {
@@ -120,6 +128,7 @@ public static class FirstRunLightTutorialSetup
             item.values=new(){translation[1],translation[2]};
         }
         EditorUtility.SetDirty(table); AssetDatabase.SaveAssets();
+        UpdateCarrierLocalization();
         Selection.activeObject = prefab;
     }
 }

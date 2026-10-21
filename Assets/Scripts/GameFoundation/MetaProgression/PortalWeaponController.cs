@@ -86,6 +86,10 @@ namespace GameFoundation.MetaProgression
             {
                 var g=Instantiate(beamPrefab);g.name="Portal Burning Beam";
                 beam=g.GetComponentInChildren<FlashlightController>(true);
+                foreach(var light in g.GetComponentsInChildren<Light2D>(true)) light.color=DamagePalette.Fire;
+                foreach(var sprite in g.GetComponentsInChildren<SpriteRenderer>(true))
+                    if(sprite.sprite!=null && sprite.GetComponentInParent<LogisticFlag>()==null)
+                        sprite.sharedMaterial=DamagePalette.MaterialFor(DamageType.Fire) ?? sprite.sharedMaterial;
                 foreach(var l in g.GetComponentsInChildren<Light2D>(true))if(l.lightCookieSprite!=null){spot=l;break;}
                 spotScale=spot.transform.localScale;
                 beam.SetCrystalTarget(aim,true);
@@ -160,8 +164,8 @@ namespace GameFoundation.MetaProgression
                 Vector2 bottom=trail.origin+new Vector2(trail.drift*Mathf.Max(0,progress-.2f),tail);
                 trail.line.SetPosition(0,bottom);trail.line.SetPosition(1,top);
                 float alpha=Mathf.Sin(progress*Mathf.PI)*.85f;
-                trail.line.startColor=new Color(1,.65f,.25f,alpha*.15f);
-                trail.line.endColor=new Color(1,.95f,.7f,alpha);
+                trail.line.startColor=new Color(.8f,.08f,.02f,alpha*.15f);
+                trail.line.endColor=new Color(1,.45f,.12f,alpha);
             }
         }
         private void ClearLightTrails()
@@ -230,7 +234,7 @@ namespace GameFoundation.MetaProgression
                 int index=Random.Range(0,candidates.Count);var h=candidates[index];candidates.RemoveAt(index);
                 Vector3 end=h.transform.position;
                 h.TakeDamage(Damage(w),Def(w).damageType,tower.transform);
-                CombatImpactBurst.Spawn(end,new Color(.55f,.8f,1));
+                CombatImpactBurst.Spawn(end,DamagePalette.Electric);
                 GameAudioController.PlayAt(GameAudioCue.MagicAttack,end);
                 StartCoroutine(Lightning(end));
             }
@@ -246,7 +250,8 @@ namespace GameFoundation.MetaProgression
             go.transform.position=new Vector3(Mathf.Round(end.x*32)/32,Mathf.Round((end.y+height*.5f)*32)/32,end.z);
             if(Random.value>.5f)renderer.flipX=true;
             var glow=go.AddComponent<Light2D>();glow.lightType=Light2D.LightType.Point;
-            glow.color=new Color(.25f,.65f,1);glow.intensity=1.5f;glow.pointLightOuterRadius=1.2f;
+            renderer.sharedMaterial=DamagePalette.MaterialFor(DamageType.Electric) ?? effectMaterial;
+            glow.color=DamagePalette.Electric;glow.intensity=1.5f;glow.pointLightOuterRadius=1.2f;
             float duration=Def(w).duration*progression.Multiplier(w,PortalTowerBalance.Effect.Duration);
             float elapsed=0;
             while(elapsed<duration)
@@ -261,6 +266,8 @@ namespace GameFoundation.MetaProgression
         {
             ClearPortalProjectiles();
             ClearFrostSeals();
+            if(frostEmitterMesh!=null)Destroy(frostEmitterMesh);
+            if(frostFlakeMesh!=null)Destroy(frostFlakeMesh);
             if(Instance==this)Instance=null;
             if(beam!=null)Destroy(beam.transform.root.gameObject);
             foreach(var g in effects)if(g!=null)Destroy(g);
@@ -268,4 +275,3 @@ namespace GameFoundation.MetaProgression
         }
     }
 }
-

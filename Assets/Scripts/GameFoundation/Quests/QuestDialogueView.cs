@@ -20,6 +20,9 @@ namespace GameFoundation.Quests
         [SerializeField] private QuestPanel parallelQuestPanel;
         [SerializeField] private GameFoundation.UI.ButtonVisualTheme buttonTheme;
         private QuestDialogueDefinition current;
+        private string[] activeLines;
+        private System.Action externalClosed;
+        private bool temporaryConversation;
         private int line;
         private bool presenting;
         private GameObject presentationOverlay;
@@ -44,6 +47,8 @@ namespace GameFoundation.Quests
         private void OnDisable()
         {
             nextButton.onClick.RemoveListener(RevealText); QuestProgress.Changed -= Evaluate;
+            if (temporaryConversation && current != null) Destroy(current.gameObject);
+            temporaryConversation = false; externalClosed = null;
             current = null; line = 0; window.SetActive(false);
             StopTyping();
             StopAllCoroutines();
@@ -52,6 +57,27 @@ namespace GameFoundation.Quests
             presentationDestination = null; presenting = false;
         }
         private void Start() => Evaluate();
+        public bool TryShowMessage(string name, string[] lines, System.Action closed)
+        {
+            if (current != null || presenting || GameFoundation.Base.DayReportPopup.BlocksQuestDialogues) return false;
+            gameObject.SetActive(true);
+            var definition = new GameObject("Temporary dialogue").AddComponent<QuestDialogueDefinition>();
+            definition.transform.SetParent(transform, false); definition.speakerName = name; definition.lines = lines;
+            foreach (var source in conversations)
+                if (source != null && source.speakerName == name) { definition.portrait = source.portrait; break; }
+            externalClosed = closed; temporaryConversation = true; Begin(definition); return true;
+        }
+        private void Begin(QuestDialogueDefinition definition)
+        {
+            current = definition; activeLines = definition.lines;
+            if (RoyalTributeService.IsRoyal(definition.quest) && RoyalTributeService.CartDebt > 0)
+            {
+                var expanded = new System.Collections.Generic.List<string>(activeLines);
+                expanded.Add(RoyalTributeService.DebtLineTemplate); activeLines = expanded.ToArray();
+            }
+            line = 0; transform.SetAsLastSibling(); window.SetActive(true); window.transform.SetAsLastSibling();
+            GameAudioController.PlayUI(GameAudioCue.DialogueOpen, .65f); ShowLine();
+        }
         private bool Available(QuestDialogueDefinition d) => d != null && !string.IsNullOrWhiteSpace(d.id) &&
             !PlaytestSettings.TutorialsAndQuestsDisabled &&
             !GameFoundation.Base.DayReportPopup.BlocksQuestDialogues &&
@@ -75,14 +101,15 @@ namespace GameFoundation.Quests
             foreach (var d in conversations)
             {
                 if (!Available(d)) continue;
-                current = d; line = 0; transform.SetAsLastSibling(); window.SetActive(true); window.transform.SetAsLastSibling(); GameAudioController.PlayUI(GameAudioCue.DialogueOpen, .65f); ShowLine(); return;
+                Begin(d); return;
             }
         }
         private void ShowLine()
         {
             displayedLanguage = GameFoundation.Localization.LocalizationService.Instance?.Language;
             speaker.text = GameFoundation.Localization.GameText.Get(current.speakerName);
-            dialogue.text = GameFoundation.Localization.GameText.Get(current.lines[line]);
+            dialogue.text = activeLines[line] == RoyalTributeService.DebtLineTemplate ? RoyalTributeService.DebtLine :
+                GameFoundation.Localization.GameText.Get(GameFoundation.Localization.GameText.Source(activeLines[line]));
             StopTyping();
             dialogue.ForceMeshUpdate();
             dialogue.maxVisibleCharacters = 0;
@@ -99,19 +126,21 @@ namespace GameFoundation.Quests
         private void UpdateButtonLabel()
         {
             if (current == null) return;
-            nextLabel.text = IsTyping ? "…" : line < current.lines.Length - 1 ? GameFoundation.Localization.GameText.Get("Далее") : current.quest != null ? GameFoundation.Localization.GameText.Get("Взять задание") : GameFoundation.Localization.GameText.Get("Закрыть");
-            if (buttonTheme != null) nextLabel.color = line < current.lines.Length - 1 ? buttonTheme.neutralLabelColor :
+            nextLabel.text = IsTyping ? "…" : line < activeLines.Length - 1 ? GameFoundation.Localization.GameText.Get("Далее") : current.quest != null ? GameFoundation.Localization.GameText.Get("Взять задание") : GameFoundation.Localization.GameText.Get("Закрыть");
+            if (buttonTheme != null) nextLabel.color = line < activeLines.Length - 1 ? buttonTheme.neutralLabelColor :
                 current.quest != null ? buttonTheme.positiveLabelColor : buttonTheme.negativeLabelColor;
         }
         public void Advance()
         {
             if (current == null || presenting) return;
             if (IsTyping) { StopTyping(); GameAudioController.PlayUI(GameAudioCue.DialogueNext, .45f); return; }
-            if (++line < current.lines.Length) { GameAudioController.PlayUI(GameAudioCue.DialogueNext, .55f); ShowLine(); return; }
+            if (++line < activeLines.Length) { GameAudioController.PlayUI(GameAudioCue.DialogueNext, .55f); ShowLine(); return; }
             var finished = current;
             presenting = finished.quest != null;
-            SaveSlotPrefs.SetInt(DoneKey(finished), 1); SaveSlotPrefs.Save();
+            if (!temporaryConversation) { SaveSlotPrefs.SetInt(DoneKey(finished), 1); SaveSlotPrefs.Save(); }
             window.SetActive(false); current = null;
+            var callback = externalClosed; externalClosed = null;
+            if (temporaryConversation) { temporaryConversation = false; Destroy(finished.gameObject); callback?.Invoke(); }
             if (finished.quest != null && QuestProgress.Accept(finished.quest)) StartCoroutine(PresentQuest(finished.quest.parallelQuest ? parallelQuestPanel : questPanel));
             else { presenting = false; Evaluate(); }
             if (finished.quest == null) GameAudioController.PlayUI(GameAudioCue.DialogueClose, .6f);

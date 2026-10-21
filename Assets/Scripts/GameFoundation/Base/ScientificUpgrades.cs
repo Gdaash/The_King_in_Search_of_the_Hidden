@@ -10,6 +10,8 @@ public static class ScientificUpgrades
     public const string QuietQuarries = "science.quiet_quarries";
     public const string QuietMines = "science.quiet_mines";
     public const string CrystalEfficiency = "science.crystal_efficiency";
+    public const string CrystalAbundance = "science.crystal_abundance";
+    public const string StartingLights = "science.starting_lights";
     public static string SpeedUpgrade(GatheringResource resource) => resource switch
     {
         GatheringResource.Wood => SharpAxes, GatheringResource.Food => SharpKnives,

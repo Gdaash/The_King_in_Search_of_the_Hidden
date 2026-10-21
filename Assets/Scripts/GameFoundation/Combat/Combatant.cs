@@ -13,9 +13,11 @@ namespace GameFoundation.Combat
         public CombatDefenseProfile defense;
         [Header("Upgrade modifiers only")]
         public GlobalStats modifiers;
+        public GameFoundation.Base.EquipmentKind equipment;
         public float HealthBeforeLevel => modifiers!=null?modifiers.ApplyHealthModifiers(baseHealth):baseHealth;
-        public float SpeedBeforeLevel => Mathf.Max(.1f,baseSpeed+(modifiers!=null?modifiers.bonusSpeed:0));
-        public float DamageBeforeLevel => weapon!=null?Mathf.Max(0,weapon.damage+(modifiers!=null?modifiers.damageSettings.Find(d=>d.type==weapon.damageType)?.bonusDamage??0:0)):0;
+        public float SpeedBeforeLevel => Mathf.Max(.1f,baseSpeed+(modifiers!=null?modifiers.bonusSpeed:0)) * (equipment == GameFoundation.Base.EquipmentKind.Cart ? GameFoundation.Base.EquipmentUpgrades.Multiplier(equipment) : 1);
+        public float DamageBeforeLevel => (weapon!=null?Mathf.Max(0,weapon.damage+(modifiers!=null?modifiers.damageSettings.Find(d=>d.type==weapon.damageType)?.bonusDamage??0:0)):0) *
+            (equipment == GameFoundation.Base.EquipmentKind.Sword || equipment == GameFoundation.Base.EquipmentKind.Bow ? GameFoundation.Base.EquipmentUpgrades.Multiplier(equipment) : 1);
         public float IntervalBeforeLevel => Mathf.Max(.05f,(weapon!=null?weapon.interval:1.5f)-(modifiers!=null?modifiers.bonusAttackSpeed:0));
         public float RangeBeforeLevel => Mathf.Max(0,(weapon!=null?weapon.range:0)+(modifiers!=null?modifiers.bonusAttackRange:0));
         public float Damage => DamageBeforeLevel*MilitaryExperience.Multiplier(this);

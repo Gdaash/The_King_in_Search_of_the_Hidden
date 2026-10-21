@@ -54,6 +54,10 @@ namespace GameFoundation.MetaProgression
 
         private void OnDestroy()
         {
+            FinalizeSurvivors();
+        }
+        public void FinalizeSurvivors()
+        {
             ReturnSurvivors(swordsmen);
             ReturnSurvivors(archers);
         }

@@ -20,6 +20,13 @@ public class Health : MonoBehaviour
 
     [Header("Состояние")]
     [SerializeField] private float _cur; 
+    [SerializeField, Min(1f)] private float fallbackMaximumHealth = 100f;
+    public void ConfigureFallbackHealth(float maximum)
+    {
+        if (stats != null || GetComponent<Combatant>() != null) return;
+        fallbackMaximumHealth = Mathf.Max(1, maximum);
+        _cur = fallbackMaximumHealth;
+    }
 
     [Header("Визуальная реакция")]
     [SerializeField, Min(0.01f)] private float hitFlashDuration = 0.16f;
@@ -47,7 +54,7 @@ public class Health : MonoBehaviour
     private MilitaryExperience _lastContributor;
 
     public float Armor => GetComponent<Combatant>()?.Armor ?? 0;
-    public float MaxHealth => (GetComponent<Combatant>()?.HealthBeforeLevel ?? (stats != null ? stats.TotalMaxHealth : 100f)) * MilitaryExperience.Multiplier(this);
+    public float MaxHealth => (GetComponent<Combatant>()?.HealthBeforeLevel ?? (stats != null ? stats.TotalMaxHealth : fallbackMaximumHealth)) * MilitaryExperience.Multiplier(this);
     public float CurrentHealth => _cur;
     public GlobalStats Stats => stats;
     public float NormalizedHealth => MaxHealth > 0f ? Mathf.Clamp01(_cur / MaxHealth) : 0f;
@@ -158,6 +165,7 @@ public class Health : MonoBehaviour
             var meleeAI = GetComponent<EnemyAI>();
             if (rangedAI != null) rangedAI.OnTakeDamage(attacker);
             if (meleeAI != null) meleeAI.OnTakeDamage(attacker);
+            if (rangedAI == null && meleeAI == null) _ai?.OnTakeDamage(attacker);
         }
         if (_cur <= 0) Die();
     }

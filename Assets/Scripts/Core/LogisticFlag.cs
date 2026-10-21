@@ -5,6 +5,16 @@ using UnityEngine.Events;
 
 public class LogisticFlag : MonoBehaviour
 {
+    public static readonly HashSet<LogisticFlag> ActiveInstances = new();
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetLightRegistry() => ActiveInstances.Clear();
+    public static bool Illuminates(Vector2 point)
+    {
+        foreach (var flag in ActiveInstances)
+            if (flag != null && flag.isActiveAndEnabled && !flag.crystalOpening &&
+                ((Vector2)flag.transform.position - point).sqrMagnitude <= 1.7f * 1.7f) return true;
+        return false;
+    }
     public bool CrystalControlled { get; private set; }
     public ResourceRequester CrystalTarget { get; private set; }
     public SpriteRenderer FrameRenderer => activeRenderer;
@@ -72,8 +82,8 @@ public class LogisticFlag : MonoBehaviour
         }
     }
 
-    void OnEnable() => StartCoroutine(ValidationRoutine());
-    void OnDisable() { StopAllCoroutines(); crystalOpening = false; SetCrystalHoverVisible(false); }
+    void OnEnable() { ActiveInstances.Add(this); StartCoroutine(ValidationRoutine()); }
+    void OnDisable() { ActiveInstances.Remove(this); StopAllCoroutines(); crystalOpening = false; SetCrystalHoverVisible(false); }
 
     private IEnumerator ValidationRoutine() {
         while (true) {

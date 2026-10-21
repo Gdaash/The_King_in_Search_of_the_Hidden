@@ -67,7 +67,7 @@ namespace GameFoundation.Base
             }
             int index = 0;
             foreach (var row in rows.Where(r => r.gameObject.activeSelf && r.Entry != null)
-                         .OrderBy(r => r.Entry.requiredPurchases).ThenBy(r => r.groupId, System.StringComparer.Ordinal))
+                         .OrderBy(r => stats.UpgradeTable.entries.Where(e => e.GroupId == r.groupId).OrderBy(e => e.level).First().requiredPurchases).ThenBy(r => r.groupId, System.StringComparer.Ordinal))
                 row.transform.SetSiblingIndex(index++);
             totalLabel.text = Tr("laboratory.total", GameFoundation.Localization.GameText.Get("Изучено улучшений")) + ": " + stats.PurchasedUpgradeCount + " / " + stats.UpgradeTable.entries.Count(e => e.IsAvailable);
             if (selected == null || !selected.gameObject.activeSelf)

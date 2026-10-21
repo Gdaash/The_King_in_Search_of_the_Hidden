@@ -72,12 +72,14 @@ public class EnemyMovement : MonoBehaviour
         GameFoundation.Audio.GameAudioController.Register(this);
         // Подписываемся на обновление, чтобы скорость менялась мгновенно при покупке улучшения
         if (stats != null) stats.OnStatsUpdated += UpdateSpeed;
+        GameFoundation.Base.EquipmentUpgrades.Changed += UpdateSpeed;
     }
 
     private void OnDisable() 
     {
         areaSlows.Clear();
         if (stats != null) stats.OnStatsUpdated -= UpdateSpeed;
+        GameFoundation.Base.EquipmentUpgrades.Changed -= UpdateSpeed;
     }
 
     public void ResetForSpawn()

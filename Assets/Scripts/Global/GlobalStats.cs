@@ -55,6 +55,7 @@ public class GlobalStats : ScriptableObject
         ? ScientificMultiplier(ScientificUpgrades.SpeedUpgrade(gatheringResource))
         : applySharpAxes ? ScientificMultiplier(ScientificUpgrades.SharpAxes) : 1f;
     public float GatheringAlarmReduction => ScientificReduction(ScientificUpgrades.QuietUpgrade(gatheringResource));
+    public int ExtraHexCrystals => Mathf.Max(0, Mathf.RoundToInt(ScientificEffect(ScientificUpgrades.CrystalAbundance, 0)));
     public int CrystalEfficiencyRank
     {
         get
@@ -125,13 +126,20 @@ public class GlobalStats : ScriptableObject
         get
         {
             if (PortalTowerProgression.Instance != null) return PortalTowerProgression.Instance.LightCount;
+            return StartingFlashlightCount;
+        }
+    }
+    public int StartingFlashlightCount
+    {
+        get
+        {
             int count = 1;
             foreach (string id in ScientificUpgrades.Flashlights)
             {
                 if (!HasUpgrade(id)) break;
                 count++;
             }
-            return count;
+            return Mathf.Clamp(count, 1, WorldFlashlightAvailability.MaximumCount);
         }
     }
 

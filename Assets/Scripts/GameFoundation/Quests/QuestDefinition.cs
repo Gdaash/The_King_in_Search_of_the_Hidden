@@ -56,7 +56,7 @@ namespace GameFoundation.Quests
         {
             if (stock == null || requirements.Count == 0) return false;
             foreach (var goal in requirements)
-                if (goal == null || goal.amount < 1 || goal.CurrentAmount(stock) < goal.amount) return false;
+                if (goal == null || goal.amount < 1 || goal.CurrentAmount(stock) < RoyalTributeService.Required(this, goal)) return false;
             return true;
         }
     }

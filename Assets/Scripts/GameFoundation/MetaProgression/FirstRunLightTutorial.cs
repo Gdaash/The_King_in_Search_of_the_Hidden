@@ -26,13 +26,16 @@ namespace GameFoundation.MetaProgression
         private bool firstHexPrepared;
         private float previousSpeed;
         private bool paused;
-        private bool previousAutoRepeat, autoRepeatOverridden, firstResourceDelivered;
+        private bool previousAutoRepeat, autoRepeatOverridden;
+        private int deliveredResources;
+        public const string CarrierInstruction = "Вот и первая добыча! Носильщики подкатят телеги и отвезут её в портал. Они собирают припасы только на освещённой земле – в темноте ничего не найдут. Дождёмся, пока в портал привезут хотя бы две единицы добычи.";
         private readonly HashSet<ResourceType> tutorialResources = new();
         private readonly List<Behaviour> suspended = new();
         private readonly List<(CanvasGroup group, bool created, bool previousBlocks)> blockers = new();
         private const string CompletedKey = "foundation.tutorial.light.completed";
         private const string CrystalIntroKey = "foundation.tutorial.crystals.seen";
         private System.Action crystalIntroCompleted;
+        private System.Action warningClosed;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetState() { active = null; BlocksInput = false; AllowsLightDrag = false; }
         private void Awake()
@@ -99,6 +102,12 @@ namespace GameFoundation.MetaProgression
             }
         }
         public bool EmergencyReturnActive => step == Step.EmergencyReturn;
+        public bool TryShowCartRecovery(string text, System.Action closed)
+        {
+            if (!isActiveAndEnabled || BlocksInput || PortalTowerProgression.IsChoosingUpgrade) return false;
+            warningClosed = closed; LockInput(); AllowsLightDrag = false; step = Step.FoodWarning; Pause();
+            Show(text); ShowNext(); return true;
+        }
         public bool TryWarnAboutFood(bool lastWarning)
         {
             if(!isActiveAndEnabled||BlocksInput)return false;
@@ -185,21 +194,21 @@ namespace GameFoundation.MetaProgression
         }
         private void OnResourceProduced(ResourceRequester source, ResourceItem item)
         {
-            if((step!=Step.Opening&&step!=Step.Workers&&step!=Step.Mining)||source==null||item==null||item.type==null||
+            if((step!=Step.Opening&&step!=Step.Workers&&step!=Step.Mining&&step!=Step.Carriers&&step!=Step.Delivery)||source==null||item==null||item.type==null||
                 ((Vector2)source.transform.position-firstHex).sqrMagnitude>1f)return;
             tutorialResources.Add(item.type);
             if(step==Step.Mining)ShowCarriers();
         }
         private void ShowCarriers()
         {
-            step=Step.Carriers;Pause();
-            Show("Вот и первая добыча! Теперь носильщики подкатят телеги и отвезут её в портал. Дождёмся первой доставки – припасы ещё должны добраться до наших складов.");ShowNext();
+            deliveredResources=0;step=Step.Carriers;Pause();
+            Show(CarrierInstruction);ShowNext();
         }
         private void OnResourceDeposited(ResourceType type)
         {
-            if(!tutorialResources.Contains(type))return;
-            firstResourceDelivered=true;
-            if(step==Step.Delivery)ShowDrag();
+            if(step!=Step.Delivery||!tutorialResources.Contains(type))return;
+            deliveredResources++;
+            if(deliveredResources>=2)ShowDrag();
         }
         private void ShowDrag()
         {
@@ -228,7 +237,8 @@ namespace GameFoundation.MetaProgression
         {
             if(step==Step.FoodWarning)
             {
-                step=Step.Complete;window.SetActive(false);Unlock();ResumeTime();return;
+                var closed=warningClosed;warningClosed=null;
+                step=Step.Complete;window.SetActive(false);Unlock();ResumeTime();closed?.Invoke();return;
             }
             if(step==Step.CrystalIntro)
             {
@@ -248,7 +258,6 @@ namespace GameFoundation.MetaProgression
             if(step==Step.Carriers)
             {
                 step=Step.Delivery;window.SetActive(false);ResumeTime();
-                if(firstResourceDelivered)ShowDrag();
                 return;
             }
             if(step==Step.Supplies)
@@ -277,6 +286,7 @@ namespace GameFoundation.MetaProgression
             Warehouse.ResourceDeposited-=OnResourceDeposited;
             StopAllCoroutines();
             crystalIntroCompleted=null;
+            warningClosed=null;
             Unlock();ResumeTime();
         }
     }

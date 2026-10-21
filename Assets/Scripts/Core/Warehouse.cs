@@ -61,11 +61,13 @@ public class Warehouse : MonoBehaviour
         if (!human.TryCompletePortalReturn()) return;
     }
 
-    public bool SendHumanHomeFrom(Vector3 position)
+    public Sprite HumanSprite => humanPrefab != null ? humanPrefab.GetComponentInChildren<SpriteRenderer>(true)?.sprite : null;
+    public ResourceType HumanResource => humanResourceType;
+    public bool SendHumanHomeFrom(Vector3 position, float healthFraction = 1f)
     {
         if (humanPrefab == null) return false;
         GameObject humanObject = Instantiate(humanPrefab, position, Quaternion.identity);
-        if (humanObject.TryGetComponent(out HumanUnit human)) { human.ReturnToPortal(); return true; }
+        if (humanObject.TryGetComponent(out HumanUnit human)) { human.ReturnToPortal(); human.GetComponent<Health>()?.SetNormalizedHealth(healthFraction); return true; }
         Destroy(humanObject);
         return false;
     }

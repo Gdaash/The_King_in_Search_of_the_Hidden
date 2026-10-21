@@ -177,8 +177,12 @@ namespace GameFoundation.Base
             var day = DayCycleService.Instance;
             if (day == null) return;
             if (!PortalProgression.IsUnlocked(DayCycleService.GetPortalLocation(site.locationId))) { Message(GameFoundation.Localization.GameText.Get("Улучшите портал для доступа к этой локации"), GameFoundation.UI.NotificationKind.Negative); return; }
-            if (!day.Enter(site)) { Message(GameFoundation.Localization.GameText.Get("Сегодня уже был поход"), GameFoundation.UI.NotificationKind.Negative); return; }
-            FindFirstObjectByType<RunSceneRouter>()?.EnterRun();
+            var router = FindAnyObjectByType<RunSceneRouter>();
+            if (router == null || !router.CanEnterRun) return;
+            // Capture the shelter before Enter marks this day as already used.
+            GameFoundation.Saves.SaveSlotPrefs.BeginRunCheckpoint();
+            if (!day.Enter(site)) { GameFoundation.Saves.SaveSlotPrefs.CompleteRunCheckpoint(); Message(GameFoundation.Localization.GameText.Get("Сегодня уже был поход"), GameFoundation.UI.NotificationKind.Negative); return; }
+            router.EnterRun();
         }
         private void Message(string value, GameFoundation.UI.NotificationKind kind = GameFoundation.UI.NotificationKind.Normal)
         {

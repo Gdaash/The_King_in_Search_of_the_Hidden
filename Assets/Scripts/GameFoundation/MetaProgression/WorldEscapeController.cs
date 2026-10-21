@@ -65,6 +65,8 @@ namespace GameFoundation.MetaProgression
         private Color _normalButtonLabelColor = Color.white;
         private float _portalHealthNormalized = 1f;
 
+        private void Awake() => GameFoundation.Saves.SaveSlotPrefs.BeginRunCheckpoint();
+
         private void Start()
         {
             _woodQuest = Resources.Load<GameFoundation.Quests.QuestDefinition>("Quests/Smithy Materials");
@@ -307,6 +309,7 @@ namespace GameFoundation.MetaProgression
         {
             if (_showingStatistics) return;
             SettleUnreturnedHumans();
+            if (militaryDeployment != null) militaryDeployment.FinalizeSurvivors();
             foodSufficiencyHint?.HideForEscape();
             _showingStatistics = true;
             GameSpeedControls speedControls = UnityEngine.Object.FindAnyObjectByType<GameSpeedControls>();
@@ -319,6 +322,8 @@ namespace GameFoundation.MetaProgression
 
             int seconds = Mathf.Max(0, Mathf.FloorToInt(Time.realtimeSinceStartup - _runStartedAt));
             _runDurationSeconds = seconds;
+            DayResourceLedger.EndRun(seconds);
+            GameFoundation.Saves.SaveSlotPrefs.CompleteRunCheckpoint();
             if (durationLabel != null)
                 durationLabel.text = GameFoundation.Localization.GameText.Format("Длительность забега: {0}", $"{seconds / 3600:00}:{seconds / 60 % 60:00}:{seconds % 60:00}");
 
@@ -395,6 +400,7 @@ namespace GameFoundation.MetaProgression
             SettleUnreturnedHumans();
             if (militaryDeployment != null) militaryDeployment.AbandonDeployedUnits();
             DayResourceLedger.EndRun(Mathf.Max(0, Mathf.FloorToInt(Time.realtimeSinceStartup - _runStartedAt)));
+            GameFoundation.Saves.SaveSlotPrefs.CompleteRunCheckpoint();
             GameFoundation.Saves.SaveSlotPrefs.Save();
             SceneManager.LoadScene("MainMenu");
             GameSpeedControls.SetSimulationSpeed(1f);

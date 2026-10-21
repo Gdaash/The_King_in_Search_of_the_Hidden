@@ -99,6 +99,10 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
     {
         float distanceToTarget = Vector2.Distance(transform.position, _target.position);
 
+        // Movement events retain their previous state until explicitly stopped.
+        // Stop at firing range, including windup, recovery and cooldown.
+        if (_isAttacking || distanceToTarget <= CurrentAttackRange) OnStop?.Invoke();
+
         // Используем CurrentAttackRange из глобальных статов
         if (!_isAttacking && distanceToTarget <= CurrentAttackRange && Time.time >= _nextAttackTime)
         {
@@ -111,8 +115,8 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
 
         if (!_isAttacking)
         {
-            // Используем CurrentStopRange (обычно чуть меньше дальности атаки, чтобы не дергаться)
-            if (distanceToTarget > CurrentStopRange && distanceToTarget <= detectionRange) 
+            // Pursue only while the target is beyond firing range.
+            if (distanceToTarget > CurrentAttackRange && distanceToTarget <= detectionRange)
                 OnMove?.Invoke();
             else 
                 OnStop?.Invoke();
@@ -138,7 +142,9 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
         if (_target != null && !CombatTargetRegistry.IsAlive(_target)) _target = null;
         if (Time.time < nextTargetSearch) return;
         nextTargetSearch = Time.time + .15f;
-        _target = CombatTargetRegistry.Closest(targetTag, transform.position, targetTag == "Enemy1" && RoyalDecreeService.IsEnabled(RoyalDecreeService.FinishOffEnemies) );
+        _target = CompareTag("Enemy1") && targetTag == "Player"
+            ? CombatTargetRegistry.ClosestHostileTarget(transform.position, detectionRange)
+            : CombatTargetRegistry.Closest(targetTag, transform.position, targetTag == "Enemy1" && RoyalDecreeService.IsEnabled(RoyalDecreeService.FinishOffEnemies) );
     }
 
     public void OnTakeDamage(Transform attacker)

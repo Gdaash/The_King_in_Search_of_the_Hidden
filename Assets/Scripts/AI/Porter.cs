@@ -35,13 +35,26 @@ public class Porter : MonoBehaviour, IEnemyAI
     public bool IsCarryingResource() => _hasResourceInHands;
     public bool GetIsAttacking() => false;
     public void FinishAttack() { } 
-    public void OnTakeDamage(Transform attacker) { }
+    private bool fleeing;
+    public void OnTakeDamage(Transform attacker)
+    {
+        if (TryGetComponent<Health>(out var health) && health.CurrentHealth <= 0 && _carriedResourceItem != null)
+        {
+            _carriedResourceItem.transform.position = transform.position;
+            _carriedResourceItem.isReserved = false;
+            _carriedResourceItem.gameObject.SetActive(true);
+            ClearHands();
+        }
+        fleeing = true;
+        ResetTask();
+    }
     public bool IsReturningToWarehouse() => _isReturningToWarehouse;
 
     void Awake() 
     {
         _movement = GetComponent<EnemyMovement>();
         _rb = GetComponent<Rigidbody2D>();
+        WorldCivilianTarget.Ensure(gameObject, Warehouse.Instance != null ? Warehouse.Instance.HumanResource : null);
     }
 
     void OnEnable() { CombatTargetRegistry.Register(gameObject); GameFoundation.Audio.GameAudioController.Register(this); OrderManager.Instance?.RegisterPorter(this); }
@@ -55,6 +68,7 @@ public class Porter : MonoBehaviour, IEnemyAI
 
     public void AssignTask(ResourceRequester job, ResourceItem resource)
     {
+        if (fleeing || resource == null || !resource.IsIlluminated) return;
         _currentJob = job;
         _targetResourceType = resource.type;
         _currentTarget = resource.transform;
@@ -69,6 +83,7 @@ public class Porter : MonoBehaviour, IEnemyAI
 
     public void AssignWarehouseTask(ResourceRequester job, ResourceType resourceType)
     {
+        if (fleeing) return;
         if (Warehouse.Instance == null) return;
         _currentJob = job;
         _targetResourceType = resourceType;
@@ -84,6 +99,7 @@ public class Porter : MonoBehaviour, IEnemyAI
 
     public void AssignWarehouseGathering(ResourceItem resource)
     {
+        if (fleeing || resource == null || !resource.IsIlluminated) return;
         _currentJob = null;
         _targetResourceType = resource.type;
         _currentTarget = resource.transform;
@@ -97,6 +113,10 @@ public class Porter : MonoBehaviour, IEnemyAI
 
     void Update() 
     {
+        if (TryGetComponent<Health>(out var health) && health.IsDead) return;
+        if (!_hasResourceInHands && _isGoingToResource && _currentTarget != null &&
+            _currentTarget.TryGetComponent<ResourceItem>(out var targetItem) && !targetItem.IsIlluminated)
+            ResetTask();
         if (_currentJob != null && !_currentJob.gameObject.activeInHierarchy)
         {
             ResetTask();
@@ -163,6 +183,7 @@ public class Porter : MonoBehaviour, IEnemyAI
     /// </summary>
     private void ArriveAtWarehouseWithResource()
     {
+        fleeing = false;
         // Если носильщик пришёл В ПРОСТОЕ (без ресурса) — деспауним его
         if (_isReturningToWarehouse && !_hasResourceInHands)
         {

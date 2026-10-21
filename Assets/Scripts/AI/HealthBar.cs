@@ -23,6 +23,8 @@ public class HealthBar : MonoBehaviour
     {
         _canvasGroup = GetComponent<CanvasGroup>();
         _initialLocalScale = transform.localScale; // Запоминаем (напр. 0.01, 0.01, 0.01)
+        if (GetComponentInParent<EnemyMovement>() != null || GetComponentInParent<ResourceWorker>() != null)
+            _initialLocalScale = Vector3.Scale(_initialLocalScale, new Vector3(1.1f, 1.7f, 1));
         
         if (Camera.main != null) 
             _mainCameraTransform = Camera.main.transform;

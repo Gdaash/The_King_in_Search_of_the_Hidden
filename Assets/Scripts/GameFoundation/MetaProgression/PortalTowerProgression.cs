@@ -42,6 +42,28 @@ namespace GameFoundation.MetaProgression
         public event Action Changed;
         public PortalTowerBalance Balance => balance;
         public bool CrystalTechnologyAvailable { get; private set; }
+        public bool CanReceiveWaveReward => CrystalTechnologyAvailable && !expeditionEnded && balance != null && !IsChoosingUpgrade;
+        public void AwardWaveCrystals(int amount)
+        {
+            if (CanReceiveWaveReward) AddExperience(amount);
+        }
+        public ResourceType ExperienceCrystalResource
+        {
+            get
+            {
+                if (crystalResource != null) return crystalResource;
+                var source = experienceCrystalPrefab != null ? experienceCrystalPrefab.GetComponent<SpriteRenderer>() : null;
+                if (source == null || source.sprite == null) return null;
+                crystalResource = ScriptableObject.CreateInstance<ResourceType>();
+                crystalResource.name = "Run Experience Crystal";
+                crystalResource.hideFlags = HideFlags.DontSave;
+                crystalResource.resourceName = "Experience Crystal";
+                crystalResource.notifyResourceChanges = false;
+                crystalResource.resourceIcon = crystalResource.defaultCarrySprite = source.sprite;
+                crystalResource.groundSprite = groundExperienceCrystal != null ? groundExperienceCrystal : source.sprite;
+                return crystalResource;
+            }
+        }
         public int Level { get; private set; } = 1;
         public int Experience { get; private set; }
         public int PendingExperience { get; private set; }
@@ -71,7 +93,8 @@ namespace GameFoundation.MetaProgression
         public int LevelPoints { get; private set; }
         public int RequiredExperience => ScientificUpgrades.RequiredCrystals(balance.RequiredExperience(Level), scientificStats != null ? scientificStats.CrystalEfficiencyRank : 0);
         public bool CanAttack => !expeditionEnded && HasWeapon(PortalTowerBalance.Weapon.Bolts);
-        public int LightCount => Mathf.Clamp(1 + Mathf.RoundToInt(EffectTotal(PortalTowerBalance.Effect.ExtraLight)), 1, WorldFlashlightAvailability.MaximumCount);
+        public int LightCount => Mathf.Clamp((scientificStats != null ? scientificStats.StartingFlashlightCount : 1) +
+            Mathf.RoundToInt(EffectTotal(PortalTowerBalance.Effect.ExtraLight)), 1, WorldFlashlightAvailability.MaximumCount);
         public int ProjectileCount => Count(PortalTowerBalance.Weapon.Bolts);
         public float DamageMultiplier => Multiplier(PortalTowerBalance.Weapon.Bolts, PortalTowerBalance.Effect.Damage);
         public float AttackSpeedMultiplier => (balance.FindWeapon(PortalTowerBalance.Weapon.Bolts)?.cooldown ?? 1) / AttackInterval(PortalTowerBalance.Weapon.Bolts);
@@ -131,7 +154,9 @@ namespace GameFoundation.MetaProgression
         }
 #endif
         public int Rank(string id) => ranks.TryGetValue(id, out int rank) ? rank : 0;
-        public bool IsComplete(PortalTowerBalance.Upgrade upgrade) => upgrade.maximumRank > 0 && Rank(upgrade.id) >= upgrade.maximumRank;
+        public bool IsComplete(PortalTowerBalance.Upgrade upgrade) =>
+            (upgrade.effect == PortalTowerBalance.Effect.ExtraLight && LightCount >= WorldFlashlightAvailability.MaximumCount) ||
+            (upgrade.maximumRank > 0 && Rank(upgrade.id) >= upgrade.maximumRank);
         public bool IsUnlocked(PortalTowerBalance.Upgrade upgrade)
         {
             if (upgrade == null) return false;
@@ -177,11 +202,20 @@ namespace GameFoundation.MetaProgression
             }
             return false;
         }
+        public Vector2Int HexCrystalDropRange
+        {
+            get
+            {
+                int minimum = Mathf.Clamp(balance.minimumCrystalsPerEmptyHex, 1, 32);
+                int maximum = Mathf.Clamp(balance.maximumCrystalsPerEmptyHex, minimum, 32);
+                int extra = scientificStats != null ? scientificStats.ExtraHexCrystals : 0;
+                return new Vector2Int(minimum + extra, maximum + extra);
+            }
+        }
         public void AwardHexExperience(Vector3 position)
         {
-            int minimum = Mathf.Clamp(balance.minimumCrystalsPerEmptyHex, 1, 32);
-            int maximum = Mathf.Clamp(balance.maximumCrystalsPerEmptyHex, minimum, 32);
-            DropExperienceCrystals(UnityEngine.Random.Range(minimum, maximum + 1), position, true);
+            var range = HexCrystalDropRange;
+            DropExperienceCrystals(UnityEngine.Random.Range(range.x, range.y + 1), position, true);
         }
         public void AwardEnemyExperience(Vector3 position) => DropExperienceCrystals(balance.experiencePerEnemy, position, false);
 
@@ -207,17 +241,7 @@ namespace GameFoundation.MetaProgression
                 Debug.LogError("Portal tower requires an experience crystal sprite for ground drops.", this);
                 return;
             }
-            if (crystalResource == null)
-            {
-                // This type exists only in this World scene and never enters the saved resource catalog.
-                crystalResource = ScriptableObject.CreateInstance<ResourceType>();
-                crystalResource.name = "Run Experience Crystal";
-                crystalResource.hideFlags = HideFlags.DontSave;
-                crystalResource.resourceName = "Experience Crystal";
-                crystalResource.notifyResourceChanges = false;
-                crystalResource.resourceIcon = crystalResource.defaultCarrySprite = source.sprite;
-                crystalResource.groundSprite = groundExperienceCrystal != null ? groundExperienceCrystal : source.sprite;
-            }
+            _ = ExperienceCrystalResource;
             var positions = new List<Vector2>(amount);
             for (int i = 0; i < amount; i++)
             {

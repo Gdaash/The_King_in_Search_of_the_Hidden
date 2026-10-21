@@ -15,8 +15,8 @@ public static class LaboratoryResourceResearchSetup
 
     public static void ConfigureCatalog(ScientificUpgradeTable table)
     {
-        // These belong to expedition progression / decrees, not permanent laboratory research.
-        table.entries.RemoveAll(e => e.id == ScientificUpgrades.PortalArrows || e.id == ScientificUpgrades.WarriorRetreat || ScientificUpgrades.Flashlights.Contains(e.id));
+        // Attack and retreat rules belong to expedition progression / decrees.
+        table.entries.RemoveAll(e => e.id == ScientificUpgrades.PortalArrows || e.id == ScientificUpgrades.WarriorRetreat);
         english.Clear();
         var stone = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/Stone.asset");
         var ore = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/MagicOre.asset");
@@ -29,6 +29,10 @@ public static class LaboratoryResourceResearchSetup
             if (e.icon == null) e.icon = Icon(icon);
             english[id] = (enTitle, enDescription);
         }
+        Add(ScientificUpgrades.CrystalAbundance, "Кристальное изобилие", "Crystal abundance",
+            "Повышает на 1 минимум и максимум кристаллов с открытых пустых и полностью очищенных гексов. Базовое выпадение: 2–6 вместо 1–5.",
+            "Increases the minimum and maximum crystal drops from newly opened empty hexes and fully cleared hexes by 1. Base drops: 2–6 instead of 1–5.",
+            2, 1, 8, ore, "Magic");
         Add(ScientificUpgrades.SharpAxes, "Острые топоры", "Sharp axes", "Уменьшает время добычи дерева на 20%.", "Reduces wood gathering time by 20%.", 0, .8f, 8, stone, "Sword");
         Add(ScientificUpgrades.QuietScouting, "Тихая разведка", "Quiet scouting", "Уменьшает опасность открытия гекса на 1 череп. Не менее 1 черепа.", "Reduces hex exploration danger by 1 skull, to a minimum of 1 skull.", 0, 1, 4, ore, "Eye");
         Add(ScientificUpgrades.StrongWalls, "Крепкие стены", "Strong walls", "Повышает здоровье башни портала на 20%.", "Increases portal tower health by 20%.", 2, 1.2f, 8, stone, "Shield");
@@ -52,6 +56,19 @@ public static class LaboratoryResourceResearchSetup
                 2 + (level - 1) * 3, .1f, level * 4, ore, "Magic");
             var e = table.Find(id); e.groupId = ScientificUpgrades.CrystalEfficiency; e.groupTitle = "Кристальная настройка"; e.level = level;
         }
+        var towerBalance = AssetDatabase.LoadAssetAtPath<PortalTowerBalance>("Assets/Resources/World/PortalTowerBalance.asset");
+        var lightIcon = towerBalance != null ? towerBalance.upgrades.FirstOrDefault(u => u.effect == PortalTowerBalance.Effect.ExtraLight)?.icon : null;
+        for (int level = 1; level <= ScientificUpgrades.Flashlights.Length; level++)
+        {
+            string id = ScientificUpgrades.Flashlights[level - 1];
+            int count = level + 1;
+            Add(id, "Стартовые лучи " + level, "Starting lights " + level,
+                $"Добавляет ещё один луч в начале каждой вылазки. Стартовое количество: {count}. Боевые улучшения могут увеличить количество лучей, но всего не более 6.",
+                $"Adds one more light at the start of every expedition. Starting lights: {count}. Combat upgrades can add more lights, up to 6 in total.",
+                2 + (level - 1) * 3, 1, level * 4, ore, "Magic");
+            var entry = table.Find(id); entry.groupId = ScientificUpgrades.StartingLights; entry.groupTitle = "Стартовые лучи"; entry.level = level;
+            if (lightIcon != null) entry.icon = lightIcon;
+        }
         table.entries = table.entries.OrderBy(e => e.requiredPurchases).ThenBy(e => e.GroupId, StringComparer.Ordinal).ThenBy(e => e.level).ToList();
         LaboratoryListSetup.ValidateEntries(table.entries);
         EditorUtility.SetDirty(table);
@@ -73,7 +90,8 @@ public static class LaboratoryResourceResearchSetup
             if (!english.TryGetValue(e.id, out var translated)) continue;
             Set("skill." + e.id + ".description", e.description, translated.description);
             Set("skill." + e.id + ".title", e.title, translated.title);
-            Set("laboratory.group." + e.GroupId, e.groupTitle, e.GroupId == ScientificUpgrades.CrystalEfficiency ? "Crystal attunement" : translated.title);
+            Set("laboratory.group." + e.GroupId, e.groupTitle, e.GroupId == ScientificUpgrades.CrystalEfficiency ? "Crystal attunement" :
+                e.GroupId == ScientificUpgrades.StartingLights ? "Starting lights" : translated.title);
         }
         EditorUtility.SetDirty(loc);
     }

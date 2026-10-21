@@ -180,7 +180,9 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
         if (_target != null && !CombatTargetRegistry.IsAlive(_target)) _target = null;
         if (Time.time < nextTargetSearch) return;
         nextTargetSearch = Time.time + .15f;
-        _target = CombatTargetRegistry.Closest(targetTag, transform.position );
+        _target = CompareTag("Enemy1") && targetTag == "Player"
+            ? CombatTargetRegistry.ClosestHostileTarget(transform.position, detectionRange)
+            : CombatTargetRegistry.Closest(targetTag, transform.position );
     }
 
     public void OnTakeDamage(Transform attacker = null)

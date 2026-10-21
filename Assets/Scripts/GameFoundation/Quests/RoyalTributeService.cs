@@ -1,0 +1,72 @@
+using GameFoundation.Saves;
+using GameFoundation.Localization;
+using UnityEngine;
+
+namespace GameFoundation.Quests
+{
+    /// <summary>The recurring royal levy and cart assistance surcharge belong to the current save slot.</summary>
+    public static class RoyalTributeService
+    {
+        public const string QuestId = "royal_magic_tribute";
+        public const string CartDebtKey = "foundation.royal.cartDebt";
+        public const string NoticeKey = "foundation.royal.notice";
+        public static int CartDebt => Mathf.Max(0, SaveSlotPrefs.GetInt(CartDebtKey, 0));
+        public static bool IsRoyal(QuestDefinition quest) => quest != null && quest.id == QuestId;
+        public static int Required(QuestDefinition quest, QuestDefinition.Requirement goal) => goal.amount +
+            (IsRoyal(quest) && quest.requirements.Count > 0 && quest.requirements[0] == goal ? CartDebt : 0);
+        public const string DebtLineTemplate = "И ещё {0} единиц магической руды за предоставленные вам телеги. Королевская помощь тоже подлежит учёту.";
+        public static string DebtLine => GameText.Format(DebtLineTemplate, CartDebt);
+        public static string Description(QuestDefinition quest) => GameText.Get(quest.description) + (IsRoyal(quest) && CartDebt > 0 ? "\n\n" + DebtLine : "");
+        public static void Process(QuestCatalog catalog, GlobalResourceManager resources)
+        {
+            if (PlaytestSettings.TutorialsAndQuestsDisabled || catalog == null || resources == null) return;
+            foreach (var quest in catalog.quests)
+            {
+                if (!IsRoyal(quest) || !QuestProgress.IsAccepted(quest)) continue;
+                int today = GameFoundation.MetaProgression.DayCycleService.Instance?.Day ?? 1;
+                string prefix = "foundation.quest." + quest.id + ".";
+                if (QuestProgress.DeadlineDay(quest) <= 0) { Restart(quest, today + 30); QuestProgress.NotifyChanged(); return; }
+                // Migrate old terminal quests into the recurring levy without charging them twice.
+                if (QuestProgress.IsClaimed(quest) || QuestProgress.IsFailed(quest))
+                {
+                    Restart(quest, today + 30); QuestProgress.NotifyChanged(); return;
+                }
+                if (QuestProgress.DeadlineDay(quest) > today) continue;
+                bool paid = quest.HasRequiredStock(resources.GetResourceAmount);
+                int due = quest.requirements.Count > 0 ? Required(quest, quest.requirements[0]) : 30;
+                using (SaveSlotPrefs.Batch())
+                using (GameFoundation.UI.GameNotifications.BeginAction())
+                {
+                    // Renew before emitting resource changes: no callback can settle this period twice.
+                    Restart(quest, today + 30);
+                    SaveSlotPrefs.SetInt(CartDebtKey, 0);
+                    if (paid)
+                    {
+                        foreach (var goal in quest.requirements) resources.TrySpendResource(goal.resource, goal.amount + (goal == quest.requirements[0] ? due - goal.amount : 0));
+                        foreach (var reward in quest.resourceRewards) resources.AddResource(reward.resource, reward.amount);
+                    }
+                    else
+                    {
+                        if (quest.confiscateResourcesOnFailure)
+                            foreach (var resource in resources.GetAllResourcesData().Keys)
+                                if (resource != null && resource != quest.penaltyResource && !quest.protectedResources.Contains(resource)) resources.SetResourceAmount(resource, 0);
+                        if (quest.penaltyResource != null && quest.penaltyAmount > 0) resources.AddResource(quest.penaltyResource, -quest.penaltyAmount);
+                    }
+                    SaveSlotPrefs.SetString(NoticeKey, paid ? "paid:" + due : "failed:" + due);
+                    SaveSlotPrefs.Save();
+                }
+                QuestProgress.NotifyChanged();
+            }
+        }
+        private static void Restart(QuestDefinition quest, int deadline)
+        {
+            string prefix = "foundation.quest." + quest.id + ".";
+            SaveSlotPrefs.SetInt(prefix + "accepted", 1);
+            SaveSlotPrefs.SetInt(prefix + "completed", 0);
+            SaveSlotPrefs.SetInt(prefix + "claimed", 0);
+            SaveSlotPrefs.SetInt(prefix + "failed", 0);
+            SaveSlotPrefs.SetInt(prefix + "deadline", deadline);
+            SaveSlotPrefs.Save();
+        }
+    }
+}

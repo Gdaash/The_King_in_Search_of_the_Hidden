@@ -155,7 +155,7 @@ namespace GameFoundation.Quests
             var resources = GlobalResourceManager.Instance;
             bool completed = QuestProgress.IsComplete(quest);
             title.text = GameFoundation.Localization.GameText.Get(quest.title);
-            description.text = GameFoundation.Localization.GameText.Get(quest.description);
+            description.text = RoyalTributeService.Description(quest);
             bool claimed = QuestProgress.IsClaimed(quest);
             bool ready = QuestProgress.IsReadyToClaim(quest, resources);
             RefreshCompletionTitle(completed || ready);
@@ -173,13 +173,15 @@ namespace GameFoundation.Quests
             }
             if (claimButton != null)
             {
-                claimButton.gameObject.SetActive(CanClaimHere && ready); claimButton.interactable = CanClaimHere && ready;
+                claimButton.gameObject.SetActive(CanClaimHere && ready && !RoyalTributeService.IsRoyal(quest)); claimButton.interactable = CanClaimHere && ready;
                 var label = claimButton.GetComponentInChildren<Text>(true);
                 if (label != null) label.text = quest.consumeRequirementsOnClaim ? GameFoundation.Localization.GameText.Get("Сдать руду") :
                     GameFoundation.Localization.GameText.Get(quest.resourceRewards.Count == 0 && quest.unlockRewards.Count == 0 ? "Завершить задание" : "Забрать награду");
             }
             status.text = claimed ? GameFoundation.Localization.GameText.Get("Награда получена") : completed ? GameFoundation.Localization.GameText.Get("Задание выполнено") :
                 ready && quest.consumeRequirementsOnClaim ? GameFoundation.Localization.GameText.Get("Руда готова к сдаче") : string.IsNullOrEmpty(quest.inProgressStatus) ? GameFoundation.Localization.GameText.Get("Доставьте ресурсы в портал") : GameFoundation.Localization.GameText.Get(quest.inProgressStatus);
+            if (RoyalTributeService.IsRoyal(quest) && quest.requirements.Count > 0)
+                status.text = GameFoundation.Localization.GameText.Format("Подготовь {0} единиц магической руды. Писарь заберёт подать в установленный срок.", RoyalTributeService.Required(quest, quest.requirements[0]));
             if (rewards != null)
             {
                 int count = quest.resourceRewards.Count + quest.unlockRewards.Count;
@@ -216,7 +218,7 @@ namespace GameFoundation.Quests
                 compactRows[i].gameObject.SetActive(i < quest.requirements.Count);
                 if (i >= quest.requirements.Count) continue;
                 var goal = quest.requirements[i];
-                compactRows[i].Present(goal, goal.CurrentAmount(resources != null ? resources.GetResourceAmount : null), completed);
+                compactRows[i].Present(goal, goal.CurrentAmount(resources != null ? resources.GetResourceAmount : null), completed, RoyalTributeService.Required(quest, goal));
             }
             LayoutRebuilder.MarkLayoutForRebuild((RectTransform)transform);
         }

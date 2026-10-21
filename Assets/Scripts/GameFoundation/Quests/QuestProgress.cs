@@ -5,6 +5,7 @@ namespace GameFoundation.Quests
     public static class QuestProgress
     {
         public static event System.Action Changed;
+        public static void NotifyChanged() => Changed?.Invoke();
         [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void Reset() => Changed = null;
         private static string Key(QuestDefinition quest) => "foundation.quest." + quest.id + ".completed";
@@ -49,6 +50,7 @@ namespace GameFoundation.Quests
         }
         public static bool TryClaim(QuestDefinition quest, GlobalResourceManager resources)
         {
+            if (RoyalTributeService.IsRoyal(quest)) return false;
             if (!IsReadyToClaim(quest, resources)) return false;
             var costs = new System.Collections.Generic.Dictionary<ResourceType, long>();
             if (quest.consumeRequirementsOnClaim)
@@ -113,6 +115,7 @@ namespace GameFoundation.Quests
 
         public static bool TryFail(QuestDefinition quest, GlobalResourceManager resources)
         {
+            if (RoyalTributeService.IsRoyal(quest)) return false;
             if (PlaytestSettings.TutorialsAndQuestsDisabled) return false;
             if (quest == null || resources == null || quest.deadlineDays <= 0 || !IsAccepted(quest) || IsClaimed(quest) || IsFailed(quest) || DaysRemaining(quest) > 0) return false;
             using (SaveSlotPrefs.Batch())

@@ -36,13 +36,14 @@ public class HumanUnit : MonoBehaviour, IEnemyAI
     public bool IsCarryingResource() => true;
     public bool GetIsAttacking() => false;
     public void FinishAttack() { }
-    public void OnTakeDamage(Transform attacker) { }
+    public void OnTakeDamage(Transform attacker) => ReturnToPortal();
     public bool IsReturningToWarehouse() => _isReturningToWarehouse;
 
     private void Awake()
     {
         _movement = GetComponent<EnemyMovement>();
         _rb = GetComponent<Rigidbody2D>();
+        WorldCivilianTarget.Ensure(gameObject, humanResourceType);
     }
 
     private void OnEnable()
@@ -76,6 +77,7 @@ public class HumanUnit : MonoBehaviour, IEnemyAI
 
     private void Update()
     {
+        if (TryGetComponent<Health>(out var health) && health.IsDead) return;
         if (_currentJob == null && !_isReturningToWarehouse)
         {
             TryReturnToWarehouse();

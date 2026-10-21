@@ -36,11 +36,11 @@ public static class PortalWeaponPresentationSetup
     }
     public static void Run()
     {
-        Sprite bolt=Import("Assets/Sprites/Ui/Portal Weapons/Magic Bolts.png");
-        Sprite beam=Import("Assets/Sprites/Ui/Portal Weapons/Burning Beam.png");
-        Sprite lightning=Import("Assets/Sprites/Ui/Portal Weapons/Lightning.png");
-        Sprite effect=Import("Assets/Sprites/Effects/Portal Pixel Lightning.png");
         var balance=AssetDatabase.LoadAssetAtPath<PortalTowerBalance>("Assets/Resources/World/PortalTowerBalance.asset");
+        Sprite bolt=balance.FindWeapon(PortalTowerBalance.Weapon.Bolts).icon;
+        Sprite beam=balance.FindWeapon(PortalTowerBalance.Weapon.Beam).icon;
+        Sprite lightning=balance.FindWeapon(PortalTowerBalance.Weapon.Lightning).icon;
+        Sprite effect=Import("Assets/Sprites/Effects/Portal Pixel Lightning.png");
         void Weapon(PortalTowerBalance.Weapon kind,Sprite icon,string ru,string en)
         {
             var w=balance.FindWeapon(kind);w.icon=icon;w.description=ru;w.englishDescription=en;

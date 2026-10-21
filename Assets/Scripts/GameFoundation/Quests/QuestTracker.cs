@@ -11,7 +11,11 @@ namespace GameFoundation.Quests
         private GlobalResourceManager resources;
         private GameFoundation.MetaProgression.DayCycleService observedDay;
         private bool evaluating;
-        private void Awake() => resources = GetComponent<GlobalResourceManager>();
+        private void Awake()
+        {
+            resources = GetComponent<GlobalResourceManager>();
+            if (GetComponent<GameFoundation.Base.CartRecoveryService>() == null) gameObject.AddComponent<GameFoundation.Base.CartRecoveryService>();
+        }
         private void OnEnable() { GlobalResourceManager.OnResourceChanged += OnResourceChanged; QuestProgress.Changed += Evaluate; GameFoundation.Base.BuildingUpgradeService.Changed += Evaluate; SceneManager.sceneLoaded += OnSceneLoaded; BindDay(); }
         private void OnDisable() { GlobalResourceManager.OnResourceChanged -= OnResourceChanged; QuestProgress.Changed -= Evaluate; GameFoundation.Base.BuildingUpgradeService.Changed -= Evaluate; SceneManager.sceneLoaded -= OnSceneLoaded; if (observedDay != null) observedDay.Changed -= Evaluate; observedDay = null; }
         private void OnSceneLoaded(Scene _, LoadSceneMode __) { BindDay(); Evaluate(); }
@@ -39,6 +43,7 @@ namespace GameFoundation.Quests
             try
             {
                 ContentUnlocks.RestoreClaimedRewards(catalog);
+                RoyalTributeService.Process(catalog, resources);
                 if (catalog != null) foreach (var entry in catalog.quests) QuestProgress.TryFail(entry, resources);
                 var quest = QuestProgress.Current(catalog);
                 if (QuestProgress.TryComplete(quest, resources)) GameNotifications.Post(GameFoundation.Localization.GameText.Get("Задание выполнено: ") + quest.title, NotificationKind.Positive);

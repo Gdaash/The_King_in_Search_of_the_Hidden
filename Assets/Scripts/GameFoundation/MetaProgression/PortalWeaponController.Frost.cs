@@ -13,6 +13,8 @@ namespace GameFoundation.MetaProgression
         private sealed class FrostZone
         {
             public SpriteRenderer renderer;
+            public ParticleSystem snow;
+            public float snowRadius;
             public Vector2 center;
             public float age, nextTick;
             public HashSet<EnemyMovement> slowed = new(), inside = new();
@@ -61,6 +63,10 @@ namespace GameFoundation.MetaProgression
             for (int i = frostSeals.Count - 1; i >= 0; i--)
             {
                 var zone = frostSeals[i];
+                if (zone.snow != null && !Mathf.Approximately(zone.snowRadius, radius))
+                {
+                    var shape=zone.snow.shape;shape.scale=new Vector3(radius,radius*ratio,1);zone.snowRadius=radius;
+                }
                 zone.age += Time.deltaTime;
                 if (zone.age >= lifetime) { RemoveFrostSeal(i); continue; }
                 bool hit = Time.time >= zone.nextTick;
@@ -97,9 +103,11 @@ namespace GameFoundation.MetaProgression
             var renderer = go.GetComponent<SpriteRenderer>();
             renderer.sprite = frostSealSprite;
             renderer.color = new Color(1, 1, 1, .5f);
-            renderer.sharedMaterial = effectMaterial;
+            renderer.sharedMaterial = DamagePalette.MaterialFor(DamageType.Ice) ?? effectMaterial;
             renderer.sortingOrder = 3;
-            frostSeals.Add(new FrostZone { renderer = renderer, center = center, nextTick = Time.time });
+            float ratio=frostSealSprite.bounds.size.y/frostSealSprite.bounds.size.x;
+            frostSeals.Add(new FrostZone { renderer = renderer, center = center, nextTick = Time.time,
+                snow=CreateFrostSnow(center,FrostRadius,ratio),snowRadius=FrostRadius });
             GameAudioController.PlayAt(GameAudioCue.MagicAttack, center, .35f, 1.2f, 1.3f);
         }
 
@@ -108,6 +116,7 @@ namespace GameFoundation.MetaProgression
             var zone = frostSeals[index];
             foreach (var movement in zone.slowed) if (movement != null) movement.SetAreaSlow(zone, 0);
             if (zone.renderer != null) Destroy(zone.renderer.gameObject);
+            if (zone.snow != null) { zone.snow.Stop(true,ParticleSystemStopBehavior.StopEmitting);Destroy(zone.snow.gameObject,1.2f); }
             frostSeals.RemoveAt(index);
         }
         private void ClearFrostSeals() { while (frostSeals.Count > 0) RemoveFrostSeal(frostSeals.Count - 1); }

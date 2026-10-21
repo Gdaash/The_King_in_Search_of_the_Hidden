@@ -19,11 +19,12 @@ namespace GameFoundation.Quests
             purpose.text = GameFoundation.Localization.GameText.Get(caption);
             GetComponent<LayoutElement>().preferredHeight = Mathf.Max(44, icon != null ? icon.rect.height * 2 + 8 : 44);
         }
-        public void Present(QuestDefinition.Requirement goal, int stock, bool completed)
+        public void Present(QuestDefinition.Requirement goal, int stock, bool completed, int requiredAmount = -1)
         {
+            int required = requiredAmount >= 0 ? requiredAmount : goal.amount;
             ResourceIconSizing.Apply(resourceIcon, !string.IsNullOrEmpty(goal.buildingId) ? goal.buildingIcon : goal.resource != null ? goal.resource.resourceIcon : null);
-            amount.text = $"{(completed ? goal.amount : Mathf.Clamp(stock, 0, goal.amount))} / {goal.amount}";
-            amount.color = completed || stock >= goal.amount ? completeColor : incompleteColor;
+            amount.text = $"{(completed ? required : Mathf.Clamp(stock, 0, required))} / {required}";
+            amount.color = completed || stock >= required ? completeColor : incompleteColor;
             purpose.text = GameFoundation.Localization.GameText.Get(goal.purpose);
             var height = Mathf.Max(60, resourceIcon.sprite != null ? resourceIcon.sprite.rect.height * 2 + 8 : 60);
             GetComponent<LayoutElement>().preferredHeight = height;

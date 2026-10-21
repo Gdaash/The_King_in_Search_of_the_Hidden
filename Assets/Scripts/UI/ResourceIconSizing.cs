@@ -9,6 +9,9 @@ public static class ResourceIconSizing
             return;
 
         image.sprite = sprite;
+        var palette = DamagePalette.IconMaterial(sprite);
+        if (palette != null || (image.material != null && image.material.shader.name == "ThoseUnderHex/UI Damage Palette"))
+            image.material = palette;
         if (sprite == null)
             return;
 

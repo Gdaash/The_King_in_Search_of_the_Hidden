@@ -183,7 +183,7 @@ public class OrderManager : MonoBehaviour
             .ToList();
 
         var allResources = Object.FindObjectsByType<ResourceItem>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)
-            .Where(i => !i.isReserved && i.gameObject.activeInHierarchy)
+            .Where(i => !i.isReserved && i.gameObject.activeInHierarchy && i.IsIlluminated)
             .ToList();
 
         // === 1. РАСПРЕДЕЛЕНИЕ ДЛЯ НОСИЛЬЩИКОВ (ПРИОРИТЕТ: ЗДАНИЯ) ===

@@ -41,6 +41,10 @@ public class ResourceRequester : MonoBehaviour {
     [SerializeField] private bool retainHumansBetweenCycles;
     [Tooltip("После завершения строительства передать людей этому рабочему зданию.")]
     [SerializeField] private ResourceRequester humanSuccessor;
+    [SerializeField] private ResourceWorkforce.WorkerDisplay workerDisplay = ResourceWorkforce.WorkerDisplay.Wander;
+    [SerializeField, Min(1f)] private float shelterHealth = 150f;
+    public ResourceWorkforce.WorkerDisplay WorkerDisplay => workerDisplay;
+    public float ShelterHealth => shelterHealth;
 
     [Header("Настройки рецепта")]
     public int priority = 1;
@@ -121,6 +125,46 @@ public class ResourceRequester : MonoBehaviour {
         UpdateIndicator();
     }
     public void TryStartCrystalCycle() => CheckCompletion();
+
+    public int ResidentHumanCount => requirements.Where(r => r.resourceType != null && r.resourceType.isHumanResource).Sum(r => Mathf.Max(0, r.currentAmount));
+    public bool SheltersWorkers => retainHumansBetweenCycles || humanSuccessor != null;
+    public Vector3 WorkerPosition => GetDropHex() != null ? GetDropHex().transform.position : transform.position;
+    public ResourceType RemoveResidentHuman()
+    {
+        foreach (var req in requirements)
+        {
+            if (req.resourceType == null || !req.resourceType.isHumanResource || req.currentAmount <= 0) continue;
+            req.currentAmount--;
+            if (_isProcessing)
+            {
+                _crystalCyclePaused = true;
+                foreach (var timer in GetComponentsInChildren<TimerController>(true))
+                    if (timer.CrystalOwner == this) timer.PauseCrystalCycle();
+            }
+            UpdateIndicator();
+            OrderManager.Instance?.ForceUpdateOrders();
+            return req.resourceType;
+        }
+        return null;
+    }
+    private void Start()
+    {
+        bool production = outputResources.Any(o => o.prefab != null && o.prefab.GetComponent<ResourceItem>() != null);
+        if ((production || SheltersWorkers) && requirements.Any(r => r.resourceType != null && r.resourceType.isHumanResource))
+        {
+            foreach (var timer in GetComponentsInChildren<TimerController>(true))
+            {
+                // Cleanup/visual timers must finish after the final worker has left.
+                // Match the production callback, as WorldFlashlightAvailability does.
+                if (timer.CrystalOwner != null || timer.OnTimerEnd == null) continue;
+                for (int i = 0; i < timer.OnTimerEnd.GetPersistentEventCount(); i++)
+                    if (timer.OnTimerEnd.GetPersistentTarget(i) == this &&
+                        timer.OnTimerEnd.GetPersistentMethodName(i) == nameof(FinishProcessing))
+                    { timer.BindCrystalOwner(this); break; }
+            }
+            if (GetComponent<ResourceWorkforce>() == null) gameObject.AddComponent<ResourceWorkforce>();
+        }
+    }
 
     protected virtual void Awake() { 
         if (iconsContainer != null) _containerBasePos = iconsContainer.localPosition;
@@ -276,7 +320,7 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     protected virtual void CheckCompletion() {
-        if (_crystalControlled && IsCyclePaused)
+        if (IsCyclePaused)
         {
             if (!HasLogisticFlag() || !CrystalResourcesReady) return;
             _crystalCyclePaused = false;

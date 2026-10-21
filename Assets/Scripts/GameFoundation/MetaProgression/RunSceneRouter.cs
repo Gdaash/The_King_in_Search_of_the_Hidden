@@ -11,9 +11,15 @@ namespace GameFoundation.MetaProgression
         public void EnterRun()
         {
             if (!CanEnterRun) return;
+            GameFoundation.Saves.SaveSlotPrefs.BeginRunCheckpoint();
             DayResourceLedger.BeginRun();
             PortalCloudTransition.Load(runScene);
         }
-        public void ReturnToBase() { DayResourceLedger.EndRun(); SceneManager.LoadScene(baseScene); }
+        public void ReturnToBase()
+        {
+            var military = FindAnyObjectByType<WorldMilitaryDeploymentController>();
+            if (military != null) military.FinalizeSurvivors();
+            DayResourceLedger.EndRun(); GameFoundation.Saves.SaveSlotPrefs.CompleteRunCheckpoint(); SceneManager.LoadScene(baseScene);
+        }
     }
 }

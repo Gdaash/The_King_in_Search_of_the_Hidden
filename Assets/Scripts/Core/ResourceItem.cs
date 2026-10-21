@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class ResourceItem : MonoBehaviour
 {
+    public bool IsIlluminated => LogisticFlag.Illuminates(transform.position);
     public ResourceType type;
     public Sprite carrySprite;
     public float weight = 0.2f;

@@ -92,6 +92,7 @@ namespace GameFoundation.MetaProgression
                 c.description.fontSize = 20;
                 c.description.horizontalOverflow = HorizontalWrapMode.Wrap;
                 c.icon.sprite=u.icon; c.icon.enabled=u.icon!=null;
+                c.icon.material=DamagePalette.IconMaterial(u.icon);
                 if(u.icon!=null)c.icon.rectTransform.sizeDelta=u.icon.rect.size*(96f/Mathf.Max(u.icon.rect.width,u.icon.rect.height));
                 var w=progression.Balance.FindWeapon(u.weapon);
                 if(u.effect==PortalTowerBalance.Effect.UnlockWeapon && w!=null)

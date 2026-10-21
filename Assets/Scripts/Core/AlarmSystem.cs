@@ -18,6 +18,8 @@ public class AlarmEnemy
 [Serializable]
 public class AlarmThreshold
 {
+    [Min(.1f)] public float waveCountdown = 35f;
+    public List<AlarmWaveComposition> waves = new();
     [Min(0f)] public float alarmValue = 25f;
     [Min(0.1f)] public float minSpawnInterval = 5f;
     [Min(0.1f)] public float maxSpawnInterval = 10f;
@@ -30,7 +32,7 @@ public class AlarmThreshold
 /// UI шкала тревоги и бесконечные волны врагов, запускаемые её порогами.
 /// Привязывайте UnityEvent&lt;float&gt; к AddAlarm или SetAlarm.
 /// </summary>
-public class AlarmSystem : MonoBehaviour
+public partial class AlarmSystem : MonoBehaviour
 {
     public static AlarmSystem Instance { get; private set; }
 
@@ -124,7 +126,7 @@ public class AlarmSystem : MonoBehaviour
     public IEnumerable<GameObject> SpawnedEnemyTypes => _aliveEnemyCounts.Keys;
     public int GetAliveEnemyCount(GameObject prefab) => prefab != null && _aliveEnemyCounts.TryGetValue(prefab, out int count) ? count : 0;
 
-    public void RegisterSpawnedEnemy(GameObject prefab, GameObject instance)
+    public void RegisterSpawnedEnemy(GameObject prefab, GameObject instance, int waveId = 0)
     {
         if (prefab == null || instance == null || !instance.CompareTag("Enemy1") || instance.GetComponent<Health>() == null) return;
         var rank = instance.GetComponent<GameFoundation.MetaProgression.EnemyLevel>();
@@ -133,7 +135,7 @@ public class AlarmSystem : MonoBehaviour
         BestiaryService.RegisterSpawn(prefab, instance);
         var member = instance.GetComponent<AlarmSpawnedEnemy>();
         if (member == null) member = instance.AddComponent<AlarmSpawnedEnemy>();
-        member.Initialize(this, prefab);
+        member.Initialize(this, prefab, waveId);
     }
 
     internal void ChangeEnemyCount(GameObject prefab, int delta)
@@ -278,13 +280,13 @@ public class AlarmSystem : MonoBehaviour
                 if (enemy.prefab != null && warmed.Add(enemy.prefab)) spawnPool.Prewarm(enemy.prefab, enemyReserve);
         if (firstRunWaveTemplate?.enemies != null) foreach (var enemy in firstRunWaveTemplate.enemies)
             if (enemy.prefab != null && warmed.Add(enemy.prefab)) spawnPool.Prewarm(enemy.prefab, enemyReserve);
-        if (monsterSpawnWarningPrefab != null) spawnPool.Prewarm(monsterSpawnWarningPrefab.gameObject, nearestBlockedHexesToUse * simultaneousWaves);
         GameAudioController.Register(this);
         CreateRuntimeUiIfNeeded();
         _displayedFill = Mathf.Clamp01(currentAlarm / maximumAlarm);
         ApplyFill(_displayedFill);
         ApplyPreview(_displayedFill);
         EvaluateThresholds();
+        EnsureDirectedWaves();
     }
 
     private void Update()
@@ -296,6 +298,7 @@ public class AlarmSystem : MonoBehaviour
 
     private void OnDisable()
     {
+        StopDirectedWaves();
         alarmRevision++;
         _pendingAlarm = 0f;
         _actionAlarmReservations.Clear();
@@ -370,6 +373,8 @@ public class AlarmSystem : MonoBehaviour
         thresholds.Add(new AlarmThreshold
         {
             alarmValue = currentAlarm+_pendingAlarm,
+            waveCountdown = template.waveCountdown,
+            waves = template.waves,
             minSpawnInterval = template.minSpawnInterval,
             maxSpawnInterval = template.maxSpawnInterval,
             minEnemiesPerWave = template.minEnemiesPerWave,
@@ -391,7 +396,7 @@ public class AlarmSystem : MonoBehaviour
             _activatedThresholds.Add(threshold);
             OnThresholdReached?.Invoke(threshold);
             EnqueueDangerLevelNotification(thresholds.IndexOf(threshold) + 1);
-            _waveRoutines.Add(StartCoroutine(SpawnWavesForever(threshold)));
+            EnsureDirectedWaves();
         }
     }
 

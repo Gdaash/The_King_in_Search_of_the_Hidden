@@ -16,7 +16,24 @@ MonoBehaviour:
   - level: 1
     maximumAlarm: 150
     thresholds:
-    - alarmValue: 20
+    - waveCountdown: 35
+      waves:
+      - name: Danger 20 / 1
+        groups: 1
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 2
+      - name: Danger 20 / 2
+        groups: 1
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 3
+      - name: Danger 20 / 3
+        groups: 1
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 4
+      alarmValue: 20
       minSpawnInterval: 8
       maxSpawnInterval: 12
       minEnemiesPerWave: 2
@@ -24,7 +41,32 @@ MonoBehaviour:
       enemies:
       - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
         weight: 5
-    - alarmValue: 40
+    - waveCountdown: 35
+      waves:
+      - name: Danger 40 / 1
+        groups: 1
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 3
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 1
+      - name: Danger 40 / 2
+        groups: 1
+        units:
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 5
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 1
+      - name: Danger 40 / 3
+        groups: 1
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 1
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 1
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 6
+      alarmValue: 40
       minSpawnInterval: 8
       maxSpawnInterval: 12
       minEnemiesPerWave: 4
@@ -36,7 +78,34 @@ MonoBehaviour:
         weight: 2
       - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
         weight: 2
-    - alarmValue: 70
+    - waveCountdown: 35
+      waves:
+      - name: Danger 70 / 1
+        groups: 1
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 4
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 1
+      - name: Danger 70 / 2
+        groups: 1
+        units:
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 5
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 1
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 1
+      - name: Danger 70 / 3
+        groups: 1
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 7
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 1
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 1
+      alarmValue: 70
       minSpawnInterval: 8
       maxSpawnInterval: 12
       minEnemiesPerWave: 5
@@ -54,7 +123,52 @@ MonoBehaviour:
         weight: 2
       - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
         weight: 2
-    - alarmValue: 100
+    - waveCountdown: 35
+      waves:
+      - name: Danger 100 / 1
+        groups: 2
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 8
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 1
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 1
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 1
+      - name: Danger 100 / 2
+        groups: 2
+        units:
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 11
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 1
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 1
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 1
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 1
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 1
+      - name: Danger 100 / 3
+        groups: 2
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 15
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 1
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 1
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 1
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 1
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 1
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 1
+      alarmValue: 100
       minSpawnInterval: 8
       maxSpawnInterval: 12
       minEnemiesPerWave: 11
@@ -78,7 +192,84 @@ MonoBehaviour:
         weight: 2
       - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
         weight: 2
-    - alarmValue: 150
+    - waveCountdown: 35
+      waves:
+      - name: Danger 150 / 1
+        groups: 2
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 19
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 1
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 1
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 1
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 1
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 1
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 1
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 1
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 1
+      - name: Danger 150 / 2
+        groups: 2
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 1
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 28
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 2
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 1
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 1
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 1
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 1
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 1
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 1
+        - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
+          count: 1
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 1
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 1
+      - name: Danger 150 / 3
+        groups: 2
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 1
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 1
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 37
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 2
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 2
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 2
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 2
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 2
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 1
+        - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
+          count: 1
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 1
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 1
+      alarmValue: 150
       minSpawnInterval: 8
       maxSpawnInterval: 12
       minEnemiesPerWave: 27

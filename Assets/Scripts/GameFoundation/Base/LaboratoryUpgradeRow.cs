@@ -12,6 +12,7 @@ namespace GameFoundation.Base
         public Image border, surface, selection, lockIcon, costIcon;
         public Text titleLabel, statusLabel, requirementLabel, costLabel;
         public GameObject price;
+        public UpgradeLevelPips levelPips;
         [Header("Состояния рамки")]
         public Color lockedColor = new(.29f, .25f, .33f);
         public Color unaffordableColor = new(.69f, .29f, .32f);
@@ -20,6 +21,7 @@ namespace GameFoundation.Base
         public ScientificUpgradeTable.Entry Entry { get; private set; }
         public bool IsComplete { get; private set; }
         private LaboratoryUpgradeList owner;
+        private bool pipsResolved;
 
         private void Awake() => purchaseButton.onClick.AddListener(Purchase);
         private void OnDestroy() => purchaseButton.onClick.RemoveListener(Purchase);
@@ -27,6 +29,16 @@ namespace GameFoundation.Base
         public void Refresh(ScientificUpgradeTable.Entry entry, int bought, int total, GlobalStats stats)
         {
             Entry = entry;
+            if (!pipsResolved)
+            {
+                // Older prefab variants contain an added indicator over the inherited one.
+                var indicators = GetComponentsInChildren<UpgradeLevelPips>(true);
+                if (levelPips == null && indicators.Length > 0) levelPips = indicators[0];
+                foreach (var indicator in indicators)
+                    if (indicator != levelPips) indicator.gameObject.SetActive(false);
+                pipsResolved = true;
+            }
+            if (levelPips != null) levelPips.Display(bought, total);
             var portal = owner.portalProgression;
             var upgrade = portal != null ? portal.Balance.Find(entry.id) : null;
             IsComplete = portal != null ? portal.IsComplete(upgrade) : bought == total;

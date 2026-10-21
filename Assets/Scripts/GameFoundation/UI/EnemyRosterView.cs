@@ -21,16 +21,29 @@ namespace GameFoundation.UI
         [SerializeField, Min(0f)] private float rowSpacing = 4f;
         [SerializeField, Min(0f)] private float headerAndPadding = 84f;
         [SerializeField] private GameFoundation.MetaProgression.MilitaryStarsView levelStars;
+        [Header("Отсчёт волны")]
+        [SerializeField, Min(18)] private int waveTimerFontSize = 27;
+        [SerializeField] private Color waveAttackColor = new(.82f, .43f, .49f, 1f);
+        [SerializeField] private WaveProvokeButton provokeButton;
+        private bool ProvokeVisible => provokeButton != null && provokeButton.gameObject.activeSelf;
+        private bool lastProvokeVisible;
+        private float WaveHeaderHeight => Mathf.Max(headerAndPadding, ProvokeVisible ? 228f : 144f);
         private readonly Dictionary<GameObject, EnemyRosterItemView> entries = new();
         private readonly List<UnitDescriptionDefinition> generatedDescriptions = new();
         private AlarmSystem boundAlarm;
         private bool subscribed;
         private bool started;
+        private UnityEngine.UI.Text waveTimer;
+        private string timerLanguage;
+        private int displayedSeconds = -1;
+        private int displayedDigitSize = -1;
+        private float compactAmount;
         public void SetCompact(bool compact)
             => SetCompactAmount(compact ? 1 : 0);
         public void SetCompactAmount(float amount)
         {
             amount=Mathf.Clamp01(amount);
+            compactAmount = amount;
             if(rows)
             {
                 var scroll=rows.GetComponentInParent<UnityEngine.UI.ScrollRect>(true);
@@ -40,8 +53,10 @@ namespace GameFoundation.UI
                 if(!group)group=content.AddComponent<CanvasGroup>();
                 group.alpha=1-amount;group.blocksRaycasts=amount<.01f;
             }
-            float listHeight=Mathf.Min(maximumVisibleRows,entries.Count)*(rowHeight+rowSpacing)-(entries.Count>0?rowSpacing:0);
-            if(panel) panel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,headerAndPadding+listHeight*(1-amount));
+            int visibleRows = 0;
+            foreach (var entry in entries.Values) if (entry.gameObject.activeSelf) visibleRows++;
+            float listHeight=Mathf.Min(maximumVisibleRows,visibleRows)*(rowHeight+rowSpacing)-(visibleRows>0?rowSpacing:0);
+            if(panel) panel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,WaveHeaderHeight+listHeight*(1-amount));
         }
 
         private void Awake() => SetVisible(false);
@@ -50,7 +65,7 @@ namespace GameFoundation.UI
         private void Start() { started = true; Bind(); }
         private void OnDisable()
         {
-            if (boundAlarm != null && subscribed) { boundAlarm.EnemyCountChanged -= OnCountChanged; boundAlarm.EnemyLevelChanged -= RefreshLevel; }
+            if (boundAlarm != null && subscribed) { boundAlarm.EnemyLevelChanged -= RefreshLevel; boundAlarm.WaveChanged -= RefreshWave; }
             subscribed = false;
             if (detailsTooltip != null) detailsTooltip.Hide(null);
         }
@@ -63,30 +78,118 @@ namespace GameFoundation.UI
         {
             AlarmSystem source = alarm != null ? alarm : AlarmSystem.Instance;
             if (source == null || itemTemplate == null || rows == null) return;
-            if (boundAlarm != null && subscribed) { boundAlarm.EnemyCountChanged -= OnCountChanged; boundAlarm.EnemyLevelChanged -= RefreshLevel; }
+            if (boundAlarm != null && subscribed) { boundAlarm.EnemyLevelChanged -= RefreshLevel; boundAlarm.WaveChanged -= RefreshWave; }
             boundAlarm = source;
             itemTemplate.gameObject.SetActive(false);
-            foreach (var threshold in source.ConfiguredThresholds)
-            {
-                if (threshold?.enemies == null) continue;
-                foreach (var enemy in threshold.enemies)
-                    if (enemy?.prefab != null && enemy.weight > 0) EnsureEntry(enemy.prefab);
-            }
-            foreach (var prefab in source.SpawnedEnemyTypes) EnsureEntry(prefab);
-            foreach (var entry in entries) entry.Value.SetCount(source.GetAliveEnemyCount(entry.Key));
-            source.EnemyCountChanged += OnCountChanged;
+            source.WaveChanged += RefreshWave;
             source.EnemyLevelChanged += RefreshLevel;
             RefreshLevel(source.EnemyLevel);
             subscribed = true;
-            SetVisible(source.HasSpawnedEnemies);
+            EnsureWaveTimer();
+            if (provokeButton != null) provokeButton.Bind(source);
+            ApplyWaveHeaderLayout();
+            RefreshWave();
         }
 
         private void RefreshLevel(int level) { if (levelStars != null) levelStars.SetStars(level, AlarmSystem.MaximumEnemyLevel); }
 
-        private void OnCountChanged(GameObject prefab, int count)
+        private void EnsureWaveTimer()
         {
-            EnsureEntry(prefab)?.SetCount(count);
-            SetVisible(boundAlarm != null && boundAlarm.HasSpawnedEnemies);
+            if (waveTimer != null || panel == null) return;
+            foreach (var text in panel.GetComponentsInChildren<UnityEngine.UI.Text>(true))
+                if (text.name == "Subtitle") { waveTimer = text; break; }
+            if (waveTimer != null)
+            {
+                var binding = waveTimer.GetComponent<GameFoundation.Localization.LocalizedText>();
+                if (binding != null) binding.enabled = false;
+                ConfigureWaveTimer();
+                return;
+            }
+            var go = new GameObject("Wave countdown", typeof(RectTransform));
+            go.transform.SetParent(panel, false);
+            waveTimer = go.AddComponent<UnityEngine.UI.Text>();
+            var source = GetComponentInChildren<UnityEngine.UI.Text>(true);
+            if (source != null && source != waveTimer) waveTimer.font = source.font;
+            ConfigureWaveTimer();
+        }
+        private void ConfigureWaveTimer()
+        {
+            int titleSize = 20;
+            foreach (var text in panel.GetComponentsInChildren<UnityEngine.UI.Text>(true))
+                if (text.name == "Title") titleSize = text.fontSize;
+            waveTimer.fontSize = Mathf.Max(waveTimerFontSize, Mathf.CeilToInt(titleSize * 1.15f));
+            waveTimer.supportRichText = true;
+            waveTimer.resizeTextForBestFit = false;
+            waveTimer.alignment = TextAnchor.MiddleCenter;
+            waveTimer.horizontalOverflow = HorizontalWrapMode.Wrap;
+            waveTimer.verticalOverflow = VerticalWrapMode.Truncate;
+            waveTimer.raycastTarget = false;
+            var rect = waveTimer.rectTransform;
+            rect.anchorMin = new Vector2(0, 1); rect.anchorMax = new Vector2(1, 1);
+            rect.pivot = new Vector2(.5f, 1); rect.anchoredPosition = new Vector2(0, -44);
+            rect.sizeDelta = new Vector2(-24, 48);
+            ApplyWaveHeaderLayout();
+        }
+        private void ApplyWaveHeaderLayout()
+        {
+            lastProvokeVisible = ProvokeVisible;
+            if (levelStars != null && levelStars.transform is RectTransform stars)
+                stars.anchoredPosition = new Vector2(stars.anchoredPosition.x, ProvokeVisible ? -194 : -108);
+            if (rows != null)
+            {
+                var scroll = rows.GetComponentInParent<UnityEngine.UI.ScrollRect>(true);
+                if (scroll != null && scroll.transform is RectTransform list)
+                {
+                    list.offsetMin = new Vector2(12, 12);
+                    list.offsetMax = new Vector2(-12, -(WaveHeaderHeight - 12));
+                }
+            }
+        }
+
+        private void Update()
+        {
+            if (provokeButton != null) provokeButton.Refresh();
+            if (lastProvokeVisible != ProvokeVisible)
+            {
+                ApplyWaveHeaderLayout();
+                SetCompactAmount(compactAmount);
+            }
+            if (boundAlarm == null || waveTimer == null) return;
+            float progress = 1 - Mathf.Clamp01(boundAlarm.WaveSecondsRemaining / Mathf.Max(.1f, boundAlarm.WavePreparationDuration));
+            waveTimer.color = boundAlarm.CurrentWaveStage == AlarmSystem.WaveStage.Countdown
+                ? Color.Lerp(Color.white, waveAttackColor, Mathf.SmoothStep(0, 1, progress)) : waveAttackColor;
+            int seconds = Mathf.CeilToInt(boundAlarm.WaveSecondsRemaining);
+            bool pulse = boundAlarm.CurrentWaveStage == AlarmSystem.WaveStage.Countdown &&
+                boundAlarm.WaveSecondsRemaining > 0 && boundAlarm.WaveSecondsRemaining <= 5;
+            float phase = (5 - boundAlarm.WaveSecondsRemaining) * Mathf.PI * 3;
+            int digitSize = pulse ? Mathf.RoundToInt(waveTimer.fontSize * (1 + .14f * (.5f - .5f * Mathf.Cos(phase)))) : 0;
+            string language = GameFoundation.Localization.LocalizationService.Instance?.Language;
+            if (seconds == displayedSeconds && timerLanguage == language && digitSize == displayedDigitSize) return;
+            displayedDigitSize = digitSize;
+            timerLanguage = language;
+            displayedSeconds = seconds;
+            waveTimer.text = boundAlarm.CurrentWaveStage == AlarmSystem.WaveStage.Countdown
+                ? GameFoundation.Localization.GameText.Get("До волны: ") + (pulse ? "<size=" + digitSize + ">" + seconds + "</size>" : seconds.ToString())
+                : GameFoundation.Localization.GameText.Get("Атака");
+        }
+        private void RefreshWave()
+        {
+            if (boundAlarm == null) return;
+            EnsureWaveTimer(); displayedSeconds = -1;
+            foreach (var entry in entries) entry.Value.gameObject.SetActive(false);
+            int visible = 0;
+            foreach (var prefab in boundAlarm.CurrentWaveEnemyTypes)
+            {
+                int count = boundAlarm.GetWaveEnemyCount(prefab);
+                if (count <= 0) continue;
+                var item = EnsureEntry(prefab);
+                if (item == null) continue;
+                item.gameObject.SetActive(true); item.SetCount(count); visible++;
+            }
+            if (panel != null) panel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
+                WaveHeaderHeight + Mathf.Min(maximumVisibleRows, visible) * (rowHeight + rowSpacing));
+            SetVisible(visible > 0 && (boundAlarm.CurrentWaveStage == AlarmSystem.WaveStage.Countdown || boundAlarm.CurrentWaveStage == AlarmSystem.WaveStage.Attacking));
+            SetCompactAmount(compactAmount);
         }
         private EnemyRosterItemView EnsureEntry(GameObject prefab)
         {

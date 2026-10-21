@@ -10,13 +10,15 @@ public sealed class AlarmSpawnedEnemy : MonoBehaviour
     private Health health;
     private bool counted;
     private bool subscribed;
+    private int waveId;
 
-    public void Initialize(AlarmSystem source, GameObject type)
+    public void Initialize(AlarmSystem source, GameObject type, int wave = 0)
     {
-        if (owner == source && prefab == type) return;
+        if (owner == source && prefab == type && waveId == wave && subscribed) return;
         Detach();
         owner = source;
         prefab = type;
+        waveId = wave;
         health = GetComponent<Health>();
         if (isActiveAndEnabled) Attach();
     }
@@ -53,5 +55,10 @@ public sealed class AlarmSpawnedEnemy : MonoBehaviour
         if (counted == value) return;
         counted = value;
         if (owner != null) owner.ChangeEnemyCount(prefab, value ? 1 : -1);
+        if (!value && owner != null && waveId != 0)
+        {
+            owner.RemoveDirectedWaveEnemy(waveId, prefab);
+            waveId = 0;
+        }
     }
 }
