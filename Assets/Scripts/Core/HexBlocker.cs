@@ -146,6 +146,8 @@ public class HexBlocker : MonoBehaviour
     {
         if (_isRemoved) return;
         _isRemoved = true;
+        if (HexManager.IsMagicOreContent(prefabToSpawn))
+            GameFoundation.MetaProgression.DayCycleService.RecordMagicOreOpened();
         if (!shouldAutoUnlock && prefabToSpawn == null)
             GameFoundation.MetaProgression.PortalTowerProgression.Instance?.AwardHexExperience(transform.position);
         RaiseAlarmForUnlock();

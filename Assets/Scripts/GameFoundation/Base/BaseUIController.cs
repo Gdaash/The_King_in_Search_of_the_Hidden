@@ -143,6 +143,7 @@ namespace GameFoundation.Base
             if (available) available.text = Tr("base.waiting", GameFoundation.Localization.GameText.Get("Ожидают:")) + " " + (day?.RefugeesAvailable ?? 0);
             var admit = admitRefugeeButton;
             if (admit) admit.interactable = day != null && day.RefugeesAvailable > 0 && BuildingUpgradeService.CanAdmitResident;
+            BaseDisabledButtonHint.Set(admit, day != null && day.RefugeesAvailable > 0 ? BaseDisabledButtonHint.Reason.Housing : BaseDisabledButtonHint.Reason.Refugees);
             for (var i = 0; portalButtons != null && i < portalButtons.Length; i++)
             {
                 var button = portalButtons[i];

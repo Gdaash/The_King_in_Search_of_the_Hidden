@@ -109,6 +109,8 @@ namespace GameFoundation.Base
             int warriors = manager != null && warrior != null ? manager.GetResourceAmount(warrior) : 0;
             if (armButton != null) armButton.interactable = CanArmWarrior;
             if (disarmButton != null) disarmButton.interactable = manager != null && warriors > 0;
+            BaseDisabledButtonHint.Set(armButton, humans <= 0 ? BaseDisabledButtonHint.Reason.Residents : warriors >= BuildingUpgradeService.MilitaryCapacity(warrior) ? BaseDisabledButtonHint.Reason.MilitaryCapacity : BaseDisabledButtonHint.Reason.Weapons);
+            BaseDisabledButtonHint.Set(disarmButton, BaseDisabledButtonHint.Reason.Warriors);
             if (humanAmount != null) humanAmount.text = humans.ToString();
             if (weaponAmount != null) weaponAmount.text = weapons.ToString();
             if (warriorAmount != null) warriorAmount.text = warriors + " / " + BuildingUpgradeService.MilitaryCapacity(warrior);

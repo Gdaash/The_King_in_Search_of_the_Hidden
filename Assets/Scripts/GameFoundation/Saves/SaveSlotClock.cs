@@ -5,9 +5,13 @@ namespace GameFoundation.Saves
     public sealed class SaveSlotClock : MonoBehaviour
     {
         private float _elapsed;
+        private void OnEnable() => SaveSlotPrefs.SelectionChanged += ResetElapsed;
+        private void OnDisable() => SaveSlotPrefs.SelectionChanged -= ResetElapsed;
+        private void ResetElapsed() => _elapsed = 0f;
 
         private void Update()
         {
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainMenu") return;
             _elapsed += Time.unscaledDeltaTime;
             if (_elapsed >= 10f) Flush();
         }
@@ -18,7 +22,7 @@ namespace GameFoundation.Saves
         }
 
         private void OnApplicationQuit() => Flush();
-        private void OnDestroy() => Flush();
+        private void OnDestroy() { if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "MainMenu") Flush(); }
 
         private void Flush()
         {

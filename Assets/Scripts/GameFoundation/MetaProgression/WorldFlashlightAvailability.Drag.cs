@@ -13,7 +13,8 @@ namespace GameFoundation.MetaProgression
         private int pendingDragLight = -1, draggedLight = -1;
         private Vector2 dragPointerDown, dragOrigin, dragOffset;
         private bool pointerStartedInWorld, pointerMoved;
-        private bool dragHadAssignment;
+        private bool dragHadAssignment, dragDetached;
+        private Transform dragOriginAnchor;
         public bool LightsActivated { get; private set; }
         public bool CanActivateLights => !PortalTowerProgression.IsChoosingUpgrade && !escaped && !LightsActivated && lights.Length > 0 &&
             GameSpeedControls.SimulationSpeed > 0;
@@ -86,7 +87,13 @@ namespace GameFoundation.MetaProgression
                         float distance = (point - lights[i].beam.MarkerPosition).sqrMagnitude;
                         if (distance < nearest) { nearest = distance; pendingDragLight = i; }
                     }
-                    if (pendingDragLight >= 0) dragOffset = lights[pendingDragLight].beam.MarkerPosition - point;
+                    if (pendingDragLight >= 0)
+                    {
+                        dragOffset = lights[pendingDragLight].beam.MarkerPosition - point;
+                        int index = pendingDragLight;
+                        pendingDragLight = -1;
+                        BeginDrag(index);
+                    }
                 }
             }
             if (pointerStartedInWorld && (held || released) &&
@@ -112,7 +119,7 @@ namespace GameFoundation.MetaProgression
             }
             if (released)
             {
-                if (!FirstRunLightTutorial.BlocksInput && pointerStartedInWorld && !pointerMoved && !blocked && !wasDragging)
+                if (!FirstRunLightTutorial.BlocksInput && pointerStartedInWorld && !pointerMoved && !blocked)
                     StartAtIlluminatedHex(point);
                 pendingDragLight = -1;
                 pointerStartedInWorld = false;
@@ -123,7 +130,33 @@ namespace GameFoundation.MetaProgression
         {
             if (draggedLight >= 0 || !CanDragLight(index)) return false;
             dragOrigin = lights[index].beam.MarkerPosition;
-            dragHadAssignment = lights[index].occupied;
+            var assignment = lights[index];
+            dragOriginAnchor = HexAnchor(assignment.requester != null ? assignment.requester.transform :
+                assignment.hex != null ? assignment.hex.transform : assignment.beam.Flag.transform);
+            dragHadAssignment = assignment.occupied;
+            dragDetached = false;
+            draggedLight = index;
+            // Capture immediately; visual movement and job ownership are independent.
+            return true;
+        }
+
+        private bool IsOverDragOrigin(Vector2 point)
+        {
+            if (dragOriginAnchor != null)
+            {
+                var magnet = dragOriginAnchor.GetComponent<HexMagnet>();
+                if (magnet != null) return magnet.IsPointOverMagnet(point);
+                var hex = dragOriginAnchor.GetComponent<HexLightUnlocker>();
+                if (hex != null) return hex.IsPointOverHex(point);
+            }
+            return (point - dragOrigin).sqrMagnitude <= buildingSelectionRadius * buildingSelectionRadius;
+        }
+
+        private void DetachDragOrigin(int index)
+        {
+            if (dragDetached) return;
+            dragDetached = true;
+            var previousRequester = lights[index].requester != null ? lights[index].requester : GetHoverTarget(dragOrigin).Requester;
             lights[index].restartPending = false;
             if (lights[index].occupied)
             {
@@ -132,14 +165,21 @@ namespace GameFoundation.MetaProgression
                 Release(index);
                 GameFoundation.UI.GameNotifications.Post(pausing ? GameFoundation.Localization.GameText.Get("Работа приостановлена") : GameFoundation.Localization.GameText.Get("Действие отменено"));
             }
-            draggedLight = index;
-            lights[index].beam.ShowIdle(dragOrigin);
-            return true;
+            previousRequester?.RecallIdleHumans();
         }
 
         public void DragTo(Vector2 point)
         {
-            if (draggedLight >= 0 && CanDragLight(draggedLight)) lights[draggedLight].beam.ShowIdle(point);
+            if (draggedLight < 0 || !CanDragLight(draggedLight)) return;
+            if (!dragDetached && !IsOverDragOrigin(point)) DetachDragOrigin(draggedLight);
+            ShowDraggedLight(draggedLight, point);
+        }
+
+        private void ShowDraggedLight(int index, Vector2 point)
+        {
+            var assignment = lights[index];
+            assignment.beam.Show(point, !dragDetached ? assignment.requester : null, true,
+                openingHex: !dragDetached && assignment.hex != null);
         }
 
         public bool DropAt(Vector2 point)
@@ -147,6 +187,13 @@ namespace GameFoundation.MetaProgression
             if (draggedLight < 0) return false;
             int index = draggedLight;
             if (!CanDragLight(index)) { CancelDrag(); return false; }
+            if (!dragDetached && IsOverDragOrigin(point))
+            {
+                ShowDraggedLight(index, dragOrigin);
+                draggedLight = pendingDragLight = -1;
+                return true;
+            }
+            DetachDragOrigin(index);
             var target = GetHoverTarget(point);
             if (FirstRunLightTutorial.AllowsLightDrag)
             {
@@ -197,7 +244,8 @@ namespace GameFoundation.MetaProgression
             if (draggedLight < 0) return;
             int index = draggedLight;
             draggedLight = -1;
-            RestoreDragOrigin(index);
+            if (dragDetached) RestoreDragOrigin(index);
+            else if (!escaped) ShowDraggedLight(index, dragOrigin);
         }
 
         private void RestoreDragOrigin(int index)

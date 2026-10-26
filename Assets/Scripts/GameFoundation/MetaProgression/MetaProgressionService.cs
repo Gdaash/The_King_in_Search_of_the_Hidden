@@ -19,6 +19,13 @@ namespace GameFoundation.MetaProgression
             if (Instance != null) { Destroy(gameObject); return; }
             Instance = this; DontDestroyOnLoad(gameObject); Load();
         }
+        private void OnEnable() => PlayerPrefs.SelectionChanged += ReloadSelectedSlot;
+        private void OnDisable() => PlayerPrefs.SelectionChanged -= ReloadSelectedSlot;
+        private void ReloadSelectedSlot()
+        {
+            if (Instance != this) return;
+            upgrades = new List<MetaUpgrade>(); Load(); Changed?.Invoke();
+        }
         public int GetLevel(string id) => upgrades.Find(x => x.id == id)?.level ?? 0;
         public static int GetSavedLevel(string id)
         {

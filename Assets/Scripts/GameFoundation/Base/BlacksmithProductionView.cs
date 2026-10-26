@@ -90,6 +90,7 @@ namespace GameFoundation.Base
             bool canProduce = CanProduce(recipe);
 
             if (recipe.produceButton != null) recipe.produceButton.interactable = canProduce;
+            BaseDisabledButtonHint.Set(recipe.produceButton, BaseDisabledButtonHint.Reason.Resources);
             if (recipe.inputAmountText != null)
             {
                 recipe.inputAmountText.text = recipe.inputAmount.ToString();

@@ -15,6 +15,9 @@ namespace GameFoundation.UI
         private readonly Star[] particles = new Star[16];
         private float next;
         public bool Emit { get; set; }
+        public float EmissionMultiplier { get; set; } = 1;
+        public float LifetimeMultiplier { get; set; } = 1;
+        private float EffectiveLifetime => lifetime * Mathf.Max(.1f, LifetimeMultiplier);
         public Sprite StarSprite => starSprite;
         public void Configure(RectTransform source, Sprite sprite) { label = source; starSprite = sprite; SetAllDirty(); }
         public override Texture mainTexture => starSprite != null ? starSprite.texture : Texture2D.whiteTexture;
@@ -24,11 +27,11 @@ namespace GameFoundation.UI
         {
             float dt = Time.unscaledDeltaTime;
             for (int i = 0; i < particles.Length; i++)
-                if (particles[i].alive) { particles[i].age += dt; if (particles[i].age >= lifetime) particles[i].alive = false; }
+                if (particles[i].alive) { particles[i].age += dt; if (particles[i].age >= EffectiveLifetime) particles[i].alive = false; }
             next -= dt;
             if (Emit && label != null && next <= 0)
             {
-                next = 1 / Mathf.Max(.1f, emissionRate);
+                next = 1 / Mathf.Max(.1f, emissionRate * EmissionMultiplier);
                 for (int i = 0; i < particles.Length; i++) if (!particles[i].alive)
                 {
                     var p = label.TransformPoint(new Vector3(Random.Range(label.rect.xMin, label.rect.xMax), Random.Range(-8f, 8f)));
@@ -47,7 +50,7 @@ namespace GameFoundation.UI
             foreach (var star in particles)
             {
                 if (!star.alive) continue;
-                float t = star.age / lifetime;
+                float t = star.age / EffectiveLifetime;
                 Vector2 p = star.start + new Vector2(star.drift * t, 40 * t);
                 p = new Vector2(Mathf.Round(p.x / 2) * 2, Mathf.Round(p.y / 2) * 2);
                 Color c = color; c.a *= Mathf.Sin(t * Mathf.PI);

@@ -8,9 +8,11 @@ namespace GameFoundation.Saves
     {
         private const string TimeKey = "playSeconds";
         private static int _selected;
+        public static event System.Action SelectionChanged;
         public static int SelectedSlot => _selected == 0 ? _selected = Mathf.Clamp(UnityEngine.PlayerPrefs.GetInt("foundation.selectedSaveSlot", 1), 1, 3) : _selected;
-        public static void Select(int slot) { _selected = Mathf.Clamp(slot, 1, 3); GameSaveService.MarkSelected(_selected); }
+        public static void Select(int slot) { _selected = Mathf.Clamp(slot, 1, 3); GameSaveService.MarkSelected(_selected); SelectionChanged?.Invoke(); }
         public static bool SlotExists(int slot) => GameSaveService.SlotExists(slot);
+        public static bool ClearSlot(int slot) => GameSaveService.ClearSlot(slot);
         public static int SlotResource(int slot, string resource) => GameSaveService.GetInt(slot, "Global_Resource_" + resource, 0);
         public static float SlotPlaySeconds(int slot) => GameSaveService.GetFloat(slot, TimeKey, 0f);
         public static void AddPlaySeconds(float seconds) { if (seconds > 0f) { SetFloat(TimeKey, SlotPlaySeconds(SelectedSlot) + seconds); Save(); } }
@@ -28,6 +30,8 @@ namespace GameFoundation.Saves
         public static void CompleteRunCheckpoint() => GameSaveService.CompleteRunCheckpoint(SelectedSlot);
         public static void ResetAll()
         {
+            if (GameSaveService.WritesSuspended) return;
+            GameSaveService.ClearAllFiles();
             UnityEngine.PlayerPrefs.DeleteAll();
             UnityEngine.PlayerPrefs.Save();
             _selected = 0;

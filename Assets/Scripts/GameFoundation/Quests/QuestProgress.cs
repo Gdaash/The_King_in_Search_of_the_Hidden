@@ -24,6 +24,7 @@ namespace GameFoundation.Quests
             if (PlaytestSettings.TutorialsAndQuestsDisabled) return false;
             if (quest == null || string.IsNullOrWhiteSpace(quest.id) || IsAccepted(quest)) return false;
             SaveSlotPrefs.SetInt("foundation.quest." + quest.id + ".accepted", 1);
+            if (GameFoundation.Base.FirstExpeditionRecovery.IsRecovery(quest) || GameFoundation.Base.ResidentRecovery.IsRecovery(quest)) SaveSlotPrefs.SetInt(Key(quest), 1);
             if (quest.deadlineDays > 0) SaveSlotPrefs.SetInt("foundation.quest." + quest.id + ".deadline", Today + quest.deadlineDays);
             SaveSlotPrefs.Save();
             GameFoundation.Audio.GameAudioController.PlayUI(GameFoundation.Audio.GameAudioCue.QuestAccept, .8f);
@@ -85,6 +86,7 @@ namespace GameFoundation.Quests
                     SaveSlotPrefs.SetInt(Key(quest), 1);
                     foreach (var cost in costs) resources.TrySpendResource(cost.Key, (int)cost.Value);
                 }
+                GameFoundation.Base.ResidentRecovery.RecordClaim(quest);
                 foreach (var reward in rewards) resources.AddResource(reward.Key, (int)reward.Value);
                 foreach (var unlock in quest.unlockRewards) ContentUnlocks.Grant(unlock);
                 SaveSlotPrefs.Save();
@@ -136,6 +138,16 @@ namespace GameFoundation.Quests
         public static QuestDefinition Current(QuestCatalog catalog, bool parallel = false)
         {
             if (PlaytestSettings.TutorialsAndQuestsDisabled) return null;
+            if (!parallel && GameFoundation.Base.FirstExpeditionRecovery.Pending)
+            {
+                var recovery = GameFoundation.Base.FirstExpeditionRecovery.Quest;
+                return IsAccepted(recovery) ? recovery : null;
+            }
+            if (!parallel && GameFoundation.Base.ResidentRecovery.Pending)
+            {
+                var recovery = GameFoundation.Base.ResidentRecovery.Quest;
+                return IsAccepted(recovery) ? recovery : null;
+            }
             if (catalog == null || catalog.quests == null) return null;
             foreach (var quest in catalog.quests)
             {

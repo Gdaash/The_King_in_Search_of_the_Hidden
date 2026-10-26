@@ -13,7 +13,7 @@ public sealed class ThoseUnderHexCrtSettings : ScriptableObject
         get
         {
             ThoseUnderHexCrtSettings settings = ProjectReferences.Instance != null ? ProjectReferences.Instance.crtSettings : null;
-            return settings == null || settings.enabledEffect;
+            return settings != null && settings.enabledEffect;
         }
     }
 }

@@ -261,6 +261,7 @@ public class Health : MonoBehaviour
     { 
         if (_dead) return;
         _dead = true; 
+        GetComponent<GameFoundation.MetaProgression.WorldLossIdentity>()?.RecordDeath();
         if (bestiaryIdentity != null) GameFoundation.Bestiary.BestiaryService.RegisterKill(bestiaryIdentity);
         if (CompareTag("Enemy1")) GameFoundation.MetaProgression.PortalTowerProgression.Instance?.AwardEnemyExperience(transform.position);
         AwardMilitaryExperience();

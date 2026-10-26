@@ -23,6 +23,8 @@ public class ResourceOutput {
 }
 
 public class ResourceRequester : MonoBehaviour {
+    public bool ProducesResource(ResourceType resource) => outputResources.Exists(output => output.prefab != null &&
+        output.prefab.TryGetComponent<ResourceItem>(out var item) && item.type == resource);
     public static event System.Action<ResourceRequester, ResourceItem> ResourceProduced;
     public static readonly HashSet<ResourceRequester> ActiveInstances = new();
     [Header("Настройки ограничений")]

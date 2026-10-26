@@ -15,7 +15,7 @@ public sealed class JournalHudLayout : MonoBehaviour
     private CanvasGroup logGroup;
     public bool Expanded => expanded;
 
-    private void OnEnable() { if (toggleButton) toggleButton.onClick.AddListener(Toggle); }
+    private void OnEnable() { transform.SetAsFirstSibling(); if (toggleButton) toggleButton.onClick.AddListener(Toggle); }
     private void OnDisable() { if (toggleButton) toggleButton.onClick.RemoveListener(Toggle); }
     public void Toggle() => expanded = !expanded;
     public void SetExpanded(bool value) => expanded = value;

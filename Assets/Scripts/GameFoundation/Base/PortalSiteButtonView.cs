@@ -37,6 +37,7 @@ namespace GameFoundation.Base
             if (button != null)
             {
                 button.interactable = !enteredToday && (site.active || canPay);
+                BaseDisabledButtonHint.Set(button, enteredToday ? BaseDisabledButtonHint.Reason.TravelUsed : BaseDisabledButtonHint.Reason.Resources);
                 var colors = button.colors;
                 colors.normalColor = buttonNormalColor;
                 colors.highlightedColor = buttonHighlightedColor;

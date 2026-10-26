@@ -16,7 +16,7 @@ namespace GameFoundation.Base
         public static float Multiplier(EquipmentKind kind) => 1 + .1f * Level(kind);
         public static int Cost(EquipmentKind kind) => kind switch {
             EquipmentKind.Sword => 5 + 3 * Level(kind), EquipmentKind.Bow => 10 + 5 * Level(kind),
-            EquipmentKind.Cart => 10 + 10 * Level(kind), _ => 0 };
+            EquipmentKind.Cart => Level(kind) == 0 ? 5 : 10 + 10 * Level(kind), _ => 0 };
         public static bool CanBuy(EquipmentKind kind, ResourceType resource) => kind != EquipmentKind.None && Level(kind) < Maximum(kind)
             && resource != null && GlobalResourceManager.Instance != null && GlobalResourceManager.Instance.GetResourceAmount(resource) >= Cost(kind);
         public static bool TryBuy(EquipmentKind kind, ResourceType resource)

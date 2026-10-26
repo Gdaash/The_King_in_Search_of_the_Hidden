@@ -58,12 +58,39 @@ namespace GameFoundation.MetaProgression
         private const string Key="foundation.daycycle";
         private int totalPortalEntries;
         private bool firstPortalRun;
+        private bool magicOreOpened;
+        public static bool NeedsThirdRunMagicOre => Instance != null && Instance.totalPortalEntries == 3 && !Instance.magicOreOpened;
+        // After the third expedition, repeat help every other expedition until ore is opened.
+        public static int GuaranteedMagicOreRing => Instance == null ? 0 :
+            MagicOreHelpRing(Instance.totalPortalEntries, Instance.magicOreOpened);
+        public static int MagicOreHelpRing(int portalEntries, bool oreOpened) => oreOpened ? 0 :
+            portalEntries == 3 ? 2 : portalEntries >= 4 && portalEntries % 2 == 0 ? 3 : 0;
+        public static void RecordMagicOreOpened()
+        {
+            if (Instance == null || Instance.magicOreOpened) return;
+            Instance.magicOreOpened = true;
+            Instance.Save();
+        }
         public static bool IsFirstPortalRun => !PlaytestSettings.TutorialsAndQuestsDisabled && (Instance != null ? Instance.firstPortalRun || Instance.totalPortalEntries == 0 :
             (JsonUtility.FromJson<Data>(PlayerPrefs.GetString(Key, "{}")) ?? new Data()).totalPortalEntries == 0);
         private void OnEnable()
         {
             // Awake does not run again after a Play Mode script reload.
             if (Instance == null) Instance = this;
+            PlayerPrefs.SelectionChanged -= ReloadSelectedSlot;
+            PlayerPrefs.SelectionChanged += ReloadSelectedSlot;
+        }
+        private void OnDisable() => PlayerPrefs.SelectionChanged -= ReloadSelectedSlot;
+        private void ReloadSelectedSlot()
+        {
+            if (Instance != this) return;
+            // This persistent service survives the menu; an empty slot has no saved fields to overwrite it.
+            Day = 1; SearchedToday = EnteredToday = false;
+            totalPortalEntries = 0; firstPortalRun = magicOreOpened = false;
+            RefugeesAvailable = 2; SelectedPortalDifficulty = 1; SelectedPortalLocationId = "forest";
+            Portals = new List<PortalSite>();
+            Load(); EnsureFixedPortals();
+            Changed?.Invoke();
         }
         private void OnDestroy()
         {
@@ -295,9 +322,9 @@ namespace GameFoundation.MetaProgression
             SearchedToday = true;
         }
 
-        private void Save(){PlayerPrefs.SetString(Key,JsonUtility.ToJson(new Data{totalPortalEntries=totalPortalEntries,firstPortalRun=firstPortalRun,day=Day,searched=SearchedToday,entered=EnteredToday,refugees=RefugeesAvailable,selectedDifficulty=SelectedPortalDifficulty,selectedLocationId=SelectedPortalLocationId,portals=Portals}));PlayerPrefs.Save();}
-        private void Load(){if(!PlayerPrefs.HasKey(Key))return;var json=PlayerPrefs.GetString(Key);var d=JsonUtility.FromJson<Data>(json);if(d==null)return;totalPortalEntries=json.Contains("\"totalPortalEntries\"")?d.totalPortalEntries:(d.day>1||d.entered?1:0);firstPortalRun=d.firstPortalRun;Day=Mathf.Max(1,d.day);SearchedToday=d.searched;EnteredToday=d.entered;RefugeesAvailable=json.Contains("\"refugees\"")?d.refugees:2;SelectedPortalDifficulty=Mathf.Clamp(d.selectedDifficulty<=0?1:d.selectedDifficulty,1,5);SelectedPortalLocationId=string.IsNullOrEmpty(d.selectedLocationId)?"forest":d.selectedLocationId;Portals=d.portals??new();}
-        [Serializable] private class Data{public int totalPortalEntries;public bool firstPortalRun;public int day=1;public bool searched,entered;public int refugees=2;public int selectedDifficulty=1;public string selectedLocationId="forest";public List<PortalSite> portals;}
+        private void Save(){PlayerPrefs.SetString(Key,JsonUtility.ToJson(new Data{magicOreOpened=magicOreOpened,totalPortalEntries=totalPortalEntries,firstPortalRun=firstPortalRun,day=Day,searched=SearchedToday,entered=EnteredToday,refugees=RefugeesAvailable,selectedDifficulty=SelectedPortalDifficulty,selectedLocationId=SelectedPortalLocationId,portals=Portals}));PlayerPrefs.Save();}
+        private void Load(){if(!PlayerPrefs.HasKey(Key))return;var json=PlayerPrefs.GetString(Key);var d=JsonUtility.FromJson<Data>(json);if(d==null)return;totalPortalEntries=json.Contains("\"totalPortalEntries\"")?d.totalPortalEntries:(d.day>1||d.entered?1:0);magicOreOpened=d.magicOreOpened;firstPortalRun=d.firstPortalRun;Day=Mathf.Max(1,d.day);SearchedToday=d.searched;EnteredToday=d.entered;RefugeesAvailable=json.Contains("\"refugees\"")?d.refugees:2;SelectedPortalDifficulty=Mathf.Clamp(d.selectedDifficulty<=0?1:d.selectedDifficulty,1,5);SelectedPortalLocationId=string.IsNullOrEmpty(d.selectedLocationId)?"forest":d.selectedLocationId;Portals=d.portals??new();}
+        [Serializable] private class Data{public bool magicOreOpened;public int totalPortalEntries;public bool firstPortalRun;public int day=1;public bool searched,entered;public int refugees=2;public int selectedDifficulty=1;public string selectedLocationId="forest";public List<PortalSite> portals;}
     }
 }
 

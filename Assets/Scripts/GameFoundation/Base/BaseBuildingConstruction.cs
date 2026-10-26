@@ -138,6 +138,7 @@ namespace GameFoundation.Base
             {
                 buildButton.gameObject.SetActive(!built && ConstructionUnlocked);
                 buildButton.interactable = !built && ConstructionUnlocked && CanAfford();
+                BaseDisabledButtonHint.Set(buildButton, !ConstructionUnlocked ? BaseDisabledButtonHint.Reason.Quest : BaseDisabledButtonHint.Reason.Resources);
             }
             if (buildButtonLabel != null)
                 buildButtonLabel.text = Tr(nameKey, fallbackName);

@@ -61,6 +61,7 @@ namespace GameFoundation.MetaProgression
         private readonly Dictionary<ResourceRequester, TimerController[]> productionTimers = new();
         private readonly HashSet<UnityEngine.Object> pausedAlarmSources = new();
         public int LightCount => lights.Length;
+        public bool HasVisibleLight => Array.Exists(lights, assignment => assignment.beam != null && assignment.beam.MarkerVisible);
         public bool Escaped => escaped;
         public bool AutoRepeat => autoRepeat;
         public LightState State(int index) => lights[index].occupied
@@ -200,7 +201,7 @@ namespace GameFoundation.MetaProgression
         }
         private void UpdateAutomaticWork()
         {
-            if (!autoRepeat || !LightsActivated || GameSpeedControls.SimulationSpeed <= 0) return;
+            if (!autoRepeat || !LightsActivated || GameSpeedControls.SimulationSpeed <= 0 || FirstRunLightTutorial.WaitsForLightExplanation) return;
             for (int i = 0; i < lights.Length; i++)
             {
                 var assignment = lights[i];
@@ -216,6 +217,11 @@ namespace GameFoundation.MetaProgression
         {
             if (escaped || !LightsActivated || GameSpeedControls.SimulationSpeed <= 0 ||
                 index < 0 || index >= lights.Length || lights[index].occupied || !lights[index].beam.MarkerVisible) return false;
+            if (FirstRunLightTutorial.WaitsForLightExplanation)
+            {
+                lights[index].restartPending = true;
+                return false;
+            }
             var target = ResolveTarget(lights[index].beam.MarkerPosition, index);
             if (target.State != HoverState.Available || target.LightIndex != index) return false;
             lights[index].restartPending = false;
@@ -548,6 +554,7 @@ namespace GameFoundation.MetaProgression
             {
                 assignment.requester.OnActionExecuted.RemoveListener(assignment.completed);
                 assignment.requester.SetCrystalFlag(null);
+                if (!completed && !escaped) assignment.requester.RecallIdleHumans();
             }
             if (assignment.timers != null)
                 foreach (var timer in assignment.timers) if (timer != null) timer.CrystalCycleStarted -= assignment.started;

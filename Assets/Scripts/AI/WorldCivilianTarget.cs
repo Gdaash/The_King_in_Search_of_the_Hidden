@@ -31,6 +31,7 @@ public sealed class WorldCivilianTarget : MonoBehaviour
     {
         if (fraction > 0 || lossRecorded) return;
         lossRecorded = true;
+        GameFoundation.MetaProgression.WorldCasualties.Death(population,gameObject);
         if (population != null) GlobalResourceManager.Instance?.TrySpendResource(population, 1);
     }
 }

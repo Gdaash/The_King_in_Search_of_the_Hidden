@@ -67,6 +67,7 @@ namespace GameFoundation.Base
                 if (second) PlacePrice(stoneIcon, stoneAmount, x);
             }
             confirm.interactable = target.CanAffordConstruction;
+            BaseDisabledButtonHint.Set(confirm, BaseDisabledButtonHint.Reason.Resources);
         }
 
         private static bool SetPrice(Image icon, Text amount, ResourceType resource, int cost)

@@ -1,4 +1,5 @@
 using GameFoundation.Intro;
+using GameFoundation.Localization;
 using GameFoundation.MetaProgression;
 using GameFoundation.Settings;
 using TMPro;
@@ -45,6 +46,7 @@ namespace GameFoundation.Saves
 
         public void OpenSlots()
         {
+            if (LanguageSelectionList.RequiredChoicePending) return;
             for (int i = 0; i < slotLabels.Length && i < 3; i++)
             {
                 if (slotLabels[i] == null) continue;
@@ -61,6 +63,7 @@ namespace GameFoundation.Saves
                     $"{seconds / 3600:00}:{seconds / 60 % 60:00}:{seconds % 60:00}", SaveSlotPrefs.SlotResource(slot,"Human"), SaveSlotPrefs.SlotResource(slot,"MagicOre"));
             }
             if (slotsPanel) slotsPanel.SetActive(true);
+            slotsPanel?.GetComponent<SaveSlotsPopupView>()?.Refresh();
         }
 
         public void CloseSlots()

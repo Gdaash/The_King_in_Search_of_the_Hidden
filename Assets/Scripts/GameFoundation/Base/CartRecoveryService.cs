@@ -23,14 +23,14 @@ namespace GameFoundation.Base
         private void Start()
         {
             cart = Resources.Load<ResourceType>("ResourceTypes/Cart"); wood = Resources.Load<ResourceType>("ResourceTypes/Wood");
-            cartCost = 10;
+            cartCost = WarehouseCartPurchaseView.DefaultWoodCost;
             var workshop = Object.FindAnyObjectByType<WarehouseCartPurchaseView>(FindObjectsInactive.Include);
             if (workshop != null) cartCost = workshop.WoodCost;
         }
         public static bool HasLivingCarrier() => Object.FindObjectsByType<Porter>(FindObjectsSortMode.None)
             .Any(p => !p.TryGetComponent<Health>(out var health) || health.CurrentHealth > 0);
         public static bool NeedsHelp(GlobalResourceManager resources, ResourceType cart, ResourceType wood, int price) =>
-            resources != null && cart != null && wood != null && resources.GetResourceAmount(cart) == 0 &&
+            !FirstExpeditionRecovery.Pending && resources != null && cart != null && wood != null && resources.GetResourceAmount(cart) == 0 &&
             (!BuildingUpgradeService.IsBuilt("blacksmith") || resources.GetResourceAmount(wood) < price) && !HasLivingCarrier();
         private void Update()
         {
@@ -40,6 +40,25 @@ namespace GameFoundation.Base
             string scene = SceneManager.GetActiveScene().name;
             if (scene != "Base") return;
             var view = Object.FindAnyObjectByType<QuestDialogueView>(FindObjectsInactive.Include);
+            if (FirstExpeditionRecovery.Pending)
+            {
+                var quest = FirstExpeditionRecovery.Quest;
+                if (QuestProgress.IsAccepted(quest) || view == null) return;
+                var lines = SaveSlotPrefs.GetInt(FirstExpeditionRecovery.CartsKey, 0) > 0
+                    ? new[] { FirstExpeditionRecovery.Dialogue, FirstExpeditionRecovery.CartDialogue } : new[] { FirstExpeditionRecovery.Dialogue };
+                showing = true;
+                if (!view.TryShowMessage("Стайк Пью", lines, () => showing = false, quest)) showing = false;
+                return;
+            }
+            ResidentRecovery.Prepare(GlobalResourceManager.Instance);
+            if (ResidentRecovery.Pending)
+            {
+                var quest = ResidentRecovery.Quest;
+                if (QuestProgress.IsAccepted(quest) || view == null) return;
+                showing = true;
+                if (!view.TryShowMessage("Стайк Пью", new[] { ResidentRecovery.Dialogue }, () => showing = false, quest)) showing = false;
+                return;
+            }
             string notice = SaveSlotPrefs.GetString(RoyalTributeService.NoticeKey, "");
             if (scene == "Base" && !string.IsNullOrEmpty(notice) && view != null)
             {

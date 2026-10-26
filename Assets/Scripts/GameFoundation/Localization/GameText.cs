@@ -10,6 +10,7 @@ namespace GameFoundation.Localization
     public static class GameText
     {
         static LocalizationTable cachedTable;
+        static string cachedLanguage;
         static readonly Dictionary<string,string> english=new(StringComparer.Ordinal);
         static readonly Dictionary<string,string> russian=new(StringComparer.Ordinal);
         static readonly Dictionary<string,string> formattedSources=new(StringComparer.Ordinal);
@@ -17,15 +18,18 @@ namespace GameFoundation.Localization
         static void Prepare()
         {
             var table=LocalizationService.Instance?LocalizationService.Instance.Table:null;
-            if(table==cachedTable)return;
-            cachedTable=table;english.Clear();russian.Clear();formattedSources.Clear();
+            string language=LocalizationService.Instance?.Language??"ru";
+            if(table==cachedTable&&language==cachedLanguage)return;
+            cachedTable=table;cachedLanguage=language;english.Clear();russian.Clear();formattedSources.Clear();
             sourcePattern=translatedPattern=null;if(!table)return;
-            int ru=table.languages.IndexOf("ru"),en=table.languages.IndexOf("en");
+            int ru=table.languages.IndexOf("ru"),en=table.languages.IndexOf(language);
             foreach(var entry in table.entries)
             {
                 if(ru<0||en<0||entry.values.Count<=Math.Max(ru,en))continue;
-                string a=entry.values[ru],b=entry.values[en];if(string.IsNullOrEmpty(a)||string.IsNullOrEmpty(b)||a==b)continue;
-                english.TryAdd(a,b);russian.TryAdd(b,a);
+                string a=entry.values[ru],b=entry.values[en];if(string.IsNullOrEmpty(a)||string.IsNullOrEmpty(b))continue;
+                if(a!=b)english.TryAdd(a,b);
+                foreach(string translated in entry.values)
+                    if(!string.IsNullOrEmpty(translated)&&translated!=a)russian.TryAdd(translated,a);
             }
             sourcePattern=Pattern(english.Keys);translatedPattern=Pattern(russian.Keys);
         }
@@ -44,7 +48,7 @@ namespace GameFoundation.Localization
         public static string Get(string source)
         {
             if(string.IsNullOrEmpty(source))return source;Prepare();
-            if(LocalizationService.Instance?.Language!="en")return source;
+            if(LocalizationService.Instance?.Language=="ru")return source;
             if(english.TryGetValue(source,out var result))return result;
             return sourcePattern==null?source:sourcePattern.Replace(source,m=>english[m.Value]);
         }

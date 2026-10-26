@@ -29,6 +29,12 @@ namespace GameFoundation.Settings
 
         private void OnEnable()
         {
+            if (GetComponent<LanguageSelectionList>() != null)
+            {
+                // Legacy scene overrides may still enable the two original language buttons.
+                if (russianButton) russianButton.gameObject.SetActive(false);
+                if (englishButton) englishButton.gameObject.SetActive(false);
+            }
             var service = GameSettingsService.Instance;
             if (service == null) return;
             if (masterSlider) masterSlider.SetValueWithoutNotify(service.Master);

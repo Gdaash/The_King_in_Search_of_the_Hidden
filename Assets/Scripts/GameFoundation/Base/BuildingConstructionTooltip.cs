@@ -19,7 +19,6 @@ namespace GameFoundation.Base
         [SerializeField] private float screenMargin = 12f;
         [SerializeField, Min(0f)] private float bottomPadding = 24f;
         [SerializeField, Min(0f)] private float resourceRowGap = 12f;
-        [SerializeField, Min(0f)] private float minimumHeight = 362f;
         [SerializeField, Min(0f)] private float titleTopPadding = 22f;
         [SerializeField, Min(0f)] private float titleDescriptionGap = 24f;
         [SerializeField, Min(0f)] private float titleHorizontalPadding = 48f;
@@ -121,7 +120,7 @@ namespace GameFoundation.Base
             Canvas.ForceUpdateCanvases();
 
             // Wrapped title and description grow downward while resource icons keep their native size.
-            float titleHeight = title != null ? Mathf.Max(title.rectTransform.rect.height, title.preferredHeight) : 54f;
+            float titleHeight = title != null ? Mathf.Max(title.fontSize, title.preferredHeight) : 54f;
             if (title != null) title.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, titleHeight);
             float descriptionTop = titleTopPadding + titleHeight + titleDescriptionGap;
             if (description != null)
@@ -130,12 +129,14 @@ namespace GameFoundation.Base
                 descriptionPosition.y = -descriptionTop;
                 description.rectTransform.anchoredPosition = descriptionPosition;
             }
-            float descriptionHeight = Mathf.Max(104f, description.preferredHeight);
+            float descriptionHeight = string.IsNullOrWhiteSpace(description.text) ? 0f : description.preferredHeight;
             description.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, descriptionHeight);
             float priceTop = descriptionTop + descriptionHeight + 10f;
             var pricePosition = priceLabel.rectTransform.anchoredPosition;
             pricePosition.y = -priceTop;
             priceLabel.rectTransform.anchoredPosition = pricePosition;
+            float priceHeight = Mathf.Max(priceLabel.fontSize, priceLabel.preferredHeight);
+            priceLabel.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, priceHeight);
             float rowHeight = 0f;
             void Measure(Image icon, Text amount, bool visible)
             {
@@ -145,7 +146,7 @@ namespace GameFoundation.Base
             }
             Measure(woodIcon, woodAmount, first);
             Measure(stoneIcon, stoneAmount, second);
-            float rowTop = priceTop + priceLabel.rectTransform.rect.height + resourceRowGap;
+            float rowTop = priceTop + priceHeight + (first || second ? resourceRowGap : 0f);
             void Align(RectTransform item)
             {
                 if (item == null) return;
@@ -157,8 +158,15 @@ namespace GameFoundation.Base
             }
             if (first) { Align(woodIcon != null ? woodIcon.rectTransform : null); Align(woodAmount != null ? woodAmount.rectTransform : null); }
             if (second) { Align(stoneIcon != null ? stoneIcon.rectTransform : null); Align(stoneAmount != null ? stoneAmount.rectTransform : null); }
-            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
-                Mathf.Max(minimumHeight, rowTop + rowHeight + bottomPadding));
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, rowTop + rowHeight + bottomPadding);
+            // Keep the existing divider between the header and the content even when the title wraps.
+            var divider = transform.Find("Header Divider") as RectTransform;
+            if (divider != null)
+            {
+                var position = divider.anchoredPosition;
+                position.y = -(titleTopPadding + titleHeight + titleDescriptionGap * .5f);
+                divider.anchoredPosition = position;
+            }
         }
 
         private static void SetTextWidth(Text text, float width)

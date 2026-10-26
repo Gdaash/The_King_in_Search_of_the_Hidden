@@ -44,6 +44,7 @@ namespace GameFoundation.Base
             selection.enabled = selected;
             // Locked destinations can be selected to preview their contents.
             button.interactable = !demoLocked;
+            BaseDisabledButtonHint.Set(button, BaseDisabledButtonHint.Reason.Demo);
             if (demoOverlay != null)
             {
                 demoOverlay.SetActive(demoLocked);

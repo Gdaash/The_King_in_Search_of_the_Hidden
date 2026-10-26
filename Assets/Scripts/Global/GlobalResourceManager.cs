@@ -85,6 +85,14 @@ public class GlobalResourceManager : MonoBehaviour
         return new Dictionary<ResourceType, int>(_resourceAmounts);
     }
 
+    private void OnEnable() => PlayerPrefs.SelectionChanged += ReloadSelectedSlot;
+    private void OnDisable() => PlayerPrefs.SelectionChanged -= ReloadSelectedSlot;
+    private void ReloadSelectedSlot()
+    {
+        if (Instance != this) return;
+        InitializeResources(); LoadResources();
+    }
+
     private void Awake()
     {
         if (Instance == null)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [Serializable]
@@ -51,6 +52,7 @@ public partial class AlarmSystem
     private readonly List<DirectedSpawnGroup> directedGroups = new();
     private Coroutine directedRoutine;
     private int directedWaveId;
+    private bool continuousFirstRunWaves;
     private int pendingDirectedEnemies;
     private float nextTelegraphRefresh;
     private bool hasWaveDirection, avoidPreviousSpawnPoints;
@@ -88,8 +90,11 @@ public partial class AlarmSystem
             if (threshold == null) { yield return null; continue; }
             var composition = SelectComposition(threshold);
             if (composition == null || composition.units.Count == 0) { yield return new WaitForSeconds(1); continue; }
-            directedCounts.Clear();
-            pendingDirectedEnemies = 0;
+            if (!continuousFirstRunWaves)
+            {
+                directedCounts.Clear();
+                pendingDirectedEnemies = 0;
+            }
             foreach (var unit in composition.units)
             {
                 if (unit.prefab == null || unit.count <= 0) continue;
@@ -98,7 +103,8 @@ public partial class AlarmSystem
                 pendingDirectedEnemies += unit.count;
             }
             if (pendingDirectedEnemies == 0) { yield return new WaitForSeconds(1); continue; }
-            foreach (var entry in directedCounts) spawnPool.PlanReserve(entry.Key, entry.Value);
+            foreach (var group in composition.units.Where(unit => unit.prefab != null && unit.count > 0).GroupBy(unit => unit.prefab))
+                spawnPool.PlanReserve(group.Key, group.Sum(unit => unit.count));
             WaveNumber++;
             directedWaveId++;
             CreateDirectedGroups(composition.groups);
@@ -136,6 +142,8 @@ public partial class AlarmSystem
             previousSpawnPoints.Clear();
             foreach (var group in directedGroups) previousSpawnPoints.Add(group.position);
             ClearDirectedGroups();
+            // The first expedition keeps its 35-second cadence even if enemies survive.
+            if (continuousFirstRunWaves) continue;
             while (pendingDirectedEnemies > 0) yield return null;
             CurrentWaveStage = WaveStage.Rest;
             WaveSecondsRemaining = 0;
@@ -166,7 +174,8 @@ public partial class AlarmSystem
 
     internal void RemoveDirectedWaveEnemy(int waveId, GameObject prefab)
     {
-        if (waveId != directedWaveId || !directedCounts.TryGetValue(prefab, out int count) || count <= 0) return;
+        if ((continuousFirstRunWaves ? waveId <= 0 || waveId > directedWaveId : waveId != directedWaveId) ||
+            !directedCounts.TryGetValue(prefab, out int count) || count <= 0) return;
         directedCounts[prefab] = count - 1;
         pendingDirectedEnemies = Mathf.Max(0, pendingDirectedEnemies - 1);
         WaveChanged?.Invoke();
@@ -233,6 +242,7 @@ public partial class AlarmSystem
     {
         if (directedRoutine != null) StopCoroutine(directedRoutine);
         directedRoutine = null;
+        continuousFirstRunWaves = false;
         directedWaveId++;
         directedCounts.Clear();
         pendingDirectedEnemies = 0;

@@ -131,6 +131,7 @@ namespace GameFoundation.MetaProgression
         private void ConfigureWarrior(GameObject unit, UnitControl control, MilitaryProfile profile)
         {
             if (unit == null) return;
+            var loss=unit.GetComponent<WorldLossIdentity>()??unit.AddComponent<WorldLossIdentity>();loss.resource=control.resource;
             MilitaryExperience experience = unit.GetComponent<MilitaryExperience>() ?? unit.AddComponent<MilitaryExperience>();
             experience.Initialize(profile);
             WorldMilitaryLowHealthRetreat retreat = unit.GetComponent<WorldMilitaryLowHealthRetreat>() ?? unit.AddComponent<WorldMilitaryLowHealthRetreat>();
@@ -168,6 +169,21 @@ namespace GameFoundation.MetaProgression
             BeginEscapeRecall(swordsmen);
             BeginEscapeRecall(archers);
             Refresh();
+        }
+        public void SettleEscapeLosses()
+        {
+            SettleEscapeLosses(swordsmen);SettleEscapeLosses(archers);
+        }
+        private static void SettleEscapeLosses(UnitControl control)
+        {
+            foreach(var unit in control.deployed)
+            {
+                if(unit==null)continue;
+                if(unit.TryGetComponent<Health>(out var health)&&health.IsDead)WorldCasualties.Death(control.resource,unit);
+                else WorldCasualties.DidNotReturn(control.resource,1);
+                unit.GetComponent<MilitaryExperience>()?.Die();Destroy(unit);
+            }
+            control.deployed.Clear();
         }
 
         /// <summary>Called by a deployed warrior when an active decree requests a low-health retreat.</summary>

@@ -7,6 +7,7 @@ Shader "Game/Shelter Fog Flow"
         _MotionPixels ("Motion distance (source pixels)", Range(0,32)) = 16
         _WindSpeed ("Wind speed", Range(0,1)) = 0.28
         _Density ("Density", Range(0,1.5)) = 1
+        [HideInInspector] _OpaqueSideEdges ("Fill base side edges", Float) = 0
         [HideInInspector] _PreviewTime ("Preview time", Float) = -1
     }
     SubShader
@@ -23,7 +24,7 @@ Shader "Game/Shelter Fog Flow"
             sampler2D _MainTex;
             float4 _MainTex_TexelSize;
             fixed4 _Color;
-            float _MotionPixels, _WindSpeed, _Density, _PreviewTime;
+            float _MotionPixels, _WindSpeed, _Density, _PreviewTime, _OpaqueSideEdges;
             struct input { float4 vertex:POSITION; float2 uv:TEXCOORD0; fixed4 color:COLOR; };
             struct output { float4 vertex:SV_POSITION; float2 uv:TEXCOORD0; fixed4 color:COLOR; };
             output vert(input v)
@@ -59,6 +60,10 @@ Shader "Game/Shelter Fog Flow"
                 fixed4 c=lerp(original,moving,0.85);
                 float density=_Density*(0.97+0.03*sin(t*0.71+uv.x*7+uv.y*9));
                 c*=density*saturate(original.a*12);
+                // Hide the artwork boundary before repeating its fog into a wider viewport.
+                float cover=_OpaqueSideEdges*(1-smoothstep(0,0.045,min(uv.x,1-uv.x)));
+                c.rgb=lerp(c.rgb,c.rgb/max(c.a,0.001),cover);
+                c.a=lerp(c.a,1,cover);
                 c.rgb*=i.color.rgb*i.color.a;
                 c.a*=i.color.a;
                 return c;

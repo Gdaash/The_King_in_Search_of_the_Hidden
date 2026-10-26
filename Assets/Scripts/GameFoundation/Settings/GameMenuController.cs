@@ -18,7 +18,9 @@ namespace GameFoundation.Settings
         private int settingsSibling;
         private bool confirming, showingSettings, opened, leaving;
         private float previousSpeed;
+        private int openedFrame;
         public bool IsConfirming => confirming;
+        public int ClosedFrame { get; private set; } = -1;
         private void Awake()
         {
             settingsButton.onClick.AddListener(OpenSettings);
@@ -29,6 +31,7 @@ namespace GameFoundation.Settings
         {
             if (opened) return;
             settings = popup; previousSpeed = GameSpeedControls.SimulationSpeed;
+            openedFrame = Time.frameCount;
             opened = true; confirming = showingSettings = leaving = false;
             gameObject.SetActive(true); window.SetActive(true); transform.SetAsLastSibling();
             GameSpeedControls.SetSimulationSpeed(0);
@@ -41,7 +44,7 @@ namespace GameFoundation.Settings
             if (PortalCloudTransition.IsLoading) return;
             if (showingSettings && (!settings || !settings.gameObject.activeSelf))
             { showingSettings = false; RestoreSettingsParent(); window.SetActive(true); Refresh(); }
-            if (Input.GetKeyDown(KeyCode.Escape)) { if (showingSettings) settings.Close(); else Cancel(); }
+            if (Time.frameCount > openedFrame && Input.GetKeyDown(KeyCode.Escape)) { if (showingSettings) settings.Close(); else Cancel(); }
         }
         public void OpenSettings()
         {
@@ -68,10 +71,13 @@ namespace GameFoundation.Settings
         public void Cancel()
         {
             if (confirming) { confirming = false; Refresh(); return; }
+            ClosedFrame = Time.frameCount;
             gameObject.SetActive(false);
         }
         private void Refresh()
         {
+            ((RectTransform)exitButton.transform).anchoredPosition = new Vector2(0, confirming ? -48 : -12);
+            ((RectTransform)cancelButton.transform).anchoredPosition = new Vector2(0, confirming ? -128 : -104);
             title.text = GameText.Get(confirming ? "Выйти в главное меню?" : "Меню");
             description.gameObject.SetActive(confirming);
             description.text = GameText.Get("Все люди, оставшиеся в портале, погибнут. Продолжить?");

@@ -56,6 +56,7 @@ namespace GameFoundation.Bestiary
                 text.font = label.font; text.fontSize = 20; text.alignment = TextAnchor.MiddleCenter;
                 text.color = new Color(.65f, .9f, .52f); text.raycastTarget = false;
                 text.horizontalOverflow = HorizontalWrapMode.Wrap;
+                GameFoundation.UI.QuestReadingText.Ensure(text);
             }
             bool en = LocalizationService.Instance?.Language == "en";
             string key = "bestiary.research.weakness";

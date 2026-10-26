@@ -111,6 +111,7 @@ namespace GameFoundation.UI
             var source = GetComponentInChildren<UnityEngine.UI.Text>(true);
             if (source != null && source != waveTimer) waveTimer.font = source.font;
             ConfigureWaveTimer();
+            GameFoundation.UI.QuestReadingText.Ensure(waveTimer);
         }
         private void ConfigureWaveTimer()
         {

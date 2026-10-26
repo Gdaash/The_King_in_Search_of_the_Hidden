@@ -12,7 +12,7 @@ public static class DamagePalette
  public static Color For(DamageType type)=>type switch {DamageType.Fire=>Fire,DamageType.Electric=>Electric,DamageType.Ice=>Ice,DamageType.Magic=>Magic,_=>new Color(.7f,.67f,.61f)};
  public static Material IconMaterial(Sprite sprite)
  {
-  if(sprite==null)return null;
+  if(sprite==null || sprite.name.StartsWith("Authored_",System.StringComparison.Ordinal))return null;
   DamageType type=sprite.name switch {
    "weapon_Bolts" or "weapon_Rings" or "Magic Bolts" or "Magic" or "MagicPlus"=>DamageType.Magic,
    "weapon_Beam" or "weapon_FireShot" or "projectile_FirePellet" or "Burning Beam" or "Fire"=>DamageType.Fire,

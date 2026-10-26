@@ -39,6 +39,10 @@ namespace GameFoundation.Base
             cancel.anchoredPosition = new Vector2(164,visible ? -246 : -120);
             offer.SetActive(visible && !used); timer.SetActive(visible && busy); results.SetActive(visible && used && !busy);
             send.interactable = ForestForagingService.CanStart(settings);
+            BaseDisabledButtonHint.Set(send, busy ? BaseDisabledButtonHint.Reason.Busy : ForestForagingService.UsedToday ? BaseDisabledButtonHint.Reason.ForagingUsed : day.GetFoodForecast().Starving <= 0 ? BaseDisabledButtonHint.Reason.NoHunger : BaseDisabledButtonHint.Reason.Resources);
+            BaseDisabledButtonHint.Set(confirm.GetComponent<Button>(), BaseDisabledButtonHint.Reason.Busy);
+            BaseDisabledButtonHint.Set(cancel.GetComponent<Button>(), BaseDisabledButtonHint.Reason.Busy);
+            BaseDisabledButtonHint.Set(close.GetComponent<Button>(), BaseDisabledButtonHint.Reason.Busy);
             priceAmount.text = settings.cost.ToString();
             warning.text = GameFoundation.Localization.GameText.Get("ВНИМАНИЕ! ") + Mathf.RoundToInt((1f - settings.survivalChance) * 100f) + GameFoundation.Localization.GameText.Get("% шанс гибели.");
             ResourceIconSizing.Apply(priceIcon,settings.influence.resourceIcon);

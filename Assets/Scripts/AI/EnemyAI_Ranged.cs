@@ -106,6 +106,8 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
         // Используем CurrentAttackRange из глобальных статов
         if (!_isAttacking && distanceToTarget <= CurrentAttackRange && Time.time >= _nextAttackTime)
         {
+            if (CompareTag("Enemy1") && ResourceWorkforce.EvacuateExposedTarget(_target))
+            { _target = null; return; }
             _isAttacking = true;
             OnAttack?.Invoke();
             

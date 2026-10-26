@@ -39,7 +39,8 @@ namespace GameFoundation.Bestiary
 
         public static void RegisterKill(EnemyIdentity identity)
         {
-            if (identity == null || string.IsNullOrEmpty(identity.Id)) return;
+            if (identity == null || string.IsNullOrEmpty(identity.Id) ||
+                !GameFoundation.Base.BuildingUpgradeService.IsBuilt("magic_library")) return;
             var data = Data;
             if (!killCounts.TryGetValue(identity.Id, out var record))
             {

@@ -19,6 +19,8 @@ public static class LaboratoryResourceResearchSetup
         table.entries.RemoveAll(e => e.id == ScientificUpgrades.PortalArrows || e.id == ScientificUpgrades.WarriorRetreat);
         english.Clear();
         var stone = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/Stone.asset");
+        var wood = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/Wood.asset");
+        var food = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/Berry.asset");
         var ore = AssetDatabase.LoadAssetAtPath<ResourceType>("Assets/Resources/ResourceTypes/MagicOre.asset");
         void Add(string id, string title, string enTitle, string description, string enDescription, int gate, float value, int price, ResourceType resource, string icon)
         {
@@ -33,10 +35,10 @@ public static class LaboratoryResourceResearchSetup
             "Повышает на 1 минимум и максимум кристаллов с открытых пустых и полностью очищенных гексов. Базовое выпадение: 2–6 вместо 1–5.",
             "Increases the minimum and maximum crystal drops from newly opened empty hexes and fully cleared hexes by 1. Base drops: 2–6 instead of 1–5.",
             2, 1, 8, ore, "Magic");
-        Add(ScientificUpgrades.SharpAxes, "Острые топоры", "Sharp axes", "Уменьшает время добычи дерева на 20%.", "Reduces wood gathering time by 20%.", 0, .8f, 8, stone, "Sword");
-        Add(ScientificUpgrades.QuietScouting, "Тихая разведка", "Quiet scouting", "Уменьшает опасность открытия гекса на 1 череп. Не менее 1 черепа.", "Reduces hex exploration danger by 1 skull, to a minimum of 1 skull.", 0, 1, 4, ore, "Eye");
+        Add(ScientificUpgrades.SharpAxes, "Острые топоры", "Sharp axes", "Уменьшает время добычи дерева на 20%.", "Reduces wood gathering time by 20%.", 0, .8f, 12, wood, "Sword");
+        Add(ScientificUpgrades.QuietScouting, "Тихая разведка", "Quiet scouting", "Уменьшает опасность открытия гекса на 1 череп. Не менее 1 черепа.", "Reduces hex exploration danger by 1 skull, to a minimum of 1 skull.", 0, 1, 20, food, "Eye");
         Add(ScientificUpgrades.StrongWalls, "Крепкие стены", "Strong walls", "Повышает здоровье башни портала на 20%.", "Increases portal tower health by 20%.", 2, 1.2f, 8, stone, "Shield");
-        Add(ScientificUpgrades.SharpKnives, "Острые ножи", "Sharp knives", "Уменьшает время добычи еды на 20%.", "Reduces food gathering time by 20%.", 2, .8f, 8, stone, "Sword");
+        Add(ScientificUpgrades.SharpKnives, "Острые ножи", "Sharp knives", "Уменьшает время добычи еды на 20%.", "Reduces food gathering time by 20%.", 2, .8f, 30, food, "Sword");
         Add(ScientificUpgrades.SharpPickaxes, "Острые кирки", "Sharp pickaxes", "Уменьшает время добычи камня на 20%.", "Reduces stone gathering time by 20%.", 2, .8f, 8, stone, "Sword");
         Add(ScientificUpgrades.QuietAxes, "Тихие топоры", "Quiet axes", "Уменьшает опасность каждого цикла добычи дерева на 1 череп. Не менее 1 черепа.", "Reduces danger per wood gathering cycle by 1 skull, to a minimum of 1 skull.", 2, 1, 4, ore, "Eye");
         Add(ScientificUpgrades.QuietHunting, "Тихая охота", "Quiet hunting", "Уменьшает опасность каждого цикла добычи еды на 1 череп. Не менее 1 черепа.", "Reduces danger per food gathering cycle by 1 skull, to a minimum of 1 skull.", 5, 1, 8, ore, "Eye");

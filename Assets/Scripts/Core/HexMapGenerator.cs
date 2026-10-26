@@ -152,6 +152,19 @@ public class HexMapGenerator : MonoBehaviour
         return false;
     }
 
+    public bool IsRingHex(Transform hexTransform, int ringNumber)
+    {
+        if (hexTransform == null || ringNumber < 1) return false;
+        while (hexTransform.parent != null && hexTransform.parent != transform)
+            hexTransform = hexTransform.parent;
+        if (hexTransform.parent != transform) return false;
+        float tolerance = Mathf.Max(0.1f, Mathf.Abs(hexScale) * 0.1f);
+        foreach (var position in GetRingPositions(ringNumber))
+            if (((Vector2)(hexTransform.localPosition - position)).sqrMagnitude <= tolerance * tolerance)
+                return true;
+        return false;
+    }
+
     private void CreateHex(GameObject prefab, Vector3 position, string objectName, bool firstRing)
     {
         GameObject go;

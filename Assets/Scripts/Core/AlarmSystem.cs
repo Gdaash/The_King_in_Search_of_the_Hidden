@@ -370,6 +370,7 @@ public partial class AlarmSystem : MonoBehaviour
     {
         if (firstRunWaveTemplate == null || thresholds.Count != 0) return false;
         var template = firstRunWaveTemplate;
+        continuousFirstRunWaves = true;
         thresholds.Add(new AlarmThreshold
         {
             alarmValue = currentAlarm+_pendingAlarm,

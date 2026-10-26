@@ -140,6 +140,8 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
             OnStop?.Invoke();
             if (!_isAttacking && Time.time >= _nextAttackTime)
             {
+                if (CompareTag("Enemy1") && ResourceWorkforce.EvacuateExposedTarget(_target))
+                { _target = null; return; }
                 _isAttacking = true;
                 OnAttack?.Invoke();
                 _nextAttackTime = Time.time + _currentCooldown;

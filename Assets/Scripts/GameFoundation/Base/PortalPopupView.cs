@@ -91,6 +91,7 @@ namespace GameFoundation.Base
             bool unlocked = PortalProgression.IsUnlocked(Selected);
             bool entered = DayCycleService.Instance != null && DayCycleService.Instance.EnteredToday;
             travelButton.interactable = unlocked && !entered && DayCycleService.Instance != null;
+            BaseDisabledButtonHint.Set(travelButton, entered ? BaseDisabledButtonHint.Reason.TravelUsed : PortalProgression.IsDemoLocked(Selected) ? BaseDisabledButtonHint.Reason.Demo : BaseDisabledButtonHint.Reason.PortalLevel);
             travelLabel.text = Tr("base.portal.depart", GameFoundation.Localization.GameText.Get("Отправиться"));
             status.text = !unlocked ? string.Format(Tr("base.portal.requires_level", GameFoundation.Localization.GameText.Get("Улучшите портал до ур. {0}")), Selected.RequiredPortalLevel) :
                 entered ? Tr("base.portal.travel_used", GameFoundation.Localization.GameText.Get("На сегодня вы исчерпали эту возможность.")) : Tr("base.portal.ready", GameFoundation.Localization.GameText.Get("Портал готов к переходу"));

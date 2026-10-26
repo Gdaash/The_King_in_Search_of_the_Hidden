@@ -11,9 +11,26 @@ namespace GameFoundation.Saves
         private const int CurrentVersion = 1;
         private static readonly Dictionary<int, SlotData> LoadedSlots = new();
         private static readonly HashSet<int> activeRuns = new();
+        private static readonly HashSet<int> locallyMigrating = new();
         internal static bool WritesSuspended;
+        internal static bool ClearSlot(int slot)
+        {
+            if (WritesSuspended || slot < 1 || slot > 3) return false;
+            SaveFileStorage.Write(slot, JsonUtility.ToJson(new SlotData { deleted = true }));
+            pendingSaves.Remove(slot); activeRuns.Remove(slot); LoadedSlots.Remove(slot);
+            // Keep the tombstone so legacy keys cannot resurrect a deleted slot.
+            EraseSlotStorage(slot, UnityEngine.PlayerPrefs.SetInt, UnityEngine.PlayerPrefs.DeleteKey, UnityEngine.PlayerPrefs.Save);
+            if (SaveSlotPrefs.SelectedSlot == slot) GameFoundation.Bestiary.BestiaryService.ResetCache();
+            return true;
+        }
+        internal static void EraseSlotStorage(int slot, Action<string,int> setInt, Action<string> deleteKey, Action save)
+        {
+            if (slot < 1 || slot > 3) throw new ArgumentOutOfRangeException(nameof(slot));
+            setInt(Prefix(slot) + "reset", 1);
+            deleteKey(Prefix(slot) + "created");deleteKey(EnvelopeKey(slot));save();
+        }
         private static int batchDepth;
-        private static bool LegacyAllowed(int slot) => !UnityEngine.PlayerPrefs.HasKey(Prefix(slot) + "reset");
+        private static bool LegacyAllowed(int slot) => (!SaveFileStorage.Exists(slot) || locallyMigrating.Contains(slot)) && !UnityEngine.PlayerPrefs.HasKey(Prefix(slot) + "reset");
         internal static void ResetSlot(int slot)
         {
             GameFoundation.Bestiary.BestiaryService.ResetCache();
@@ -21,7 +38,10 @@ namespace GameFoundation.Saves
             activeRuns.Remove(slot);
             LoadedSlots[slot] = new SlotData();
             UnityEngine.PlayerPrefs.SetInt(Prefix(slot) + "reset", 1);
-            UnityEngine.PlayerPrefs.SetString(EnvelopeKey(slot), JsonUtility.ToJson(LoadedSlots[slot]));
+            // Reset is called after unloading gameplay while ordinary writes are suspended.
+            string json = JsonUtility.ToJson(LoadedSlots[slot]);
+            SaveFileStorage.Write(slot, json);
+            UnityEngine.PlayerPrefs.SetString(EnvelopeKey(slot), json);
             UnityEngine.PlayerPrefs.Save();
         }
         private static readonly HashSet<int> pendingSaves = new();
@@ -43,21 +63,31 @@ namespace GameFoundation.Saves
         [Serializable] private sealed class SlotData
         {
             public int version = CurrentVersion;
+            public bool deleted;
             public List<Entry> entries = new();
             public string unfinishedRunCheckpoint;
         }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         internal static void ResetRunSession()
         {
-            activeRuns.Clear(); LoadedSlots.Clear(); pendingSaves.Clear(); batchDepth = 0;
+            activeRuns.Clear(); locallyMigrating.Clear(); LoadedSlots.Clear(); pendingSaves.Clear(); batchDepth = 0;
         }
         private static string Prefix(int slot) => $"foundation.slot.{slot}.";
         private static string EnvelopeKey(int slot) => Prefix(slot) + "saveData";
         private static SlotData Data(int slot)
         {
             if (LoadedSlots.TryGetValue(slot, out SlotData data)) return data;
-            string json = UnityEngine.PlayerPrefs.GetString(EnvelopeKey(slot), string.Empty);
-            data = string.IsNullOrEmpty(json) ? null : JsonUtility.FromJson<SlotData>(json);
+            bool fileExists = SaveFileStorage.Exists(slot);
+            if (!fileExists) locallyMigrating.Add(slot);
+            string json = fileExists ? SaveFileStorage.Read(slot) : UnityEngine.PlayerPrefs.GetString(EnvelopeKey(slot), string.Empty);
+            try { data = string.IsNullOrEmpty(json) ? null : Parse(json); }
+            catch (Exception error) when (error is ArgumentException || error is System.IO.InvalidDataException)
+            {
+                if (!fileExists) throw;
+                data = Parse(SaveFileStorage.ReadBackup(slot));
+                Debug.LogWarning("Recovered gameplay save from its local backup: " + error.Message);
+            }
+            bool migrate = !fileExists && data != null;
             data ??= new SlotData(); data.entries ??= new List<Entry>();
             if (!activeRuns.Contains(slot) && !string.IsNullOrEmpty(data.unfinishedRunCheckpoint))
             {
@@ -69,11 +99,12 @@ namespace GameFoundation.Saves
                 if (restored != null && restored.entries != null)
                 {
                     data = restored; data.unfinishedRunCheckpoint = null;
-                    if (!WritesSuspended) { UnityEngine.PlayerPrefs.SetString(EnvelopeKey(slot), JsonUtility.ToJson(data)); UnityEngine.PlayerPrefs.Save(); }
+                    if (!WritesSuspended) { Persist(slot, data); UnityEngine.PlayerPrefs.Save(); }
                 }
                 else data.unfinishedRunCheckpoint = null;
             }
             LoadedSlots[slot] = data;
+            if (migrate && !WritesSuspended) Persist(slot, data);
             return data;
         }
         private static Entry Find(int slot, string key) => Data(slot).entries.Find(item => item != null && item.key == key);
@@ -86,8 +117,15 @@ namespace GameFoundation.Saves
             if (source != null) value = type == "int" ? UnityEngine.PlayerPrefs.GetInt(source).ToString(CultureInfo.InvariantCulture) : type == "float" ? UnityEngine.PlayerPrefs.GetFloat(source).ToString(CultureInfo.InvariantCulture) : UnityEngine.PlayerPrefs.GetString(source, fallback);
             entry = new Entry { key = key, type = type, value = value }; Data(slot).entries.Add(entry); return entry;
         }
-        internal static bool SlotExists(int slot) => slot >= 1 && slot <= 3 && (UnityEngine.PlayerPrefs.HasKey(Prefix(slot) + "created") || UnityEngine.PlayerPrefs.HasKey(EnvelopeKey(slot)) || (slot == 1 && (UnityEngine.PlayerPrefs.HasKey("foundation.daycycle") || UnityEngine.PlayerPrefs.HasKey("Global_Resource_Human"))));
-        internal static void MarkSelected(int slot) { UnityEngine.PlayerPrefs.SetInt("foundation.selectedSaveSlot", slot); UnityEngine.PlayerPrefs.SetInt(Prefix(slot) + "created", 1); Save(slot); }
+        internal static bool SlotExists(int slot)
+        {
+            if (slot < 1 || slot > 3) return false;
+            if (SaveFileStorage.Exists(slot)) return !Data(slot).deleted;
+            return UnityEngine.PlayerPrefs.HasKey(Prefix(slot) + "created") || UnityEngine.PlayerPrefs.HasKey(EnvelopeKey(slot)) ||
+                (slot == 1 && LegacyAllowed(slot) && (UnityEngine.PlayerPrefs.HasKey("foundation.daycycle") || UnityEngine.PlayerPrefs.HasKey("Global_Resource_Human")));
+        }
+
+        internal static void MarkSelected(int slot) { if (WritesSuspended) return; Data(slot).deleted = false; UnityEngine.PlayerPrefs.SetInt("foundation.selectedSaveSlot", slot); UnityEngine.PlayerPrefs.SetInt(Prefix(slot) + "created", 1); Save(slot); }
         internal static bool HasKey(int slot, string key)
         {
             var entry = Find(slot, key);
@@ -104,14 +142,14 @@ namespace GameFoundation.Saves
             // Raw legacy keys also belong to the baseline until the battle finishes.
             if (!activeRuns.Contains(slot)) { UnityEngine.PlayerPrefs.DeleteKey(Prefix(slot) + key); if (slot == 1) UnityEngine.PlayerPrefs.DeleteKey(key); }
         }
-        internal static void Save(int slot) { if (WritesSuspended || activeRuns.Contains(slot)) return; if (batchDepth > 0) { pendingSaves.Add(slot); return; } UnityEngine.PlayerPrefs.SetString(EnvelopeKey(slot), JsonUtility.ToJson(Data(slot))); UnityEngine.PlayerPrefs.Save(); }
+        internal static void Save(int slot) { if (WritesSuspended || activeRuns.Contains(slot)) return; if (batchDepth > 0) { pendingSaves.Add(slot); return; } Persist(slot, Data(slot)); UnityEngine.PlayerPrefs.Save(); }
         internal static bool BeginRunCheckpoint(int slot)
         {
             if (WritesSuspended || activeRuns.Contains(slot)) return false;
             var data = Data(slot);
             data.unfinishedRunCheckpoint = JsonUtility.ToJson(data);
             activeRuns.Add(slot); pendingSaves.Remove(slot);
-            UnityEngine.PlayerPrefs.SetString(EnvelopeKey(slot), JsonUtility.ToJson(data)); UnityEngine.PlayerPrefs.Save();
+            Persist(slot, data); UnityEngine.PlayerPrefs.Save();
             return true;
         }
         internal static void CompleteRunCheckpoint(int slot)
@@ -121,6 +159,26 @@ namespace GameFoundation.Saves
             Save(slot);
         }
         internal static bool HasActiveRunCheckpoint(int slot) => activeRuns.Contains(slot);
+        private static SlotData Parse(string json)
+        {
+            var result = JsonUtility.FromJson<SlotData>(json);
+            if (result == null || result.version != CurrentVersion || result.entries == null)
+                throw new System.IO.InvalidDataException("Unsupported or invalid gameplay save.");
+            return result;
+        }
+        private static void Persist(int slot, SlotData data)
+        {
+            if (WritesSuspended) return;
+            string json = JsonUtility.ToJson(data);
+            SaveFileStorage.Write(slot, json);
+            // Retain the old local envelope for compatibility, but synced files take precedence.
+            UnityEngine.PlayerPrefs.SetString(EnvelopeKey(slot), json);
+        }
+        internal static void ClearAllFiles()
+        {
+            if (WritesSuspended) return;
+            for (int slot = 1; slot <= 3; slot++) SaveFileStorage.Write(slot, JsonUtility.ToJson(new SlotData { deleted = true }));
+        }
         internal static void ResetCache()
         {
             foreach (int slot in new List<int>(LoadedSlots.Keys)) if (!activeRuns.Contains(slot)) LoadedSlots.Remove(slot);

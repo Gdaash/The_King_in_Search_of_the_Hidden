@@ -93,21 +93,21 @@ public class OrderManager : MonoBehaviour
         if (Instance != null)
         {
             foreach (HumanUnit human in Instance._allHumanUnits)
-                if (human != null && human.GetCurrentJob() == null && human.IsReturningToWarehouse())
+                if (human != null && CombatTargetRegistry.IsAlive(human.transform) && human.GetCurrentJob() == null && human.IsReturningToWarehouse())
                     away++;
 
             foreach (Porter porter in Instance._allPorters)
-                if (porter != null && (porter.IsBusy() || porter.IsReturningToWarehouse() || porter.IsCarryingResource()))
+                if (porter != null && CombatTargetRegistry.IsAlive(porter.transform) && (porter.IsBusy() || porter.IsReturningToWarehouse() || porter.IsCarryingResource()))
                     away++;
         }
         else
         {
             foreach (HumanUnit human in Object.FindObjectsByType<HumanUnit>(FindObjectsInactive.Exclude))
-                if (human != null && human.GetCurrentJob() == null && human.IsReturningToWarehouse())
+                if (human != null && CombatTargetRegistry.IsAlive(human.transform) && human.GetCurrentJob() == null && human.IsReturningToWarehouse())
                     away++;
 
             foreach (Porter porter in Object.FindObjectsByType<Porter>(FindObjectsInactive.Exclude))
-                if (porter != null && (porter.IsBusy() || porter.IsReturningToWarehouse() || porter.IsCarryingResource()))
+                if (porter != null && CombatTargetRegistry.IsAlive(porter.transform) && (porter.IsBusy() || porter.IsReturningToWarehouse() || porter.IsCarryingResource()))
                     away++;
         }
 

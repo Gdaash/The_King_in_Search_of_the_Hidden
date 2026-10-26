@@ -13,6 +13,14 @@ public sealed class ResourceWorkforce : MonoBehaviour
     private float nextRefresh;
     private Health buildingHealth;
     private bool quitting;
+    // Occupancy, rather than production state, determines whether a shelter is a target.
+    public bool CanBeAttacked => !shelterWorkers || (requester != null && requester.ResidentHumanCount > 0);
+    public static bool EvacuateExposedTarget(Transform target)
+    {
+        if (target == null || !target.TryGetComponent<ResourceWorker>(out var worker)) return false;
+        worker.FleeWithColleagues();
+        return true;
+    }
     private void Start()
     {
         requester = GetComponent<ResourceRequester>();
@@ -61,9 +69,17 @@ public sealed class ResourceWorkforce : MonoBehaviour
         var type = requester.RemoveResidentHuman();
         if (died)
         {
+            GameFoundation.MetaProgression.WorldCasualties.Death(type,worker.gameObject);
             if (type != null) GlobalResourceManager.Instance?.TrySpendResource(type, 1);
         }
         else Warehouse.Instance?.SendHumanHomeFrom(worker.transform.position, fraction);
+    }
+    public void FleeExposedWorkers()
+    {
+        if (shelterWorkers) return;
+        // Evacuation removes workers from the list, so walk it backwards.
+        for (int i = workers.Count - 1; i >= 0; i--)
+            if (workers[i] != null) workers[i].OnTakeDamage(null);
     }
     private void EvacuateAll()
     {
@@ -116,5 +132,11 @@ public sealed class ResourceWorker : MonoBehaviour, IEnemyAI
         var health = GetComponent<Health>();
         owner.Evacuate(this, health != null && health.CurrentHealth <= 0, health != null ? health.NormalizedHealth : 1);
         Destroy(gameObject);
+    }
+    public void FleeWithColleagues()
+    {
+        if (leaving || owner == null) return;
+        // Evacuate living workers separately to preserve each resident's health.
+        owner.FleeExposedWorkers();
     }
 }

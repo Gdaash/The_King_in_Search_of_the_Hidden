@@ -103,6 +103,33 @@ public class HexManager : MonoBehaviour
                 }
             }
         }
+        EnsureGuaranteedMagicOre(allHexes, activeGroups);
+    }
+
+    public static bool IsMagicOreContent(GameObject prefab)
+    {
+        if (prefab == null) return false;
+        var ore = Resources.Load<ResourceType>("ResourceTypes/MagicOre");
+        if (ore == null) return false;
+        return prefab.GetComponentsInChildren<ResourceRequester>(true).Any(requester => requester.ProducesResource(ore));
+    }
+
+    private void EnsureGuaranteedMagicOre(HexBlocker[] hexes, IReadOnlyList<HexGroupSettings> activeGroups)
+    {
+        int ring = GameFoundation.MetaProgression.DayCycleService.GuaranteedMagicOreRing;
+        if (ring == 0) return;
+        var candidates = hexes.Where(hex => hex.GetComponentInParent<HexMapGenerator>() is HexMapGenerator generator &&
+            generator.IsRingHex(hex.transform, ring)).ToList();
+        if (candidates.Any(hex => IsMagicOreContent(hex.prefabToSpawn))) return;
+        var ore = activeGroups.SelectMany(group => group.prefabsForGroup).FirstOrDefault(data => IsMagicOreContent(data.prefab));
+        if (ore == null || candidates.Count == 0)
+        {
+            Debug.LogError($"[HexManager] Cannot guarantee magical ore: missing ore prefab or ring {ring}.");
+            return;
+        }
+        var target = candidates[Random.Range(0, candidates.Count)];
+        var danger = ore.prefab.GetComponentInChildren<DangerSource>(true);
+        target.AssignContent(ore.prefab, danger != null ? danger.dangerLevel : 0, false);
     }
 
     public void PlayBumpAnimation(GameObject spawnedObject)

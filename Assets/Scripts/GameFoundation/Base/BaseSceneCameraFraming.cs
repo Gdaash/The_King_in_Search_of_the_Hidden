@@ -53,9 +53,10 @@ namespace GameFoundation.Base
                 targetCamera.rect = fullViewport;
             targetCamera.orthographic = true;
 
-            float aspect = (float)Mathf.Max(1, targetCamera.pixelWidth) /
-                           Mathf.Max(1, targetCamera.pixelHeight);
-            float visiblePixelHeight = Mathf.Max(referenceResolution.y, referenceResolution.x / aspect);
+            // Fill the display height. Fitting the full artwork width on a taller display
+            // enlarged the vertical view beyond the artwork and exposed black bands.
+            // Wider displays keep this composition; the fog continues beyond its side edges.
+            float visiblePixelHeight = referenceResolution.y;
             float size = visiblePixelHeight / (2f * pixelsPerUnit);
             if (!Mathf.Approximately(targetCamera.orthographicSize, size))
                 targetCamera.orthographicSize = size;

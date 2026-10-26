@@ -109,7 +109,7 @@ namespace GameFoundation.MetaProgression
             label.text = LaboratoryUpgradeList.Tr("portal_tower.experience", GameFoundation.Localization.GameText.Get("Башня портала")) + "  " +
                 LaboratoryUpgradeList.Tr("laboratory.level", GameFoundation.Localization.GameText.Get("ур.")) + progression.Level + "   " + progression.Experience + " / " + progression.RequiredExperience;
             if (progression.CrystalDebt > 0)
-                label.text += (language != null && language.Language == "en" ? "  Debt: " : "  Долг: ") + progression.CrystalDebt;
+                label.text += GameFoundation.Localization.GameText.Get("  Долг: ") + progression.CrystalDebt;
         }
     }
 }

@@ -11,6 +11,13 @@ namespace GameFoundation.Settings
         [SerializeField] private SettingsPopupController settingsPrefab;
         private GameMenuController menu;
         private void Awake() => GetComponent<Button>().onClick.AddListener(Open);
+        private void Update()
+        {
+            // The popup is inactive while closed, so its launcher owns the opening shortcut.
+            if (Input.GetKeyDown(KeyCode.Escape) && (!menu || !menu.gameObject.activeInHierarchy && menu.ClosedFrame != Time.frameCount) &&
+                !GameFoundation.MetaProgression.PortalCloudTransition.IsLoading)
+                Open();
+        }
         public void Open()
         {
             if (!menuPrefab) return;

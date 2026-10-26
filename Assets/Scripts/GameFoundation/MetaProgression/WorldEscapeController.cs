@@ -43,6 +43,7 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private TMP_Text durationLabel;
         [SerializeField] private Button returnButton;
         [SerializeField] private TMP_Text defeatMessage;
+        [SerializeField] private WorldCasualtyPopup casualtyPopup;
         [SerializeField, Min(0f)] private float rowRevealDelay = 0.22f;
         [SerializeField] private string baseScene = "Base";
 
@@ -61,14 +62,16 @@ namespace GameFoundation.MetaProgression
         private bool _showingStatistics;
         private bool _loading;
         private bool _humanLossesSettled;
+        private bool _wasFirstPortalRun;
         private UnifiedButtonFeedback _buttonFeedback;
         private Color _normalButtonLabelColor = Color.white;
         private float _portalHealthNormalized = 1f;
 
-        private void Awake() => GameFoundation.Saves.SaveSlotPrefs.BeginRunCheckpoint();
+        private void Awake() { WorldCasualties.Begin();GameFoundation.Saves.SaveSlotPrefs.BeginRunCheckpoint(); }
 
         private void Start()
         {
+            _wasFirstPortalRun = DayCycleService.IsFirstPortalRun;
             _woodQuest = Resources.Load<GameFoundation.Quests.QuestDefinition>("Quests/Smithy Materials");
             _foodWarningCount = Mathf.Clamp(GameFoundation.Saves.SaveSlotPrefs.GetInt(FoodWarningKey, 0), 0, 2);
             _firstExpeditionEmergencyEligible = DayCycleService.IsFirstPortalRun &&
@@ -107,6 +110,7 @@ namespace GameFoundation.MetaProgression
 
         private void OnDestroy()
         {
+            WorldCasualties.End();
             GlobalResourceManager.OnResourceChanged -= OnRunResourceChanged;
             if (escapeButton != null) escapeButton.onClick.RemoveListener(OnEscapeClicked);
             if (returnButton != null) returnButton.onClick.RemoveListener(ReturnToBase);
@@ -182,13 +186,13 @@ namespace GameFoundation.MetaProgression
             int away = OrderManager.CountHumansAwayFromPortal(humanResource);
             int returned = Mathf.Max(0, total - away);
             if (progressFill != null)
-                progressFill.fillAmount = _startingHumans == 0 ? 1f : Mathf.Clamp01((float)returned / _startingHumans);
+                progressFill.fillAmount = total == 0 ? 1f : Mathf.Clamp01((float)returned / total);
             if (progressLabel != null)
-                progressLabel.text = $"{returned}/{_startingHumans}";
-            if(returnedPeople) returnedPeople.Present(returned,_startingHumans,humanResource);
+                progressLabel.text = $"{returned}/{total}";
+            if(returnedPeople) returnedPeople.Present(returned,total,humanResource);
 
             bool militaryReturned = militaryDeployment == null || !militaryDeployment.HasReturningUnits;
-            if (away == 0 && returned >= _startingHumans && militaryReturned)
+            if (away == 0 && militaryReturned)
                 ShowStatistics();
         }
 
@@ -309,7 +313,7 @@ namespace GameFoundation.MetaProgression
         {
             if (_showingStatistics) return;
             SettleUnreturnedHumans();
-            if (militaryDeployment != null) militaryDeployment.FinalizeSurvivors();
+            if (militaryDeployment != null) militaryDeployment.SettleEscapeLosses();
             foodSufficiencyHint?.HideForEscape();
             _showingStatistics = true;
             GameSpeedControls speedControls = UnityEngine.Object.FindAnyObjectByType<GameSpeedControls>();
@@ -317,19 +321,33 @@ namespace GameFoundation.MetaProgression
             else GameSpeedControls.SetSimulationSpeed(0f);
             if (escapeButton != null) escapeButton.gameObject.SetActive(false);
             if (progressPanel != null) progressPanel.SetActive(false);
-            if (statisticsPanel != null) statisticsPanel.SetActive(true);
+            if (statisticsPanel != null) statisticsPanel.SetActive(false);
             if (returnButton != null) returnButton.gameObject.SetActive(false);
 
             int seconds = Mathf.Max(0, Mathf.FloorToInt(Time.realtimeSinceStartup - _runStartedAt));
             _runDurationSeconds = seconds;
             DayResourceLedger.EndRun(seconds);
+            RecordFirstExpeditionRecovery();
             GameFoundation.Saves.SaveSlotPrefs.CompleteRunCheckpoint();
             if (durationLabel != null)
                 durationLabel.text = GameFoundation.Localization.GameText.Format("Длительность забега: {0}", $"{seconds / 3600:00}:{seconds / 60 % 60:00}:{seconds % 60:00}");
 
-            StartCoroutine(RevealStatistics(CaptureResources()));
+            var endingResources=CaptureResources();
+            void ContinueToStatistics(){if(statisticsPanel!=null)statisticsPanel.SetActive(true);StartCoroutine(RevealStatistics(endingResources));}
+            if(casualtyPopup!=null&&WorldCasualties.HasLosses)casualtyPopup.Show(WorldCasualties.Dead,WorldCasualties.Missing,ContinueToStatistics);
+            else ContinueToStatistics();
         }
 
+        private void RecordFirstExpeditionRecovery()
+        {
+            if (humanResource == null) return;
+            WorldCasualties.Dead.TryGetValue(humanResource, out int dead);
+            var carts = Resources.Load<ResourceType>("ResourceTypes/Cart");
+            if (carts == null) return;
+            _startingResources.TryGetValue(carts, out int started);
+            CaptureResources().TryGetValue(carts, out int remaining);
+            GameFoundation.Base.FirstExpeditionRecovery.Record(_wasFirstPortalRun, dead, Mathf.Max(0, started - remaining));
+        }
         private void SettleUnreturnedHumans()
         {
             if (_humanLossesSettled) return;
@@ -340,7 +358,7 @@ namespace GameFoundation.MetaProgression
             // have not reached the portal when the run ends are permanently lost.
             int lost = Mathf.Min(manager.GetResourceAmount(humanResource),
                 OrderManager.CountHumansAwayFromPortal(humanResource));
-            if (lost > 0) manager.TrySpendResource(humanResource, lost);
+            if (lost > 0) { WorldCasualties.DidNotReturn(humanResource,lost);manager.TrySpendResource(humanResource, lost); }
         }
 
         private IEnumerator RevealStatistics(Dictionary<ResourceType, int> endingResources)
@@ -385,11 +403,11 @@ namespace GameFoundation.MetaProgression
 
         private void ReturnToBase()
         {
-            if (_loading) return;
+            if (_loading || !PortalCloudTransition.CanLoad(baseScene)) return;
             _loading = true;
             GameSpeedControls.SetSimulationSpeed(1f);
             DayResourceLedger.EndRun(_runDurationSeconds);
-            SceneManager.LoadScene(baseScene);
+            PortalCloudTransition.Load(baseScene);
         }
 
         public void ExitToMainMenu()
@@ -400,6 +418,7 @@ namespace GameFoundation.MetaProgression
             SettleUnreturnedHumans();
             if (militaryDeployment != null) militaryDeployment.AbandonDeployedUnits();
             DayResourceLedger.EndRun(Mathf.Max(0, Mathf.FloorToInt(Time.realtimeSinceStartup - _runStartedAt)));
+            RecordFirstExpeditionRecovery();
             GameFoundation.Saves.SaveSlotPrefs.CompleteRunCheckpoint();
             GameFoundation.Saves.SaveSlotPrefs.Save();
             SceneManager.LoadScene("MainMenu");

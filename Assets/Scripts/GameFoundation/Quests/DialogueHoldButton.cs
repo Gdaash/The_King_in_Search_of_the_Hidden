@@ -97,7 +97,22 @@ namespace GameFoundation.Quests
             if (holdTooltip == null) return;
             bool visible = hovered && button != null && button.IsInteractable() && ready != null && ready();
             holdTooltip.SetActive(visible);
-            if (visible) tooltipLabel.text = (GameFoundation.Localization.LocalizationService.Instance?.Language == "en" ? "Hold" : "Зажми");
+            if (visible)
+            {
+                var service = GameFoundation.Localization.LocalizationService.Instance;
+                string hint = service != null ? service.Get("dialogue.hold") : "\u0417\u0430\u0436\u043c\u0438";
+                if (tooltipLabel.text == hint) return;
+                tooltipLabel.text = hint;
+                float textWidth = Mathf.Max(64f, Mathf.Ceil(tooltipLabel.GetPreferredValues(hint).x));
+                var icon = holdTooltip.transform.Find("LMB Icon").GetComponent<Image>();
+                float iconWidth = icon.rectTransform.rect.width;
+                float width = Mathf.Max(180f, textWidth + iconWidth + 52f);
+                ((RectTransform)holdTooltip.transform).sizeDelta = new Vector2(width, 56f);
+                float left = -(textWidth + 12f + iconWidth) * .5f;
+                tooltipLabel.rectTransform.sizeDelta = new Vector2(textWidth, 48f);
+                tooltipLabel.rectTransform.anchoredPosition = new Vector2(left + textWidth * .5f, 0);
+                icon.rectTransform.anchoredPosition = new Vector2(left + textWidth + 12f + iconWidth * .5f, 0);
+            }
         }
         public void OnPointerDown(PointerEventData e)
         {

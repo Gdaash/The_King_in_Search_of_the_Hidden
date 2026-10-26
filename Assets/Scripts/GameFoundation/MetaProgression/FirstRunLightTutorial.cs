@@ -16,11 +16,14 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private TMP_Text instruction;
         [SerializeField] private Button nextButton;
         [SerializeField] private GameObject firstHexForest;
+        [SerializeField, Min(0)] private float lightIntroDelay = .6f;
         public static bool BlocksInput { get; private set; }
         public static bool AllowsLightDrag { get; private set; }
         private static FirstRunLightTutorial active;
-        enum Step { Inactive, Activate, Scout, Opening, Drag, Workers, Supplies, EmergencyReturn, Complete, Mining, Carriers, Delivery, CrystalIntro, FoodWarning }
+        enum Step { Inactive, Activate, Scout, Opening, Drag, Workers, Supplies, EmergencyReturn, Complete, Mining, Carriers, Delivery, CrystalIntro, FoodWarning, Activating }
         private Step step;
+        public static bool WaitsForLightExplanation => active != null &&
+            (active.step == Step.Activate || active.step == Step.Activating || active.step == Step.Scout);
         private Vector2 firstHex;
         private HexBlocker firstTutorialHex;
         private bool firstHexPrepared;
@@ -164,6 +167,15 @@ namespace GameFoundation.MetaProgression
         private void OnActivated()
         {
             if(step!=Step.Activate)return;
+            step=Step.Activating;
+            window.SetActive(false);
+            StartCoroutine(ExplainActivatedLight());
+        }
+        private System.Collections.IEnumerator ExplainActivatedLight()
+        {
+            while (step == Step.Activating && lights != null && !lights.HasVisibleLight) yield return null;
+            yield return new WaitForSecondsRealtime(lightIntroDelay);
+            if (step != Step.Activating || lights == null || lights.Escaped) yield break;
             step=Step.Scout;Pause();
             Show("Этот луч – наши глаза в Тёмных землях. Куда он доберётся, там и узнаем, что нас ждёт. Хорошая разведка сбережёт немало жизней.");ShowNext();
         }

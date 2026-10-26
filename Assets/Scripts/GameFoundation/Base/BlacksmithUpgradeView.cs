@@ -43,6 +43,7 @@ namespace GameFoundation.Base
                 int level = EquipmentUpgrades.Level(row.equipment), max = EquipmentUpgrades.Maximum(row.equipment);
                 bool complete = level >= max, available = EquipmentUpgrades.CanBuy(row.equipment, row.resource);
                 row.button.interactable = available;
+                BaseDisabledButtonHint.Set(row.button, complete ? BaseDisabledButtonHint.Reason.Maximum : BaseDisabledButtonHint.Reason.Resources);
                 var actionColor = row.button.GetComponent<GameFoundation.UI.ActionButtonLabelColor>();
                 if (actionColor != null) actionColor.ActionAvailable = available;
                 row.label.text = LaboratoryUpgradeList.Tr(complete ? "blacksmith.maximum" : "blacksmith.upgrade", complete ? "Максимум" : "Улучшить");

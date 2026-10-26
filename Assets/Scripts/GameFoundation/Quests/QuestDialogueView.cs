@@ -57,12 +57,12 @@ namespace GameFoundation.Quests
             presentationDestination = null; presenting = false;
         }
         private void Start() => Evaluate();
-        public bool TryShowMessage(string name, string[] lines, System.Action closed)
+        public bool TryShowMessage(string name, string[] lines, System.Action closed, QuestDefinition rewardQuest = null)
         {
             if (current != null || presenting || GameFoundation.Base.DayReportPopup.BlocksQuestDialogues) return false;
             gameObject.SetActive(true);
             var definition = new GameObject("Temporary dialogue").AddComponent<QuestDialogueDefinition>();
-            definition.transform.SetParent(transform, false); definition.speakerName = name; definition.lines = lines;
+            definition.transform.SetParent(transform, false); definition.speakerName = name; definition.lines = lines; definition.quest = rewardQuest;
             foreach (var source in conversations)
                 if (source != null && source.speakerName == name) { definition.portrait = source.portrait; break; }
             externalClosed = closed; temporaryConversation = true; Begin(definition); return true;
@@ -87,7 +87,7 @@ namespace GameFoundation.Quests
             (d.prerequisite == null || (d.prerequisiteAccepted ? QuestProgress.IsAccepted(d.prerequisite) : QuestProgress.IsClaimed(d.prerequisite)));
         public void ActivateIfNeeded()
         {
-            if (current != null || presenting) return;
+            if (current != null || presenting || GameFoundation.Base.FirstExpeditionRecovery.Pending || GameFoundation.Base.ResidentRecovery.Pending) return;
             foreach (var d in conversations)
             {
                 if (!Available(d)) continue;
@@ -97,7 +97,7 @@ namespace GameFoundation.Quests
         }
         public void Evaluate()
         {
-            if (current != null || presenting) return;
+            if (current != null || presenting || GameFoundation.Base.FirstExpeditionRecovery.Pending || GameFoundation.Base.ResidentRecovery.Pending) return;
             foreach (var d in conversations)
             {
                 if (!Available(d)) continue;

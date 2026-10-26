@@ -8,7 +8,8 @@ namespace GameFoundation.Base
         [Header("Изготовление телеги")]
         [SerializeField] private ResourceType wood;
         [SerializeField] private ResourceType cart;
-        [SerializeField, Min(1)] private int woodCost = 10;
+        public const int DefaultWoodCost = 6;
+        [SerializeField, Min(1)] private int woodCost = DefaultWoodCost;
 
         [Header("Элементы окна")]
         [SerializeField] private Button buyButton;
@@ -77,6 +78,7 @@ namespace GameFoundation.Base
 
             ApplyPalette();
             if (buyButton != null) buyButton.interactable = canBuy;
+            BaseDisabledButtonHint.Set(buyButton, BaseDisabledButtonHint.Reason.Resources);
             if (woodCostText != null)
             {
                 woodCostText.text = woodCost.ToString();

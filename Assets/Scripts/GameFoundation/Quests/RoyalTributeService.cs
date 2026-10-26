@@ -9,14 +9,17 @@ namespace GameFoundation.Quests
     {
         public const string QuestId = "royal_magic_tribute";
         public const string CartDebtKey = "foundation.royal.cartDebt";
+        public const string ResidentDebtKey = "foundation.royal.residentDebt";
+        public static int ResidentDebt => Mathf.Max(0, SaveSlotPrefs.GetInt(ResidentDebtKey, 0));
+        public const string ResidentDebtTemplate = "И ещё {0} единиц магической руды за предоставленных вам жителей.";
         public const string NoticeKey = "foundation.royal.notice";
         public static int CartDebt => Mathf.Max(0, SaveSlotPrefs.GetInt(CartDebtKey, 0));
         public static bool IsRoyal(QuestDefinition quest) => quest != null && quest.id == QuestId;
         public static int Required(QuestDefinition quest, QuestDefinition.Requirement goal) => goal.amount +
-            (IsRoyal(quest) && quest.requirements.Count > 0 && quest.requirements[0] == goal ? CartDebt : 0);
+            (IsRoyal(quest) && quest.requirements.Count > 0 && quest.requirements[0] == goal ? CartDebt + ResidentDebt : 0);
         public const string DebtLineTemplate = "И ещё {0} единиц магической руды за предоставленные вам телеги. Королевская помощь тоже подлежит учёту.";
         public static string DebtLine => GameText.Format(DebtLineTemplate, CartDebt);
-        public static string Description(QuestDefinition quest) => GameText.Get(quest.description) + (IsRoyal(quest) && CartDebt > 0 ? "\n\n" + DebtLine : "");
+        public static string Description(QuestDefinition quest) => GameText.Get(quest.description) + (IsRoyal(quest) && CartDebt > 0 ? "\n\n" + DebtLine : "") + (IsRoyal(quest) && ResidentDebt > 0 ? "\n\n" + GameText.Format(ResidentDebtTemplate, ResidentDebt) : "");
         public static void Process(QuestCatalog catalog, GlobalResourceManager resources)
         {
             if (PlaytestSettings.TutorialsAndQuestsDisabled || catalog == null || resources == null) return;
@@ -40,6 +43,7 @@ namespace GameFoundation.Quests
                     // Renew before emitting resource changes: no callback can settle this period twice.
                     Restart(quest, today + 30);
                     SaveSlotPrefs.SetInt(CartDebtKey, 0);
+                    SaveSlotPrefs.SetInt(ResidentDebtKey, 0);
                     if (paid)
                     {
                         foreach (var goal in quest.requirements) resources.TrySpendResource(goal.resource, goal.amount + (goal == quest.requirements[0] ? due - goal.amount : 0));
