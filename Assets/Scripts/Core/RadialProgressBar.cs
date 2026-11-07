@@ -64,6 +64,12 @@ public class RadialProgressBar : MonoBehaviour
         else if (value >= 0.999f || value <= 0.001f) 
             Hide();
     }
+    public void ResetProgress()
+    {
+        _targetValue = 0;
+        if (progressImage != null) progressImage.fillAmount = 0;
+        Hide();
+    }
 
     public void Show()
     {

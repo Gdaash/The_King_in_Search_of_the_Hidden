@@ -7,11 +7,19 @@ namespace GameFoundation.UI
     {
         [Header("Artwork")]
         public Sprite textButtonSprite;
+        public Sprite popupPanelSprite;
+        public Sprite lockIconSprite;
+
+        [Header("Popup typography")]
+        public int popupTitleSize = 36;
+        public int popupSubtitleSize = 24;
+        public Color popupTitleColor = new Color(.92f, .83f, .60f, 1f);
+        public Color popupSubtitleColor = new Color(.66f, .61f, .72f, 1f);
 
         [Header("Action label colors / Цвета надписей кнопок")]
         [Tooltip("Доступное действие: вооружить, купить, включить, отправить.")]
         public Color positiveLabelColor = new Color(.56f, .69f, .53f, 1f);
-        [Tooltip("Доступная отмена: разоружить, отключить, отменить.")]
+        [Tooltip("Опасное действие: удалить, отключить, выйти. Кнопки Нет и Отмена используют нейтральный цвет.")]
         public Color negativeLabelColor = new Color(.75f, .52f, .53f, 1f);
         [Tooltip("Действие недоступно, в том числе при нехватке ресурсов.")]
         public Color unavailableLabelColor = new Color(.55f, .51f, .59f, 1f);

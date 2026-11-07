@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using GameFoundation.Base;
 using GameFoundation.Localization;
 using GameFoundation.Quests;
 using GameFoundation.Saves;
@@ -33,10 +34,17 @@ public sealed class CheatResourcePopup : MonoBehaviour
     [SerializeField] private Button unlockAllBuildingsButton;
     [SerializeField] private Button addAllHundredButton;
     [SerializeField] private Button subtractAllHundredButton;
+    [SerializeField] private Button refreshWarriorsButton;
     private bool changingAllResources;
+    private TMP_Text questDayLabel;
+    private readonly List<Button> dayButtons = new();
     [SerializeField] private Button resetCurrentSaveButton;
     [SerializeField] private ContentUnlockDefinition[] buildingUnlocks;
     [SerializeField] private List<ResourceRow> rows = new List<ResourceRow>();
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    private GameObject resetBuildingsRail;
+    private readonly List<Button> buildingResetButtons = new();
+#endif
 
     private void Awake()
     {
@@ -68,6 +76,8 @@ public sealed class CheatResourcePopup : MonoBehaviour
                 row.nameText.text = row.resource.resourceName;
         }
 
+        refreshWarriorsButton?.onClick.AddListener(RefreshWarriors);
+        CreateQuestDayControls();
         if (window != null)
             window.SetActive(false);
         if (dimmer != null)
@@ -90,6 +100,9 @@ public sealed class CheatResourcePopup : MonoBehaviour
         if (GameFoundation.Base.ForestForagingService.IsPending || GameFoundation.MetaProgression.PortalTowerProgression.IsChoosingUpgrade) return;
         if (Input.GetKeyDown(KeyCode.L) && !IsEditingText())
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (window != null && !window.activeSelf) PrepareBuildingResets();
+#endif
             if (window != null) window.SetActive(!window.activeSelf);
             if (dimmer != null) dimmer.SetActive(window != null && window.activeSelf);
             Refresh();
@@ -104,7 +117,135 @@ public sealed class CheatResourcePopup : MonoBehaviour
             Refresh();
     }
 
+    private void CreateQuestDayControls()
+    {
+        if (addAllHundredButton == null) return;
+        var parent = addAllHundredButton.transform.parent;
+        questDayLabel = new GameObject("Quest days",typeof(RectTransform),typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+        questDayLabel.transform.SetParent(parent,false); questDayLabel.font = Resources.Load<TMP_FontAsset>("Fonts/Pixellari Reading UI");
+        questDayLabel.fontSize=24;questDayLabel.alignment=TextAlignmentOptions.Center;questDayLabel.raycastTarget=false;
+        questDayLabel.rectTransform.sizeDelta=new Vector2(300,50);questDayLabel.rectTransform.anchoredPosition=new Vector2(535,-235);
+        int[] offsets={-1,-5,-10,1,5,10};
+        for(int i=0;i<offsets.Length;i++)
+        {
+            int delta=offsets[i];var button=Instantiate(delta<0 && subtractAllHundredButton!=null ? subtractAllHundredButton : addAllHundredButton,parent);button.name="Quest day "+delta;
+            foreach(var localizer in button.GetComponentsInChildren<MonoBehaviour>(true))
+                if(localizer is LocalizedText || localizer is LocalizedGameText) { localizer.enabled=false;Destroy(localizer); }
+            button.onClick.RemoveAllListeners();button.onClick.AddListener(()=>{GameFoundation.MetaProgression.DayCycleService.Instance?.ShiftQuestDays(delta);Refresh();});
+            var rect=(RectTransform)button.transform;rect.sizeDelta=new Vector2(92,52);rect.anchoredPosition=new Vector2(437+(i%3)*98,-290-(i/3)*62);
+            string text=(delta>0?"+":"")+delta;
+            foreach(var label in button.GetComponentsInChildren<Text>(true)){label.text=text;label.fontSize=24;label.resizeTextForBestFit=false;}
+            foreach(var label in button.GetComponentsInChildren<TMP_Text>(true)){label.text=text;label.fontSize=24;label.enableAutoSizing=false;}
+            dayButtons.Add(button);
+        }
+    }
+
     private GlobalResourceManager _lastManager;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    private void PrepareBuildingResets()
+    {
+        if (resetBuildingsRail != null || unlockAllBuildingsButton == null) return;
+        var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+        var entries = new SortedDictionary<string, string>(StringComparer.CurrentCulture);
+        var ids = new HashSet<string>();
+        foreach (var construction in FindObjectsByType<BaseBuildingConstruction>(FindObjectsInactive.Include))
+        {
+            if (construction.gameObject.scene != scene || string.IsNullOrEmpty(construction.BuildingId) || !ids.Add(construction.BuildingId)) continue;
+            entries[construction.DisplayName] = construction.BuildingId;
+        }
+        if (entries.Count == 0) return;
+        if (ids.Contains("housing"))
+            foreach (string id in new[] { GameFoundation.MetaProgression.ExpeditionTasks.Coop,
+                GameFoundation.MetaProgression.ExpeditionTasks.Tannery, HousingDistrict.Fields })
+            {
+                var annex = BuildingUpgradeService.Catalog?.Find(id);
+                if (annex != null) entries[CheatText(annex.nameKey, annex.displayName)] = id;
+            }
+        entries[CheatText("base.base_panel.portal.label", "Портал")] = GameFoundation.MetaProgression.PortalProgression.BuildingId;
+        GlobalStats lab = null;
+        foreach (var list in FindObjectsByType<LaboratoryUpgradeList>(FindObjectsInactive.Include))
+            if (list.gameObject.scene == scene && list.portalProgression == null && list.stats?.UpgradeTable != null)
+            { lab = list.stats; break; }
+
+        var expandedPanel = (RectTransform)unlockAllBuildingsButton.transform.parent;
+        float originalPanelWidth = expandedPanel.rect.width;
+        const float railWidth = 332f;
+        var children = new List<Transform>();
+        foreach (Transform child in expandedPanel) children.Add(child);
+        var originalContent = ResetRect(expandedPanel, "Resource controls", expandedPanel.rect.size, Vector2.right * (railWidth / 2));
+        foreach (var child in children) child.SetParent(originalContent, false);
+        expandedPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, originalPanelWidth + railWidth);
+        var fit = expandedPanel.GetComponent<GameFoundation.UI.CanvasWindowFit>() ??
+            expandedPanel.gameObject.AddComponent<GameFoundation.UI.CanvasWindowFit>();
+        fit.Fit();
+        var rail = ResetRect(expandedPanel, "Building resets", new Vector2(294, expandedPanel.rect.height - 60),
+            Vector2.left * (originalPanelWidth / 2));
+        resetBuildingsRail = rail.gameObject;
+        var theme = Resources.Load<GameFoundation.UI.ButtonVisualTheme>("UI/ButtonVisualTheme");
+        var frame = rail.gameObject.AddComponent<Image>();
+        frame.sprite = theme?.popupPanelSprite;
+        frame.type = Image.Type.Sliced;
+        frame.raycastTarget = false;
+        float top = rail.rect.height / 2;
+        var heading = ResetLabel(rail, "Heading", new Vector2(272, 48), Vector2.up * (top - 30), 24);
+        heading.text = CheatText("cheat.reset_buildings", "Сброс построек");
+        heading.color = new Color(.91f, .77f, .48f);
+        float step = Mathf.Min(62, (rail.rect.height - 84) / entries.Count);
+        int index = 0;
+        foreach (var entry in entries)
+        {
+            string id = entry.Value;
+            var buttonRect = ResetRect(rail, "Reset " + id, new Vector2(262, Mathf.Min(52, step - 6)),
+                Vector2.up * (top - 74 - step * index++));
+            var image = buttonRect.gameObject.AddComponent<Image>();
+            image.sprite = theme?.textButtonSprite;
+            image.type = Image.Type.Sliced;
+            var button = buttonRect.gameObject.AddComponent<Button>();
+            button.targetGraphic = image;
+            button.transition = Selectable.Transition.None;
+            buttonRect.gameObject.AddComponent<GameFoundation.UI.UnifiedButtonFeedback>();
+            var label = ResetLabel(buttonRect, "Caption", new Vector2(238, buttonRect.rect.height - 4), Vector2.zero, 22);
+            label.text = entry.Key;
+            var color = buttonRect.gameObject.AddComponent<GameFoundation.UI.ActionButtonLabelColor>();
+            color.Configure(null, label);
+            color.Negative = true;
+            button.onClick.AddListener(() =>
+            {
+                BuildingCheatReset.Reset(id, lab);
+                Refresh();
+            });
+            buildingResetButtons.Add(button);
+        }
+    }
+
+    private static string CheatText(string key, string fallback)
+    {
+        string value = LocalizationService.Instance?.Get(key);
+        return string.IsNullOrEmpty(value) || value == key ? fallback : value;
+    }
+
+    private static RectTransform ResetRect(Transform parent, string name, Vector2 size, Vector2 position)
+    {
+        var rect = (RectTransform)new GameObject(name, typeof(RectTransform)).transform;
+        rect.SetParent(parent, false);
+        rect.anchorMin = rect.anchorMax = rect.pivot = Vector2.one * .5f;
+        rect.sizeDelta = size;
+        rect.anchoredPosition = position;
+        return rect;
+    }
+
+    private static TMP_Text ResetLabel(RectTransform parent, string name, Vector2 size, Vector2 position, int fontSize)
+    {
+        var label = ResetRect(parent, name, size, position).gameObject.AddComponent<TextMeshProUGUI>();
+        var font = Resources.Load<TMP_FontAsset>("Fonts/Pixellari Reading UI");
+        if (font != null) label.font = font;
+        label.fontSize = fontSize;
+        label.alignment = TextAlignmentOptions.Center;
+        label.raycastTarget = false;
+        return label;
+    }
+#endif
 
     private static bool IsEditingText()
     {
@@ -129,6 +270,19 @@ public sealed class CheatResourcePopup : MonoBehaviour
 
         int next = (int)Math.Min(int.MaxValue, (long)current + delta);
         manager.SetResourceAmount(resource, next);
+        Refresh();
+    }
+
+    public void RefreshWarriors()
+    {
+        if (GlobalResourceManager.Instance == null) return;
+        foreach (var deployment in FindObjectsByType<GameFoundation.MetaProgression.WorldMilitaryDeploymentController>(FindObjectsSortMode.None))
+            deployment.RefreshAndDeployStoredWarriors();
+        foreach (var roster in FindObjectsByType<GameFoundation.MetaProgression.WorldMilitaryRosterView>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            roster.RebuildRoster();
+        foreach (var roster in FindObjectsByType<GameFoundation.Base.BaseMilitaryOverview>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            roster.RebuildRoster();
+        Canvas.ForceUpdateCanvases();
         Refresh();
     }
 
@@ -161,6 +315,15 @@ public sealed class CheatResourcePopup : MonoBehaviour
     private void Refresh()
     {
         _lastManager = GlobalResourceManager.Instance;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        foreach (var button in buildingResetButtons) SetInteractable(button, _lastManager != null);
+#endif
+        var calendar = GameFoundation.MetaProgression.DayCycleService.Instance;
+        foreach(var button in dayButtons) SetInteractable(button,calendar!=null);
+        if(questDayLabel!=null)questDayLabel.text=(LocalizationService.Instance?.Get("cheat.quest_days")??"Quest days")+": "+(calendar?.Day??1);
+        SetInteractable(refreshWarriorsButton, _lastManager != null &&
+            (FindFirstObjectByType<GameFoundation.MetaProgression.WorldMilitaryDeploymentController>() != null ||
+             FindFirstObjectByType<GameFoundation.Base.BaseMilitaryOverview>() != null));
         SetInteractable(addAllHundredButton, _lastManager != null);
         SetInteractable(subtractAllHundredButton, _lastManager != null);
         foreach (ResourceRow row in rows)
@@ -209,6 +372,7 @@ public sealed class CheatResourcePopup : MonoBehaviour
         addAllHundredButton?.onClick.RemoveListener(AddAllHundred);
         subtractAllHundredButton?.onClick.RemoveListener(SubtractAllHundred);
         resetCurrentSaveButton?.onClick.RemoveListener(CurrentSaveReset.Reload);
+        refreshWarriorsButton?.onClick.RemoveListener(RefreshWarriors);
     }
 
     private void Close()

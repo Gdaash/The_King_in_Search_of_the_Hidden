@@ -20,6 +20,9 @@ namespace GameFoundation.MetaProgression
         }
         public static void DidNotReturn(ResourceType type,int count)
         {if(!active||type==null||count<=0)return;missing.TryGetValue(type,out int before);missing[type]=before+count;}
+        // Called only after a resident has been removed from its workplace, so each loss is settled once.
+        public static void WorkplaceDeath(ResourceType type)
+        {if(!active||type==null)return;dead.TryGetValue(type,out int before);dead[type]=before+1;}
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void Reset(){Begin();End();}
     }

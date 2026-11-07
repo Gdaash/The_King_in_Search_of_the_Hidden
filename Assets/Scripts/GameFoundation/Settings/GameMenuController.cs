@@ -85,6 +85,8 @@ namespace GameFoundation.Settings
             settingsLabel.text = GameText.Get("Настройки");
             exitLabel.text = GameText.Get(confirming ? "Выйти" : "В главное меню");
             cancelLabel.text = GameText.Get(confirming ? "Отмена" : "Продолжить игру");
+            foreach(var color in exitButton.GetComponents<GameFoundation.UI.ActionButtonLabelColor>()){color.Neutral=false;color.Negative=true;}
+            foreach(var color in cancelButton.GetComponents<GameFoundation.UI.ActionButtonLabelColor>())color.Neutral=confirming;
         }
         private void OnDisable()
         {

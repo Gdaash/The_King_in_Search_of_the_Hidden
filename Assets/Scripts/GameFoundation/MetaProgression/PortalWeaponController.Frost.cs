@@ -48,13 +48,14 @@ namespace GameFoundation.MetaProgression
                     float distance = ((Vector2)enemy.transform.position - (Vector2)tower.transform.position).sqrMagnitude;
                     if (distance < nearest) { nearest = distance; target = enemy; }
                 }
-                if (target != null)
+                if (target != null && progression.TrySpendShot(weapon))
                 {
                     Vector2 velocity = target.TryGetComponent<Rigidbody2D>(out var body) ? body.linearVelocity : Vector2.zero;
                     Vector2 direction = velocity.sqrMagnitude > .01f ? velocity.normalized : ((Vector2)tower.transform.position - (Vector2)target.transform.position).normalized;
                     float lead = definition.radius * definition.placementRadiusFraction;
                     SpawnFrostSeal((Vector2)target.transform.position + direction * lead);
                     frostTime = Time.time + Cooldown(weapon);
+                    progression.ReportReload(weapon, frostTime);
                 }
             }
             float lifetime = definition.duration * progression.Multiplier(weapon, PortalTowerBalance.Effect.Duration);
@@ -120,6 +121,6 @@ namespace GameFoundation.MetaProgression
             frostSeals.RemoveAt(index);
         }
         private void ClearFrostSeals() { while (frostSeals.Count > 0) RemoveFrostSeal(frostSeals.Count - 1); }
-        private void OnDisable() { ClearFrostSeals(); ClearPortalProjectiles(); }
+        private void OnDisable() { ClearFrostSeals(); ClearPortalProjectiles(); ClearDefenseField(); HideHealingBeam(); }
     }
 }

@@ -10,15 +10,31 @@ public class LogisticFlag : MonoBehaviour
     private static void ResetLightRegistry() => ActiveInstances.Clear();
     public static bool Illuminates(Vector2 point)
     {
+        if (WorldHexFog.BlocksWork(point)) return false;
         foreach (var flag in ActiveInstances)
-            if (flag != null && flag.isActiveAndEnabled && !flag.crystalOpening &&
+            if (flag != null && flag.isActiveAndEnabled && !flag.crystalOpening && !flag.MilitaryMode && !GameFoundation.MetaProgression.WorldMilitaryLightRules.BlocksWork(point) &&
                 ((Vector2)flag.transform.position - point).sqrMagnitude <= 1.7f * 1.7f) return true;
         return false;
+    }
+    public static readonly Color MilitaryColor = new Color(.28f, .62f, 1f, 1f);
+    public bool MilitaryMode { get; private set; }
+    public Transform MilitaryHex { get; private set; }
+    public void SetMilitaryMode(bool military, Transform hex = null)
+    {
+        MilitaryMode = military;
+        MilitaryHex = military ? hex : null;
+        ApplyCrystalVisibility();
     }
     public bool CrystalControlled { get; private set; }
     public ResourceRequester CrystalTarget { get; private set; }
     public SpriteRenderer FrameRenderer => activeRenderer;
-    private bool crystalHoverVisible, crystalOpening;
+    private bool crystalHoverVisible, crystalOpening, constructionMarkerVisible;
+    public void SetConstructionMarkerVisible(bool visible)
+    {
+        if (constructionMarkerVisible == visible) return;
+        constructionMarkerVisible = visible;
+        ApplyCrystalVisibility();
+    }
     // The hover prefab draws the coloured frame; do not draw a second white frame underneath it.
     public void SetCrystalHoverVisible(bool visible)
     {
@@ -32,7 +48,7 @@ public class LogisticFlag : MonoBehaviour
     }
     private void ApplyCrystalVisibility()
     {
-        if (idleRenderer != null) idleRenderer.forceRenderingOff = crystalHoverVisible || crystalOpening;
+        if (idleRenderer != null) idleRenderer.forceRenderingOff = crystalHoverVisible || crystalOpening || MilitaryMode || constructionMarkerVisible;
         if (activeRenderer != null) activeRenderer.forceRenderingOff = crystalHoverVisible;
     }
     public void SetCrystalTarget(ResourceRequester target)
@@ -83,7 +99,7 @@ public class LogisticFlag : MonoBehaviour
     }
 
     void OnEnable() { ActiveInstances.Add(this); StartCoroutine(ValidationRoutine()); }
-    void OnDisable() { ActiveInstances.Remove(this); StopAllCoroutines(); crystalOpening = false; SetCrystalHoverVisible(false); }
+    void OnDisable() { ActiveInstances.Remove(this); StopAllCoroutines(); crystalOpening = false; constructionMarkerVisible = false; SetCrystalHoverVisible(false); }
 
     private IEnumerator ValidationRoutine() {
         while (true) {
@@ -206,6 +222,13 @@ public class LogisticFlag : MonoBehaviour
     }
 
     void Update() {
+        if (MilitaryMode)
+        {
+            if (activeRenderer != null) activeRenderer.color = MilitaryColor;
+            ApplyCrystalVisibility();
+            return;
+        }
+        if (activeRenderer != null) { var c = activeRenderer.color; c.r = c.g = c.b = 1; activeRenderer.color = c; }
         if (idleRenderer != null) {
             Color idleColor = idleRenderer.color;
             idleColor.a = Mathf.MoveTowards(idleColor.a, _targetIdleAlpha, fadeSpeed * Time.deltaTime);

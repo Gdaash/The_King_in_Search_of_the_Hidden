@@ -16,8 +16,9 @@ namespace GameFoundation.MetaProgression
         private bool dragHadAssignment, dragDetached;
         private Transform dragOriginAnchor;
         public bool LightsActivated { get; private set; }
-        public bool CanActivateLights => !PortalTowerProgression.IsChoosingUpgrade && !escaped && !LightsActivated && lights.Length > 0 &&
-            GameSpeedControls.SimulationSpeed > 0;
+        private bool ModalBlocksLightInput => PortalTowerProgression.IsChoosingUpgrade || PortalArsenalPopup.IsOpen || WorldEscapeController.ResultsActive || PortalCloudTransition.IsLoading;
+        public bool CanActivateLights => !ModalBlocksLightInput && !escaped && !LightsActivated && lights.Length > 0 &&
+            (!FirstRunLightTutorial.BlocksInput || FirstRunLightTutorial.AllowsLightActivation);
         public bool IsDragging => draggedLight >= 0;
         public Vector2 DragPosition => draggedLight >= 0 ? lights[draggedLight].beam.MarkerPosition : Vector2.zero;
         public bool IsDraggingFlag(LogisticFlag flag) => draggedLight >= 0 && lights[draggedLight].beam.Flag == flag;
@@ -49,17 +50,16 @@ namespace GameFoundation.MetaProgression
 
         private IEnumerator ActivateBeams()
         {
-            while (GameSpeedControls.SimulationSpeed <= 0 && !escaped) yield return null;
             for (int i = 0; i < lights.Length && !escaped; i++)
             {
                 lights[i].beam.ShowIdle(lights[i].position);
                 TryStartAtLight(i);
-                if (activationDelay > 0) yield return new WaitForSeconds(activationDelay);
+                if (activationDelay > 0) yield return new WaitForSecondsRealtime(activationDelay);
             }
         }
 
         private bool CanDragLight(int index) => !escaped && LightsActivated &&
-            (GameSpeedControls.SimulationSpeed > 0 || FirstRunLightTutorial.AllowsLightDrag) && index >= 0 && index < lights.Length &&
+            !ModalBlocksLightInput && (!FirstRunLightTutorial.BlocksInput || FirstRunLightTutorial.AllowsLightDrag) && index >= 0 && index < lights.Length &&
             lights[index].beam.MarkerVisible;
 
         // This is also exercised by the Play Mode audit with screen-space pointer sequences.
@@ -67,7 +67,7 @@ namespace GameFoundation.MetaProgression
         {
             if (FirstRunLightTutorial.BlocksInput && !FirstRunLightTutorial.AllowsLightDrag) { CancelDrag(); return; }
             if (PortalWeaponController.OwnsPointer) { CancelDrag(); return; }
-            if (escaped || !LightsActivated || worldCamera == null || (GameSpeedControls.SimulationSpeed <= 0 && !FirstRunLightTutorial.AllowsLightDrag))
+            if (escaped || !LightsActivated || worldCamera == null || ModalBlocksLightInput)
             { CancelDrag(); return; }
             bool onScreen = worldCamera.pixelRect.Contains(screenPosition);
             bool blocked = !onScreen || IsPointerOverBlockingUI(screenPosition);
@@ -156,8 +156,10 @@ namespace GameFoundation.MetaProgression
         {
             if (dragDetached) return;
             dragDetached = true;
+            if (lights[index].military) return;
             var previousRequester = lights[index].requester != null ? lights[index].requester : GetHoverTarget(dragOrigin).Requester;
             lights[index].restartPending = false;
+            lights[index].fogReopenPending = false;
             if (lights[index].occupied)
             {
                 bool pausing = lights[index].working ||
@@ -187,11 +189,37 @@ namespace GameFoundation.MetaProgression
             if (draggedLight < 0) return false;
             int index = draggedLight;
             if (!CanDragLight(index)) { CancelDrag(); return false; }
+            if (lights[index].military && OpenMilitaryHex(point) == null)
+            {
+                lights[index].military = false;
+                lights[index].beam.Flag.SetMilitaryMode(false);
+                MilitaryPositionsChanged?.Invoke();
+            }
             if (!dragDetached && IsOverDragOrigin(point))
             {
                 ShowDraggedLight(index, dragOrigin);
                 draggedLight = pendingDragLight = -1;
                 return true;
+            }
+            if (lights[index].military)
+            {
+                var destination = OpenMilitaryHex(point);
+                if (destination == null)
+                {
+                    // A closed destination converts the beam back to civilian scouting/work mode.
+                    lights[index].military = false;
+                    lights[index].beam.Flag.SetMilitaryMode(false);
+                    MilitaryPositionsChanged?.Invoke();
+                }
+                else
+                {
+                lights[index].position = destination.position;
+                lights[index].beam.Flag.SetMilitaryMode(true, destination);
+                lights[index].beam.ShowIdle(destination.position);
+                draggedLight = pendingDragLight = -1;
+                MilitaryPositionsChanged?.Invoke();
+                return true;
+                }
             }
             DetachDragOrigin(index);
             var target = GetHoverTarget(point);

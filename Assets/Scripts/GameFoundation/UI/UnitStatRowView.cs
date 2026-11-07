@@ -44,20 +44,7 @@ namespace GameFoundation.UI
 
         public void PresentDefense(Sprite shield, string caption, GlobalStats stats, Color positive, Color negative, Color neutral, Color stripe, Combatant combat=null)
         {
-            Present(shield, caption, string.Empty, neutral, stripe, defense: true);
-            if (defenseCells == null) return;
-            foreach (DefenseCell cell in defenseCells)
-            {
-                if (cell == null) continue;
-                var resistance = stats != null ? stats.resistances.Find(item => item.type == cell.type) : null;
-                float percent = (1f-(combat!=null?combat.ResistanceMultiplier(cell.type):resistance!=null?resistance.CurrentMult:1))*100f;
-                if (cell.amount != null)
-                {
-                    cell.amount.text = percent.ToString("0.#", CultureInfo.InvariantCulture) + "%";
-                    cell.amount.color = percent > 0f ? positive : percent < 0f ? negative : neutral;
-                }
-                if (cell.icon != null) ResourceIconSizing.Apply(cell.icon, cell.icon.sprite);
-            }
+            Present(shield, caption, (combat != null ? combat.Armor : 0).ToString("0.#", CultureInfo.InvariantCulture), neutral, stripe);
         }
     }
 }

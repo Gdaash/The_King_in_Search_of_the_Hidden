@@ -25,12 +25,8 @@ internal sealed class GlobalStatsEditor : Editor
 
         if(stats.usesPrefabCombatBases)
         {
-            EditorGUILayout.HelpBox("Базовые HP, скорость и броня находятся в Combatant префаба; атака – в CombatWeapon; сопротивления – в CombatDefenseProfile. Здесь только модификаторы.",MessageType.Info);
+            EditorGUILayout.HelpBox("Базовые HP, скорость и броня находятся в Combatant префаба; атака – в CombatWeapon. Все атаки используют общую броню. Здесь только модификаторы.",MessageType.Info);
             DrawPropertiesExcluding(serializedObject,"baseMaxHealth","baseSpeed","baseAttackCooldown","baseAttackRange","damageSettings","resistances");
-            var damage=serializedObject.FindProperty("damageSettings");
-            for(int i=0;i<damage.arraySize;i++){var d=damage.GetArrayElementAtIndex(i);EditorGUILayout.PropertyField(d.FindPropertyRelative("bonusDamage"),new GUIContent("Бонус урона "+(DamageType)d.FindPropertyRelative("type").enumValueIndex));}
-            var resistance=serializedObject.FindProperty("resistances");
-            for(int i=0;i<resistance.arraySize;i++){var r=resistance.GetArrayElementAtIndex(i);EditorGUILayout.PropertyField(r.FindPropertyRelative("bonusResist"),new GUIContent("Бонус защиты "+(DamageType)r.FindPropertyRelative("type").enumValueIndex));}
             serializedObject.ApplyModifiedProperties();
         }
         else DrawDefaultInspector();

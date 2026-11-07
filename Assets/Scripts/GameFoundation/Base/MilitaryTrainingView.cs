@@ -54,6 +54,19 @@ namespace GameFoundation.Base
         }
 
         public void Close() => gameObject.SetActive(false);
+        public void SelectUnit(ResourceType newWeapon, ResourceType newWarrior, UnitDescriptionDefinition description)
+        {
+            var oldWeapon = weapon;
+            var oldWarrior = warrior;
+            foreach(var image in GetComponentsInChildren<Image>(true))
+            {
+                if(oldWeapon != null && image.sprite == oldWeapon.resourceIcon) ResourceIconSizing.Apply(image,newWeapon.resourceIcon);
+                else if(oldWarrior != null && image.sprite == oldWarrior.resourceIcon) ResourceIconSizing.Apply(image,newWarrior.resourceIcon);
+            }
+            weapon=newWeapon;warrior=newWarrior;unitDescription=description;
+            foreach(var view in GetComponentsInChildren<UnitDescriptionView>(true)) view.Show(description);
+            Refresh();
+        }
 
         private void OnEnable()
         {
@@ -74,6 +87,7 @@ namespace GameFoundation.Base
 
         public void Arm()
         {
+            using var save = GameFoundation.Saves.SaveSlotPrefs.Batch();
             using var notification = GameNotifications.BeginAction();
             if (!CanArmWarrior) return;
             if (GlobalResourceManager.Instance?.TryExchangeResources(human, 1, weapon, 1, warrior, 1) == true)
@@ -87,6 +101,7 @@ namespace GameFoundation.Base
 
         public void Disarm()
         {
+            using var save = GameFoundation.Saves.SaveSlotPrefs.Batch();
             using var notification = GameNotifications.BeginAction();
             var manager = GlobalResourceManager.Instance;
             if (manager != null && warrior != null && human != null && weapon != null &&
@@ -128,6 +143,57 @@ namespace GameFoundation.Base
                 ApplyIcon(foodPerUnitIcon, unitDescription.food);
                 ApplyIcon(totalFoodIcon, unitDescription.food);
             }
+            AlignSummaryColumns();
+        }
+
+        private void AlignSummaryColumns()
+        {
+            if (foodPerUnitIcon == null || warriorIcon == null || totalFoodIcon == null) return;
+            var reference = foodPerUnitIcon.transform.parent as RectTransform;
+            if (reference == null) return;
+            float iconWidth = Mathf.Max(warriorIcon.rectTransform.rect.width,
+                Mathf.Max(foodPerUnitIcon.rectTransform.rect.width, totalFoodIcon.rectTransform.rect.width));
+            float amountWidth = 104f;
+            foreach (var value in new[] { warriorAmount, foodPerUnitAmount, totalFoodAmount })
+                if (value != null) amountWidth = Mathf.Max(amountWidth, Mathf.Ceil(value.preferredWidth) + 4f);
+            const float padding = 4f, gap = 12f;
+            float left = reference.rect.xMin + padding;
+            float amountLeft = reference.rect.xMax - padding - amountWidth;
+            float iconCenter = amountLeft - gap - iconWidth * .5f;
+            float labelWidth = Mathf.Max(64f, iconCenter - iconWidth * .5f - gap - left);
+            AlignSummaryRow(reference, warriorIcon, warriorAmount, left, labelWidth, iconCenter, amountLeft, amountWidth);
+            AlignSummaryRow(reference, foodPerUnitIcon, foodPerUnitAmount, left, labelWidth, iconCenter, amountLeft, amountWidth);
+            AlignSummaryRow(reference, totalFoodIcon, totalFoodAmount, left, labelWidth, iconCenter, amountLeft, amountWidth);
+        }
+
+        private static void AlignSummaryRow(RectTransform reference, Image icon, Text amount,
+            float left, float labelWidth, float iconCenter, float amountLeft, float amountWidth)
+        {
+            Transform row = icon.transform.parent;
+            if (row.Find("Label") == null && row.parent != null && row.parent.Find("Label") != null) row = row.parent;
+            var labelTransform = row.Find("Label");
+            var label = labelTransform != null ? labelTransform.GetComponent<Text>() : null;
+            if (label != null)
+            {
+                PlaceColumn(label.rectTransform, reference, left + labelWidth * .5f, labelWidth);
+                label.alignment = TextAnchor.MiddleLeft;
+            }
+            PlaceColumn(icon.rectTransform, reference, iconCenter);
+            if (amount != null)
+            {
+                PlaceColumn(amount.rectTransform, reference, amountLeft + amountWidth * .5f, amountWidth);
+                amount.alignment = TextAnchor.MiddleLeft;
+            }
+        }
+
+        private static void PlaceColumn(RectTransform rect, RectTransform reference, float x, float width = -1f)
+        {
+            Vector3 world = reference.TransformPoint(new Vector3(x, 0, 0));
+            Vector3 local = rect.parent.InverseTransformPoint(world);
+            var position = rect.localPosition;
+            position.x = local.x;
+            rect.localPosition = position;
+            if (width > 0) rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
         }
 
         private static void ApplyIcon(Image image, ResourceType resource)

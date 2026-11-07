@@ -65,7 +65,21 @@ namespace GameFoundation.UI
         private float nextRefresh;
         private float visibleRowsHeight;
         private float authoredBottomInset = -1;
+        [SerializeField] private bool fitHeightToContent = true;
         public UnitDescriptionDefinition Definition => definition;
+
+        public Sprite StatIcon(UnitStat stat)
+        {
+            if (stats != null)
+                foreach (var entry in stats)
+                    if (entry != null && entry.stat == stat) return entry.icon;
+            return null;
+        }
+
+        public void PresentStat(UnitStatRowView row, Sprite icon, string label, string value, int index, bool resourceIcon = false)
+        {
+            row.Present(icon, label, value, normalColor, index % 2 == 0 ? stripeColor : Color.clear, resourceIcon);
+        }
 
         private void OnEnable()
         {
@@ -123,7 +137,12 @@ namespace GameFoundation.UI
             if (enemyLevelStars != null) { enemyLevelStars.gameObject.SetActive(definition.isEnemy); enemyLevelStars.SetStars(enemyLevel, AlarmSystem.MaximumEnemyLevel); }
             if (title != null) title.text = definition.Title;
             if (role != null) role.text = definition.Role;
-            if (description != null) description.text = definition.Description;
+            if (description != null)
+            {
+                description.text = definition.Description;
+                if (combat != null && combat.weapon != null)
+                    description.text += "\n\n" + GameFoundation.Combat.CombatEffectText.Description(combat.weapon.damageType);
+            }
             if (portrait != null)
             {
                 portrait.enabled = definition.Portrait != null;
@@ -144,9 +163,13 @@ namespace GameFoundation.UI
             }
 
             int visible = 0;
+            bool damageShown = false;
             visibleRowsHeight = 0;
             foreach (UnitStatPresentation entry in stats)
             {
+                if (entry == null || IsLegacyResistance(entry.stat) || entry.stat == UnitStat.PortalHealing || entry.stat == UnitStat.Retreat) continue;
+                bool damageRow = IsDamageRow(entry.stat);
+                if (damageRow && damageShown) continue;
                 if (entry != null && entry.stat == UnitStat.Food && !showFoodStat) continue;
                 if (definition.isEnemy && entry != null && (entry.stat == UnitStat.Food || entry.stat == UnitStat.Retreat || entry.stat == UnitStat.PortalHealing)) continue;
                 if (entry == null || !TryValue(entry, multiplier, out string value, out Color color)) continue;
@@ -163,7 +186,8 @@ namespace GameFoundation.UI
                 float rowHeight = Mathf.Max(34f, icon != null ? icon.rect.height * 2f + 6f : 34f);
                 if (layout != null) layout.preferredHeight = rowHeight;
                 visibleRowsHeight += rowHeight;
-                string caption = UnitDescriptionText.Get(entry.labelKey, entry.fallbackLabel);
+                if (damageRow) damageShown = true;
+                string caption = damageRow ? UnitDescriptionText.Get("combat.damage", "Урон") : UnitDescriptionText.Get(entry.labelKey, entry.fallbackLabel);
                 Color stripe = visible % 2 == 0 ? stripeColor : Color.clear;
                 if (entry.stat == UnitStat.Defense)
                     view.PresentDefense(icon, caption, healthStats, positiveColor, criticalColor, mutedColor, stripe, combat);
@@ -174,6 +198,13 @@ namespace GameFoundation.UI
             for (int i = visible; i < rowViews.Count; i++) rowViews[i].gameObject.SetActive(false);
             var rowLayout = rows.GetComponent<UnityEngine.UI.VerticalLayoutGroup>();
             if (rowLayout != null) visibleRowsHeight += rowLayout.padding.vertical + Mathf.Max(0, visible - 1) * rowLayout.spacing;
+            if (fitHeightToContent)
+            {
+                var rect = (RectTransform)transform;
+                float height = FitTooltipHeight();
+                if (!Mathf.Approximately(rect.rect.height, height))
+                    rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+            }
         }
 
         public float FitTooltipHeight()
@@ -186,6 +217,11 @@ namespace GameFoundation.UI
             if (!Mathf.Approximately(offset.y, bottom)) { offset.y = bottom; viewport.offsetMin = offset; }
             return Mathf.Ceil(Mathf.Max(0, -viewport.offsetMax.y) + visibleRowsHeight + bottom);
         }
+
+        private static bool IsDamageRow(UnitStat stat) => stat == UnitStat.PhysicalDamage || stat == UnitStat.FireDamage ||
+            stat == UnitStat.IceDamage || stat == UnitStat.MagicDamage || stat == UnitStat.ElectricDamage;
+        private static bool IsLegacyResistance(UnitStat stat) => stat == UnitStat.Defense || stat == UnitStat.PhysicalResistance ||
+            stat == UnitStat.FireResistance || stat == UnitStat.IceResistance || stat == UnitStat.MagicResistance || stat == UnitStat.ElectricResistance;
 
         private bool TryValue(UnitStatPresentation entry, float multiplier, out string value, out Color color)
         {
@@ -200,10 +236,8 @@ namespace GameFoundation.UI
                     color = current < max * .25f ? criticalColor : current < max ? normalColor : positiveColor;
                     return true;
                 case UnitStat.PhysicalDamage: case UnitStat.FireDamage: case UnitStat.IceDamage: case UnitStat.MagicDamage: case UnitStat.ElectricDamage:
-                    DamageType damageType = entry.stat==UnitStat.ElectricDamage?DamageType.Electric:(DamageType)(entry.stat - UnitStat.PhysicalDamage);
-                    if(combat!=null && combat.weapon!=null){number=combat.weapon.damageType==damageType?combat.DamageBeforeLevel*multiplier:0;value=N(number);break;}
-                    if (damageStats != null) foreach (var damage in damageStats.damageSettings)
-                        if (damage.type == damageType) number += damage.TotalDamage * multiplier;
+                    if (combat != null && combat.weapon != null) number = combat.DamageBeforeLevel * multiplier;
+                    else number = (damageStats != null ? damageStats.UnifiedDamage : 0) * multiplier;
                     value = N(number); break;
                 case UnitStat.AttackRate:
                     // Attacks per second is the reciprocal of the base interval, with the level bonus applied.
@@ -212,7 +246,7 @@ namespace GameFoundation.UI
                     float variation = ranged != null ? ranged.CooldownVariation : melee != null ? melee.CooldownVariation / multiplier : 0f;
                     value = Range(Mathf.Max(.05f, Cooldown(multiplier) - variation), Cooldown(multiplier) + variation) + T("seconds", GameFoundation.Localization.GameText.Get(" с")); return true;
                 case UnitStat.AttackRange:
-                    number = (ranged != null ? ranged.CurrentAttackRange / MilitaryExperience.Multiplier(ranged) : melee != null ? melee.BaseAttackRange : 0f) * multiplier;
+                    number = (combat != null ? combat.RangeBeforeLevel : ranged != null ? ranged.CurrentAttackRange / MilitaryExperience.Multiplier(ranged) : melee != null ? melee.BaseAttackRange : 0f) * multiplier;
                     value = N(number) + T("distance", GameFoundation.Localization.GameText.Get(" ед.")); break;
                 case UnitStat.MovementSpeed:
                     float speed = combat!=null?combat.SpeedBeforeLevel:movementStats != null ? movementStats.TotalSpeed : 3f;
@@ -222,20 +256,18 @@ namespace GameFoundation.UI
                     number = ranged != null ? ranged.DetectionRange : melee != null ? melee.DetectionRange : 0f;
                     value = N(number) + T("distance", GameFoundation.Localization.GameText.Get(" ед.")); break;
                 case UnitStat.PhysicalResistance: case UnitStat.FireResistance: case UnitStat.IceResistance: case UnitStat.MagicResistance: case UnitStat.ElectricResistance:
-                    DamageType resistType = entry.stat==UnitStat.ElectricResistance?DamageType.Electric:(DamageType)(entry.stat - UnitStat.PhysicalResistance);
-                    var resistance = healthStats != null ? healthStats.resistances.Find(item => item.type == resistType) : null;
-                    number = (1f-(combat!=null?combat.ResistanceMultiplier(resistType):resistance!=null?resistance.CurrentMult:1))*100f;
-                    value = N(number) + "%"; color = number > 0f ? positiveColor : number < 0f ? criticalColor : mutedColor; break;
+                    return false;
                 case UnitStat.Armor:
                     int rank=definition.isEnemy?(liveUnit!=null?liveUnit.GetComponent<EnemyLevel>()?.Level??1:AlarmSystem.Instance?.EnemyLevel??1):1;
-                    number=combat!=null?combat.ArmorForLevel(rank):0;value=N(number);break;
+                    number=combat!=null?combat.ArmorForLevel(rank):0;if(number<=0)return false;value=N(number);break;
                 case UnitStat.Dps:
                     if(combat==null || combat.weapon==null)return false;
                     number=combat.DamageBeforeLevel*multiplier*combat.weapon.count/Cooldown(multiplier);value=N(number);break;
                 case UnitStat.Defense:
-                    return true;
+                    return false;
                 case UnitStat.Regeneration:
                     number = healthStats != null ? healthStats.TotalRegenAmount * multiplier : 0f;
+                    if (number <= 0f) return false;
                     value = number > 0f ? N(number) + T("hp_per_second", GameFoundation.Localization.GameText.Get(" HP/с")) : T("none", GameFoundation.Localization.GameText.Get("Нет")); break;
                 case UnitStat.RegenerationDelay:
                     if (healthStats == null || healthStats.TotalRegenAmount <= 0f) return false;
@@ -251,6 +283,16 @@ namespace GameFoundation.UI
                 case UnitStat.Food:
                     value = T("food_amount", GameFoundation.Localization.GameText.Get("1 / день")); return definition.food != null;
                 case UnitStat.TargetPriority:
+                    if (definition.isEnemy && ranged != null && ranged.GetComponent<EyeHexSealer>() != null)
+                    {
+                        value = T("explored_hexes", "Открытые гексы");
+                        return true;
+                    }
+                    if (definition.isEnemy && melee != null && melee.PrefersWorkers)
+                    {
+                        value = T("workers_first", "Рабочие, затем ближайший");
+                        return true;
+                    }
                     bool weakest = !definition.isEnemy && ranged != null && RoyalDecreeService.IsEnabled(RoyalDecreeService.FinishOffEnemies);
                     value = weakest ? T("weakest", GameFoundation.Localization.GameText.Get("Меньше % HP")) : T("nearest", GameFoundation.Localization.GameText.Get("Ближайший"));
                     color = weakest ? positiveColor : normalColor; return true;

@@ -22,6 +22,7 @@ public class ArcherTower : MonoBehaviour
     private Collider2D _targetCollider;
     private bool _isAttacking = false;
     private float _nextAttackTime;
+    public float NextAttackTime => _nextAttackTime;
     private float _currentCooldown;
 
     // Свойства для получения данных из GlobalStats
@@ -40,15 +41,16 @@ public class ArcherTower : MonoBehaviour
 
     void Update()
     {
-        if (Time.timeScale <= 0) return;
+        if (TowerDarkness.Blocks(transform)) return;
+        if (Time.timeScale <= 0 || (TryGetComponent<Health>(out var health) && health.IsStunned)) return;
         if (stats != null && !stats.CanAttack) return;
         FindClosestTarget();
 
         if (_target != null && !_isAttacking && Time.time >= _nextAttackTime)
         {
             _isAttacking = true;
-            OnAttack?.Invoke();
             _nextAttackTime = Time.time + _currentCooldown;
+            OnAttack?.Invoke();
         }
     }
 

@@ -1,4 +1,4 @@
-using PlayerPrefs = GameFoundation.Saves.SaveSlotPrefs;
+﻿using PlayerPrefs = GameFoundation.Saves.SaveSlotPrefs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,6 +29,7 @@ namespace GameFoundation.MetaProgression
             public readonly int Humans;
             public readonly int Swordsmen;
             public readonly int Archers;
+            public readonly int Spearmen;
             public readonly int Residents;
             public readonly int Berries;
             public readonly int Crowns;
@@ -36,12 +37,13 @@ namespace GameFoundation.MetaProgression
             public int Starving => Mathf.Max(0, Residents - Food);
             public int CrownDelta => Starving > 0 ? (Crowns > 0 ? -1 : 0) : 1;
 
-            public FoodForecast(int humans, int swordsmen, int archers, int berries, int crowns)
+            public FoodForecast(int humans, int swordsmen, int archers, int berries, int crowns, int spearmen = 0)
             {
                 Humans = humans;
                 Swordsmen = swordsmen;
                 Archers = archers;
-                Residents = humans + swordsmen + archers;
+                Spearmen = spearmen;
+                Residents = humans + swordsmen + archers + spearmen;
                 Berries = berries;
                 Crowns = crowns;
             }
@@ -156,10 +158,20 @@ namespace GameFoundation.MetaProgression
             Save();
             Changed?.Invoke();
         }
+        /// <summary>Debug calendar shift shared by every day-based quest; skips the daily economy.</summary>
+        public void ShiftQuestDays(int delta)
+        {
+            int target = (int)Math.Max(1L,Math.Min(int.MaxValue,(long)Day+delta));
+            if (target == Day) return;
+            Day = target; Save(); Changed?.Invoke();
+            GameFoundation.Quests.QuestProgress.NotifyChanged();
+        }
         public void NextDay()
         {
             if (GameFoundation.Base.ForestForagingService.IsPending) return;
+            using var save = GameFoundation.Saves.SaveSlotPrefs.Batch();
             DayResourceLedger.EnterShelter();
+            GameFoundation.Base.HousingDistrict.Produce();
             int starved = ConsumeFood();
             ApplyColdDeaths();
             MilitaryExperienceService.HealAll();
@@ -183,7 +195,7 @@ namespace GameFoundation.MetaProgression
             GameFoundation.Audio.GameAudioController.PlayUI(GameFoundation.Audio.GameAudioCue.RefugeesArrival, .7f);
             Save(); Changed?.Invoke();
         }
-        public FoodForecast GetFoodForecast()
+        public FoodForecast GetFoodForecast(bool includeProduction = true)
         {
             var resources = GlobalResourceManager.Instance;
             if (resources == null) return new FoodForecast(0, 0, 0, 0, 0);
@@ -196,8 +208,10 @@ namespace GameFoundation.MetaProgression
                 humans == null ? 0 : resources.GetResourceAmount(humans),
                 swordsmen == null ? 0 : resources.GetResourceAmount(swordsmen),
                 archers == null ? 0 : resources.GetResourceAmount(archers),
-                berries == null ? 0 : resources.GetResourceAmount(berries),
-                crowns == null ? 0 : resources.GetResourceAmount(crowns));
+                berries == null ? 0 : resources.GetResourceAmount(berries) +
+                    (includeProduction ? GameFoundation.Base.HousingDistrict.Forecast().Food : 0),
+                crowns == null ? 0 : resources.GetResourceAmount(crowns),
+                Find("Spearman") is ResourceType spearmen ? resources.GetResourceAmount(spearmen) : 0);
         }
 
         private int ConsumeFood()
@@ -205,7 +219,7 @@ namespace GameFoundation.MetaProgression
             var resources = GlobalResourceManager.Instance;
             var humans = Find("Human");
             if (resources == null || humans == null) return 0;
-            var forecast = GetFoodForecast();
+            var forecast = GetFoodForecast(false);
             var need = forecast.Residents;
             var berries = Find("Berry");
             if (berries != null)
@@ -254,18 +268,21 @@ namespace GameFoundation.MetaProgression
             ResourceType archers = Find("Archer");
             ResourceType swords = Find("Sword");
             ResourceType bows = Find("Bow");
+            ResourceType spearmen = Find("Spearman");
+            ResourceType spears = Find("Spear");
 
             int humanCount = forecast.Humans;
             int swordsmanCount = forecast.Swordsmen;
             int archerCount = forecast.Archers;
+            int spearmanCount = forecast.Spearmen, spearmanDeaths = 0;
             int humanDeaths = 0;
             int swordsmanDeaths = 0;
             int archerDeaths = 0;
-            int deaths = Mathf.Min(requestedDeaths, humanCount + swordsmanCount + archerCount);
+            int deaths = Mathf.Min(requestedDeaths, humanCount + swordsmanCount + archerCount + spearmanCount);
 
             for (int i = 0; i < deaths; i++)
             {
-                int roll = UnityEngine.Random.Range(0, humanCount + swordsmanCount + archerCount);
+                int roll = UnityEngine.Random.Range(0, humanCount + swordsmanCount + archerCount + spearmanCount);
                 if (roll < humanCount)
                 {
                     humanCount--;
@@ -276,11 +293,12 @@ namespace GameFoundation.MetaProgression
                     swordsmanCount--;
                     swordsmanDeaths++;
                 }
-                else
+                else if (roll < humanCount + swordsmanCount + archerCount)
                 {
                     archerCount--;
                     archerDeaths++;
                 }
+                else { spearmanCount--; spearmanDeaths++; }
             }
 
             if (humanDeaths > 0) resources.TrySpendResource(humans, humanDeaths);
@@ -295,6 +313,12 @@ namespace GameFoundation.MetaProgression
                 resources.TrySpendResource(archers, archerDeaths);
                 if (bows != null) resources.AddResource(bows, archerDeaths);
                 for (int i = 0; i < archerDeaths; i++) MilitaryExperienceService.RemoveStored(archers);
+            }
+            if (spearmanDeaths > 0)
+            {
+                resources.TrySpendResource(spearmen, spearmanDeaths);
+                if (spears != null) resources.AddResource(spears, spearmanDeaths);
+                for (int i=0;i<spearmanDeaths;i++) MilitaryExperienceService.RemoveStored(spearmen);
             }
             return deaths;
         }

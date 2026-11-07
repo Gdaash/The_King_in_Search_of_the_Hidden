@@ -91,6 +91,7 @@ public class HexLightUnlocker : MonoBehaviour
 
     public void StartUnlockProcess(float dangerLevel)
     {
+        if (WorldHexFog.BlocksOpening(transform.position)) return;
         if (IsPaused)
         {
             _isActive = true;
@@ -162,6 +163,13 @@ public class HexLightUnlocker : MonoBehaviour
         {
             hexBlocker.RemoveHex();
         }
+    }
+
+    public void ResetForReclose()
+    {
+        _isUnlocked = _isUnlocking = _isActive = false;
+        _currentTime = 0;
+        if (progressBar != null) { progressBar.SetProgress(0); progressBar.Hide(); }
     }
 
     public bool IsPointOverHex(Vector2 point)

@@ -36,11 +36,15 @@ namespace GameFoundation.UI
         private Transform animatedTransform;
         private PointerEventData hoverPointer;
 
+        /// <summary>Latched task state, separate from hover and availability.</summary>
+        public bool Toggled { get; set; }
+
         public float ExternalScaleMultiplier { get; set; } = 1f;
 
         private void Awake()
         {
-        GameFoundation.Audio.GameAudioController.Register(GetComponent<UnityEngine.UI.Button>());
+            if (theme == null) theme = Resources.Load<ButtonVisualTheme>("UI/ButtonVisualTheme");
+            GameFoundation.Audio.GameAudioController.Register(GetComponent<UnityEngine.UI.Button>());
             button = GetComponent<Button>();
             graphic = button.targetGraphic;
             if (graphic != null) outline = graphic.GetComponent<Outline>();
@@ -98,7 +102,7 @@ namespace GameFoundation.UI
                     useButtonPalette ? palette.highlightedColor : theme.hoverColor,
                     theme.hoverColorStrength);
             else
-                target = originalColor;
+                target = Toggled ? new Color(.58f, .86f, .55f, originalColor.a) : originalColor;
 
             if (preserveGraphicAlpha) target.a = originalColor.a;
             // Unavailable building actions still show their cost tooltip on hover.

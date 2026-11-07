@@ -58,7 +58,7 @@ namespace GameFoundation.Base
                 woodAmount.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 360);
                 SetX(woodAmount.rectTransform, 0);
             }
-            else
+            else if (confirm.GetComponent<GameFoundation.UI.PriceButtonLayout>() == null)
             {
                 float firstWidth = first ? woodIcon.rectTransform.rect.width + 12 + woodAmount.rectTransform.rect.width : 0;
                 float secondWidth = second ? stoneIcon.rectTransform.rect.width + 12 + stoneAmount.rectTransform.rect.width : 0;
@@ -67,6 +67,8 @@ namespace GameFoundation.Base
                 if (second) PlacePrice(stoneIcon, stoneAmount, x);
             }
             confirm.interactable = target.CanAffordConstruction;
+            var layout = confirm.GetComponent<GameFoundation.UI.PriceButtonLayout>();
+            if (layout != null) { layout.Invalidate(); layout.Refresh(); }
             BaseDisabledButtonHint.Set(confirm, BaseDisabledButtonHint.Reason.Resources);
         }
 
@@ -77,6 +79,8 @@ namespace GameFoundation.Base
             icon.enabled = visible;
             amount.enabled = visible;
             amount.text = cost.ToString();
+            amount.color = resource == null || GlobalResourceManager.Instance != null && GlobalResourceManager.Instance.GetResourceAmount(resource) >= cost
+                ? new Color(.55f, .85f, .35f) : new Color(1f, .3f, .35f);
             amount.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Max(48, amount.preferredWidth + 12));
             return visible;
         }

@@ -60,6 +60,9 @@ namespace GameFoundation.MetaProgression
         private const string FoodWarningKey = "foundation.tutorial.food_return.warnings";
         private int _foodWarningCount;
         private bool _showingStatistics;
+        public static bool ResultsActive { get; private set; }
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetResults() => ResultsActive = false;
         private bool _loading;
         private bool _humanLossesSettled;
         private bool _wasFirstPortalRun;
@@ -110,6 +113,7 @@ namespace GameFoundation.MetaProgression
 
         private void OnDestroy()
         {
+            ResultsActive = false;
             WorldCasualties.End();
             GlobalResourceManager.OnResourceChanged -= OnRunResourceChanged;
             if (escapeButton != null) escapeButton.onClick.RemoveListener(OnEscapeClicked);
@@ -313,9 +317,11 @@ namespace GameFoundation.MetaProgression
         {
             if (_showingStatistics) return;
             SettleUnreturnedHumans();
+            Warehouse.SettlePorterCarts();
             if (militaryDeployment != null) militaryDeployment.SettleEscapeLosses();
             foodSufficiencyHint?.HideForEscape();
             _showingStatistics = true;
+            ResultsActive = true;
             GameSpeedControls speedControls = UnityEngine.Object.FindAnyObjectByType<GameSpeedControls>();
             if (speedControls != null) speedControls.SetSpeed(0f);
             else GameSpeedControls.SetSimulationSpeed(0f);
@@ -326,6 +332,7 @@ namespace GameFoundation.MetaProgression
 
             int seconds = Mathf.Max(0, Mathf.FloorToInt(Time.realtimeSinceStartup - _runStartedAt));
             _runDurationSeconds = seconds;
+            ExpeditionTasks.Settle();
             DayResourceLedger.EndRun(seconds);
             RecordFirstExpeditionRecovery();
             GameFoundation.Saves.SaveSlotPrefs.CompleteRunCheckpoint();
@@ -405,7 +412,7 @@ namespace GameFoundation.MetaProgression
         {
             if (_loading || !PortalCloudTransition.CanLoad(baseScene)) return;
             _loading = true;
-            GameSpeedControls.SetSimulationSpeed(1f);
+            GameSpeedControls.SetSimulationSpeed(0f);
             DayResourceLedger.EndRun(_runDurationSeconds);
             PortalCloudTransition.Load(baseScene);
         }
@@ -416,7 +423,9 @@ namespace GameFoundation.MetaProgression
             _loading = true;
             StopWorldForEscape();
             SettleUnreturnedHumans();
+            Warehouse.SettlePorterCarts();
             if (militaryDeployment != null) militaryDeployment.AbandonDeployedUnits();
+            ExpeditionTasks.Settle();
             DayResourceLedger.EndRun(Mathf.Max(0, Mathf.FloorToInt(Time.realtimeSinceStartup - _runStartedAt)));
             RecordFirstExpeditionRecovery();
             GameFoundation.Saves.SaveSlotPrefs.CompleteRunCheckpoint();

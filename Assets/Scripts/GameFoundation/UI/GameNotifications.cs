@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -35,6 +35,7 @@ namespace GameFoundation.UI
         private static void Reset() { Posted = null; CoalescedPosted = null; UnitDied = null; current = null; transfer = null; }
 
         // Moving an existing worker/cart out of storage is not a gain or loss.
+        public static bool IsTransfer(ResourceType resource) => transfer != null && transfer.Contains(resource);
         public static IDisposable BeginTransfer(ResourceType first, ResourceType second = null) => new TransferScope(first, second);
 
         private sealed class TransferScope : IDisposable

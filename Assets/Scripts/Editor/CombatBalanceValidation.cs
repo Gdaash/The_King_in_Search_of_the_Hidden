@@ -51,15 +51,15 @@ public static class CombatBalanceValidation
             var knight=Target("CursedKnight");var guardian=Target("OctopusGuardian");var mage=Target("CursedMage");var giant=Target("OctopusWarrior");
             Check(knight.MaxHealth==100 && guardian.MaxHealth==80 && giant.MaxHealth==300 && mage.MaxHealth==60,"Enemy health archetypes");
             Hit(knight,10,DamageType.Physical,7);Hit(knight,3,DamageType.Physical,0);Hit(knight,40,DamageType.Magic,37);
-            Hit(knight,5,DamageType.Fire,2);Hit(knight,40,DamageType.Electric,60);
-            Hit(guardian,10,DamageType.Physical,7);Hit(guardian,40,DamageType.Electric,60);
-            foreach(var type in new[]{DamageType.Magic,DamageType.Fire,DamageType.Ice,DamageType.Electric})Hit(mage,40,type,20);
-            Hit(mage,40,DamageType.Physical,50);Hit(giant,40,DamageType.Physical,40);Hit(giant,5,DamageType.Fire,5);
+            Hit(knight,5,DamageType.Fire,2);Hit(knight,40,DamageType.Electric,37);
+            Hit(guardian,10,DamageType.Physical,7);Hit(guardian,40,DamageType.Electric,37);
+            foreach(var type in new[]{DamageType.Magic,DamageType.Fire,DamageType.Ice,DamageType.Electric})Hit(mage,40,type,40);
+            Hit(mage,40,DamageType.Physical,40);Hit(giant,40,DamageType.Physical,40);Hit(giant,5,DamageType.Fire,5);
             Check(Prefab("Octopus").GetComponent<Combatant>().baseHealth==20 && Prefab("OctopusRaider").GetComponent<Combatant>().baseSpeed>Prefab("Octopus").GetComponent<Combatant>().baseSpeed,"Fast low-health enemies");
             var high=Target("CursedKnight",50);
             Check(Mathf.Approximately(high.MaxHealth,590) && high.Armor>3 && high.Armor<7,"Level 50 scales health faster than armor");
             var c=knight.GetComponent<Combatant>();c.modifiers.bonusArmor=2;Hit(knight,10,DamageType.Physical,5);c.modifiers.bonusArmor=0;
-            c.modifiers.resistances.Find(r=>r.type==DamageType.Electric).bonusResist=.25f;Hit(knight,40,DamageType.Electric,50);
+            c.modifiers.resistances.Find(r=>r.type==DamageType.Electric).bonusResist=.25f;Hit(knight,40,DamageType.Electric,37);
             c.modifiers.resistances.Find(r=>r.type==DamageType.Electric).bonusResist=0;
             var projectilePrefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Projectiles/ArrowTowerProjectile.prefab");
             var projectile=Object.Instantiate(projectilePrefab);spawned.Add(projectile);
@@ -73,7 +73,7 @@ public static class CombatBalanceValidation
                 var w=AssetDatabase.LoadAssetAtPath<CombatWeapon>(CombatBalanceSetup.Folder+"/Weapons/"+name+".asset");Check(w!=null && Mathf.Approximately(w.SingleTargetDps,20),name+" base DPS = 20");
             }
             var balance=PortalTowerProgression.Instance.Balance;
-            Check(balance.FindWeapon(PortalTowerBalance.Weapon.Lightning).damageType==DamageType.Electric,"Portal lightning uses electric damage");
+            Check(balance.FindWeapon(PortalTowerBalance.Weapon.Lightning).damageType==DamageType.Electric,"Portal lightning retains its visual theme");
             Check(balance.weapons.All(w=>w.combat!=null && w.damage==w.combat.damage),"Portal weapon stats have one source");
             var swordsman=Target("RedSwordsman");var sword=swordsman.GetComponent<Combatant>();
             Check(sword.Damage==40 && sword.Interval==2,"Melee weapon uses central attack data");
@@ -90,7 +90,7 @@ public static class CombatBalanceValidation
             Check(Enumerable.Range(0,array.arraySize).Any(i=>(UnitStat)array.GetArrayElementAtIndex(i).FindPropertyRelative("stat").enumValueIndex==UnitStat.Armor),"Info card includes armor");
             Check(Enumerable.Range(0,array.arraySize).Any(i=>(UnitStat)array.GetArrayElementAtIndex(i).FindPropertyRelative("stat").enumValueIndex==UnitStat.ElectricResistance),"Info card includes electric resistance");
             await Task.Delay(150);ScreenCapture.CaptureScreenshot("Temp/CombatMageInfo.png");await Task.Delay(100);
-            Check(card.GetComponentsInChildren<UnityEngine.UI.Text>().Any(t=>t.text=="50%"),"Mage info displays real magic resistance");
+            Check(!card.GetComponentsInChildren<UnityEngine.UI.Text>().Any(t=>t.text=="50%"),"Info card hides obsolete elemental resistances");
             SessionState.SetString(Key+".result","PASS: "+checks+" combat balance checks");Debug.Log(SessionState.GetString(Key+".result",""));
         }
         catch(Exception e){SessionState.SetString(Key+".result","FAILED: "+e.Message);Debug.LogException(e);}

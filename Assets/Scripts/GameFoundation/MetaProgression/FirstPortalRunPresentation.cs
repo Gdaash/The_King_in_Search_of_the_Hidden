@@ -20,6 +20,7 @@ namespace GameFoundation.MetaProgression
         private bool firstRun;
         private bool released;
         private bool revealing;
+        private bool returnMessageShown;
         private Sequence introduction;
         private Coroutine revealDelay;
         private RectTransform homeSlot;
@@ -73,6 +74,7 @@ namespace GameFoundation.MetaProgression
 
         public void RevealForEmergencyReturn()
         {
+            returnMessageShown = true;
             revealing = true;
             if (revealDelay != null) { StopCoroutine(revealDelay); revealDelay = null; }
             introduction?.Complete(true);
@@ -167,7 +169,19 @@ namespace GameFoundation.MetaProgression
                 group.blocksRaycasts = true;
                 escapeButton.interactable = true;
                 if (feedback != null) feedback.enabled = feedbackEnabled;
+                StartCoroutine(ExplainReturnOptions());
             });
+        }
+        private IEnumerator ExplainReturnOptions()
+        {
+            if (PlaytestSettings.TutorialsAndQuestsDisabled || returnMessageShown) yield break;
+            while (isActiveAndEnabled && escapeButton != null && escapeButton.gameObject.activeInHierarchy && !returnMessageShown)
+            {
+                var tutorial = Object.FindAnyObjectByType<FirstRunLightTutorial>();
+                if (tutorial != null && tutorial.EmergencyReturnActive) yield break;
+                if (tutorial != null && tutorial.TryExplainReturnOptions()) { returnMessageShown = true; yield break; }
+                yield return null;
+            }
         }
     }
 }

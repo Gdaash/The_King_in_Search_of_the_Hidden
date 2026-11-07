@@ -13,11 +13,14 @@ namespace GameFoundation.UI
         private Button button;
         public bool ActionAvailable { get; set; } = true;
         public bool Negative { get => negative; set { negative = value; Refresh(); } }
+        public bool Neutral { get => neutral; set { neutral = value; Refresh(); } }
+        public void Configure(Text legacy, TMPro.TMP_Text tmp = null) { label = legacy; tmpLabel = tmp; negative = neutral = false; Refresh(); }
         private void OnEnable() { button = GetComponent<Button>(); Refresh(); }
         private void LateUpdate() => Refresh();
         public void Refresh()
         {
             if (button == null) button = GetComponent<Button>();
+            if (theme == null) theme = Resources.Load<ButtonVisualTheme>("UI/ButtonVisualTheme");
             if (theme == null) return;
             var color = !button.IsInteractable() || !ActionAvailable ? theme.unavailableLabelColor
                 : neutral ? theme.neutralLabelColor : negative ? theme.negativeLabelColor : theme.positiveLabelColor;

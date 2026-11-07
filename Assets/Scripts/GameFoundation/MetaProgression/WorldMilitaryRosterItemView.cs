@@ -42,6 +42,8 @@ namespace GameFoundation.MetaProgression
             liveUnit = unit;
             storedProfile = unitExperience?.Profile;
             description = descriptions != null ? descriptions.Find(storedProfile?.type) : null;
+            if (unit != null && unit.TryGetComponent<WorldBallista>(out _) && spriteRenderer != null && icon != null)
+                ResourceIconSizing.Apply(icon, spriteRenderer.sprite);
             if (description != null && description.resource != null && icon != null)
                 ResourceIconSizing.Apply(icon, description.resource.resourceIcon);
         }
@@ -74,6 +76,7 @@ namespace GameFoundation.MetaProgression
 
         public void SetProfile(ResourceType resource, MilitaryProfile profile)
         {
+            if (profile != null && ReferenceEquals(storedProfile, profile)) return;
             SetIcon(resource != null ? resource.resourceIcon : null, MilitaryExperienceService.HealthPercent(profile), MilitaryExperienceService.Stars(profile));
             storedProfile = profile;
             description = descriptions != null && resource != null ? descriptions.Find(resource) : null;
@@ -84,7 +87,18 @@ namespace GameFoundation.MetaProgression
         public void OnPointerExit(PointerEventData eventData) => HideDetails();
         public void OnSelect(BaseEventData eventData) { hovering = true; showAt = Time.unscaledTime; }
         public void OnDeselect(BaseEventData eventData) => HideDetails();
-        public void OnScroll(PointerEventData eventData) { if (showing && detailsTooltip != null) detailsTooltip.Scroll(this, eventData.scrollDelta.y); }
+        public void OnScroll(PointerEventData eventData)
+        {
+            var roster = GetComponentInParent<VerticalMilitaryPanel>();
+            var scroll = roster != null ? roster.GetComponent<ScrollRect>() : null;
+            if (scroll != null && scroll.content.rect.height > scroll.viewport.rect.height)
+            {
+                HideDetails();
+                scroll.OnScroll(eventData);
+                return;
+            }
+            if (showing && detailsTooltip != null) detailsTooltip.Scroll(this, eventData.scrollDelta.y);
+        }
         private void Update()
         {
             if (!hovering || showing || Time.unscaledTime < showAt || description == null || detailsTooltip == null) return;

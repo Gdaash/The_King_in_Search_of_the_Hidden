@@ -7,6 +7,8 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
 {
     [Header("Настройки поиска")]
     [SerializeField] private string targetTag = "Player";
+    [SerializeField] private bool preferWorkers;
+    public bool PrefersWorkers => preferWorkers;
     [SerializeField] private float detectionRange = 10f;
     [SerializeField] private float attackRange = 0.5f; 
 
@@ -25,6 +27,7 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
 
     private Combatant combat;
     private EnemyMovement movement;
+    private SpearmanTactics spearman;
     public float AttackSpeedMultiplier
     {
         get { if (movement == null) movement = GetComponent<EnemyMovement>(); return movement != null ? movement.AreaSlowMultiplier : 1f; }
@@ -57,6 +60,7 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
     {
         combat=GetComponent<Combatant>();
         movement=GetComponent<EnemyMovement>();
+        spearman=GetComponent<SpearmanTactics>();
         // Каждый юнит выбирает случайную точку в круге при рождении
         _personalOffset = Random.insideUnitCircle * positionVariation;
         
@@ -84,6 +88,8 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
     void Update()
     {
         if (Time.timeScale <= 0f) return;
+        if (movement != null && movement.IsStunned)
+        { _nextAttackTime += Time.deltaTime; OnStop?.Invoke(); return; }
         // Advance the existing attack cooldown at the slowed rate, including mid-cooldown entry/exit.
         if (_nextAttackTime > Time.time) _nextAttackTime += Time.deltaTime * (1f - AttackSpeedMultiplier);
         FindClosestTarget();
@@ -124,6 +130,7 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
 
     private void HandleCombat()
     {
+        if (spearman != null && spearman.RetreatFrom(_target)) { OnMove?.Invoke(); return; }
         float distanceToTarget = Vector2.Distance(transform.position, _target.position);
 
         if (_boundaryTarget != _target)
@@ -167,7 +174,7 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
 
         float distanceToPoint = Vector2.Distance(transform.position, targetPoint);
 
-        if (distanceToPoint > homeStoppingDistance)
+        if (distanceToPoint > (_hasAssignedHomePoint ? .08f : homeStoppingDistance))
         {
             OnMove?.Invoke();
         }
@@ -179,18 +186,26 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
 
     private void FindClosestTarget()
     {
-        if (_target != null && !CombatTargetRegistry.IsAlive(_target)) _target = null;
+        if (_target != null && (!CombatTargetRegistry.IsAlive(_target) ||
+            (_hasAssignedHomePoint && !CompareTag("Enemy1") &&
+             ((Vector2)(_target.position - _assignedHomePoint)).sqrMagnitude > detectionRange * detectionRange))) _target = null;
         if (Time.time < nextTargetSearch) return;
         nextTargetSearch = Time.time + .15f;
         _target = CompareTag("Enemy1") && targetTag == "Player"
-            ? CombatTargetRegistry.ClosestHostileTarget(transform.position, detectionRange)
-            : CombatTargetRegistry.Closest(targetTag, transform.position );
+            ? CombatTargetRegistry.ClosestHostileTarget(transform.position, detectionRange, preferWorkers)
+            : CombatTargetRegistry.Closest(targetTag, transform.position, false, _hasAssignedHomePoint ? (Vector2?)_assignedHomePoint : null, detectionRange);
     }
 
     public void OnTakeDamage(Transform attacker = null)
     {
         if (attacker != null)
         {
+            if (preferWorkers && CompareTag("Enemy1") && targetTag == "Player")
+            {
+                nextTargetSearch = 0;
+                FindClosestTarget();
+                return;
+            }
             _target = attacker;
             _isAttacking = false;
         }
@@ -206,7 +221,7 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
         return null;
     }
 
-    public void FinishAttack() { _isAttacking = false; ResetCooldown(); }
+    public void FinishAttack() { _isAttacking = false; ResetCooldown(); spearman?.AttackFinished(); }
 
     private void OnDestroy() 
     { 
@@ -216,6 +231,7 @@ public class EnemyAI : MonoBehaviour, IEnemyAI
 
     public void SetHomePoint(Vector3 worldPosition)
     {
+        _target = null; _isAttacking = false; nextTargetSearch = 0;
         _hasAssignedHomePoint = true;
         _assignedHomePoint = worldPosition;
         if (_offsetAnchor != null) _offsetAnchor.transform.position = worldPosition;

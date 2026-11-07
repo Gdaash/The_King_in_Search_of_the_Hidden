@@ -50,6 +50,7 @@ GameObject:
   - component: {fileID: 1751197922740816127}
   - component: {fileID: 2069168535846114068}
   - component: {fileID: 2030466676381630009}
+  - component: {fileID: 1855766818593536801}
   m_Layer: 9
   m_Name: FlyingEye
   m_TagString: Enemy1
@@ -131,7 +132,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -178,6 +179,7 @@ MonoBehaviour:
   targetSprite: {fileID: 2303700918267579938}
   damageTextPrefab: {fileID: 0}
   _cur: 0
+  fallbackMaximumHealth: 100
   hitFlashDuration: 0.16
   hitScaleAmount: 0.12
   deathDuration: 0.3
@@ -267,8 +269,10 @@ MonoBehaviour:
   baseSpeed: 0.9
   baseArmor: 0
   weapon: {fileID: 11400000, guid: ad5f608d98a25be42ba59fb9dd0343d4, type: 2}
+  knockbackWeight: 1
   defense: {fileID: 11400000, guid: 75af3f3499da3ad4a8978a21672d5076, type: 2}
   modifiers: {fileID: 11400000, guid: 1c93b54725945594ebaf4572f5984df7, type: 2}
+  equipment: 0
 --- !u!114 &2069168535846114068
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -381,6 +385,19 @@ MonoBehaviour:
   windupDuration: 0.22
   windupScale: {x: 0.9, y: 1.08}
   flipThreshold: 0.1
+--- !u!114 &1855766818593536801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6817496671389091339}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18f4ef6ec58c3a044a25d75e203ee795, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EyeHexSealer
+  captureDuration: 10
 --- !u!1 &8954309211785331601
 GameObject:
   m_ObjectHideFlags: 0

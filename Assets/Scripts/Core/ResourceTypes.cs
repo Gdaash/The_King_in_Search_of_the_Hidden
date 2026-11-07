@@ -25,6 +25,11 @@ public class ResourceType : ScriptableObject
     [Tooltip("Показывать изменения запаса в уведомлениях. Для воинов отключено: их гибель отображается отдельным событием.")]
     public bool notifyResourceChanges = true;
 
+    [Tooltip("Тип союзного войска. Включает ресурс в состав отряда перед входом в портал.")]
+    public bool isMilitaryUnit;
+    [Tooltip("Порядок типов воинов в компактном составе отряда. При равенстве используется постоянный ID.")]
+    public int militaryDisplayOrder;
+
     [Header("Визуал")]
     [Tooltip("Иконка интерфейса без обводки. Canvas: размер спрайта × 2.")]
     public Sprite resourceIcon;

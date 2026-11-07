@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using GameFoundation.Localization;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,12 +18,31 @@ namespace GameFoundation.MetaProgression
         public Card[] cards;
         public Button rerollButton;
         public Text rerollLabel;
+        [SerializeField] private Text rerollAmount;
         public GameObject rerollTooltip;
         public Text rerollTooltipText;
         public void Reroll() { progression.Reroll(); }
         public void ShowRerollTooltip() { if (rerollTooltip != null) rerollTooltip.SetActive(true); }
         public void HideRerollTooltip() { if (rerollTooltip != null) rerollTooltip.SetActive(false); }
         private LocalizationService language;
+        private Vector2[] cardPositions;
+        private RectTransform panel;
+        private Vector2 normalPanelSize, normalHeadingPosition, normalHeadingSize;
+        private void Awake()
+        {
+            panel = heading.rectTransform.parent as RectTransform;
+            normalPanelSize = panel.sizeDelta;
+            normalHeadingPosition = heading.rectTransform.anchoredPosition;
+            normalHeadingSize = heading.rectTransform.sizeDelta;
+            cardPositions = new Vector2[cards.Length];
+            for (int i = 0; i < cards.Length; i++)
+                cardPositions[i] = ((RectTransform)cards[i].button.transform.parent).anchoredPosition;
+        }
+        private string Localized(string key, string fallback)
+        {
+            string value = LocalizationService.Instance?.Get(key);
+            return string.IsNullOrEmpty(value) || value == key ? fallback : value;
+        }
         private void OnEnable()
         {
             // Mandatory level choice covers HUD, tooltips and reward-flight overlays.
@@ -52,32 +71,30 @@ namespace GameFoundation.MetaProgression
             PortalTowerBalance.DeliveryMethod.Area => English ? "Area" : "По области",
             _ => English ? "Instant hit" : "Мгновенный удар"
         };
-        private string DamageName(DamageType type) => type switch
-        {
-            DamageType.Physical => English ? "Physical" : "Физический",
-            DamageType.Fire => English ? "Fire" : "Огонь",
-            DamageType.Ice => English ? "Cold" : "Морозный",
-            DamageType.Electric => English ? "Electric" : "Электричество",
-            _ => English ? "Magic" : "Магический"
-        };
         private string ScopeName(PortalTowerBalance.Upgrade upgrade) => upgrade.scope switch
         {
             PortalTowerBalance.UpgradeScope.DeliveryMethod => DeliveryName(upgrade.deliveryMethod),
-            PortalTowerBalance.UpgradeScope.DamageType => DamageName(upgrade.damageType),
+            PortalTowerBalance.UpgradeScope.DamageType => English ? "All weapons" : "Всё оружие",
             PortalTowerBalance.UpgradeScope.Portal => English ? "Portal" : "Портал",
             _ => English ? "All weapons" : "Всё оружие"
         };
         private void Refresh()
         {
+            bool lightReward = progression.IsGuaranteedLightChoice;
+            if (hint != null) hint.gameObject.SetActive(!lightReward);
             if (rerollButton != null)
             {
+                rerollButton.gameObject.SetActive(!lightReward);
+                if (lightReward) HideRerollTooltip();
                 rerollButton.interactable = progression.CanReroll;
-                rerollLabel.text = (English ? "Reroll" : "Переброс") + "  " + progression.RerollCost;
+                rerollLabel.text = English ? "Reroll" : GameText.Get("Переброс");
+                if (rerollAmount != null) rerollAmount.text = progression.RerollCost.ToString();
                 rerollTooltipText.text = English
                     ? "You borrow crystals from the next level. Experience will not accumulate until this debt is repaid."
                     : "Вы берёте кристаллы в долг из будущего уровня. Пока этот долг не отработан, опыт уровня не будет копиться.";
             }
-            heading.text = English ? "PORTAL TOWER – LEVEL " + progression.ChoiceLevel : GameFoundation.Localization.GameText.Get("БАШНЯ ПОРТАЛА – УРОВЕНЬ ") + progression.ChoiceLevel;
+            heading.gameObject.SetActive(!progression.IsTutorialLightChoice);
+            heading.text = string.Format(Localized("world.portal.level_heading", "БАШНЯ ПОРТАЛА – УРОВЕНЬ {0}"), progression.ChoiceLevel);
             hint.text = progression.IsInitialWeaponChoice
                 ? (English ? "Choose your first weapon" : GameFoundation.Localization.GameText.Get("Выберите первое оружие"))
                 : (English ? "Choose one upgrade to continue" : GameFoundation.Localization.GameText.Get("Выберите одно улучшение, чтобы продолжить"));
@@ -85,19 +102,31 @@ namespace GameFoundation.MetaProgression
             {
                 var c=cards[i]; bool visible=i<progression.Offers.Count;
                 c.button.transform.parent.gameObject.SetActive(visible);
+                if (cardPositions != null)
+                    ((RectTransform)c.button.transform.parent).anchoredPosition = lightReward
+                        ? new Vector2(0, cardPositions[i].y) : cardPositions[i];
                 if(!visible)continue;
                 var u=progression.Offers[i];
                 c.title.text=English?u.englishTitle:u.title;
                 c.description.text=English?u.englishDescription:u.description;
-                c.description.fontSize = 20;
+                c.description.fontSize = 22;
                 c.description.horizontalOverflow = HorizontalWrapMode.Wrap;
                 c.icon.sprite=u.icon; c.icon.enabled=u.icon!=null;
                 c.icon.material=DamagePalette.IconMaterial(u.icon);
                 if(u.icon!=null)c.icon.rectTransform.sizeDelta=u.icon.rect.size*(96f/Mathf.Max(u.icon.rect.width,u.icon.rect.height));
+                c.category.gameObject.SetActive(!lightReward);
+                if (lightReward)
+                {
+                    c.title.text = Localized("world.portal.light_reward_title", "Дополнительный рабочий луч");
+                    c.description.text = Localized("world.portal.light_reward_description", "Ещё один луч для открытия гексов, добычи ресурсов и обороны.");
+                    c.button.interactable = progression.CanPurchase(u);
+                    c.button.GetComponentInChildren<Text>().text = "OK";
+                    continue;
+                }
                 var w=progression.Balance.FindWeapon(u.weapon);
                 if(u.effect==PortalTowerBalance.Effect.UnlockWeapon && w!=null)
                 {
-                    c.description.text += $"\n{(English ? "Delivery" : "Способ")}: {DeliveryName(w.deliveryMethod)}\n{(English ? "Damage" : "Урон")}: {DamageName(w.damageType)}";
+                    c.description.text = $"{(English ? "Delivery" : "Способ")}: {DeliveryName(w.deliveryMethod)}\n{GameFoundation.Combat.CombatEffectText.Description(w.damageType)}";
                     float damage = w.damage * progression.Multiplier(w.weapon, PortalTowerBalance.Effect.Damage);
                     float interval = progression.AttackInterval(w.weapon);
                     if (w.HasTicks)
@@ -137,6 +166,34 @@ namespace GameFoundation.MetaProgression
                 c.button.interactable=progression.CanPurchase(u);
                 c.button.GetComponentInChildren<Text>().text=English?"Choose":"Выбрать";
             }
+            FitRewardPanel(lightReward);
+        }
+        private void FitRewardPanel(bool lightReward)
+        {
+            if (panel == null) return;
+            if (!lightReward)
+            {
+                panel.sizeDelta = normalPanelSize;
+                heading.rectTransform.sizeDelta = normalHeadingSize;
+                heading.rectTransform.anchoredPosition = normalHeadingPosition;
+                return;
+            }
+            const float padding = 32f, gap = 24f;
+            var card = (RectTransform)cards[0].button.transform.parent;
+            float titleHeight = progression.IsTutorialLightChoice ? 0 : normalHeadingSize.y;
+            float titleGap = progression.IsTutorialLightChoice ? 0 : gap;
+            // The visible heading uses TMP, whose glyph widths differ from the legacy Text binding.
+            var renderedHeading = heading.GetComponentInChildren<TMPro.TMP_Text>(true);
+            float titleWidth = renderedHeading != null
+                ? renderedHeading.GetPreferredValues(heading.text, Mathf.Infinity, Mathf.Infinity).x
+                : heading.preferredWidth;
+            float width = Mathf.Ceil(Mathf.Max(card.rect.width, progression.IsTutorialLightChoice ? 0 : titleWidth + 12f) + padding * 2f);
+            float height = card.rect.height + titleHeight + titleGap + padding * 2f;
+            panel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+            panel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+            heading.rectTransform.sizeDelta = new Vector2(width - padding * 2f, titleHeight);
+            heading.rectTransform.anchoredPosition = new Vector2(0, height * .5f - padding - titleHeight * .5f);
+            card.anchoredPosition = new Vector2(0, -height * .5f + padding + card.rect.height * .5f);
         }
     }
 }

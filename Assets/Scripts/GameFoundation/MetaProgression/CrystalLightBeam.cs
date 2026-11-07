@@ -92,7 +92,7 @@ namespace GameFoundation.MetaProgression
             }
             if (controller != null)
             {
-                controller.SetCrystalTarget(position, lit);
+                controller.SetCrystalTarget(position, lit, flashOnActivation: true);
                 controller.gameObject.SetActive(true);
             }
             if (groundLight != null) { groundLight.gameObject.SetActive(lit); groundLight.enabled = lit; }

@@ -31,15 +31,17 @@ namespace GameFoundation.MetaProgression
             if (melee != null) melee.SetHomePoint(destination);
             if (ranged != null) ranged.SetHomePoint(destination);
             if (movement != null) movement.enabled = false;
-            if (meleeVisuals != null) meleeVisuals.SetMoving(true);
-            if (rangedVisuals != null) rangedVisuals.SetMoving(true);
+            if (meleeVisuals != null) meleeVisuals.BeginTravel();
+            if (rangedVisuals != null) rangedVisuals.BeginTravel();
         }
 
         private void FixedUpdate()
         {
             if (body == null) return;
+            if (TryGetComponent<Health>(out var health) && (health.IsDead || health.IsStunned))
+            { body.linearVelocity = Vector2.zero; return; }
             Vector2 delta = destination - body.position;
-            if (delta.sqrMagnitude <= 0.04f)
+            if (delta.sqrMagnitude <= 0.0064f)
             {
                 body.linearVelocity = Vector2.zero;
                 if (meleeVisuals != null) meleeVisuals.SetMoving(false);
@@ -52,7 +54,7 @@ namespace GameFoundation.MetaProgression
             }
 
             Vector2 direction = delta.normalized;
-            body.linearVelocity = direction * speed;
+            body.linearVelocity = PlayerHexNavigation.ResolveDirection(body.position, direction) * Mathf.Min(movement != null ? movement.CurrentSpeed : speed, delta.magnitude / Time.fixedDeltaTime);
             if (Mathf.Abs(direction.x) > 0.05f)
                 transform.localScale = new Vector3(initialScaleX * Mathf.Sign(direction.x), transform.localScale.y, transform.localScale.z);
         }

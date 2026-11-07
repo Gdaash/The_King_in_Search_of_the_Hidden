@@ -28,11 +28,98 @@ public sealed class DangerLevelNotificationView : MonoBehaviour
     [SerializeField, Min(0f)] private float fadeOutDuration = 0.25f;
 
     private readonly List<Image> skulls = new();
+    private readonly Vector3[] corners = new Vector3[4];
+    private RectTransform followedBar, upperDecoration, rootCanvas;
+    private bool aboveBar;
+
+    public void FollowBar(RectTransform bar, bool above, RectTransform decoration = null)
+    {
+        followedBar = bar;
+        aboveBar = above;
+        upperDecoration = decoration;
+        rootCanvas = GetComponentInParent<Canvas>()?.rootCanvas.transform as RectTransform;
+        AlignToBar();
+    }
+
+    private void LateUpdate() => AlignToBar();
+
+    private void AlignToBar()
+    {
+        if (followedBar == null || rootCanvas == null) return;
+        const float gap = 12f;
+        float edge = BarEdge(followedBar);
+        if (aboveBar && upperDecoration != null && upperDecoration.gameObject.activeInHierarchy)
+            edge = Mathf.Max(edge, BarEdge(upperDecoration));
+        var rect = (RectTransform)transform;
+        float halfHeight = Mathf.Abs(rootCanvas.InverseTransformVector(rect.TransformVector(Vector3.up * rect.rect.height * .5f)).y);
+        float y = edge + (aboveBar ? 1 : -1) * (gap + halfHeight);
+        rect.position = rootCanvas.TransformPoint(new Vector3(rootCanvas.rect.center.x, y));
+    }
+
+    private float BarEdge(RectTransform bar)
+    {
+        bar.GetWorldCorners(corners);
+        return rootCanvas.InverseTransformPoint(corners[aboveBar ? 1 : 0]).y;
+    }
+
+    public void ShowLightChange(int change, int lightCount, Sprite crystalIcon)
+    {
+        int maximum = GameFoundation.MetaProgression.WorldFlashlightAvailability.MaximumCount;
+        EnsureSkulls(maximum);
+        if (skullContainer != null)
+        {
+            skullContainer.gameObject.SetActive(crystalIcon != null);
+            skullContainer.anchorMin = skullContainer.anchorMax = skullContainer.pivot = new Vector2(.5f, .5f);
+            skullContainer.anchoredPosition = new Vector2(0, -24);
+        }
+        for (int i = 0; i < skulls.Count; i++)
+        {
+            var crystal = skulls[i];
+            crystal.gameObject.SetActive(i < maximum);
+            ResourceIconSizing.Apply(crystal, crystalIcon);
+            crystal.color = i < lightCount ? Color.white : new Color(.13f, .11f, .15f);
+        }
+        if (titleText != null)
+        {
+            var rect = titleText.rectTransform;
+            rect.anchorMin = new Vector2(0, .5f);
+            rect.anchorMax = new Vector2(1, .5f);
+            rect.pivot = new Vector2(.5f, .5f);
+            rect.anchoredPosition = new Vector2(0, 24);
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 60);
+            titleText.enableAutoSizing = true;
+            titleText.fontSizeMin = 22;
+            titleText.fontSizeMax = titleText.fontSize;
+            int count = Mathf.Abs(change);
+            string key = change > 0 ? "world.energy.light_on" : "world.energy.light_off";
+            string fallback = change > 0 ? "Включился ещё один луч" : "Выключился один луч";
+            if (count > 1)
+            {
+                key += "_multiple";
+                fallback = change > 0 ? "Включились лучи: {0}" : "Выключились лучи: {0}";
+            }
+            var translated = LocalizationService.Instance?.Get(key);
+            titleText.text = string.Format(string.IsNullOrEmpty(translated) || translated == key ? fallback : translated, count);
+        }
+        gameObject.SetActive(true);
+        StartCoroutine(PlayLightChange());
+    }
+
+    private IEnumerator PlayLightChange()
+    {
+        yield return Animate();
+        Destroy(gameObject);
+    }
 
     public IEnumerator Play(int level, int totalLevels)
     {
         SetContent(level, totalLevels);
         gameObject.SetActive(true);
+        yield return Animate();
+    }
+
+    private IEnumerator Animate()
+    {
         yield return Fade(0f, 1f, fadeInDuration);
         if (visibleDuration > 0f) yield return new WaitForSecondsRealtime(visibleDuration);
         yield return Fade(1f, 0f, fadeOutDuration);

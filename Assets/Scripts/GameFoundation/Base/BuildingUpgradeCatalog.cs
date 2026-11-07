@@ -26,6 +26,7 @@ namespace GameFoundation.Base
             public ResourceType capacityResource;
             [Min(0)] public int capacityBeforeConstruction;
             [Min(0)] public int constructionCapacity = 3;
+            public Level constructionCost;
             public List<Level> levels = new();
             public int Capacity(bool built, int level)
             {

@@ -20,7 +20,7 @@ namespace GameFoundation.Base
                     squares[i] = rect.GetComponent<Image>(); squares[i].raycastTarget = false;
                 }
             }
-            for (int i = 0; i < squares.Length; i++) squares[i].color = i < current ? new Color(.92f,.83f,.60f) : new Color(.075f,.06f,.09f);
+            for (int i = 0; i < squares.Length; i++) squares[i].color = i < current ? new Color(.92f,.83f,.60f) : new Color(.42f,.36f,.48f);
         }
     }
 }

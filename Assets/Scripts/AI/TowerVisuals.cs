@@ -19,9 +19,13 @@ public class TowerVisuals : MonoBehaviour
     [SerializeField] private float shootSpeed = 10f;
     [SerializeField, Min(0f)] private float windupDuration = 0.2f;
 
+    private bool lobbedStones;
+    public void UseLobbedStones() => lobbedStones = true;
+
     private Vector3 _startPos;
     private float projectileBaseSpeed;
     public Transform ShootPoint => shootPoint;
+    public float ProjectileBaseSpeed => projectilePrefab != null && projectilePrefab.TryGetComponent<EnemyProjectile>(out var projectile) ? projectile.BaseSpeed : 0;
 
     void Start() 
     {
@@ -45,8 +49,9 @@ public class TowerVisuals : MonoBehaviour
         float attackSpeed = tower.PortalProgression != null ? tower.PortalProgression.AttackSpeedMultiplier : 1f;
         if (windupDuration > 0f) yield return new WaitForSeconds(windupDuration / attackSpeed);
 
+        while (TryGetComponent<Health>(out var health) && health.IsStunned) yield return null;
         target = tower.GetTarget();
-        if (target == null || (tower.PortalProgression != null && tower.PortalProgression.ExpeditionEnded)) { tower.FinishAttack(); yield break; }
+        if (target == null || !tower.isActiveAndEnabled || TowerDarkness.Blocks(tower.transform) || (tower.PortalProgression != null && !tower.PortalProgression.CanAttack)) { tower.FinishAttack(); yield break; }
 
         if (shootPoint == null) { tower.FinishAttack(); yield break; }
         Vector3 worldDir = (target.position - shootPoint.position).normalized;
@@ -69,6 +74,9 @@ public class TowerVisuals : MonoBehaviour
             int count = tower.PortalProgression != null ? tower.PortalProgression.ProjectileCount : combat?.weapon?.count??1;
             for (int i = 0; i < count; i++)
             {
+                if (tower.PortalProgression != null && !tower.PortalProgression.TrySpendShot(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Bolts)) break;
+                if (i == 0)
+                    tower.PortalProgression?.ReportReload(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Bolts, tower.NextAttackTime);
                 // Parallel shots stay aimed at the target, with a small transverse separation.
                 Vector3 offset = new Vector3(-worldDir.y, worldDir.x) * ((i - (count - 1) * .5f) * .09f);
                 GameObject proj = Instantiate(projectilePrefab, shootPoint.position + offset, Quaternion.identity);
@@ -78,11 +86,14 @@ public class TowerVisuals : MonoBehaviour
                     if(progression!=null)
                     {
                         var weapon=progression.Balance.FindWeapon(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Bolts);
-                        p.SetupHit(worldDir,targetTag,(weapon.damage+(tower.GetStats()?.damageSettings.Find(d=>d.type==weapon.damageType)?.bonusDamage??0))*progression.DamageMultiplier,weapon.damageType,tower.transform,
+                        p.SetupHit(worldDir,targetTag,(weapon.damage+(tower.GetStats()?.UnifiedBonusDamage??0))*progression.WeaponDamageMultiplier(weapon.weapon),weapon.damageType,tower.transform,
                             progression.Multiplier(weapon.weapon,GameFoundation.MetaProgression.PortalTowerBalance.Effect.ExpansionSpeed),tower.CurrentRange+1);
                     }
                     else if(combat!=null && combat.weapon!=null)
+                    {
                         p.SetupHit(worldDir,targetTag,combat.Damage,combat.weapon.damageType,tower.transform);
+                        if (lobbedStones) p.LobTo(target.position, combat.weapon.radius);
+                    }
                     else
                     {
                         var stats=tower.GetStats();

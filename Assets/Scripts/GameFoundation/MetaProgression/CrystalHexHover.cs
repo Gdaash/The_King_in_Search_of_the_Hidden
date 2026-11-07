@@ -97,8 +97,8 @@ namespace GameFoundation.MetaProgression
                 if (show && view.flag != desired.Flag) { ReleaseFlag(view); view.flag = desired.Flag; }
                 if (show)
                 {
-                    view.canRecall = desired.CanRecallHumans;
-                    view.canStart = crystal.CanStartManually(desired);
+                    view.canRecall = crystal.CanToggleMilitaryAt(desired.Anchor.position);
+                    view.canStart = false; // Only the mode-switch hint is displayed here.
                     if (view.alarmPreview != null)
                     {
                         float amount = crystal.GetActionAlarm(desired, out float reservedForAction);
@@ -140,8 +140,8 @@ namespace GameFoundation.MetaProgression
             view.unlit = unlit;
             view.frame.sprite = unlit ? busySprite : state switch
             {
-                WorldFlashlightAvailability.HoverState.WaitingForResources => cancelSprite,
-                WorldFlashlightAvailability.HoverState.RecallOnly => cancelSprite,
+                WorldFlashlightAvailability.HoverState.WaitingForResources => workingSprite,
+                WorldFlashlightAvailability.HoverState.RecallOnly => availableSprite,
                 WorldFlashlightAvailability.HoverState.Working => workingSprite,
                 WorldFlashlightAvailability.HoverState.LightsBusy => busySprite,
                 _ => availableSprite
@@ -149,14 +149,14 @@ namespace GameFoundation.MetaProgression
         }
         private void Paint(View view, float alpha)
         {
-            view.frame.color = new Color(1, 1, 1, alpha * (view.unlit ? unlitFrameAlpha : 1f));
-            string key = view.state == WorldFlashlightAvailability.HoverState.WaitingForResources ? "world.crystal.cancel" : null;
+            view.frame.color = view.state == WorldFlashlightAvailability.HoverState.Military ? new Color(.28f, .62f, 1f, alpha) : new Color(1, 1, 1, alpha * (view.unlit ? unlitFrameAlpha : 1f));
+            string key = null;
             string text = key == null ? "" : LocalizationService.Instance?.Get(key);
             if (key != null && (string.IsNullOrEmpty(text) || text == key))
                 text = GameFoundation.Localization.GameText.Get("отменить действие");
             if (view.caption.text != text) view.caption.text = text;
-            bool canCancel = view.state == WorldFlashlightAvailability.HoverState.WaitingForResources;
-            bool showMouseRow = canCancel || view.canRecall;
+            bool canCancel = false;
+            bool showMouseRow = view.canRecall;
             bool hasCaption = !string.IsNullOrEmpty(text) && !canCancel;
             view.caption.gameObject.SetActive(hasCaption);
             view.caption.alpha = view.captionGroup != null ? 1 : alpha;
@@ -171,9 +171,9 @@ namespace GameFoundation.MetaProgression
             }
             if (view.recallCaption != null)
             {
-                const string recallKey = "world.crystal.recall_humans";
+                const string recallKey = "world.military.switch_mode";
                 string recall = LocalizationService.Instance?.Get(recallKey);
-                if (string.IsNullOrEmpty(recall) || recall == recallKey) recall = GameFoundation.Localization.GameText.Get("Вернуть людей в портал");
+                if (string.IsNullOrEmpty(recall) || recall == recallKey) recall = GameFoundation.Localization.GameText.Get("Переключить режим");
                 if (canCancel) recall = text;
                 if (view.recallCaption.text != recall) view.recallCaption.text = recall;
             }

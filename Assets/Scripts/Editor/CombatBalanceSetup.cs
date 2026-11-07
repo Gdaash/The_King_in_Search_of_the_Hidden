@@ -64,7 +64,7 @@ public static class CombatBalanceSetup
         EditorUtility.SetDirty(balance);
         int configured=0;
         var paths=AssetDatabase.FindAssets("t:Prefab",new[]{"Assets/Prefabs/Units"}).Select(AssetDatabase.GUIDToAssetPath).ToList();
-        paths.AddRange(new[]{"Assets/Prefabs/Buildings/PortalTower.prefab","Assets/Prefabs/Buildings/Defense Towers/Magic Tower.prefab","Assets/Prefabs/Buildings/Defense Towers/Arrow Tower.prefab","Assets/Prefabs/Buildings/Defense Towers/Stone Tower.prefab"});
+        paths.AddRange(new[]{"Assets/Prefabs/Buildings/PortalTower.prefab","Assets/Resources/Engineering/Magic Tower.prefab","Assets/Resources/Engineering/Arrow Tower.prefab","Assets/Resources/Engineering/Stone Tower.prefab"});
         foreach(var path in paths)
         {
             var asset=AssetDatabase.LoadAssetAtPath<GameObject>(path);var health=asset.GetComponent<Health>();if(health==null || health.Stats==null)continue;
@@ -156,10 +156,10 @@ public static class CombatBalanceSetup
         Text("unit.details.electric_damage","Электрический урон","Electric damage");Text("unit.details.electric_resistance","Защита от электричества","Electric resistance");
         Text("unit.enemy.octopus.description","Быстрый враг с небольшим запасом здоровья. Частые атаки эффективно останавливают таких врагов.","A fast enemy with little health. Rapid attacks stop these enemies efficiently.");
         Text("unit.enemy.octopusraider.description","Очень быстрый враг с небольшим запасом здоровья и без брони.","A very fast enemy with little health and no armor.");
-        Text("unit.enemy.octopusguardian.description","Броня вычитает 3 урона из каждого попадания на первом уровне. Электричество игнорирует броню и наносит на 50% больше урона.","Armor subtracts 3 damage from each hit at level one. Electricity ignores armor and deals 50% more damage.");
+        Text("unit.enemy.octopusguardian.description","Броня вычитает 3 урона из каждого попадания на первом уровне.","Armor subtracts 3 damage from each hit at level one.");
         Text("unit.enemy.octopuswarrior.description","Медленный гигант с большим запасом здоровья, без брони. Уязвим к непрерывному урону.","A slow giant with a large health pool and no armor. Vulnerable to sustained damage.");
-        Text("unit.enemy.cursedknight.description","Броня вычитает урон из каждого попадания. Сильные удары эффективны; электричество игнорирует броню и наносит на 50% больше урона.","Armor subtracts damage from every hit. Heavy hits are effective; electricity ignores armor and deals 50% more damage.");
-        Text("unit.enemy.cursedmage.description","Сопротивляется магии, огню, льду и электричеству на 50%. Получает на 25% больше физического урона.","Resists magic, fire, ice and electricity by 50%. Takes 25% more physical damage.");
+        Text("unit.enemy.cursedknight.description","Броня вычитает урон из каждого попадания. Сильные удары эффективны; электричество игнорирует броню и наносит на 50% больше урона.","Armor subtracts damage from every hit. Heavy hits are effective.");
+        Text("unit.enemy.cursedmage.description","Хрупкий дальнобойный маг. Компенсирует малое здоровье высоким уроном.","A fragile ranged mage that compensates for low health with high damage.");
         EditorUtility.SetDirty(table);
     }
 }

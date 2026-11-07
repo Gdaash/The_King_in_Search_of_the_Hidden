@@ -95,6 +95,7 @@ public static class PortalPopupSetup
         row.button = root.gameObject.AddComponent<Button>(); row.button.targetGraphic = row.border; row.button.transition = Selectable.Transition.None;
         var surface = Rect("Surface", root, 0, 0); Stretch(surface, 2); row.surface = Image(surface, new(.14f, .115f, .17f));
         row.selection = Image(Rect("Selected", root, 4, 72, -209, 0), Gold);
+        row.selection.gameObject.SetActive(false);
         row.title = Text("Name", root, "Магические горы", 342, 36, -18, 16, 26);
         row.status = Text("Access", root, "Улучшите портал до ур. 4", 342, 28, -18, -20, 19);
         row.lockIcon = Icon("Lock", root, Lock, 184, 0, Gold);
@@ -105,6 +106,7 @@ public static class PortalPopupSetup
     {
         var root = Rect("Portal Popup", null, 0, 0); Stretch(root); Image(root, Color.clear).raycastTarget = true;
         root.gameObject.AddComponent<PopupDimmerLink>(); var view = root.gameObject.AddComponent<PortalPopupView>();
+        view.expeditionLayout = true;
         var window = Rect("Window", root, 1280, 800); window.gameObject.AddComponent<CanvasWindowFit>(); Image(window, Color.white, Panel).raycastTarget = true;
         var heading = Text("Title", window, "ПОРТАЛ", 1100, 50, 0, 338, 36, TextAnchor.MiddleCenter); heading.color = Gold; Translate(heading, "base.portal.popup_title");
         view.portalLevel = Text("Portal Level", window, "Уровень портала: 0 / 4", 1110, 32, 0, 292, 22, TextAnchor.MiddleCenter); view.portalLevel.color = Muted;
@@ -127,7 +129,7 @@ public static class PortalPopupSetup
         view.title = Text("Location Name", detail, "Лес", 672, 46, 0, 236, 32); view.title.color = Gold;
         view.description = Text("Description", detail, "Базовая лесная локация.", 672, 88, 0, 158, 24, TextAnchor.UpperLeft); view.description.lineSpacing = 1.1f;
         var danger = Text("Danger Label", detail, "Опасность", 210, 50, -231, 81, 22); Translate(danger, "base.portal.tooltip.danger");
-        var skull = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/UI/Common/DangerSkull.png");
+        var skull = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Ui/Alarm 12/Skull Active.png");
         view.dangerSkulls = Enumerable.Range(0, 5).Select(i => Icon("Danger Skull " + (i + 1), detail, skull, -75 + i * (skull.rect.width * 2 + 12), 81)).ToArray();
         Image(Rect("Resources Divider", detail, 672, 2, 0, 47), new(.30f, .25f, .35f));
         var resources = Text("Resources Caption", detail, "РЕСУРСЫ ЛОКАЦИИ", 672, 30, 0, 21, 20); resources.color = Muted; Translate(resources, "base.portal.resources");

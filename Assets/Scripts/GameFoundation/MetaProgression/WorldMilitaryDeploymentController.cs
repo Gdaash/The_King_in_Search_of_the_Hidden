@@ -7,7 +7,7 @@ using GameFoundation.Audio;
 
 namespace GameFoundation.MetaProgression
 {
-    public sealed class WorldMilitaryDeploymentController : MonoBehaviour
+    public sealed partial class WorldMilitaryDeploymentController : MonoBehaviour
     {
         [Serializable]
         public sealed class UnitControl
@@ -30,18 +30,21 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private UnitControl swordsmen = new UnitControl();
         [SerializeField] private UnitControl archers = new UnitControl();
 
+        [SerializeField] private List<UnitControl> additionalUnitTypes = new();
+        private IEnumerable<UnitControl> Controls => new[] { swordsmen, archers }.Concat(additionalUnitTypes).Where(c => c != null).Distinct();
+
         private void Awake()
         {
-            Bind(swordsmen);
-            Bind(archers);
+            RegisterEngineers();
+            foreach (var control in Controls) Bind(control);
         }
 
         private void Start()
         {
             // A battle begins with the whole garrison stepping through the portal.
-            DeployAll(swordsmen);
-            DeployAll(archers);
+            foreach (var control in Controls) DeployAll(control);
             Refresh();
+            InitializeMilitaryLights();
         }
 
         private void OnEnable()
@@ -50,16 +53,17 @@ namespace GameFoundation.MetaProgression
             Refresh();
         }
 
-        private void OnDisable() => GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
+        private void OnDisable() { GlobalResourceManager.OnResourceChanged -= OnResourceChanged; if (militaryLights != null) militaryLights.MilitaryPositionsChanged -= RebuildFormation; }
 
         private void OnDestroy()
         {
+            escapeRecall = true;
+            ClearBallistas();
             FinalizeSurvivors();
         }
         public void FinalizeSurvivors()
         {
-            ReturnSurvivors(swordsmen);
-            ReturnSurvivors(archers);
+            foreach (var control in Controls) ReturnSurvivors(control);
         }
 
         private void Bind(UnitControl control)
@@ -74,22 +78,21 @@ namespace GameFoundation.MetaProgression
         {
             get
             {
-                RemoveDestroyed(swordsmen);
-                RemoveDestroyed(archers);
-                return swordsmen.deployed.Concat(archers.deployed).ToArray();
+                foreach (var control in Controls) RemoveDestroyed(control);
+                return Controls.SelectMany(c => c.deployed)
+                    .Concat(ballistas.Where(ballista => ballista != null && ballista.IsAlive).Select(ballista => ballista.gameObject)).ToArray();
             }
         }
 
         public bool IsMilitaryResource(ResourceType resource) => resource != null &&
-            (resource == swordsmen.resource || resource == archers.resource);
+            Controls.Any(c => c.resource == resource);
 
         // Deployment only moves a warrior out of storage; it is not a resource loss.
         // Include living deployed warriors in run/day snapshots, including before
         // scene teardown returns survivors to storage.
         public void AddDeployedToSnapshot(Dictionary<ResourceType, int> snapshot)
         {
-            AddDeployedToSnapshot(swordsmen, snapshot);
-            AddDeployedToSnapshot(archers, snapshot);
+            foreach (var control in Controls) AddDeployedToSnapshot(control, snapshot);
         }
 
         private static void AddDeployedToSnapshot(UnitControl control, Dictionary<ResourceType, int> snapshot)
@@ -98,6 +101,16 @@ namespace GameFoundation.MetaProgression
             RemoveDestroyed(control);
             snapshot.TryGetValue(control.resource, out int stored);
             snapshot[control.resource] = stored + control.deployed.Count;
+        }
+
+        /// <summary>Recount tracked troops and deploy all newly stored warriors, also after battle start.</summary>
+        public void RefreshAndDeployStoredWarriors()
+        {
+            foreach (var control in Controls) RemoveDestroyed(control);
+            if (!escapeRecall && portal != null && !PortalCloudTransition.IsLoading)
+                foreach (var control in Controls) DeployAll(control);
+            RebuildFormation();
+            Refresh();
         }
 
         private void DeployAll(UnitControl control)
@@ -131,6 +144,7 @@ namespace GameFoundation.MetaProgression
         private void ConfigureWarrior(GameObject unit, UnitControl control, MilitaryProfile profile)
         {
             if (unit == null) return;
+            if (unit.TryGetComponent<WorldEngineer>(out var engineer)) engineer.Initialize(this);
             var loss=unit.GetComponent<WorldLossIdentity>()??unit.AddComponent<WorldLossIdentity>();loss.resource=control.resource;
             MilitaryExperience experience = unit.GetComponent<MilitaryExperience>() ?? unit.AddComponent<MilitaryExperience>();
             experience.Initialize(profile);
@@ -158,6 +172,7 @@ namespace GameFoundation.MetaProgression
             }
             if (unit == null || portal == null) return;
 
+            unit.GetComponent<WorldEngineer>()?.LeaveBallista();
             WorldMilitaryReturner returner = unit.AddComponent<WorldMilitaryReturner>();
             GameAudioController.PlayAt(GameAudioCue.Portal, portal.position, 0.55f, 0.94f, 1.02f, 0.08f);
             returner.Begin(portal, returnedUnit => CompleteRecall(control, returnedUnit));
@@ -166,13 +181,14 @@ namespace GameFoundation.MetaProgression
 
         public void BeginEscapeRecall()
         {
-            BeginEscapeRecall(swordsmen);
-            BeginEscapeRecall(archers);
+            escapeRecall = true;
+            ClearBallistas();
+            foreach (var control in Controls) BeginEscapeRecall(control);
             Refresh();
         }
         public void SettleEscapeLosses()
         {
-            SettleEscapeLosses(swordsmen);SettleEscapeLosses(archers);
+            foreach (var control in Controls) SettleEscapeLosses(control);
         }
         private static void SettleEscapeLosses(UnitControl control)
         {
@@ -190,8 +206,9 @@ namespace GameFoundation.MetaProgression
         public bool RequestLowHealthRetreat(GameObject unit)
         {
             if (unit == null || portal == null || unit.GetComponent<WorldMilitaryReturner>() != null) return false;
-            UnitControl control = swordsmen.deployed.Contains(unit) ? swordsmen : archers.deployed.Contains(unit) ? archers : null;
+            UnitControl control = Controls.FirstOrDefault(c => c.deployed.Contains(unit));
             if (control == null) return false;
+            unit.GetComponent<WorldEngineer>()?.LeaveBallista();
             WorldMilitaryReturner returner = unit.AddComponent<WorldMilitaryReturner>();
             returner.Begin(portal, returnedUnit => CompleteRecall(control, returnedUnit));
             Refresh();
@@ -202,9 +219,8 @@ namespace GameFoundation.MetaProgression
         {
             get
             {
-                RemoveDestroyed(swordsmen);
-                RemoveDestroyed(archers);
-                return swordsmen.deployed.Count > 0 || archers.deployed.Count > 0;
+                foreach (var control in Controls) RemoveDestroyed(control);
+                return Controls.Any(c => c.deployed.Count > 0);
             }
         }
 
@@ -214,7 +230,8 @@ namespace GameFoundation.MetaProgression
             foreach (GameObject unit in control.deployed)
             {
                 if (unit == null || unit.GetComponent<WorldMilitaryReturner>() != null) continue;
-                WorldMilitaryReturner returner = unit.AddComponent<WorldMilitaryReturner>();
+                unit.GetComponent<WorldEngineer>()?.LeaveBallista();
+            WorldMilitaryReturner returner = unit.AddComponent<WorldMilitaryReturner>();
                 returner.Begin(portal, returnedUnit => CompleteRecall(control, returnedUnit));
             }
         }
@@ -242,8 +259,7 @@ namespace GameFoundation.MetaProgression
 
         private void Refresh()
         {
-            Refresh(swordsmen);
-            Refresh(archers);
+            foreach (var control in Controls) Refresh(control);
         }
 
         private void Refresh(UnitControl control)
@@ -257,12 +273,13 @@ namespace GameFoundation.MetaProgression
             if (control.recallButton != null) control.recallButton.gameObject.SetActive(false);
         }
 
-        private static void RemoveDestroyed(UnitControl control) => control.deployed.RemoveAll(unit => unit == null);
+        private static void RemoveDestroyed(UnitControl control) => control.deployed.RemoveAll(unit =>
+            unit == null || (unit.TryGetComponent<Health>(out var health) && health.IsDead));
 
         public void AbandonDeployedUnits()
         {
-            Abandon(swordsmen);
-            Abandon(archers);
+            ClearBallistas();
+            foreach (var control in Controls) Abandon(control);
         }
 
         private static void Abandon(UnitControl control)

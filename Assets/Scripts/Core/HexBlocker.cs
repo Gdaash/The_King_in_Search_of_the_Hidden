@@ -52,7 +52,12 @@ public class HexBlocker : MonoBehaviour
     private bool _isCurrentlyUnlocked = false; 
     private bool _alarmRaised;
     private AlarmSystem _alarmSystem;
+    private WorldHexFog fogState;
+    private Vector3 coverScale;
+    private SpriteRenderer[] coverRenderers;
+    private Color[] coverColors;
 
+    public bool IsExplored => _isRemoved;
     public bool IsBlocked => !_isRemoved && gameObject.activeInHierarchy && !_isCurrentlyUnlocked;
     public float UnlockAlarmAmount => _alarmRaised ? 0f : ScientificUpgrades.ReduceAlarm(alarmOnUnlock,
         _hexManager != null && _hexManager.Stats != null ? _hexManager.Stats.HexAlarmReduction : 0f);
@@ -63,6 +68,10 @@ public class HexBlocker : MonoBehaviour
 
     private void Awake()
     {
+        coverScale = transform.localScale;
+        coverRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+        coverColors = new Color[coverRenderers.Length];
+        for (int i = 0; i < coverRenderers.Length; i++) coverColors[i] = coverRenderers[i].color;
         _hexManager = Object.FindFirstObjectByType<HexManager>();
         _alarmSystem = Object.FindFirstObjectByType<AlarmSystem>();
         
@@ -146,6 +155,17 @@ public class HexBlocker : MonoBehaviour
     {
         if (_isRemoved) return;
         _isRemoved = true;
+        if (fogState != null)
+        {
+            // This tile's content, rewards and alarm already exist. Only lift its cover again.
+            fogState.Reopened();
+            if (TryGetComponent(out Collider2D repeatedCollider)) repeatedCollider.enabled = false;
+            AnimateAndDestroy();
+            return;
+        }
+        if (!shouldAutoUnlock) fogState = WorldHexFog.Remember(this);
+        if (!shouldAutoUnlock)
+            GameFoundation.MetaProgression.PortalTowerProgression.Instance?.RegisterOpenedHex(this);
         if (HexManager.IsMagicOreContent(prefabToSpawn))
             GameFoundation.MetaProgression.DayCycleService.RecordMagicOreOpened();
         if (!shouldAutoUnlock && prefabToSpawn == null)
@@ -172,6 +192,32 @@ public class HexBlocker : MonoBehaviour
         NotifyNeighbors();
         
         AnimateAndDestroy();
+    }
+
+    public void RestoreFogCover()
+    {
+        DOTween.Kill(transform);
+        _isRemoved = false;
+        _isCurrentlyUnlocked = true;
+        transform.localScale = coverScale;
+        gameObject.SetActive(true);
+        foreach (var unlocker in GetComponentsInChildren<HexLightUnlocker>(true)) unlocker.ResetForReclose();
+        foreach (var timer in GetComponentsInChildren<TimerController>(true)) timer.ResetForFog();
+        if (lockedVisual != null) lockedVisual.SetActive(false);
+        if (unlockedVisual != null) unlockedVisual.SetActive(true);
+        if (skullIcon != null) skullIcon.SetActive(false);
+        if (dangerText != null) dangerText.gameObject.SetActive(false);
+        if (TryGetComponent(out Collider2D collider)) collider.enabled = true;
+        for (int i = 0; i < coverRenderers.Length; i++)
+        {
+            var renderer = coverRenderers[i];
+            if (renderer == null) continue;
+            DOTween.Kill(renderer);
+            Color color = coverColors[i];
+            renderer.color = new Color(color.r, color.g, color.b, 0);
+            renderer.DOFade(color.a, .5f).SetEase(Ease.Linear).SetLink(gameObject);
+        }
+        DOVirtual.DelayedCall(.5f, () => { if (fogState != null) fogState.FinishFade(); }, false).SetLink(gameObject);
     }
 
     private void AnimateAndDestroy()

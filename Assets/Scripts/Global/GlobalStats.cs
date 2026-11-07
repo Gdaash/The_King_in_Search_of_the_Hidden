@@ -1,4 +1,4 @@
-using PlayerPrefs = GameFoundation.Saves.SaveSlotPrefs;
+﻿using PlayerPrefs = GameFoundation.Saves.SaveSlotPrefs;
 using UnityEngine;
 using System;
 using System.Collections.Generic;
@@ -31,7 +31,7 @@ public class GlobalStats : ScriptableObject
     public float TotalRegenDelay => Mathf.Max(0.5f, baseRegenDelay - bonusRegenDelayReduction);
 
     [Header("Сопротивления (Резисты)")]
-    public List<ResistanceInfo> resistances = new List<ResistanceInfo>();
+    [HideInInspector] public List<ResistanceInfo> resistances = new List<ResistanceInfo>();
 
     [Header("Передвижение")]
     public float baseSpeed = 3f;
@@ -159,8 +159,30 @@ public class GlobalStats : ScriptableObject
         if (ScientificSource != this) { ScientificSource.UnlockUpgrade(id); return; }
         if (string.IsNullOrEmpty(id) || HasUpgrade(id)) return;
         PlayerPrefs.SetInt(id + "_Purchased", 1);
+        var definition = FindUpgradeDefinition(id);
+        if (definition?.grantsUnlock != null) GameFoundation.Quests.ContentUnlocks.Grant(definition.grantsUnlock);
         PlayerPrefs.Save();
+        if (definition?.grantsUnlock != null) GameFoundation.Quests.ContentUnlocks.NotifyChanged();
         OnStatsUpdated?.Invoke();
+    }
+
+    internal void ResetLaboratoryResearch()
+    {
+        if (ScientificSource != this) { ScientificSource.ResetLaboratoryResearch(); return; }
+        foreach (var entry in UpgradeTable.entries)
+        {
+            if (entry == null || string.IsNullOrEmpty(entry.id)) continue;
+            if (entry.grantsUnlock != null && HasUpgrade(entry.id))
+                PlayerPrefs.SetInt("foundation.unlock." + entry.grantsUnlock.id, 0);
+            PlayerPrefs.SetInt(entry.id + "_Purchased", 0);
+        }
+        for (int i = 2; i <= WorldFlashlightAvailability.MaximumCount; i++)
+            PlayerPrefs.SetInt("Flashlight" + i + "_Purchased", 0);
+        PlayerPrefs.SetString("globalHexStats_UnlockedFlashlights", "");
+        PlayerPrefs.SetInt("globalHexStats_FlashlightsMigrated", 1);
+        LoadStats();
+        OnStatsUpdated?.Invoke();
+        GameFoundation.Quests.ContentUnlocks.NotifyChanged();
     }
 
     private float ScientificEffect(string id, float inactiveValue) =>
@@ -169,7 +191,9 @@ public class GlobalStats : ScriptableObject
     private float ScientificReduction(string id) => ScientificEffect(id, 0f);
 
     [Header("Урон (Список)")]
-    public List<DamageInfo> damageSettings = new List<DamageInfo>();
+    [HideInInspector] public List<DamageInfo> damageSettings = new List<DamageInfo>();
+    public float UnifiedBonusDamage => damageSettings.Sum(d => d.bonusDamage);
+    public float UnifiedDamage => damageSettings.Sum(d => d.TotalDamage);
 
     [Header("Гексы (Контент и Состояния)")]
     public List<string> unlockedHexContentIDs = new List<string>();

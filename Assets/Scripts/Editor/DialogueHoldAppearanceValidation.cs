@@ -17,7 +17,6 @@ public static class DialogueHoldAppearanceValidation
     const string Key="DialogueHoldAppearanceValidation";
     static IEnumerator routine;static int checks;
     static readonly Stack<IEnumerator> stack=new();
-    static readonly BindingFlags Private=BindingFlags.Instance|BindingFlags.NonPublic;
     static DialogueHoldAppearanceValidation(){EditorApplication.playModeStateChanged+=State;}
     [MenuItem("Tools/Validation/Dialogue Hold Appearance")]
     public static void Run()

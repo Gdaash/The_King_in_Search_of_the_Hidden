@@ -20,7 +20,7 @@ public static class CombatTargetRegistry
     private static void Reset() { targets.Clear(); homes.Clear(); searchSequence = 0; }
 
     public static float Stagger => (searchSequence++ % 11) * (.15f / 11);
-    public static void CollectHealth(string tag, List<Health> result)
+    public static void CollectHealth(string tag, List<Health> result, bool includeCivilians = false)
     {
         result.Clear();
         foreach (var entry in targets.Values)
@@ -28,7 +28,8 @@ public static class CombatTargetRegistry
             var health = entry.health;
             // Health registers its root and tagged children; collect each root only once.
             if (health != null && health.gameObject == entry.gameObject && health.isActiveAndEnabled &&
-                !health.IsDead && entry.gameObject.CompareTag(tag)) result.Add(health);
+                !health.IsDead && (entry.gameObject.CompareTag(tag) || (includeCivilians && WorldCivilianTarget.Contains(entry.gameObject))) &&
+                IsAlive(entry.transform)) result.Add(health);
         }
     }
     public static void Register(GameObject value)
@@ -49,7 +50,7 @@ public static class CombatTargetRegistry
         return workforce == null || workforce.CanBeAttacked;
     }
 
-    public static Transform Closest(string tag, Vector2 origin, bool lowestHealth = false)
+    public static Transform Closest(string tag, Vector2 origin, bool lowestHealth = false, Vector2? home = null, float homeRange = float.PositiveInfinity)
     {
         Transform best = null;
         float bestDistance = float.PositiveInfinity, bestHealth = float.PositiveInfinity;
@@ -57,6 +58,7 @@ public static class CombatTargetRegistry
         {
             if (entry.gameObject == null || !entry.gameObject.activeInHierarchy || !entry.gameObject.CompareTag(tag) ||
                 (entry.health != null && entry.health.IsDead)) continue;
+            if (home.HasValue && ((Vector2)entry.transform.position - home.Value).sqrMagnitude > homeRange * homeRange) continue;
             float health = lowestHealth && entry.health != null ? entry.health.NormalizedHealth : 1;
             float distance = ((Vector2)entry.transform.position - origin).sqrMagnitude;
             if (lowestHealth && health > bestHealth) continue;
@@ -66,9 +68,10 @@ public static class CombatTargetRegistry
         return best;
     }
 
-    public static Transform ClosestHostileTarget(Vector2 origin, float civilianRange)
+    public static Transform ClosestHostileTarget(Vector2 origin, float civilianRange, bool preferWorkers = false)
     {
         Transform best = null; float nearest = float.PositiveInfinity;
+        bool bestIsWorker = false;
         foreach (var entry in targets.Values)
         {
             if (entry.gameObject == null || !entry.gameObject.activeInHierarchy ||
@@ -78,8 +81,9 @@ public static class CombatTargetRegistry
             if (!civilian && !entry.gameObject.CompareTag("Player")) continue;
             float distance = ((Vector2)entry.transform.position - origin).sqrMagnitude;
             if (civilian && distance > civilianRange * civilianRange) continue;
-            if (distance >= nearest) continue;
-            nearest = distance; best = entry.transform;
+            if (preferWorkers && bestIsWorker && !civilian) continue;
+            if ((!preferWorkers || civilian == bestIsWorker) && distance >= nearest) continue;
+            nearest = distance; best = entry.transform; bestIsWorker = civilian;
         }
         return best;
     }

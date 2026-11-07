@@ -30,23 +30,27 @@ namespace GameFoundation.Saves
         public void Refresh()
         {
             heading.text=Tr("menu.slots.title","Выберите сохранение");
-            window.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,900);
-            heading.rectTransform.anchorMin=heading.rectTransform.anchorMax=new Vector2(.5f,1);heading.rectTransform.pivot=new Vector2(.5f,1);heading.rectTransform.sizeDelta=new Vector2(744,44);heading.fontSize=32;
-            float height=116;
-            for(int i=0;i<slots.Length;i++)height+=(SaveSlotPrefs.SlotExists(i+1)?196:96)+(i<slots.Length-1?16:0);
+            window.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,1200);
+            heading.rectTransform.anchorMin=heading.rectTransform.anchorMax=new Vector2(.5f,1);heading.rectTransform.pivot=new Vector2(.5f,1);heading.rectTransform.sizeDelta=new Vector2(1044,48);heading.fontSize=36;
+            float height=116+slots.Length*100+Mathf.Max(0,slots.Length-1)*20;
             window.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,height);
             heading.rectTransform.anchoredPosition=new Vector2(0,-24);
             float top=88;
             for(int i=0;i<slots.Length;i++)
             {
-                bool exists=SaveSlotPrefs.SlotExists(i+1);summaries[i].Present(i+1);
-                ((RectTransform)slots[i].transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,800);
-                float rowHeight=exists?132:96;
-                Place((RectTransform)slots[i].transform,top,rowHeight);top+=rowHeight;
+                bool exists=SaveSlotPrefs.SlotExists(i+1);
+                var slotRect=(RectTransform)slots[i].transform;
+                slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,exists?800:1104);
+                Place(slotRect,top,100);slotRect.anchoredPosition=new Vector2(exists?-152:0,-top);
+                summaries[i].Present(i+1);
                 deleteButtons[i].gameObject.SetActive(exists);
-                if(exists){Place((RectTransform)deleteButtons[i].transform,top+12,40);top+=64;}
-                deleteButtons[i].GetComponentInChildren<TMP_Text>(true).text=Tr("menu.slots.delete","Удалить сохранение");
-                top+=16;
+                var deleteRect=(RectTransform)deleteButtons[i].transform;
+                Place(deleteRect,top,100);deleteRect.sizeDelta=new Vector2(280,100);deleteRect.anchoredPosition=new Vector2(412,-top);
+                var label=deleteButtons[i].GetComponentInChildren<TMP_Text>(true);
+                label.text=Tr("menu.slots.delete","Удалить сохранение");label.textWrappingMode=TextWrappingModes.Normal;label.enableAutoSizing=true;label.fontSizeMin=22;label.fontSizeMax=26;
+                label.rectTransform.anchorMin=Vector2.zero;label.rectTransform.anchorMax=Vector2.one;label.rectTransform.offsetMin=new Vector2(24,10);label.rectTransform.offsetMax=new Vector2(-24,-10);
+                foreach(var color in deleteButtons[i].GetComponents<GameFoundation.UI.ActionButtonLabelColor>()){color.Neutral=false;color.Negative=true;}
+                top+=120;
             }
             closeButton.transform.SetAsLastSibling();closeButton.interactable=true;
             var closeRect=(RectTransform)closeButton.transform;closeRect.anchorMin=closeRect.anchorMax=closeRect.pivot=Vector2.one;closeRect.sizeDelta=new Vector2(40,40);closeRect.anchoredPosition=new Vector2(-12,-12);
@@ -54,6 +58,8 @@ namespace GameFoundation.Saves
             confirmationText.text=Tr("menu.slots.delete_confirm","Вы действительно хотите удалить это сохранение?\nДанное действие необратимо.");
             confirmYes.GetComponentInChildren<TMP_Text>(true).text=Tr("common.yes","Да");
             confirmNo.GetComponentInChildren<TMP_Text>(true).text=Tr("common.no","Нет");
+            foreach(var color in confirmYes.GetComponents<GameFoundation.UI.ActionButtonLabelColor>()){color.Neutral=false;color.Negative=true;}
+            foreach(var color in confirmNo.GetComponents<GameFoundation.UI.ActionButtonLabelColor>())color.Neutral=true;
             if(confirmation.activeSelf)confirmation.transform.SetAsLastSibling();
         }
         private static void Place(RectTransform rect,float top,float height){rect.anchorMin=rect.anchorMax=new Vector2(.5f,1);rect.pivot=new Vector2(.5f,1);rect.anchoredPosition=new Vector2(0,-top);rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,height);}

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -75,6 +75,9 @@ public class OrderManager : MonoBehaviour
     /// building reservations and people physically returning from a cancelled job
     /// as away from the portal for staffing and escape progress.
     /// </summary>
+    public static bool IsPorterAwayFromPortal(Porter porter) => porter != null &&
+        CombatTargetRegistry.IsAlive(porter.transform) && (porter.IsBusy() || porter.IsReturningToWarehouse() || porter.IsCarryingResource());
+
     public static int CountHumansAwayFromPortal(ResourceType humanType)
     {
         if (humanType == null) return 0;
@@ -97,7 +100,7 @@ public class OrderManager : MonoBehaviour
                     away++;
 
             foreach (Porter porter in Instance._allPorters)
-                if (porter != null && CombatTargetRegistry.IsAlive(porter.transform) && (porter.IsBusy() || porter.IsReturningToWarehouse() || porter.IsCarryingResource()))
+                if (IsPorterAwayFromPortal(porter))
                     away++;
         }
         else
@@ -107,7 +110,7 @@ public class OrderManager : MonoBehaviour
                     away++;
 
             foreach (Porter porter in Object.FindObjectsByType<Porter>(FindObjectsInactive.Exclude))
-                if (porter != null && CombatTargetRegistry.IsAlive(porter.transform) && (porter.IsBusy() || porter.IsReturningToWarehouse() || porter.IsCarryingResource()))
+                if (IsPorterAwayFromPortal(porter))
                     away++;
         }
 

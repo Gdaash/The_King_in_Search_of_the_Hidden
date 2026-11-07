@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,6 +10,7 @@ public sealed class ScientificUpgradeTable : ScriptableObject
     {
         public string id;
         public GameFoundation.Quests.ContentUnlockDefinition requiredUnlock;
+        public GameFoundation.Quests.ContentUnlockDefinition grantsUnlock;
         public bool IsAvailable => GameFoundation.Quests.ContentUnlocks.IsUnlocked(requiredUnlock);
         // Kept for backwards-compatible Google Sheets imports; no longer used for unlocking.
         [HideInInspector] public string parentId;

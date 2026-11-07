@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using GameFoundation.Saves;
 using TMPro;
 using UnityEngine;
@@ -126,9 +126,9 @@ namespace GameFoundation.Quests
         private void UpdateButtonLabel()
         {
             if (current == null) return;
-            nextLabel.text = IsTyping ? "…" : line < activeLines.Length - 1 ? GameFoundation.Localization.GameText.Get("Далее") : current.quest != null ? GameFoundation.Localization.GameText.Get("Взять задание") : GameFoundation.Localization.GameText.Get("Закрыть");
+            nextLabel.text = line < activeLines.Length - 1 ? GameFoundation.Localization.GameText.Get("Далее") : current.quest != null ? GameFoundation.Localization.GameText.Get("Взять задание") : GameFoundation.Localization.GameText.Get("Закрыть");
             if (buttonTheme != null) nextLabel.color = line < activeLines.Length - 1 ? buttonTheme.neutralLabelColor :
-                current.quest != null ? buttonTheme.positiveLabelColor : buttonTheme.negativeLabelColor;
+                current.quest != null ? buttonTheme.positiveLabelColor : buttonTheme.neutralLabelColor;
         }
         public void Advance()
         {
@@ -228,7 +228,7 @@ namespace GameFoundation.Quests
             confirm.gameObject.SetActive(true); confirm.interactable = true;
             confirm.onClick = new Button.ButtonClickedEvent();
             var label = confirm.GetComponentInChildren<TMP_Text>(true);
-            if (label != null) { label.text = GameFoundation.Localization.GameText.Get("ОК"); if (buttonTheme != null) label.color = buttonTheme.neutralLabelColor; }
+            if (label != null) { label.text = GameFoundation.Localization.GameText.Get("Закрыть"); if (buttonTheme != null) label.color = buttonTheme.neutralLabelColor; }
             var confirmRect = (RectTransform)confirm.transform;
             confirmRect.anchorMin = confirmRect.anchorMax = confirmRect.pivot = new Vector2(.5f, .5f);
             confirmRect.localScale = Vector3.one;

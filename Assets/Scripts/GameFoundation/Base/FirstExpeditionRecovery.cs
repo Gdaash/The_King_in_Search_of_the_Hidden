@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using GameFoundation.Quests;
 using GameFoundation.Saves;
 using UnityEngine;
@@ -9,6 +9,7 @@ namespace GameFoundation.Base
     public static class FirstExpeditionRecovery
     {
         public const string QuestId = "first_expedition_replacements";
+        public const string FlightStartedKey = "foundation.firstExpeditionRecovery.flightStarted";
         public const string RecordKey = "foundation.firstExpeditionRecovery.recorded";
         public const string HumansKey = "foundation.firstExpeditionRecovery.humans";
         public const string CartsKey = "foundation.firstExpeditionRecovery.carts";
@@ -19,7 +20,7 @@ namespace GameFoundation.Base
         public const string CartDialogue = "И телеги для тебя нашлись. Эти корона отдаёт без долга, но впредь за потерянные придётся отвечать.";
         private static QuestDefinition cached;
         private static int cachedSlot;
-        public static bool Pending => SaveSlotPrefs.GetInt(HumansKey, 0) > 0 &&
+        public static bool Pending => (SaveSlotPrefs.GetInt(HumansKey, 0) > 0 || SaveSlotPrefs.GetInt(CartsKey, 0) > 0) &&
             SaveSlotPrefs.GetInt("foundation.quest." + QuestId + ".claimed", 0) == 0;
         public static bool IsRecovery(QuestDefinition quest) => quest != null && quest.id == QuestId;
         public static void Record(bool firstRun, int deadHumans, int lostCarts)

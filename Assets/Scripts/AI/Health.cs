@@ -6,19 +6,19 @@ using System.Collections.Generic;
 using System.Linq;
 using GameFoundation.MetaProgression;
 
-public class Health : MonoBehaviour
+public partial class Health : MonoBehaviour
 {
     [System.Serializable]
     public struct Resistance { public DamageType type; [Range(0, 2)] public float mult; }
 
-    [Header("Глобальные настройки")]
+    [Header("Р“Р»РѕР±Р°Р»СЊРЅС‹Рµ РЅР°СЃС‚СЂРѕР№РєРё")]
     [SerializeField] private GlobalStats stats; 
 
-    [Header("Визуал и Префабы")]
+    [Header("Р’РёР·СѓР°Р» Рё РџСЂРµС„Р°Р±С‹")]
     [SerializeField] private SpriteRenderer targetSprite;
     [SerializeField] private GameObject damageTextPrefab;
 
-    [Header("Состояние")]
+    [Header("РЎРѕСЃС‚РѕСЏРЅРёРµ")]
     [SerializeField] private float _cur; 
     [SerializeField, Min(1f)] private float fallbackMaximumHealth = 100f;
     public void ConfigureFallbackHealth(float maximum)
@@ -28,12 +28,12 @@ public class Health : MonoBehaviour
         _cur = fallbackMaximumHealth;
     }
 
-    [Header("Визуальная реакция")]
+    [Header("Р’РёР·СѓР°Р»СЊРЅР°СЏ СЂРµР°РєС†РёСЏ")]
     [SerializeField, Min(0.01f)] private float hitFlashDuration = 0.16f;
     [SerializeField, Min(0f)] private float hitScaleAmount = 0.12f;
     [SerializeField, Min(0.01f)] private float deathDuration = 0.3f;
 
-    // Свойства берут данные из GlobalStats
+    // РЎРІРѕР№СЃС‚РІР° Р±РµСЂСѓС‚ РґР°РЅРЅС‹Рµ РёР· GlobalStats
     private float CurrentRegenAmount => (stats != null ? stats.TotalRegenAmount : 0f) * MilitaryExperience.Multiplier(this);
     private float CurrentRegenDelay => (stats != null ? stats.TotalRegenDelay : 0f) / MilitaryExperience.Multiplier(this);
 
@@ -53,12 +53,30 @@ public class Health : MonoBehaviour
     private readonly Dictionary<MilitaryExperience, float> _contributors = new();
     private MilitaryExperience _lastContributor;
 
-    public float Armor => GetComponent<Combatant>()?.Armor ?? 0;
+    public float Armor => (GetComponent<Combatant>()?.Armor ?? 0) +
+        (GameFoundation.MetaProgression.PortalWeaponController.Instance?.DefenseFieldArmor(this) ?? 0);
+    public float ShieldHealth { get; private set; }
+    public float ShieldCapacity { get; private set; }
+
+    public bool GrantShield(float amount)
+    {
+        if (_dead || !isActiveAndEnabled || amount <= 0 || ShieldHealth > 0) return false;
+        ShieldHealth = ShieldCapacity = amount;
+        OnHealthChanged?.Invoke(NormalizedHealth);
+        return true;
+    }
     public float MaxHealth => (GetComponent<Combatant>()?.HealthBeforeLevel ?? (stats != null ? stats.TotalMaxHealth : fallbackMaximumHealth)) * MilitaryExperience.Multiplier(this);
     public float CurrentHealth => _cur;
     public GlobalStats Stats => stats;
+    public SpriteRenderer BodyRenderer => targetSprite;
     public float NormalizedHealth => MaxHealth > 0f ? Mathf.Clamp01(_cur / MaxHealth) : 0f;
     public bool IsDead => _dead;
+    public int SpawnVersion { get; private set; }
+    public Vector3 HitEffectPosition => targetSprite != null ? targetSprite.bounds.center : transform.position;
+    public Vector3 DamageNumberPosition => targetSprite != null
+        ? new Vector3(targetSprite.bounds.center.x, targetSprite.bounds.max.y + .12f, transform.position.z)
+        : transform.position + Vector3.up * .7f;
+    private int damageNumberSequence;
 
     /// <summary>Restores health without treating it as a combat hit. Used by authored recovery rules.</summary>
     public bool RestoreHealth(float amount)
@@ -68,6 +86,7 @@ public class Health : MonoBehaviour
         _cur = Mathf.Min(MaxHealth, _cur + amount);
         if (_cur <= previous) return false;
         OnHealthChanged?.Invoke(NormalizedHealth);
+        SpawnText(-(_cur - previous), DamageType.Physical);
         return true;
     }
 
@@ -88,7 +107,7 @@ public class Health : MonoBehaviour
         // a stats asset being assigned, otherwise a serialized _cur value leaks into battle.
         _cur = MaxHealth;
         if (!targetSprite) targetSprite = GetComponentInChildren<SpriteRenderer>();
-        if (targetSprite) 
+        if (targetSprite)
         {
             hitBaseScale = targetSprite.transform.localScale;
             _orig = targetSprite.color;
@@ -118,6 +137,7 @@ public class Health : MonoBehaviour
             targetSprite.color = _orig;
             if (hitScaleActive) targetSprite.transform.localScale = hitBaseScale;
         }
+        ResetHitEffects();
         StopAllCoroutines(); _regenCoroutine = null;
         hitScaleActive = false;
         if (_flashCoroutine != null) { StopCoroutine(_flashCoroutine); _flashCoroutine = null; }
@@ -125,6 +145,9 @@ public class Health : MonoBehaviour
 
     public void ResetForSpawn()
     {
+        SpawnVersion++;
+        ShieldHealth = ShieldCapacity = 0;
+        ResetHitEffects();
         _dead = false; _cur = MaxHealth; _lastDamageTime = Time.time;
         _contributors.Clear(); _lastContributor = null;
         _regenCoroutine = null; _flashCoroutine = null; hitScaleActive = false;
@@ -139,46 +162,54 @@ public class Health : MonoBehaviour
         OnHealthChanged?.Invoke(_cur / MaxHealth);
     }
 
-    public void TakeDamage(float amt, DamageType type, Transform attacker = null) 
+    public void TakeDamage(float amount, DamageType presentation, Transform attacker = null)
     {
-        if (_dead) return;
-        float multiplier = GetGlobalMultiplier(type);
-        float final = CombatDamage.Calculate(amt,type,Armor,multiplier);
+        if (TowerDarkness.Blocks(attacker)) return;
+        if (_dead || amount <= 0 || !isActiveAndEnabled) return;
+        float final = CombatDamage.Calculate(amount, Armor);
         if (bestiaryIdentity != null) final *= GameFoundation.Bestiary.BestiaryService.DamageMultiplier(bestiaryIdentity);
-        
-        if (final > 0) 
-        {
-            MilitaryExperience contributor = attacker != null ? attacker.GetComponentInParent<MilitaryExperience>() : null;
-            if (contributor != null)
-            {
-                _contributors.TryGetValue(contributor, out float dealt);
-                _contributors[contributor] = dealt + final;
-                _lastContributor = contributor;
-            }
-            _cur = Mathf.Clamp(_cur - final, 0, MaxHealth);
-            _lastDamageTime = Time.time; 
-            TriggerFlash(Color.red); 
-            SpawnText(final, type);
-            OnHealthChanged?.Invoke(_cur / MaxHealth);
+        ApplyResolvedDamage(final, attacker, Color.red);
+        if (final > 0 && (!_dead || presentation == DamageType.Electric)) ApplyHitEffect(presentation, final, attacker);
+    }
 
-            var rangedAI = GetComponent<EnemyAI_Ranged>();
-            var meleeAI = GetComponent<EnemyAI>();
-            if (rangedAI != null) rangedAI.OnTakeDamage(attacker);
-            if (meleeAI != null) meleeAI.OnTakeDamage(attacker);
-            if (rangedAI == null && meleeAI == null) _ai?.OnTakeDamage(attacker);
+    internal void TakeChainLightningDamage(float damage, Transform attacker)
+    {
+        if (_dead || !isActiveAndEnabled) return;
+        float resolved = CombatDamage.Calculate(damage, Armor);
+        if (bestiaryIdentity != null) resolved *= GameFoundation.Bestiary.BestiaryService.DamageMultiplier(bestiaryIdentity);
+        ApplyResolvedDamage(resolved, attacker, DamagePalette.Electric);
+    }
+
+    // Secondary effects use the damage already resolved against armor. They cannot trigger new effects.
+    private void ApplyResolvedDamage(float final, Transform attacker, Color flashColor)
+    {
+        if (TowerDarkness.Blocks(attacker)) return;
+        if (_dead || final <= 0 || !isActiveAndEnabled) return;
+        MilitaryExperience contributor = attacker != null ? attacker.GetComponentInParent<MilitaryExperience>() : null;
+        if (contributor != null)
+        {
+            _contributors.TryGetValue(contributor, out float dealt);
+            _contributors[contributor] = dealt + final;
+            _lastContributor = contributor;
         }
+        float shieldAbsorbed = Mathf.Min(ShieldHealth, final);
+        ShieldHealth -= shieldAbsorbed;
+        float previousHealth = _cur;
+        _cur = Mathf.Clamp(_cur - (final - shieldAbsorbed), 0, MaxHealth);
+        _lastDamageTime = Time.time;
+        TriggerFlash(flashColor);
+        SpawnText(previousHealth - _cur + shieldAbsorbed, DamageType.Physical);
+        OnHealthChanged?.Invoke(NormalizedHealth);
+        var rangedAI = GetComponent<EnemyAI_Ranged>();
+        var meleeAI = GetComponent<EnemyAI>();
+        if (rangedAI != null) rangedAI.OnTakeDamage(attacker);
+        if (meleeAI != null) meleeAI.OnTakeDamage(attacker);
+        if (rangedAI == null && meleeAI == null) _ai?.OnTakeDamage(attacker);
         if (_cur <= 0) Die();
     }
 
-    public float ResistanceMultiplier(DamageType t) => GetGlobalMultiplier(t);
-    private float GetGlobalMultiplier(DamageType t)
-    {
-        var combat=GetComponent<Combatant>();
-        if(combat!=null)return combat.ResistanceMultiplier(t);
-        if (stats == null) return 1f;
-        var res = stats.resistances.Find(r => r.type == t);
-        return res != null ? res.CurrentMult : 1f;
-    }
+    // Compatibility for older inspectors and validation scripts; there are no resistance categories now.
+    public float ResistanceMultiplier(DamageType unused) => 1f;
 
     private IEnumerator RegenTickRoutine() 
     {
@@ -186,19 +217,14 @@ public class Health : MonoBehaviour
         {
             yield return new WaitForSeconds(1f); 
 
-            // ПРОВЕРКА: Если лечение 0 или задержка 0 — пропускаем цикл
+            // РџР РћР’Р•Р РљРђ: Р•СЃР»Рё Р»РµС‡РµРЅРёРµ 0 РёР»Рё Р·Р°РґРµСЂР¶РєР° 0 вЂ” РїСЂРѕРїСѓСЃРєР°РµРј С†РёРєР»
             if (CurrentRegenAmount <= 0 || CurrentRegenDelay <= 0) continue;
 
             if (_cur < MaxHealth && Time.time >= _lastDamageTime + CurrentRegenDelay) 
             {
                 if (IsAIAttacking()) continue;
-                
-                _cur = Mathf.Min(_cur + CurrentRegenAmount, MaxHealth);
-                OnHealthChanged?.Invoke(_cur / MaxHealth);
-                
-                // Включаем визуал лечения только если реально что-то восстановили
-                TriggerFlash(Color.green);
-                SpawnText(-CurrentRegenAmount, DamageType.Physical); 
+
+                if (RestoreHealth(CurrentRegenAmount)) TriggerFlash(Color.green);
             }
         }
     }
@@ -252,17 +278,19 @@ public class Health : MonoBehaviour
 
     private void SpawnText(float val, DamageType t) 
     {
-        if (!damageTextPrefab || !gameObject.activeInHierarchy) return;
-        var go = Instantiate(damageTextPrefab, transform.position + Vector3.up, Quaternion.identity);
-        go.GetComponent<DamageText>()?.Setup(Mathf.Abs(val).ToString("F0"), val > 0 ? Color.red : Color.green);
+        if (!gameObject.activeInHierarchy || Mathf.Approximately(val, 0)) return;
+        DamageText.Show(this, val, damageNumberSequence++, damageTextPrefab);
     }
 
     private void Die() 
-    { 
+    {
         if (_dead) return;
         _dead = true; 
+        ResetHitEffects();
         GetComponent<GameFoundation.MetaProgression.WorldLossIdentity>()?.RecordDeath();
         if (bestiaryIdentity != null) GameFoundation.Bestiary.BestiaryService.RegisterKill(bestiaryIdentity);
+        if (CompareTag("Enemy1") && bestiaryIdentity != null && GameFoundation.MetaProgression.PortalTowerProgression.Instance?.UsesArsenal == true)
+            GameFoundation.MetaProgression.PortalArsenalProgress.RecordKill(bestiaryIdentity.Id);
         if (CompareTag("Enemy1")) GameFoundation.MetaProgression.PortalTowerProgression.Instance?.AwardEnemyExperience(transform.position);
         AwardMilitaryExperience();
         if (_regenCoroutine != null) StopCoroutine(_regenCoroutine);

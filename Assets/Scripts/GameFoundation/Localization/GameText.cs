@@ -35,7 +35,8 @@ namespace GameFoundation.Localization
         }
         static Regex Pattern(IEnumerable<string> values)
         {
-            var patterns=values.Where(v=>!v.Contains("{0}")).OrderByDescending(v=>v.Length).Select(v=>Regex.Escape(v));
+            var patterns=values.Where(v=>!v.Contains("{0}")).OrderByDescending(v=>v.Length).Select(v=>Regex.Escape(v)).ToArray();
+            if (patterns.Length == 0) return null;
             return new Regex(@"(?<![\p{L}])(?:"+string.Join("|",patterns)+@")(?![\p{L}])",RegexOptions.CultureInvariant);
         }
         public static string Source(string value)

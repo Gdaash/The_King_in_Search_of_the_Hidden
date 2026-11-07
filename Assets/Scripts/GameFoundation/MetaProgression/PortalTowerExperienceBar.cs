@@ -1,15 +1,21 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using GameFoundation.Base;
 
 namespace GameFoundation.MetaProgression
 {
-    public sealed class PortalTowerExperienceBar : MonoBehaviour
+    public sealed class PortalTowerExperienceBar : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         public PortalTowerProgression progression;
         public Image fill;
         public Text label;
         public Material incomingFillMaterial;
+        public RectTransform energyMarkers;
+        public Sprite energyDividerSprite;
+        private readonly System.Collections.Generic.List<Image> energyCrystals = new();
+        private readonly System.Collections.Generic.List<RectTransform> energyTicks = new();
+        public RectTransform TopCrystal { get; private set; }
         private CanvasGroup progressionVisibility;
         private Image incomingFill;
         private Image debtFill;
@@ -18,6 +24,8 @@ namespace GameFoundation.MetaProgression
         private void OnEnable()
         {
             progression.Changed += Refresh;
+            progression.EnergyChanged += Refresh;
+            progression.EnergyLightCountChanged += ShowLightChange;
             language = GameFoundation.Localization.LocalizationService.Instance;
             if (language != null) language.LanguageChanged += Refresh;
             Refresh();
@@ -25,8 +33,13 @@ namespace GameFoundation.MetaProgression
         private void OnDisable()
         {
             progression.Changed -= Refresh;
+            progression.EnergyChanged -= Refresh;
+            progression.EnergyLightCountChanged -= ShowLightChange;
             if (language != null) language.LanguageChanged -= Refresh;
         }
+        private void ShowLightChange(int change) =>
+            AlarmSystem.Instance?.ShowEnergyLightNotification(change, progression.LightCount, progression.ExperienceCrystalResource?.resourceIcon, (RectTransform)transform, TopCrystal);
+
         private void Start()
         {
             if (language == null)
@@ -36,6 +49,21 @@ namespace GameFoundation.MetaProgression
             }
             Refresh();
         }
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            if (!progression.UsesEnergyLoadout || !progression.CrystalTechnologyAvailable) return;
+            var amount = string.Format(PortalArsenalPopup.T("energy.value", "Энергия: {0} / {1}"),
+                progression.Energy, progression.EnergyCapacity);
+            TooltipManager.Instance?.Show(amount + "\n" + string.Format(
+                PortalArsenalPopup.T("energy.conversion", "1 кристалл = {0} ед. энергии"),
+                progression.Balance.energyPerCrystal), (RectTransform)transform);
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if (progression.UsesEnergyLoadout) TooltipManager.Instance?.Hide();
+        }
+
         private void OnDestroy()
         {
             if (debtMaterial != null) Destroy(debtMaterial);
@@ -48,6 +76,8 @@ namespace GameFoundation.MetaProgression
             progressionVisibility.interactable = progression.CrystalTechnologyAvailable;
             progressionVisibility.blocksRaycasts = progression.CrystalTechnologyAvailable;
             if (!progression.CrystalTechnologyAvailable) return;
+            label.gameObject.SetActive(false);
+            if (TryGetComponent<Image>(out var frame)) frame.raycastTarget = progression.UsesEnergyLoadout;
             if(incomingFill==null)
             {
                 var go=new GameObject("Incoming XP",typeof(RectTransform),typeof(CanvasRenderer),typeof(Image));
@@ -86,6 +116,8 @@ namespace GameFoundation.MetaProgression
                 }
                 else debtFill.color = new Color(.65f,.65f,.65f,1);
             }
+            if (progression.UsesEnergyLoadout) { RefreshEnergy(); return; }
+            if (energyMarkers != null) energyMarkers.gameObject.SetActive(false);
             debtFill.fillAmount = Mathf.Clamp01((float)progression.CrystalDebt / progression.RequiredExperience);
             debtFill.enabled = progression.CrystalDebt > 0;
             if (debtFill.sprite == null)
@@ -110,6 +142,58 @@ namespace GameFoundation.MetaProgression
                 LaboratoryUpgradeList.Tr("laboratory.level", GameFoundation.Localization.GameText.Get("ур.")) + progression.Level + "   " + progression.Experience + " / " + progression.RequiredExperience;
             if (progression.CrystalDebt > 0)
                 label.text += GameFoundation.Localization.GameText.Get("  Долг: ") + progression.CrystalDebt;
+        }
+        private void RefreshEnergy()
+        {
+            debtFill.enabled = false;
+            SetFill(fill, (float)progression.Energy / progression.EnergyCapacity);
+            SetFill(incomingFill, Mathf.Clamp01((float)(progression.Energy + progression.PendingExperience * progression.Balance.energyPerCrystal) / progression.EnergyCapacity));
+            if (energyMarkers == null) return;
+            energyMarkers.gameObject.SetActive(true);
+            var icon = progression.ExperienceCrystalResource?.resourceIcon;
+            if (energyTicks.Count == 0)
+            {
+                var end = CreateEnergyTick("Capacity tick", false);
+                end.anchorMin = end.anchorMax = new Vector2(1, .5f);
+                end.anchoredPosition = Vector2.zero;
+                for (int i = 0; i < WorldFlashlightAvailability.MaximumCount - 1; i++)
+                {
+                    var root = CreateEnergyTick("Light threshold " + (i + 1), true);
+                    var crystal = new GameObject("Crystal", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+                    crystal.transform.SetParent(root, false); crystal.raycastTarget = false;
+                    ResourceIconSizing.Apply(crystal, icon); crystal.rectTransform.anchoredPosition = new Vector2(0,28);
+                    energyTicks.Add(root); energyCrystals.Add(crystal);
+                }
+            }
+            TopCrystal = null;
+            for (int i = 0; i < energyTicks.Count; i++)
+            {
+                int threshold = PortalEnergyRules.LightThreshold(progression.Balance, i, progression.CrystalEfficiencyRank);
+                energyTicks[i].gameObject.SetActive(i >= progression.PermanentLightCount - 1 && threshold <= progression.EnergyCapacity);
+                energyTicks[i].anchorMin = energyTicks[i].anchorMax = new Vector2((float)threshold / progression.EnergyCapacity,.5f);
+                energyTicks[i].anchoredPosition = Vector2.zero;
+                if (TopCrystal == null && energyTicks[i].gameObject.activeSelf) TopCrystal = energyCrystals[i].rectTransform;
+                energyCrystals[i].color = progression.Energy >= threshold ? Color.white : new Color(.4f,.36f,.46f);
+            }
+        }
+        private RectTransform CreateEnergyTick(string name, bool flipped)
+        {
+            var root = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();
+            root.SetParent(energyMarkers, false);
+            root.sizeDelta = Vector2.zero;
+            var divider = new GameObject("Divider", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+            divider.transform.SetParent(root, false);
+            divider.sprite = energyDividerSprite;
+            divider.raycastTarget = false;
+            divider.rectTransform.sizeDelta = energyDividerSprite != null ? energyDividerSprite.rect.size * 2 : new Vector2(2, 24);
+            divider.rectTransform.localScale = new Vector3(1, flipped ? -1 : 1, 1);
+            return root;
+        }
+
+        private static void SetFill(Image image, float amount)
+        {
+            image.fillAmount = amount;
+            if (image.sprite == null) { image.rectTransform.anchorMax = new Vector2(amount,1); image.rectTransform.offsetMin = image.rectTransform.offsetMax = Vector2.zero; }
         }
     }
 }

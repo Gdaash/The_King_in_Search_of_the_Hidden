@@ -104,6 +104,12 @@ public static class UnifiedButtonStyleSetup
 
     private static void Apply(Button button, ButtonVisualTheme theme)
     {
+        // Shelter Button and its building/construction variants own their transparent
+        // overlay style. Popup upgrade buttons deliberately keep the regular style.
+        if (button.GetComponent<BuildingButtonLayout>() != null &&
+            button.GetComponent<BuildingUpgradeButton>() == null)
+            return;
+
         // Tooltips use Button only as a convenient raycast target. Their root image is
         // a stretchable tooltip background and must not receive the shared button art.
         if (button.name.IndexOf("Tooltip", StringComparison.OrdinalIgnoreCase) >= 0 ||

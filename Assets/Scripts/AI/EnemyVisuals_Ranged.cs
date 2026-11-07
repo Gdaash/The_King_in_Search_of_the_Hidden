@@ -33,6 +33,8 @@ public class EnemyVisuals_Ranged : MonoBehaviour
     void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
+        movement = GetComponent<EnemyMovement>();
+        if (spriteParent != null) _startPos = spriteParent.localPosition;
     }
 
     void Start() 
@@ -52,10 +54,8 @@ public class EnemyVisuals_Ranged : MonoBehaviour
     {
         if (_isShooting) return;
         // Если реальная скорость почти нулевая, выключаем анимацию прыжков
-        if (_rb != null && _rb.linearVelocity.magnitude < 0.1f)
-        {
-            _isMoving = false;
-        }
+        if (_rb != null)
+            _isMoving = _rb.linearVelocity.sqrMagnitude >= .01f && (movement == null || !movement.IsStunned);
 
         if (_isMoving && spriteParent != null) 
         {
@@ -71,7 +71,7 @@ public class EnemyVisuals_Ranged : MonoBehaviour
 
     private void HandleFlip()
     {
-        if (ai == null) return;
+        if (ai == null || !ai.enabled) return;
         Transform target = ai.GetTarget();
         if (target == null) return;
 
@@ -85,6 +85,15 @@ public class EnemyVisuals_Ranged : MonoBehaviour
     }
 
     // Этот метод вызывается из событий OnMove/OnStop в EnemyAI_Ranged
+    public void BeginTravel()
+    {
+        StopAllCoroutines();
+        if (_isShooting && spriteParent != null) spriteParent.localScale = _shootBaseScale;
+        _isShooting = false;
+        ai?.FinishAttack();
+        if (spriteParent != null) spriteParent.localPosition = _startPos;
+        _isMoving = true;
+    }
     public void SetMoving(bool state) => _isMoving = state;
 
     public void StartShoot() 
@@ -119,7 +128,7 @@ public class EnemyVisuals_Ranged : MonoBehaviour
     }
 
     private EnemyMovement movement;
-    private float AttackRate => movement != null ? movement.AreaSlowMultiplier : 1f;
+    private float AttackRate => movement != null ? (movement.IsStunned ? 0f : movement.AreaSlowMultiplier) : 1f;
 
     private IEnumerator ShootRoutine() 
     {
@@ -143,6 +152,7 @@ public class EnemyVisuals_Ranged : MonoBehaviour
             }
         }
 
+        while (movement != null && movement.IsStunned) yield return null;
         target = ai.GetTarget();
         if (target == null)
         {
@@ -165,7 +175,7 @@ public class EnemyVisuals_Ranged : MonoBehaviour
                 if (stats != null)
                 {
                     var combat=GetComponent<Combatant>();
-                    if(combat!=null && combat.weapon!=null)p.SetupHit(worldDir,ai.GetTargetTag(),combat.Damage,combat.weapon.damageType,transform);
+                    if(combat!=null && combat.weapon!=null)p.SetupHit(worldDir,ai.GetTargetTag(),combat.Damage,combat.weapon.damageType,transform, mode:combat.weapon.targetMode);
                     else p.Setup(worldDir, ai.GetTargetTag(), stats.damageSettings, transform, MilitaryExperience.Multiplier(this));
                 }
                 else

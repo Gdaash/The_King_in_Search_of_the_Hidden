@@ -75,7 +75,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 1, g: 0.44, b: 0.48, a: 1}
+  m_fontColor: {r: 0.990566, g: 0.4906105, b: 0.50172067, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -714,7 +714,7 @@ MonoBehaviour:
   label: {fileID: 0}
   tmpLabel: {fileID: 671007689074661322}
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
-  negative: 1
+  negative: 0
   neutral: 0
 --- !u!1 &811895918919523884
 GameObject:
@@ -1070,7 +1070,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 0.94, g: 0.91, b: 0.82, a: 1}
+  m_fontColor: {r: 0.5527529, g: 0.8490566, b: 0.48460305, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1233,7 +1233,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 1, g: 0.44, b: 0.48, a: 1}
+  m_fontColor: {r: 0.990566, g: 0.4906105, b: 0.50172067, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1382,6 +1382,8 @@ GameObject:
   - component: {fileID: 2109278170058371869}
   - component: {fileID: 5996866621003057438}
   - component: {fileID: 8572583918572724799}
+  - component: {fileID: 4093856708695339579}
+  - component: {fileID: 8163914493926054383}
   m_Layer: 0
   m_Name: Delete Slot 2
   m_TagString: Untagged
@@ -1466,7 +1468,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 0.96, b: 0.88, a: 1}
@@ -1491,6 +1493,47 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &4093856708695339579
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1693353289030697759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5a96a7cadb542c4bad95ce7956e0ed8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.UnifiedButtonFeedback
+  theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
+  animateScale: 1
+  keepHoverScaleWhenPressed: 0
+  animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
+  hoverScaleOverride: 0
+  scaleTarget: {fileID: 0}
+  useButtonPalette: 0
+  hoverScaleMultiplier: 1
+--- !u!114 &8163914493926054383
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1693353289030697759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d680a50b6ec86d4d99f1c58e00dd399, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.ActionButtonLabelColor
+  label: {fileID: 0}
+  tmpLabel: {fileID: 1178641757978203237}
+  theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
+  negative: 1
+  neutral: 0
 --- !u!1 &1907663739048256146
 GameObject:
   m_ObjectHideFlags: 0
@@ -1584,6 +1627,7 @@ GameObject:
   - component: {fileID: 1386468580423544387}
   - component: {fileID: 2237999048361078715}
   - component: {fileID: 1469484167803645767}
+  - component: {fileID: 6275762919755676801}
   m_Layer: 0
   m_Name: Save Slot 1
   m_TagString: Untagged
@@ -1725,7 +1769,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2084317232848605629}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
   m_Name: 
@@ -1753,6 +1797,23 @@ MonoBehaviour:
   oreIcon: {fileID: 2637826400320163275}
   humanAmount: {fileID: 9042612845209530009}
   oreAmount: {fileID: 6102536994617447339}
+--- !u!114 &6275762919755676801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2084317232848605629}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d680a50b6ec86d4d99f1c58e00dd399, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.ActionButtonLabelColor
+  label: {fileID: 0}
+  tmpLabel: {fileID: 5349221303459742693}
+  theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
+  negative: 0
+  neutral: 0
 --- !u!1 &2233822587319804144
 GameObject:
   m_ObjectHideFlags: 0
@@ -2378,6 +2439,7 @@ GameObject:
   - component: {fileID: 8000152837559167355}
   - component: {fileID: 4907817322521672602}
   - component: {fileID: 6508767732785597860}
+  - component: {fileID: 3921859079953363637}
   m_Layer: 0
   m_Name: Save Slot 3
   m_TagString: Untagged
@@ -2519,7 +2581,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2537440504454726980}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
   m_Name: 
@@ -2547,6 +2609,23 @@ MonoBehaviour:
   oreIcon: {fileID: 8332330039269999635}
   humanAmount: {fileID: 2439703676849163152}
   oreAmount: {fileID: 9180905685180083343}
+--- !u!114 &3921859079953363637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2537440504454726980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d680a50b6ec86d4d99f1c58e00dd399, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.ActionButtonLabelColor
+  label: {fileID: 0}
+  tmpLabel: {fileID: 8235966023235178787}
+  theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
+  negative: 0
+  neutral: 0
 --- !u!1 &2599077502200048830
 GameObject:
   m_ObjectHideFlags: 0
@@ -2622,7 +2701,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 1, g: 0.44, b: 0.48, a: 1}
+  m_fontColor: {r: 0.990566, g: 0.4906105, b: 0.50172067, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -2759,7 +2838,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 0.94, g: 0.91, b: 0.82, a: 1}
+  m_fontColor: {r: 0.5527529, g: 0.8490566, b: 0.48460305, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -2974,7 +3053,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 0.94, g: 0.91, b: 0.82, a: 1}
+  m_fontColor: {r: 0.5527529, g: 0.8490566, b: 0.48460305, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -4221,7 +4300,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 1, g: 0.84, b: 0.45, a: 1}
+  m_fontColor: {r: 0.92, g: 0.83, b: 0.6, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -4238,8 +4317,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 28
-  m_fontSizeBase: 28
+  m_fontSize: 36
+  m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -4360,7 +4439,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 0.94, g: 0.91, b: 0.82, a: 1}
+  m_fontColor: {r: 0.5527529, g: 0.8490566, b: 0.48460305, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -4460,6 +4539,8 @@ GameObject:
   - component: {fileID: 2924835647227866443}
   - component: {fileID: 6509085507332603238}
   - component: {fileID: 6152089080057717630}
+  - component: {fileID: 3080904690651555335}
+  - component: {fileID: 3083484748181082455}
   m_Layer: 0
   m_Name: No
   m_TagString: Untagged
@@ -4544,7 +4625,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 0.96, b: 0.88, a: 1}
@@ -4569,6 +4650,47 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &3080904690651555335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4470181362223381627}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5a96a7cadb542c4bad95ce7956e0ed8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.UnifiedButtonFeedback
+  theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
+  animateScale: 1
+  keepHoverScaleWhenPressed: 0
+  animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
+  hoverScaleOverride: 0
+  scaleTarget: {fileID: 0}
+  useButtonPalette: 0
+  hoverScaleMultiplier: 1
+--- !u!114 &3083484748181082455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4470181362223381627}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d680a50b6ec86d4d99f1c58e00dd399, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.ActionButtonLabelColor
+  label: {fileID: 0}
+  tmpLabel: {fileID: 7439426968549789539}
+  theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
+  negative: 0
+  neutral: 1
 --- !u!1 &4520296148327844072
 GameObject:
   m_ObjectHideFlags: 0
@@ -4644,7 +4766,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 1, g: 0.44, b: 0.48, a: 1}
+  m_fontColor: {r: 0.990566, g: 0.4906105, b: 0.50172067, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -4886,6 +5008,7 @@ GameObject:
   - component: {fileID: 1735169316334377238}
   - component: {fileID: 5175906960512804669}
   - component: {fileID: 5596916347139893098}
+  - component: {fileID: 4569769522988348115}
   m_Layer: 0
   m_Name: Close
   m_TagString: Untagged
@@ -4911,7 +5034,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -12, y: -12}
+  m_AnchoredPosition: {x: -450, y: -274}
   m_SizeDelta: {x: 40, y: 40}
   m_Pivot: {x: 1, y: 1}
 --- !u!222 &7524879927195864508
@@ -4944,7 +5067,7 @@ MonoBehaviour:
       m_Calls: []
   m_Sprite: {fileID: 21300000, guid: 0ec170ba34be767499bd598e3c61cc06, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -5052,6 +5175,19 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   negative: 1
   neutral: 0
+--- !u!114 &4569769522988348115
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4775050962455004369}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68c6abf8b52236b41917a0dc96f3d657, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.PopupClosePlacement
+  frame: {fileID: 4179846671323337384}
 --- !u!1 &4851213679945013453
 GameObject:
   m_ObjectHideFlags: 0
@@ -5204,7 +5340,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 0.990566, g: 0.4906105, b: 0.50172067, a: 1}
+  m_fontColor: {r: 0.5527529, g: 0.8490566, b: 0.48460305, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -5494,7 +5630,7 @@ MonoBehaviour:
   tmpLabel: {fileID: 4405843380282728130}
   theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
   negative: 0
-  neutral: 1
+  neutral: 0
 --- !u!1 &6028887605723321588
 GameObject:
   m_ObjectHideFlags: 0
@@ -5890,7 +6026,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 1, g: 0.84, b: 0.45, a: 1}
+  m_fontColor: {r: 0.92, g: 0.83, b: 0.6, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -5907,8 +6043,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32
-  m_fontSizeBase: 32
+  m_fontSize: 36
+  m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -6065,6 +6201,8 @@ GameObject:
   - component: {fileID: 197428107611711465}
   - component: {fileID: 6262944771443725538}
   - component: {fileID: 2639515535353735927}
+  - component: {fileID: 5386960894063200509}
+  - component: {fileID: 1318439888586622449}
   m_Layer: 0
   m_Name: Delete Slot 1
   m_TagString: Untagged
@@ -6149,7 +6287,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 0.96, b: 0.88, a: 1}
@@ -6174,6 +6312,47 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &5386960894063200509
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6853742187961284241}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5a96a7cadb542c4bad95ce7956e0ed8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.UnifiedButtonFeedback
+  theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
+  animateScale: 1
+  keepHoverScaleWhenPressed: 0
+  animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
+  hoverScaleOverride: 0
+  scaleTarget: {fileID: 0}
+  useButtonPalette: 0
+  hoverScaleMultiplier: 1
+--- !u!114 &1318439888586622449
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6853742187961284241}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d680a50b6ec86d4d99f1c58e00dd399, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.ActionButtonLabelColor
+  label: {fileID: 0}
+  tmpLabel: {fileID: 333331827418025402}
+  theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
+  negative: 1
+  neutral: 0
 --- !u!1 &7628406554984308602
 GameObject:
   m_ObjectHideFlags: 0
@@ -6261,6 +6440,8 @@ GameObject:
   - component: {fileID: 4128798574017466456}
   - component: {fileID: 3737155812435954233}
   - component: {fileID: 7250191347267119046}
+  - component: {fileID: 4314223036244940124}
+  - component: {fileID: 1941638709050248638}
   m_Layer: 0
   m_Name: Language Template
   m_TagString: Untagged
@@ -6345,7 +6526,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 0.96, b: 0.88, a: 1}
@@ -6370,6 +6551,47 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &4314223036244940124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7784728709231431724}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5a96a7cadb542c4bad95ce7956e0ed8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.UnifiedButtonFeedback
+  theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
+  animateScale: 1
+  keepHoverScaleWhenPressed: 0
+  animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
+  hoverScaleOverride: 0
+  scaleTarget: {fileID: 0}
+  useButtonPalette: 0
+  hoverScaleMultiplier: 1
+--- !u!114 &1941638709050248638
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7784728709231431724}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d680a50b6ec86d4d99f1c58e00dd399, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.ActionButtonLabelColor
+  label: {fileID: 0}
+  tmpLabel: {fileID: 8405170142432608894}
+  theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
+  negative: 0
+  neutral: 0
 --- !u!1 &7898491723034775509
 GameObject:
   m_ObjectHideFlags: 0
@@ -6696,6 +6918,8 @@ GameObject:
   - component: {fileID: 4100808251643277128}
   - component: {fileID: 3700339139179394040}
   - component: {fileID: 8984627446147966397}
+  - component: {fileID: 3777537787636534668}
+  - component: {fileID: 8277107210789173227}
   m_Layer: 0
   m_Name: Yes
   m_TagString: Untagged
@@ -6780,7 +7004,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 0.96, b: 0.88, a: 1}
@@ -6805,6 +7029,47 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &3777537787636534668
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8391648110215582761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5a96a7cadb542c4bad95ce7956e0ed8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.UnifiedButtonFeedback
+  theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
+  animateScale: 1
+  keepHoverScaleWhenPressed: 0
+  animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
+  hoverScaleOverride: 0
+  scaleTarget: {fileID: 0}
+  useButtonPalette: 0
+  hoverScaleMultiplier: 1
+--- !u!114 &8277107210789173227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8391648110215582761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d680a50b6ec86d4d99f1c58e00dd399, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.ActionButtonLabelColor
+  label: {fileID: 0}
+  tmpLabel: {fileID: 471943025020692608}
+  theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
+  negative: 1
+  neutral: 0
 --- !u!1 &8710138469052930597
 GameObject:
   m_ObjectHideFlags: 0
@@ -6817,6 +7082,8 @@ GameObject:
   - component: {fileID: 6860307720147456055}
   - component: {fileID: 1073413717786027612}
   - component: {fileID: 3118990589966475228}
+  - component: {fileID: 7038292633005382847}
+  - component: {fileID: 7364007062529292064}
   m_Layer: 0
   m_Name: Delete Slot 3
   m_TagString: Untagged
@@ -6901,7 +7168,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 0.96, b: 0.88, a: 1}
@@ -6926,6 +7193,47 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &7038292633005382847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8710138469052930597}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5a96a7cadb542c4bad95ce7956e0ed8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.UnifiedButtonFeedback
+  theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
+  animateScale: 1
+  keepHoverScaleWhenPressed: 0
+  animateGraphic: 1
+  preserveGraphicAlpha: 0
+  useHoverGraphicAlpha: 0
+  idleGraphicAlpha: 0
+  hoverGraphicAlpha: 150
+  hoverScaleOverride: 0
+  scaleTarget: {fileID: 0}
+  useButtonPalette: 0
+  hoverScaleMultiplier: 1
+--- !u!114 &7364007062529292064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8710138469052930597}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d680a50b6ec86d4d99f1c58e00dd399, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.ActionButtonLabelColor
+  label: {fileID: 0}
+  tmpLabel: {fileID: 6481832168709980426}
+  theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
+  negative: 1
+  neutral: 0
 --- !u!1 &8909501885022333176
 GameObject:
   m_ObjectHideFlags: 0
@@ -6941,6 +7249,7 @@ GameObject:
   - component: {fileID: 1848988677370829025}
   - component: {fileID: 1762332590904041215}
   - component: {fileID: 6448287678994734075}
+  - component: {fileID: 1771787666757199391}
   m_Layer: 0
   m_Name: Save Slot 2
   m_TagString: Untagged
@@ -7082,7 +7391,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8909501885022333176}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
   m_Name: 
@@ -7110,6 +7419,23 @@ MonoBehaviour:
   oreIcon: {fileID: 2420554359874494047}
   humanAmount: {fileID: 4802867728950537014}
   oreAmount: {fileID: 2657364622151896553}
+--- !u!114 &1771787666757199391
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8909501885022333176}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d680a50b6ec86d4d99f1c58e00dd399, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.ActionButtonLabelColor
+  label: {fileID: 0}
+  tmpLabel: {fileID: 2947954919940236495}
+  theme: {fileID: 11400000, guid: 3f0d66794d4cb594c8643d55b4b0d3ed, type: 2}
+  negative: 0
+  neutral: 0
 --- !u!1 &9130500523964703877
 GameObject:
   m_ObjectHideFlags: 0
@@ -7188,7 +7514,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 0.94, g: 0.91, b: 0.82, a: 1}
+  m_fontColor: {r: 0.5527529, g: 0.8490566, b: 0.48460305, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -7974,6 +8300,22 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 640638986746805399, guid: 318160e95d6fad14d997264920804551, type: 3}
+      propertyPath: m_Color.b
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 640638986746805399, guid: 318160e95d6fad14d997264920804551, type: 3}
+      propertyPath: m_Color.g
+      value: 0.83
+      objectReference: {fileID: 0}
+    - target: {fileID: 640638986746805399, guid: 318160e95d6fad14d997264920804551, type: 3}
+      propertyPath: m_Color.r
+      value: 0.92
+      objectReference: {fileID: 0}
+    - target: {fileID: 640638986746805399, guid: 318160e95d6fad14d997264920804551, type: 3}
+      propertyPath: m_FontData.m_FontSize
+      value: 36
+      objectReference: {fileID: 0}
     - target: {fileID: 924629642297621177, guid: 318160e95d6fad14d997264920804551, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -8072,19 +8414,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4583201150591115565, guid: 318160e95d6fad14d997264920804551, type: 3}
       propertyPath: m_Pivot.x
-      value: 0.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4583201150591115565, guid: 318160e95d6fad14d997264920804551, type: 3}
       propertyPath: m_Pivot.y
-      value: 0.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4583201150591115565, guid: 318160e95d6fad14d997264920804551, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 298
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4583201150591115565, guid: 318160e95d6fad14d997264920804551, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 308
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5333894570968463988, guid: 318160e95d6fad14d997264920804551, type: 3}
       propertyPath: m_Pivot.x

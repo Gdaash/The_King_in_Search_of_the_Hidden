@@ -26,7 +26,7 @@ namespace GameFoundation.MetaProgression
             {
                 PortalTowerBalance.UpgradeScope.AllWeapons => true,
                 PortalTowerBalance.UpgradeScope.DeliveryMethod => upgrade.deliveryMethod == method,
-                PortalTowerBalance.UpgradeScope.DamageType => upgrade.damageType == damage,
+                PortalTowerBalance.UpgradeScope.DamageType => true, // Legacy elemental upgrades now affect all weapons.
                 _ => false
             };
         }

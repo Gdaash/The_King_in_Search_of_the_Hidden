@@ -6,7 +6,7 @@ namespace GameFoundation.Base
     /// <summary>Shows a building-button badge when the building can perform an action now.</summary>
     public sealed class BuildingActionAvailabilityIndicator : MonoBehaviour
     {
-        public enum ActionType { CartPurchase, BlacksmithProduction, MilitaryTraining, BuildingConstruction, LaboratoryUpgrade, PortalTravel, RefugeeAdmission, None }
+        public enum ActionType { CartPurchase, BlacksmithProduction, MilitaryTraining, BuildingConstruction, LaboratoryUpgrade, PortalTravel, RefugeeAdmission, None, MagicTowerUnlock }
 
         [SerializeField] private GameObject marker;
         [SerializeField] private ActionType actionType;
@@ -21,6 +21,8 @@ namespace GameFoundation.Base
 
         private bool daySubscribed;
         private RoyalDecreeRow[] royalDecrees;
+        private PortalTowerBalance portalBalance;
+        private PortalArsenalPopup arsenal;
 
         public void SetRoyalDecrees(RoyalDecreePopupView popup)
         {
@@ -31,6 +33,12 @@ namespace GameFoundation.Base
         private void Awake()
         {
             if (construction == null) construction = GetComponent<BaseBuildingConstruction>();
+            if (actionType == ActionType.MagicTowerUnlock)
+            {
+                portalBalance = Resources.Load<PortalTowerBalance>("World/PortalTowerBalance");
+                if (portalBalance != null && portalBalance.arsenalPopupPrefab != null)
+                    arsenal = portalBalance.arsenalPopupPrefab.GetComponent<PortalArsenalPopup>();
+            }
             Refresh();
         }
 
@@ -39,6 +47,11 @@ namespace GameFoundation.Base
             if (actionType == ActionType.LaboratoryUpgrade)
             {
                 if (laboratoryStats != null) laboratoryStats.OnStatsUpdated += Refresh;
+            }
+            if (actionType == ActionType.MagicTowerUnlock)
+            {
+                PortalArsenalProgress.UnlocksChanged += Refresh;
+                GameFoundation.Saves.SaveSlotPrefs.SelectionChanged += Refresh;
             }
             GlobalResourceManager.OnResourceChanged += OnResourceChanged;
             RoyalDecreeService.Changed += OnDecreeChanged;
@@ -56,6 +69,8 @@ namespace GameFoundation.Base
 
         private void OnDisable()
         {
+            PortalArsenalProgress.UnlocksChanged -= Refresh;
+            GameFoundation.Saves.SaveSlotPrefs.SelectionChanged -= Refresh;
             if (laboratoryStats != null) laboratoryStats.OnStatsUpdated -= Refresh;
             GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
             RoyalDecreeService.Changed -= OnDecreeChanged;
@@ -86,10 +101,13 @@ namespace GameFoundation.Base
                 ActionType.LaboratoryUpgrade => HasAvailableLaboratoryUpgrade(),
                 ActionType.PortalTravel => DayCycleService.Instance != null && !DayCycleService.Instance.EnteredToday,
                 ActionType.RefugeeAdmission => DayCycleService.Instance != null && DayCycleService.Instance.RefugeesAvailable > 0 && BuildingUpgradeService.CanAdmitResident,
+                ActionType.MagicTowerUnlock => arsenal != null && portalBalance.useSelectableArsenal &&
+                    portalBalance.useEnergyLoadout && arsenal.HasAffordableBaseUnlock(portalBalance),
                 _ => HasAvailableDecree()
             };
             bool buildingReady = actionType == ActionType.BuildingConstruction || construction == null || construction.IsBuilt;
-            bool upgrade = !string.IsNullOrEmpty(upgradeBuildingId) && BuildingUpgradeService.CanUpgrade(upgradeBuildingId);
+            bool upgrade = upgradeBuildingId == "housing" ? HousingDistrict.HasAvailableAction()
+                : !string.IsNullOrEmpty(upgradeBuildingId) && BuildingUpgradeService.CanUpgrade(upgradeBuildingId);
             if (highlight != null) highlight.SetAvailable(buildingReady && (actionAvailable || upgrade));
         }
 

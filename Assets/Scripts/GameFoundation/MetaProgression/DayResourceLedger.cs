@@ -1,4 +1,4 @@
-using PlayerPrefs = GameFoundation.Saves.SaveSlotPrefs;
+﻿using PlayerPrefs = GameFoundation.Saves.SaveSlotPrefs;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -114,6 +114,7 @@ namespace GameFoundation.MetaProgression
         {
             if (type == null || change == 0) return;
             GameFoundation.UI.GameNotifications.Resource(type, change);
+            if (GameFoundation.UI.GameNotifications.IsTransfer(type)) return;
             bool atShelter = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Base";
             if (!atShelter && (_state == null || !_state.runActive)) return;
             EnsureDay(DayCycleService.Instance != null ? DayCycleService.Instance.Day : 1);
@@ -204,6 +205,12 @@ namespace GameFoundation.MetaProgression
                 foreach (var resource in manager.AvailableResources)
                     if (resource != null && !result.ContainsKey(resource))
                         result[resource] = manager.GetResourceAmount(resource);
+            foreach (var porter in UnityEngine.Object.FindObjectsByType<Porter>())
+                if (porter.OwnsCart)
+                {
+                    result.TryGetValue(porter.CartResource, out int stored);
+                    result[porter.CartResource] = stored + 1;
+                }
             foreach (var deployment in UnityEngine.Object.FindObjectsByType<WorldMilitaryDeploymentController>(FindObjectsSortMode.None))
                 deployment.AddDeployedToSnapshot(result);
             return result;

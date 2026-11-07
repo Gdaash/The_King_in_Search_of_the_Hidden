@@ -11,14 +11,32 @@ namespace GameFoundation.MetaProgression
     public static class PortalProgression
     {
         public const string BuildingId = "portal";
-        public static bool DemoRestrictionsEnabled => true;
+        public static bool DemoRestrictionsEnabled => false;
         public const string DemoLocationId = "forest";
         public static bool IsDemoLocked(PortalLocationDefinition location) => DemoRestrictionsEnabled && location != null && location.LocationId != DemoLocationId;
         private const string LevelKey = "foundation.building.portal.upgradeLevel";
         private const string MigrationKey = "foundation.portal.upgradesMigrated";
+        internal static void ResetDestinationUpgrades()
+        {
+            SaveSlotPrefs.SetInt(LevelKey, 0);
+            SaveSlotPrefs.SetInt(MigrationKey, 1);
+        }
         public static int Level => BuildingUpgradeService.Level(BuildingId);
         public static int MaxLevel => BuildingUpgradeService.Catalog?.Find(BuildingId)?.levels.Count ?? 0;
         public static bool IsUnlocked(PortalLocationDefinition location) => location != null && !IsDemoLocked(location) && Level >= location.RequiredPortalLevel;
+
+        public static BuildingUpgradeCatalog.Level AccessPrice(PortalLocationDefinition location)
+        {
+            var levels = BuildingUpgradeService.Catalog?.Find(BuildingId)?.levels;
+            int index = (location?.RequiredPortalLevel ?? 0) - 1;
+            return levels != null && index >= 0 && index < levels.Count ? levels[index] : null;
+        }
+
+        public static bool IsNextDestination(PortalLocationDefinition location) =>
+            location != null && location.RequiredPortalLevel == Level + 1 && AccessPrice(location) != null;
+
+        public static bool TryUnlockDestination(PortalLocationDefinition location) =>
+            IsNextDestination(location) && BuildingUpgradeService.TryUpgrade(BuildingId);
 
         public static string DestinationsAt(int level) => string.Join(", ", DayCycleService.GetPortalLocations()
             .Where(l => l.RequiredPortalLevel == level).Select(l => Name(l)));

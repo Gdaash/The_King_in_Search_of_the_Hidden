@@ -42,9 +42,14 @@ public class FlashlightController : MonoBehaviour
     private bool _crystalControlled;
     private bool _crystalLit;
 
-    public void SetCrystalTarget(Vector2 position, bool lit)
+    private float _normalIntensity;
+    private float _flashStart;
+    private bool _flashing;
+
+    public void SetCrystalTarget(Vector2 position, bool lit, bool flashOnActivation = false)
     {
         _crystalControlled = true;
+        bool justLit = lit && !_crystalLit;
         _crystalLit = lit;
         _isDragging = false;
         StopAllCoroutines();
@@ -55,7 +60,28 @@ public class FlashlightController : MonoBehaviour
             spotLight.enabled = false;
             ApplyLightGeometry(position, true);
             spotLight.enabled = lit;
+            if (!lit) FinishActivationFlash();
+            else if (justLit && flashOnActivation)
+            {
+                _normalIntensity = spotLight.intensity;
+                _flashStart = Time.unscaledTime;
+                _flashing = true;
+                spotLight.intensity = _normalIntensity * 3f;
+            }
         }
+    }
+
+    private void FinishActivationFlash()
+    {
+        if (!_flashing) return;
+        _flashing = false;
+        spotLight.intensity = _normalIntensity;
+    }
+
+    private void OnDisable()
+    {
+        FinishActivationFlash();
+        _crystalLit = false;
     }
 
     private void Awake()
@@ -75,6 +101,12 @@ public class FlashlightController : MonoBehaviour
         if (_crystalControlled)
         {
             if (_crystalLit) UpdateLight();
+            if (_flashing)
+            {
+                float elapsed = Time.unscaledTime - _flashStart;
+                if (elapsed >= 1f) FinishActivationFlash();
+                else spotLight.intensity = _normalIntensity * Mathf.Lerp(3f, 1f, (elapsed - .5f) / .5f);
+            }
             return;
         }
         HandleDragging();

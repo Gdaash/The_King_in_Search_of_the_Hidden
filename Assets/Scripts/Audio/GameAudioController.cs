@@ -20,6 +20,8 @@ namespace GameFoundation.Audio
 
         private AudioSource musicSource;
         private AudioSource uiSource;
+        private AudioSource resourceSource;
+        private readonly Queue<double> resourceVoiceEnds = new();
         private readonly List<AudioSource> worldSources = new();
         private readonly Dictionary<ResourceType, int> resourceAmounts = new();
         private readonly Dictionary<GameAudioCue, float> lastPlayTime = new();
@@ -40,9 +42,11 @@ namespace GameFoundation.Audio
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            if (library == null && ProjectReferences.Instance != null) library = ProjectReferences.Instance.audioLibrary;
+            if (library == null)
+                library = ProjectReferences.Instance?.audioLibrary ?? Resources.Load<GameAudioLibrary>("GameAudioLibrary");
             musicSource = CreateSource("Music", 0f, true);
             uiSource = CreateSource("UI SFX", 0f, false);
+            resourceSource = CreateSource("Resource SFX", 0f, false);
             for (int i = 0; i < worldVoiceCount; i++) worldSources.Add(CreateSource($"World SFX {i + 1}", 0.68f, false));
             SceneManager.sceneLoaded += OnSceneLoaded;
             GlobalResourceManager.OnResourceChanged += OnResourceChanged;
@@ -96,14 +100,17 @@ namespace GameFoundation.Audio
             float effectsSetting = observedSettings != null ? observedSettings.Effects : 1f;
             if (musicSource != null) musicSource.volume = musicVolume * musicSetting;
             if (uiSource != null) uiSource.volume = uiVolume * effectsSetting;
+            if (resourceSource != null) resourceSource.volume = uiVolume * effectsSetting;
             foreach (AudioSource source in worldSources) if (source != null) source.volume = worldVolume * effectsSetting;
         }
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             resourceAmounts.Clear();
-            DiscoverRuntimeObjects();
+            resourceVoiceEnds.Clear();
+            resourceSource.Stop();
             PlaySceneMusic(scene.name);
+            DiscoverRuntimeObjects();
         }
 
         private void PlaySceneMusic(string sceneName)
@@ -184,8 +191,25 @@ namespace GameFoundation.Audio
             if (type == null) return;
             if (!resourceAmounts.TryGetValue(type, out int previous)) { resourceAmounts[type] = amount; return; }
             resourceAmounts[type] = amount;
-            if (amount > previous) PlayUI(GameAudioCue.ResourceGain, 0.72f, 0.96f, 1.04f, 0.07f);
+            if (amount > previous) PlayResourceGain(0.72f);
             else if (amount < previous) PlayUI(GameAudioCue.ResourceSpend, 0.62f, 0.96f, 1.04f, 0.07f);
+        }
+
+        public static void PlayResourceGain(float volume)
+        {
+            var controller = Instance;
+            if (controller == null || controller.resourceSource == null) return;
+            var clip = controller.library != null ? controller.library.resourceGain : null;
+            if (clip == null) return;
+
+            var activeVoices = controller.resourceVoiceEnds;
+            double now = AudioSettings.dspTime;
+            while (activeVoices.Count > 0 && activeVoices.Peek() <= now) activeVoices.Dequeue();
+            // Track only voice lifetimes. Every drop starts a one-shot immediately.
+            float gain = Mathf.Clamp01(volume) / (1f + activeVoices.Count * .65f);
+            controller.resourceSource.PlayOneShot(clip, gain);
+            activeVoices.Enqueue(now + clip.length);
+            controller.CuePlayed?.Invoke(GameAudioCue.ResourceGain);
         }
 
         public static void PlayUI(GameAudioCue cue, float volume = 1f, float pitchMin = 0.98f, float pitchMax = 1.02f, float cooldown = 0.025f)

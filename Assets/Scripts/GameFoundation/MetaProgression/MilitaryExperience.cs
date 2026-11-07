@@ -39,14 +39,15 @@ namespace GameFoundation.MetaProgression
         public static IReadOnlyList<MilitaryProfile> GetStored(ResourceType resource, int requiredCount)
         {
             if (resource == null) return Array.Empty<MilitaryProfile>();
-            List<MilitaryProfile> matching = SaveData.profiles.Where(profile => profile.type == resource.Id).ToList();
+            List<MilitaryProfile> matching = SaveData.profiles.Where(profile => profile.type == resource.Id && !deployed.Contains(profile.id)).ToList();
+            bool created = matching.Count < requiredCount;
             while (matching.Count < requiredCount)
             {
                 MilitaryProfile profile = new() { id = Guid.NewGuid().ToString("N"), type = resource.Id, healthPercent = 1f };
                 SaveData.profiles.Add(profile); matching.Add(profile);
             }
-            Persist();
-            return matching.Where(profile => !deployed.Contains(profile.id)).Take(requiredCount).ToList();
+            if (created) Persist();
+            return matching.Take(requiredCount).ToList();
         }
 
         public static void Deploy(MilitaryProfile profile) { if (profile != null) deployed.Add(profile.id); }

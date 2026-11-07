@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using GameFoundation.Base;
@@ -18,6 +18,7 @@ namespace GameFoundation.Quests
             public float arcHeight = 65f;
             public Vector2 origin;
             public float delay;
+            public System.Action arrived;
         }
         readonly List<Particle> particles = new();
         RectTransform rect;
@@ -117,6 +118,71 @@ namespace GameFoundation.Quests
             }
             if (effect.particles.Count == 0) Destroy(go);
         }
+        /// <summary>One full-size resource icon per unit. Ownership is committed only on arrival.</summary>
+        public static void PlayGrant(Canvas canvas, ResourceType resource, int count, System.Action arrived, Vector2 centerOffset = default)
+        {
+            if (count <= 0) return;
+            Image destination = null;
+            if (canvas != null)
+                foreach (var ui in canvas.rootCanvas.GetComponentsInChildren<ResourceUI>())
+                    if (ui.DisplaysGlobalResources && ui.GetResourceIcon(resource) is Image icon && icon.isActiveAndEnabled) destination = icon;
+            if (canvas == null || destination == null)
+            {
+                for (int i = 0; i < count; i++) arrived?.Invoke();
+                return;
+            }
+            canvas = canvas.rootCanvas;
+            var go = new GameObject("Royal aid resource flight", typeof(RectTransform), typeof(Canvas), typeof(QuestRewardFlight));
+            go.transform.SetParent(canvas.transform, false);
+            var overlay = go.GetComponent<Canvas>(); overlay.overrideSorting = true; overlay.sortingOrder = 32010;
+            var effect = go.GetComponent<QuestRewardFlight>(); effect.rect = (RectTransform)go.transform;
+            effect.rect.anchorMin = Vector2.zero; effect.rect.anchorMax = Vector2.one;
+            effect.rect.offsetMin = effect.rect.offsetMax = Vector2.zero;
+            effect.uiCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+            int rows = Mathf.CeilToInt(count / 8f);
+            Vector2 size = resource.resourceIcon != null ? resource.resourceIcon.rect.size * 2f : new Vector2(48,48);
+            for (int i = 0; i < count; i++)
+            {
+                int row = i / 8, column = i % 8, inRow = Mathf.Min(8, count - row * 8);
+                Vector2 origin = new Vector2((column - (inRow - 1) * .5f) * (size.x + 16), ((rows - 1) * .5f - row) * (size.y + 16));
+                var image = new GameObject("Aid icon", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+                image.transform.SetParent(effect.rect, false); image.raycastTarget = false;
+                ResourceIconSizing.Apply(image, resource.resourceIcon); image.rectTransform.anchoredPosition = origin + centerOffset;
+                effect.particles.Add(new Particle { image = image, target = destination, origin = origin + centerOffset, delay = .6f + i * .09f, arrived = arrived });
+            }
+        }
+        public static void PlayChanges(Canvas canvas, List<QuestDefinition.ResourceReward> changes, System.Action completed)
+        {
+            if (canvas == null || changes == null || changes.Count == 0) { completed?.Invoke(); return; }
+            canvas = canvas.rootCanvas;
+            var go = new GameObject("Resource changes flight",typeof(RectTransform),typeof(Canvas),typeof(QuestRewardFlight));
+            go.transform.SetParent(canvas.transform,false);
+            var overlay = go.GetComponent<Canvas>(); overlay.overrideSorting = true; overlay.sortingOrder = 32010;
+            var effect = go.GetComponent<QuestRewardFlight>(); effect.rect = (RectTransform)go.transform;
+            effect.rect.anchorMin = Vector2.zero; effect.rect.anchorMax = Vector2.one; effect.rect.offsetMin = effect.rect.offsetMax = Vector2.zero;
+            effect.uiCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+            int remaining = changes.Count;
+            void Arrive() { if (--remaining == 0) completed?.Invoke(); }
+            for (int i = 0; i < changes.Count; i++)
+            {
+                var change = changes[i]; Image destination = null;
+                foreach (var panel in canvas.GetComponentsInChildren<ResourceUI>())
+                    if (panel.DisplaysGlobalResources && change.resource != null) destination = panel.GetResourceIcon(change.resource) ?? destination;
+                if (destination == null || change.amount == 0) { Arrive(); continue; }
+                var image = new GameObject("Resource delta",typeof(RectTransform),typeof(Image)).GetComponent<Image>();
+                image.transform.SetParent(effect.rect,false); image.raycastTarget = false; ResourceIconSizing.Apply(image,change.resource.resourceIcon);
+                Vector2 origin = new Vector2((i%3-1)*220,((Mathf.CeilToInt(changes.Count/3f)-1)*.5f-i/3)*80);
+                if (changes.Count < 3) origin.x = (i-(changes.Count-1)*.5f)*220;
+                image.rectTransform.anchoredPosition = origin;
+                var text = new GameObject("Signed amount",typeof(RectTransform),typeof(TMPro.TextMeshProUGUI)).GetComponent<TMPro.TextMeshProUGUI>();
+                text.transform.SetParent(image.transform,false); text.font = Resources.Load<TMPro.TMP_FontAsset>("Fonts/Pixellari Reading UI");
+                text.fontSize = 28; text.fontStyle = TMPro.FontStyles.Bold; text.raycastTarget = false;
+                text.text = (change.amount>0?"+":"")+change.amount; text.color = change.amount>0?DamageText.HealingColor:DamageText.DamageColor;
+                text.alignment = TMPro.TextAlignmentOptions.MidlineLeft; text.rectTransform.sizeDelta = new Vector2(150,48);
+                text.rectTransform.anchoredPosition = new Vector2(image.rectTransform.rect.width*.5f+80,0);
+                effect.particles.Add(new Particle {image=image,target=destination,origin=origin,delay=.65f+i*.09f,arrived=Arrive});
+            }
+        }
         void Update()
         {
             elapsed += Time.unscaledDeltaTime;
@@ -124,9 +190,9 @@ namespace GameFoundation.Quests
             foreach (var particle in particles)
             {
                 if (particle.image == null) continue;
-                if (particle.target == null && particle.targetRect == null) { Destroy(particle.image.gameObject); continue; }
+                if (particle.target == null && particle.targetRect == null) { particle.arrived?.Invoke(); particle.arrived = null; Destroy(particle.image.gameObject); continue; }
                 float t = (elapsed - particle.delay) / Duration;
-                if (t >= 1) { Destroy(particle.image.gameObject); continue; }
+                if (t >= 1) { particle.arrived?.Invoke(); particle.arrived = null; Destroy(particle.image.gameObject); continue; }
                 remaining = true;
                 if (t < 0) continue;
                 var destinationCanvas = particle.targetCanvas != null ? particle.targetCanvas : particle.target.canvas.rootCanvas;

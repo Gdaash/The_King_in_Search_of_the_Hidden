@@ -34,6 +34,8 @@ namespace GameFoundation.Base
             state.color = active ? new Color(.38f,.9f,.48f) : new Color(.66f,.61f,.72f);
             buttonLabel.text = active ? GameFoundation.Localization.GameText.Get("Отключить") : GameFoundation.Localization.GameText.Get("Включить");
             price.SetActive(!active);
+            priceIcon.gameObject.SetActive(!active);
+            priceAmount.gameObject.SetActive(!active);
             priceAmount.text = decree.activationCost.ToString();
             ResourceIconSizing.Apply(priceIcon, decree.influence != null ? decree.influence.resourceIcon : null);
             bool affordable = GlobalResourceManager.Instance != null && decree.influence != null &&

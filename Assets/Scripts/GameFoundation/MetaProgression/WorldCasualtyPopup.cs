@@ -29,8 +29,8 @@ namespace GameFoundation.MetaProgression
    window=Rect(transform,"Losses Window",new Vector2(780,200),Vector2.zero);window.anchorMin=window.anchorMax=window.pivot=new Vector2(.5f,.5f);var background=window.gameObject.AddComponent<Image>();background.sprite=panelSprite;background.type=Image.Type.Sliced;
    float top=28;Block(dead,"world.losses.dead","Погибли в бою",ref top);Block(missing,"world.losses.missing","Не вернулись в портал",ref top);
    float height=top+80;window.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,height);
-   var buttonRect=Rect(window,"OK",new Vector2(280,48),new Vector2(0,-top-12));var image=buttonRect.gameObject.AddComponent<Image>();image.sprite=buttonSprite;image.type=Image.Type.Sliced;okay=buttonRect.gameObject.AddComponent<Button>();okay.targetGraphic=image;
-   var label=Text(buttonRect,Tr("world.losses.ok","OK"),new Vector2(248,40),new Vector2(0,-4),24);label.color=new Color(.6f,.85f,.47f);okay.onClick.AddListener(Acknowledge);okay.gameObject.SetActive(false);
+   var buttonRect=Rect(window,"OK",new Vector2(280,48),new Vector2(0,-top-12));var image=buttonRect.gameObject.AddComponent<Image>();image.sprite=Resources.Load<GameFoundation.UI.ButtonVisualTheme>("UI/ButtonVisualTheme")?.textButtonSprite ?? buttonSprite;image.type=Image.Type.Sliced;okay=buttonRect.gameObject.AddComponent<Button>();okay.targetGraphic=image;okay.transition=Selectable.Transition.None;image.color=Color.white;buttonRect.gameObject.AddComponent<GameFoundation.UI.UnifiedButtonFeedback>();
+   var label=Text(buttonRect,Tr("world.losses.ok","OK"),new Vector2(248,40),new Vector2(0,-4),24);buttonRect.gameObject.AddComponent<GameFoundation.UI.ActionButtonLabelColor>().Configure(label);okay.onClick.AddListener(Acknowledge);okay.gameObject.SetActive(false);
    StartCoroutine(Reveal());
   }
   private static string Tr(string key,string fallback){var value=LocalizationService.Instance?.Get(key);return string.IsNullOrEmpty(value)||value==key?fallback:value;}

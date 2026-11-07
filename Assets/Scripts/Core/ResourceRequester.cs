@@ -107,7 +107,7 @@ public class ResourceRequester : MonoBehaviour {
         return sent;
     }
     public bool CrystalResourcesReady => requirements.All(r => r.currentAmount >= r.requiredAmount);
-    public bool CanSelectCrystalCycle => enabled && gameObject.activeInHierarchy && !ignoreFlag &&
+    public bool CanSelectCrystalCycle => !WorldHexFog.BlocksWork(WorkerPosition) && enabled && gameObject.activeInHierarchy && !ignoreFlag &&
         requirements.Count > 0 && (!_isProcessing || IsCyclePaused) && !IsStorageFull() &&
         (maxProductionCycles == 0 || _completedCycles < maxProductionCycles);
     public void SetCrystalFlag(LogisticFlag flag)
@@ -127,6 +127,14 @@ public class ResourceRequester : MonoBehaviour {
         UpdateIndicator();
     }
     public void TryStartCrystalCycle() => CheckCompletion();
+
+    public void ResetWorkForFog()
+    {
+        // Keep paid construction materials, delivered residents and remaining resource cycles intact.
+        if (_isProcessing) _crystalCyclePaused = true;
+        foreach (var timer in GetComponentsInChildren<TimerController>(true)) timer.ResetForFog();
+        UpdateIndicator();
+    }
 
     public int ResidentHumanCount => requirements.Where(r => r.resourceType != null && r.resourceType.isHumanResource).Sum(r => Mathf.Max(0, r.currentAmount));
     public bool SheltersWorkers => retainHumansBetweenCycles || humanSuccessor != null;
@@ -231,7 +239,14 @@ public class ResourceRequester : MonoBehaviour {
         }
     }
 
-    public bool HasLogisticFlag() {
+    private System.Func<bool> dedicatedDeliveryGate;
+    public bool HasDedicatedDelivery => dedicatedDeliveryGate != null;
+
+    public void SetDedicatedDeliveryGate(System.Func<bool> gate) => dedicatedDeliveryGate = gate;
+
+    public virtual bool HasLogisticFlag() {
+        if (dedicatedDeliveryGate != null) return dedicatedDeliveryGate();
+        if (GameFoundation.MetaProgression.WorldMilitaryLightRules.BlocksWork(transform.position)) return false;
         if (_crystalControlled) return _crystalFlag != null && _crystalFlag.isActiveAndEnabled && _crystalFlag.CrystalTarget == this;
         if (ignoreFlag) return true;
         if (_myCollider == null) return false;
@@ -249,6 +264,7 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     public bool NeedsAnyResource() {
+        if (WorldHexFog.BlocksWork(WorkerPosition)) return false;
         if (maxProductionCycles > 0 && _completedCycles >= maxProductionCycles) {
             return false;
         }
@@ -322,6 +338,7 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     protected virtual void CheckCompletion() {
+        if (WorldHexFog.BlocksWork(WorkerPosition)) return;
         if (IsCyclePaused)
         {
             if (!HasLogisticFlag() || !CrystalResourcesReady) return;
@@ -342,6 +359,7 @@ public class ResourceRequester : MonoBehaviour {
     }
 
     public virtual void FinishProcessing() {
+        if (WorldHexFog.BlocksWork(WorkerPosition)) return;
         if (humanSuccessor != null)
         {
             foreach (var req in requirements)
@@ -387,6 +405,13 @@ public class ResourceRequester : MonoBehaviour {
         
         foreach (var icon in _activeIcons) if(icon) Destroy(icon);
         _activeIcons.Clear();
+
+        var fog = WorldHexFog.At(WorkerPosition);
+        if (fog != null && fog.IsClosed)
+        {
+            iconsContainer.gameObject.SetActive(false);
+            return;
+        }
 
         if ((_isProcessing && !IsCyclePaused) || !gameObject.activeInHierarchy || IsStorageFull()) {
             iconsContainer.gameObject.SetActive(false);
@@ -513,6 +538,7 @@ public class ResourceRequester : MonoBehaviour {
 
     protected void SpawnAllResults() {
         HexMagnet dropHex = GetDropHex();
+        var animalSource = GetComponent<GameFoundation.MetaProgression.ExpeditionAnimalSource>();
         foreach (var output in outputResources) {
             if (output.prefab == null) continue;
             for (int i = 0; i < output.count; i++) {
@@ -524,7 +550,27 @@ public class ResourceRequester : MonoBehaviour {
                 if (res.CompareTag("Untagged")) res.tag = "Resource";
                 _spawnedResources.Add(res);
                 StartCoroutine(TossResource(res.transform, origin, spawnTarget));
-                if (res.TryGetComponent<ResourceItem>(out var item)) ResourceProduced?.Invoke(this, item);
+                if (res.TryGetComponent<ResourceItem>(out var item))
+                {
+                    if (animalSource != null)
+                        GameFoundation.MetaProgression.ExpeditionTasks.ConvertAnimalDrop(item, animalSource.Animal);
+                    GameFoundation.Audio.GameAudioController.PlayResourceGain(.3f);
+                    ResourceProduced?.Invoke(this, item);
+                    if (animalSource != null &&
+                        GameFoundation.MetaProgression.ExpeditionTasks.RollBonusDrop(item, animalSource.Animal) is ResourceType bonus)
+                    {
+                        var extra = Instantiate(output.prefab, origin, Quaternion.identity);
+                        if (extra.CompareTag("Untagged")) extra.tag = "Resource";
+                        _spawnedResources.Add(extra);
+                        var bonusItem = extra.GetComponent<ResourceItem>();
+                        GameFoundation.MetaProgression.ExpeditionTasks.SetDropType(bonusItem, bonus);
+                        var bonusTarget = dropHex != null ? GetResourceDropPosition(dropHex.transform.position, origin.z)
+                            : spawnTarget + Vector3.right * .25f;
+                        StartCoroutine(TossResource(extra.transform, origin, bonusTarget));
+                        GameFoundation.Audio.GameAudioController.PlayResourceGain(.3f);
+                        ResourceProduced?.Invoke(this, bonusItem);
+                    }
+                }
             }
         }
     }

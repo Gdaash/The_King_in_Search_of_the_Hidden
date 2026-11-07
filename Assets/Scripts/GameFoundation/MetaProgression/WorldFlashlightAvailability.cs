@@ -18,7 +18,7 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private bool autoRepeat = true;
         [SerializeField] private UnityEngine.UI.Toggle autoRepeatToggle;
         public enum LightState { Ready, WaitingForResources, Working }
-        public enum HoverState { None, Available, WaitingForResources, Working, RecallOnly, LightsBusy, IdleLight, UnlitHex }
+        public enum HoverState { None, Available, WaitingForResources, Working, RecallOnly, LightsBusy, IdleLight, UnlitHex, Military }
         public readonly struct HoverTarget
         {
             public readonly Transform Anchor;
@@ -39,8 +39,9 @@ namespace GameFoundation.MetaProgression
         private sealed class LightAssignment
         {
             public CrystalLightBeam beam;
-            public bool occupied, working;
+            public bool occupied, working, military;
             public bool restartPending;
+            public bool fogReopenPending;
             public int restartAfterFrame;
             public float retryAt;
             public HexLightUnlocker hex;
@@ -108,7 +109,23 @@ namespace GameFoundation.MetaProgression
         {
             if (escaped) return;
             int count = Mathf.Min(flashlights.Length, flashlightStats != null ? flashlightStats.AvailableFlashlightCount : 1);
-            if (count <= lights.Length) return;
+            if (count == lights.Length) return;
+            if (count < lights.Length)
+            {
+                // Losing energy uses the same withdrawal path as moving a light away.
+                CancelDrag();
+                for (int i = lights.Length - 1; i >= count; i--)
+                {
+                    lights[i].military = false;
+                    lights[i].beam.Flag.SetMilitaryMode(false);
+                    Release(i);
+                    lights[i].beam.Clear();
+                    if (flashlights[i] != gameObject) flashlights[i].SetActive(false);
+                }
+                Array.Resize(ref lights, count);
+                MilitaryPositionsChanged?.Invoke();
+                return;
+            }
             var available = new List<LightAssignment>(lights);
             for (int i = lights.Length; i < count; i++)
             {
@@ -142,6 +159,7 @@ namespace GameFoundation.MetaProgression
         {
             if (PortalCloudTransition.IsLoading) return;
             if (escaped) return;
+            ValidateMilitaryGround();
             for (int i = 0; i < lights.Length; i++)
             {
                 var assignment = lights[i];
@@ -154,15 +172,8 @@ namespace GameFoundation.MetaProgression
             }
             ProcessDragPointer(Input.mousePosition, Input.GetMouseButtonDown(0),
                 Input.GetMouseButton(0), Input.GetMouseButtonUp(0));
-            if (!FirstRunLightTutorial.BlocksInput && Input.GetMouseButtonDown(1))
-            {
-                rightPointerDown = Input.mousePosition;
-                rightPointerStartedInWorld = worldCamera != null && !IsPointerOverBlockingUI(Input.mousePosition) &&
-                    (IsDragging || HasActiveActionAt(worldCamera.ScreenToWorldPoint(Input.mousePosition)));
-            }
-            if (!FirstRunLightTutorial.BlocksInput && Input.GetMouseButtonUp(1) && rightPointerStartedInWorld &&
-                Vector2.Distance(rightPointerDown, Input.mousePosition) < 8 && !IsPointerOverBlockingUI(Input.mousePosition) && worldCamera != null)
-                RecallHumansAt(worldCamera.ScreenToWorldPoint(Input.mousePosition));
+            ProcessMilitaryPointer(Input.mousePosition, Input.GetMouseButtonDown(1), Input.GetMouseButtonUp(1));
+            UpdateMilitaryTutorial();
             UpdateAutomaticWork();
         }
         public void SetAutoRepeat(bool enabled)
@@ -183,7 +194,7 @@ namespace GameFoundation.MetaProgression
             }
             for (int i = 0; i < lights.Length; i++)
             {
-                lights[i].restartPending = enabled && !lights[i].occupied;
+                lights[i].restartPending = (enabled || lights[i].fogReopenPending) && !lights[i].occupied;
                 lights[i].restartAfterFrame = Time.frameCount + 1;
                 lights[i].retryAt = 0;
             }
@@ -201,11 +212,11 @@ namespace GameFoundation.MetaProgression
         }
         private void UpdateAutomaticWork()
         {
-            if (!autoRepeat || !LightsActivated || GameSpeedControls.SimulationSpeed <= 0 || FirstRunLightTutorial.WaitsForLightExplanation) return;
+            if (!LightsActivated || GameSpeedControls.SimulationSpeed <= 0 || FirstRunLightTutorial.WaitsForLightExplanation) return;
             for (int i = 0; i < lights.Length; i++)
             {
                 var assignment = lights[i];
-                if (!assignment.restartPending || assignment.occupied || i == draggedLight || i == pendingDragLight ||
+                if ((!autoRepeat && !assignment.fogReopenPending) || assignment.military || !assignment.restartPending || assignment.occupied || i == draggedLight || i == pendingDragLight ||
                     !assignment.beam.MarkerVisible || Time.frameCount < assignment.restartAfterFrame ||
                     Time.unscaledTime < assignment.retryAt) continue;
                 // Content is sometimes spawned after the completion event; full storage can also clear later.
@@ -215,13 +226,15 @@ namespace GameFoundation.MetaProgression
         }
         private bool TryStartAtLight(int index)
         {
-            if (escaped || !LightsActivated || GameSpeedControls.SimulationSpeed <= 0 ||
-                index < 0 || index >= lights.Length || lights[index].occupied || !lights[index].beam.MarkerVisible) return false;
+            if (escaped || !LightsActivated ||
+                index < 0 || index >= lights.Length || lights[index].military || lights[index].occupied || !lights[index].beam.MarkerVisible) return false;
             if (FirstRunLightTutorial.WaitsForLightExplanation)
             {
                 lights[index].restartPending = true;
                 return false;
             }
+            if (WorldMilitaryLightRules.BlocksWork(lights[index].beam.MarkerPosition)) return false;
+            if (WorldHexFog.BlocksOpening(lights[index].beam.MarkerPosition)) return false;
             var target = ResolveTarget(lights[index].beam.MarkerPosition, index);
             if (target.State != HoverState.Available || target.LightIndex != index) return false;
             lights[index].restartPending = false;
@@ -230,10 +243,10 @@ namespace GameFoundation.MetaProgression
         /// <summary>Manual clicks can restart only the light already standing on this hex.</summary>
         public bool StartAtIlluminatedHex(Vector2 point)
         {
-            if (escaped || !LightsActivated || IsDragging || GameSpeedControls.SimulationSpeed <= 0) return false;
+            if (escaped || !LightsActivated || IsDragging || ModalBlocksLightInput || FirstRunLightTutorial.BlocksInput) return false;
             for (int i = 0; i < lights.Length; i++)
             {
-                if (lights[i].occupied || !lights[i].beam.MarkerVisible) continue;
+                if (lights[i].military || lights[i].occupied || !lights[i].beam.MarkerVisible) continue;
                 var clicked = ResolveTarget(lights[i].beam.ContainsMarkerPoint(point) ? lights[i].beam.MarkerPosition : point, i);
                 if (clicked.State != HoverState.Available || clicked.Anchor == null) continue;
                 var underLight = ResolveTarget(lights[i].beam.MarkerPosition, i);
@@ -246,6 +259,10 @@ namespace GameFoundation.MetaProgression
         // Both input and the hover view resolve the same target and state.
         public HoverTarget GetHoverTarget(Vector2 point)
         {
+            int military = MilitaryLightAt(point);
+            if (military >= 0 && lights[military].military)
+                return new HoverTarget(HexAnchor(lights[military].beam.Flag.transform), HoverState.Military,
+                    lightIndex: military, flag: lights[military].beam.Flag);
             var target = ResolveTarget(point, draggedLight);
             if (target.Anchor != null || escaped || IsDragging) return target;
             int closest = -1;
@@ -283,7 +300,7 @@ namespace GameFoundation.MetaProgression
                 return false;
             for (int i = 0; i < lights.Length; i++)
             {
-                if (lights[i].occupied || !lights[i].beam.MarkerVisible) continue;
+                if (lights[i].military || lights[i].occupied || !lights[i].beam.MarkerVisible) continue;
                 var underLight = ResolveTarget(lights[i].beam.MarkerPosition, i);
                 if (underLight.Anchor == target.Anchor && underLight.State == HoverState.Available) return true;
             }
@@ -316,8 +333,8 @@ namespace GameFoundation.MetaProgression
                 float distance = Vector2.SqrMagnitude(point - (Vector2)candidate.transform.position);
                 if (distance < nearest) { nearest = distance; hex = candidate; }
             }
-            int free = preferredLight >= 0 ? (!lights[preferredLight].occupied ? preferredLight : -1)
-                : Array.FindIndex(lights, c => !c.occupied);
+            int free = preferredLight >= 0 ? (!lights[preferredLight].occupied && !lights[preferredLight].military ? preferredLight : -1)
+                : Array.FindIndex(lights, c => !c.occupied && !c.military);
             var availability = free >= 0 ? HoverState.Available : HoverState.LightsBusy;
             if (hex != null)
             {
@@ -393,7 +410,7 @@ namespace GameFoundation.MetaProgression
         }
         public bool SelectAt(Vector2 point)
         {
-            if (escaped || !LightsActivated || GameSpeedControls.SimulationSpeed <= 0) return false;
+            if (escaped || !LightsActivated || ModalBlocksLightInput || FirstRunLightTutorial.BlocksInput) return false;
             var target = GetHoverTarget(point);
             if (target.State == HoverState.None) return false;
             TargetClicked?.Invoke(target);
@@ -408,41 +425,14 @@ namespace GameFoundation.MetaProgression
                 target.State == HoverState.RecallOnly || target.CanRecallHumans ||
                 (target.Hex != null && target.Hex.IsUnlocking());
         }
-        public bool RecallHumansAt(Vector2 point)
-        {
-            if (escaped || !LightsActivated || GameSpeedControls.SimulationSpeed <= 0) return false;
-            if (draggedLight >= 0) { CancelDrag(); return true; }
-            var target = GetHoverTarget(point);
-            if (target.State == HoverState.WaitingForResources)
-            {
-                TargetClicked?.Invoke(target);
-                Release(target.LightIndex);
-                if (target.CanRecallHumans && Warehouse.Instance != null)
-                {
-                    target.Requester.SetCrystalFlag(null);
-                    target.Requester.RecallIdleHumans();
-                }
-                OrderManager.Instance?.ForceUpdateOrders();
-                GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Действие отменено"));
-                return true;
-            }
-            if (Warehouse.Instance == null) return false;
-            if (!target.CanRecallHumans) return false;
-            // A recalled resident must not be dispatched again by a pending repeat at this position.
-            foreach (var light in lights)
-                if (Vector2.Distance(light.position, target.Anchor.position) <= buildingSelectionRadius)
-                    light.restartPending = false;
-            TargetClicked?.Invoke(target);
-            target.Requester.SetCrystalFlag(null);
-            int sent = target.Requester.RecallIdleHumans();
-            if (sent > 0) GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Люди возвращаются в портал"));
-            OrderManager.Instance?.ForceUpdateOrders();
-            return sent > 0;
-        }
+        [Obsolete("Right click now toggles military light mode.")]
+        public bool RecallHumansAt(Vector2 point) => false;
         private bool OpenHex(int index, HexLightUnlocker hex)
         {
+            if (WorldHexFog.BlocksOpening(hex.transform.position)) return false;
             bool resuming = hex.IsPaused;
             var assignment = lights[index];
+            assignment.fogReopenPending = false;
             assignment.restartPending = false;
             assignment.occupied = assignment.working = true;
             assignment.hex = hex;
@@ -450,6 +440,7 @@ namespace GameFoundation.MetaProgression
             assignment.alarm = AlarmSystem.Instance;
             var blocker = hex.GetComponentInParent<HexBlocker>();
             FirstRunLightTutorial.PrepareFirstHex(blocker);
+            PrepareMilitaryTutorialFirstHex(blocker);
             if (blocker != null) assignment.alarmSources[blocker] = blocker.UnlockAlarmAmount;
             if (!resuming) ReserveAlarm(assignment);
             SetAlarmPaused(assignment, false);
@@ -527,8 +518,18 @@ namespace GameFoundation.MetaProgression
         private void Release(int index, bool completed = false)
         {
             var assignment = lights[index];
+            assignment.fogReopenPending = false;
             bool repeat = completed && assignment.occupied && autoRepeat && !escaped;
-            if (completed && assignment.occupied && assignment.hex != null) LightHexOpened?.Invoke(assignment.position);
+            if (completed && assignment.occupied && assignment.hex != null)
+            {
+                if (HasTroops)
+                {
+                    militaryTutorialPending = true;
+                    militaryTutorialHexPosition = assignment.position;
+                    militaryTutorialReadyAt = Time.time + .15f;
+                }
+                LightHexOpened?.Invoke(assignment.position);
+            }
             bool preserveProgress = !completed && !escaped &&
                 ((assignment.hex != null && assignment.hex.IsUnlocking()) ||
                  (assignment.requester != null && assignment.requester.IsProcessing));
@@ -572,12 +573,28 @@ namespace GameFoundation.MetaProgression
             assignment.retryAt = 0;
             if (!escaped) OrderManager.Instance?.ForceUpdateOrders();
         }
+        public void ReleaseForFog(Vector2 center)
+        {
+            for (int i = 0; i < lights.Length; i++)
+            {
+                var assignment = lights[i];
+                if (!assignment.beam.MarkerVisible || (assignment.beam.MarkerPosition - center).sqrMagnitude > 1f) continue;
+                assignment.military = false;
+                assignment.beam.Flag.SetMilitaryMode(false);
+                Release(i);
+                assignment.fogReopenPending = assignment.restartPending = true;
+                assignment.restartAfterFrame = Time.frameCount + 1;
+                assignment.retryAt = 0;
+            }
+            MilitaryPositionsChanged?.Invoke();
+        }
         public void DisableAllForEscape()
         {
             PortalTowerProgression.Instance?.EndExpedition();
             escaped = true;
             StopAllCoroutines();
             pendingDragLight = draggedLight = -1;
+            ClearConstructionInterface();
             if (activationButton != null) activationButton.gameObject.SetActive(false);
             for (int i = 0; i < lights.Length; i++) Release(i);
             if (AlarmSystem.Instance != null)

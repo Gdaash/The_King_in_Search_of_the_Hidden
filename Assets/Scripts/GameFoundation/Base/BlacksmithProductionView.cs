@@ -22,16 +22,18 @@ namespace GameFoundation.Base
 
         [SerializeField] private RecipeView swordRecipe;
         [SerializeField] private RecipeView bowRecipe;
+        [SerializeField] private RecipeView spearRecipe;
         [SerializeField] private Color enoughColor = new Color(0.55f, 0.85f, 0.35f);
         [SerializeField] private Color notEnoughColor = new Color(0.95f, 0.38f, 0.35f);
         [SerializeField] private Color stockColor = new Color(0.94f, 0.91f, 0.82f);
 
-        public bool CanProduceAny => CanProduce(swordRecipe) || CanProduce(bowRecipe);
+        public bool CanProduceAny => CanProduce(swordRecipe) || CanProduce(bowRecipe) || CanProduce(spearRecipe);
 
         private void Awake()
         {
             Bind(swordRecipe);
             Bind(bowRecipe);
+            Bind(spearRecipe);
         }
 
         private void OnEnable()
@@ -46,6 +48,7 @@ namespace GameFoundation.Base
         {
             Unbind(swordRecipe);
             Unbind(bowRecipe);
+            Unbind(spearRecipe);
         }
 
         private void Bind(RecipeView recipe)
@@ -62,6 +65,7 @@ namespace GameFoundation.Base
 
         private void Produce(RecipeView recipe)
         {
+            using var save = GameFoundation.Saves.SaveSlotPrefs.Batch();
             using var notification = GameFoundation.UI.GameNotifications.BeginAction();
             GlobalResourceManager manager = GlobalResourceManager.Instance;
             if (manager == null || recipe?.input == null || recipe.output == null ||
@@ -80,6 +84,7 @@ namespace GameFoundation.Base
         {
             Refresh(swordRecipe);
             Refresh(bowRecipe);
+            Refresh(spearRecipe);
         }
 
         private void Refresh(RecipeView recipe)

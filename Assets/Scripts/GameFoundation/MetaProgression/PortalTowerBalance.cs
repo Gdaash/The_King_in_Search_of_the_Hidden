@@ -8,17 +8,35 @@ namespace GameFoundation.MetaProgression
     [CreateAssetMenu(menuName = "Game Foundation/Portal Tower Balance")]
     public sealed class PortalTowerBalance : ScriptableObject
     {
-        public enum Weapon { None, Bolts, Beam, Rings, Lightning, FrostSeal, FireShot, ElectricOrb }
+        public enum Weapon { None, Bolts, Beam, Rings, Lightning, FrostSeal, FireShot, ElectricOrb, HealingRay, MagicShield, DefenseField }
         public enum DeliveryMethod { Projectile, Area, InstantHit }
         public enum UpgradeScope { AllWeapons, DeliveryMethod, DamageType, Portal }
         public enum Effect { UnlockAttack, ExtraLight, Damage, AttackSpeed, Projectiles, Range, UnlockWeapon, Area, Duration, ExpansionSpeed, Targets, SlowStrength, TickInterval, AttackInterval }
         public enum Quality { Common, Rare, Legendary }
         public const float MinimumInterval = .1f;
+        [Header("Эксперимент: переключаемое оружие")]
+        [Tooltip("Выключите для возврата прежнего выбора оружия при повышении уровня. Менять до начала вылазки.")]
+        public bool useSelectableArsenal;
+        public PortalArsenalCatalog arsenal;
+        public GameObject arsenalPopupPrefab;
+        [Tooltip("Арсенал на базе, постоянные слоты и расходуемая энергия вместо боевых улучшений.")]
+        public bool useEnergyLoadout;
+        public GameObject weaponSlotsPrefab;
+        [Min(1)] public int crystalCapacity = 300;
+        [Min(1)] public int energyPerCrystal = 10;
+        [Tooltip("Запас кристаллов для второго–шестого луча. Пороги считаются от текущего запаса энергии.")]
+        public int[] lightCrystalThresholds = { 6, 24, 54, 96, 150 };
         public static Quality RollQuality(float roll) => roll < .6f ? Quality.Common : roll < .9f ? Quality.Rare : Quality.Legendary;
         [Serializable]
         public sealed class WeaponDefinition
         {
             public Weapon weapon;
+            [Min(1)] public int energyPerShot = 1;
+            [Min(0)] public float energyPerSecond;
+            [Min(0)] public float supportAmount;
+            [Min(.01f)] public float energyModeDamageScale = 1f;
+            public float BaseDamageScale(bool energyMode) => .5f * (energyMode ? energyModeDamageScale : 1f);
+            public bool IsSupport => weapon == Weapon.HealingRay || weapon == Weapon.MagicShield || weapon == Weapon.DefenseField;
             public DeliveryMethod deliveryMethod;
             public bool disabled;
             public string title, englishTitle;
@@ -73,7 +91,8 @@ namespace GameFoundation.MetaProgression
         }
         [Range(1, 32)] public int minimumCrystalsPerEmptyHex = 1;
         [Range(1, 32)] public int maximumCrystalsPerEmptyHex = 5;
-        [Min(0)] public int experiencePerEnemy = 0;
+        // Legacy serialized setting. EnemyCrystalDropBudget now controls enemy loot.
+        [HideInInspector, Min(0)] public int experiencePerEnemy = 0;
         [Min(1)] public int firstLevelExperience = 6;
         [Min(0)] public int experienceIncreasePerLevel = 3;
         public Sprite levelPointIcon;

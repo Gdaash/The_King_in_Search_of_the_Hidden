@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -74,7 +74,7 @@ public class Warehouse : MonoBehaviour
 
     public bool CanSpawnPorter()
     {
-        if (GlobalResourceManager.Instance == null || humanResourceType == null || cartResourceType == null || porterPrefab == null) return false;
+        if (GlobalResourceManager.Instance == null || humanResourceType == null || cartResourceType == null || porterPrefab == null || porterPrefab.GetComponent<Porter>() == null) return false;
 
         return OrderManager.CountHumansAtPortal(humanResourceType) >= 1
             && GlobalResourceManager.Instance.GetResourceAmount(cartResourceType) >= 1;
@@ -90,7 +90,9 @@ public class Warehouse : MonoBehaviour
 
         Vector3 spawnPos = GetSpawnPoint() + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0);
         GameObject porterObj = Instantiate(porterPrefab, spawnPos, Quaternion.identity);
-        return porterObj.GetComponent<Porter>();
+        var porter = porterObj.GetComponent<Porter>();
+        porter.InitializeCart(cartResourceType);
+        return porter;
     }
 
     /// <summary>
@@ -109,6 +111,22 @@ public class Warehouse : MonoBehaviour
         
         // Уничтожаем носильщика
         Destroy(porter.gameObject);
+    }
+
+    /// <summary>Commit returned carts before closing a run, and prevent late refunds for abandoned carts.</summary>
+    public static void SettlePorterCarts()
+    {
+        foreach (var porter in Object.FindObjectsByType<Porter>())
+        {
+            if (!porter.OwnsCart) continue;
+            if (OrderManager.IsPorterAwayFromPortal(porter)) porter.ForfeitCart();
+            else
+            {
+                var warehouse = AllWarehouses.FirstOrDefault(w => w != null && w.gameObject.scene == porter.gameObject.scene);
+                if (warehouse != null) warehouse.DespawnPorter(porter);
+                else porter.ForfeitCart();
+            }
+        }
     }
 
     public void DepositResource(ResourceType type)

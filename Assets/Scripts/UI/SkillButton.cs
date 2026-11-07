@@ -201,6 +201,7 @@ public class SkillButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void TryPurchase()
     {
+        using var save = GameFoundation.Saves.SaveSlotPrefs.Batch();
         if (isPurchased || !isUnlocked || upgradeStats == null) return;
         
         // ИСПРАВЛЕНО: Списание через новый менеджер

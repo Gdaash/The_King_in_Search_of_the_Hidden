@@ -13,7 +13,73 @@ namespace GameFoundation.MetaProgression
     public sealed class PortalTowerProgression : MonoBehaviour
     {
         public static PortalTowerProgression Instance { get; private set; }
-        public static bool IsChoosingUpgrade => Instance != null && Instance.LevelPoints > 0;
+        public static bool IsChoosingUpgrade => Instance != null && (Instance.LevelPoints > 0 || Instance.IsTutorialLightChoice);
+        public bool UsesArsenal { get; private set; }
+        public bool UsesEnergyLoadout { get; private set; }
+        public int Energy { get; private set; }
+        public int EnergyCapacity => PortalEnergyRules.Capacity(balance);
+        public int CrystalEfficiencyRank => scientificStats != null ? scientificStats.CrystalEfficiencyRank : 0;
+        public event Action EnergyChanged;
+        public event Action<int> EnergyLightCountChanged;
+        private readonly Dictionary<PortalTowerBalance.Weapon, (float start, float end)> reloads = new();
+
+        public void ReportReload(PortalTowerBalance.Weapon weapon, float readyAt)
+        {
+            if (UsesEnergyLoadout && readyAt > Time.time) reloads[weapon] = (Time.time, readyAt);
+        }
+
+        public float ReloadProgress(PortalTowerBalance.Weapon weapon)
+        {
+            if (expeditionEnded || !reloads.TryGetValue(weapon, out var reload) || Time.time >= reload.end) return 0;
+            return Mathf.InverseLerp(reload.start, reload.end, Time.time);
+        }
+        public bool CanPayForShot(PortalTowerBalance.Weapon weapon) => !UsesEnergyLoadout || Energy >= Mathf.Max(1, balance.FindWeapon(weapon)?.energyPerShot ?? 1);
+        public bool TrySpendShot(PortalTowerBalance.Weapon weapon)
+        {
+            if (!HasWeapon(weapon) || !CanPayForShot(weapon)) return false;
+            if (UsesEnergyLoadout) SetEnergy(Energy - Mathf.Max(1, balance.FindWeapon(weapon)?.energyPerShot ?? 1));
+            return true;
+        }
+        internal void SpendContinuousEnergy(int amount)
+        {
+            if (UsesEnergyLoadout && !expeditionEnded && amount > 0) SetEnergy(Energy - amount);
+        }
+
+        private void SetEnergy(int value)
+        {
+            int oldLights = LightCount, oldLevel = Level;
+            Energy = Mathf.Clamp(value, 0, EnergyCapacity);
+            Level = PortalEnergyRules.Level(balance, Energy, CrystalEfficiencyRank);
+            PortalArsenalProgress.RecordLevel(Level);
+            EnergyChanged?.Invoke();
+            int lightChange = LightCount - oldLights;
+            if (lightChange != 0 || oldLevel != Level) Changed?.Invoke();
+            if (lightChange != 0 && !expeditionEnded)
+            {
+                GameAudioController.PlayUI(lightChange > 0 ? GameAudioCue.ContentUnlock : GameAudioCue.UiDenied);
+                EnergyLightCountChanged?.Invoke(lightChange);
+            }
+        }
+        public PortalTowerBalance.Weapon ActiveWeapon { get; private set; } = PortalTowerBalance.Weapon.Bolts;
+        public bool WeaponsAvailable => UsesArsenal || CrystalTechnologyAvailable;
+        public bool OwnsWeapon(PortalTowerBalance.Weapon weapon) => UsesArsenal
+            ? balance.arsenal != null && balance.arsenal.Find(weapon) != null && (UsesEnergyLoadout || balance.FindWeapon(weapon)?.IsSupport != true) && PortalArsenalProgress.IsUnlocked(weapon)
+            : HasWeapon(weapon);
+        public bool SelectWeapon(PortalTowerBalance.Weapon weapon)
+        {
+            if (!UsesArsenal || expeditionEnded || IsChoosingUpgrade || FirstRunLightTutorial.BlocksInput ||
+                (weapon != PortalTowerBalance.Weapon.None && !OwnsWeapon(weapon)) ||
+                (UsesEnergyLoadout && !PortalWeaponLoadout.Contains(weapon)) || (!UsesEnergyLoadout && weapon == PortalTowerBalance.Weapon.None)) return false;
+            if (ActiveWeapon == weapon) return true;
+            ActiveWeapon = weapon;
+            PortalWeaponController.Instance?.WeaponSelectionChanged();
+            GameAudioController.PlayUI(GameAudioCue.UiConfirm); Changed?.Invoke(); return true;
+        }
+        public bool UnlockWeapon(PortalTowerBalance.Weapon weapon)
+        {
+            if (!UsesArsenal || expeditionEnded || IsChoosingUpgrade || FirstRunLightTutorial.BlocksInput || !PortalArsenalProgress.TryUnlock(balance.arsenal.Find(weapon))) return false;
+            GameAudioController.PlayUI(GameAudioCue.ContentUnlock); Changed?.Invoke(); return true;
+        }
         [SerializeField] private PortalTowerBalance balance;
         [SerializeField] private GameObject upgradeWindow;
         [Header("Получение опыта")]
@@ -21,6 +87,11 @@ namespace GameFoundation.MetaProgression
         [SerializeField] private Sprite groundExperienceCrystal;
         [SerializeField] private GlobalStats scientificStats;
         private ResourceType crystalResource;
+        private readonly EnemyCrystalDropBudget enemyCrystalBudget = new();
+        private readonly HashSet<HexBlocker> openedCrystalBudgetHexes = new();
+        public int EnemyCrystalDropLimit => enemyCrystalBudget.Limit;
+        public int EnemyCrystalsDropped => enemyCrystalBudget.DroppedCrystals;
+        public int EnemyCrystalsRemaining => enemyCrystalBudget.Remaining;
         private readonly Dictionary<string, int> ranks = new();
         private readonly Dictionary<string, float> acquiredValues = new();
         private float AcquiredValue(PortalTowerBalance.Upgrade u) => Rank(u.id) == 0 ? 0 : acquiredValues.TryGetValue(u.id, out float total) ? total : u.value * Rank(u.id);
@@ -29,9 +100,26 @@ namespace GameFoundation.MetaProgression
         private readonly List<PortalTowerBalance.Upgrade> offers = new();
         public IReadOnlyList<PortalTowerBalance.Upgrade> Offers => offers;
         public bool IsInitialWeaponChoice { get; private set; }
+        public bool IsGuaranteedLightChoice { get; private set; }
+        public bool IsTutorialLightChoice { get; private set; }
+        private System.Action tutorialLightClosed;
+        public bool ShowTutorialLightReward(System.Action closed)
+        {
+            if (IsChoosingUpgrade || upgradeWindow == null || balance == null || LightCount >= 2) return false;
+            var light = balance.upgrades.Find(u => u.effect == PortalTowerBalance.Effect.ExtraLight);
+            if (light == null) return false;
+            tutorialLightClosed = closed; IsTutorialLightChoice = IsGuaranteedLightChoice = true;
+            offers.Clear(); offers.Add(light.CreateOffer(PortalTowerBalance.Quality.Common));
+            previousSpeed = PortalArsenalPopup.ReleaseForUpgrade(GameSpeedControls.SimulationSpeed); GameSpeedControls.SetSimulationSpeed(0);
+            BlockInterface(); upgradeWindow.SetActive(true); Changed?.Invoke(); return true;
+        }
+        private int guaranteedLights;
+        private readonly HashSet<int> claimedLightLevels = new();
+        public static bool IsLightRewardLevel(int level) => level == 2 || (level >= 4 && level % 4 == 0);
         public int ChoiceLevel => IsInitialWeaponChoice ? 1 : Level - LevelPoints + 1;
-        public bool HasWeapon(PortalTowerBalance.Weapon weapon) => CrystalTechnologyAvailable && balance.IsWeaponEnabled(weapon) && balance.upgrades.Exists(u =>
-            u.weapon == weapon && u.effect == PortalTowerBalance.Effect.UnlockWeapon && Rank(u.id) > 0);
+        public bool HasWeapon(PortalTowerBalance.Weapon weapon) => UsesArsenal ? !expeditionEnded && ActiveWeapon == weapon && OwnsWeapon(weapon)
+            : CrystalTechnologyAvailable && balance.IsWeaponEnabled(weapon) && balance.upgrades.Exists(u =>
+                u.weapon == weapon && u.effect == PortalTowerBalance.Effect.UnlockWeapon && Rank(u.id) > 0);
         public int WeaponCount => balance.weapons.FindAll(w => HasWeapon(w.weapon)).Count;
         private float previousSpeed;
         private bool expeditionEnded;
@@ -71,7 +159,7 @@ namespace GameFoundation.MetaProgression
         private int rerollPriceStep;
         private int lastRerollChoiceLevel = 1;
         public long RerollCost => 1L << Mathf.Min(rerollPriceStep, 62);
-        public bool CanReroll => CrystalTechnologyAvailable && !expeditionEnded && LevelPoints > 0 && offers.Count > 0 && RerollCost <= RequiredExperience - CrystalDebt;
+        public bool CanReroll => !UsesEnergyLoadout && !IsGuaranteedLightChoice && CrystalTechnologyAvailable && !expeditionEnded && LevelPoints > 0 && offers.Count > 0 && RerollCost <= RequiredExperience - CrystalDebt;
         public int PreviewExperience(int incoming) => Experience + Mathf.Max(0, incoming - CrystalDebt);
         public bool Reroll()
         {
@@ -86,17 +174,21 @@ namespace GameFoundation.MetaProgression
         }
         private void ReceiveExperience(int amount)
         {
+            if (UsesEnergyLoadout) { SetEnergy((int)Math.Min(EnergyCapacity, (long)Energy + (long)amount * Mathf.Max(1, balance.energyPerCrystal))); return; }
             int repayment = Mathf.Min(CrystalDebt, amount);
             CrystalDebt -= repayment;
             Experience += amount - repayment;
         }
         public int LevelPoints { get; private set; }
         public int RequiredExperience => ScientificUpgrades.RequiredCrystals(balance.RequiredExperience(Level), scientificStats != null ? scientificStats.CrystalEfficiencyRank : 0);
-        public bool CanAttack => !expeditionEnded && HasWeapon(PortalTowerBalance.Weapon.Bolts);
-        public int LightCount => Mathf.Clamp((scientificStats != null ? scientificStats.StartingFlashlightCount : 1) +
-            Mathf.RoundToInt(EffectTotal(PortalTowerBalance.Effect.ExtraLight)), 1, WorldFlashlightAvailability.MaximumCount);
+        public bool CanAttack => !expeditionEnded && HasWeapon(PortalTowerBalance.Weapon.Bolts) && CanPayForShot(PortalTowerBalance.Weapon.Bolts);
+        public int PermanentLightCount => Mathf.Clamp((scientificStats != null ? scientificStats.StartingFlashlightCount : 1) + guaranteedLights, 1, WorldFlashlightAvailability.MaximumCount);
+        public int LightCount => UsesEnergyLoadout
+            ? Mathf.Clamp(Mathf.Max(PermanentLightCount, 1 + PortalEnergyRules.BonusLights(balance, Energy, CrystalEfficiencyRank)), 1, WorldFlashlightAvailability.MaximumCount)
+            : Mathf.Clamp(PermanentLightCount + Mathf.RoundToInt(EffectTotal(PortalTowerBalance.Effect.ExtraLight)), 1, WorldFlashlightAvailability.MaximumCount);
         public int ProjectileCount => Count(PortalTowerBalance.Weapon.Bolts);
         public float DamageMultiplier => Multiplier(PortalTowerBalance.Weapon.Bolts, PortalTowerBalance.Effect.Damage);
+        public float WeaponDamageMultiplier(PortalTowerBalance.Weapon weapon) => (balance.FindWeapon(weapon)?.BaseDamageScale(UsesEnergyLoadout) ?? .5f) * Multiplier(weapon, PortalTowerBalance.Effect.Damage);
         public float AttackSpeedMultiplier => (balance.FindWeapon(PortalTowerBalance.Weapon.Bolts)?.cooldown ?? 1) / AttackInterval(PortalTowerBalance.Weapon.Bolts);
         public float RangeMultiplier => 1;
         public float AddedRange(PortalTowerBalance.Weapon w) => EffectTotal(PortalTowerBalance.Effect.Range, w);
@@ -114,11 +206,19 @@ namespace GameFoundation.MetaProgression
         private void Awake()
         {
             Instance = this;
+            UsesArsenal = balance != null && balance.useSelectableArsenal && balance.arsenal != null;
+            UsesEnergyLoadout = UsesArsenal && balance.useEnergyLoadout;
+            if (UsesEnergyLoadout) ActiveWeapon = PortalWeaponLoadout.Get(PortalWeaponLoadout.StartingSlot);
             if (upgradeWindow != null) upgradeWindow.SetActive(false);
         }
         private void Start()
         {
-            CrystalTechnologyAvailable = PlaytestSettings.TutorialsAndQuestsDisabled || (DayCycleService.Instance != null && DayCycleService.Instance.Day > 1);
+            if (UsesArsenal)
+            {
+                PortalArsenalProgress.RecordPopulation(); PortalArsenalProgress.RecordLevel(1);
+                if (!UsesEnergyLoadout) gameObject.AddComponent<PortalArsenalLauncher>().Initialize(this);
+            }
+            CrystalTechnologyAvailable = UsesEnergyLoadout || PlaytestSettings.TutorialsAndQuestsDisabled || (DayCycleService.Instance != null && DayCycleService.Instance.Day > 1);
             if (!CrystalTechnologyAvailable) { Changed?.Invoke(); return; }
             if (balance == null || upgradeWindow == null) return;
             var tutorial = UnityEngine.Object.FindFirstObjectByType<FirstRunLightTutorial>();
@@ -128,6 +228,7 @@ namespace GameFoundation.MetaProgression
         private void BeginInitialWeaponChoice()
         {
             if (expeditionEnded) return;
+            if (UsesArsenal) { Changed?.Invoke(); return; }
             IsInitialWeaponChoice = true;
             LevelPoints = 1;
             ShowChoice();
@@ -136,7 +237,7 @@ namespace GameFoundation.MetaProgression
         private void ShowChoice()
         {
             if (!RollPendingOffers()) return;
-            previousSpeed = GameSpeedControls.SimulationSpeed;
+            previousSpeed = PortalArsenalPopup.ReleaseForUpgrade(GameSpeedControls.SimulationSpeed);
             GameSpeedControls.SetSimulationSpeed(0);
             BlockInterface();
             upgradeWindow.SetActive(true);
@@ -145,11 +246,12 @@ namespace GameFoundation.MetaProgression
 #if UNITY_EDITOR
         private void Update()
         {
-            if (!FirstRunLightTutorial.BlocksInput && Input.GetKeyDown(KeyCode.K)) GrantEditorLevel();
+            if (!PortalArsenalPopup.IsOpen && !EditorWaveCheatPopup.IsOpen && !FirstRunLightTutorial.BlocksInput && Input.GetKeyDown(KeyCode.K)) GrantEditorLevel();
         }
         public void GrantEditorLevel()
         {
             if (!CrystalTechnologyAvailable || !Application.isPlaying || expeditionEnded || LevelPoints > 0) return;
+            if (UsesEnergyLoadout) { AddExperience(10); return; }
             AddExperience(CrystalDebt + RequiredExperience - Experience);
         }
 #endif
@@ -161,17 +263,17 @@ namespace GameFoundation.MetaProgression
         {
             if (upgrade == null) return false;
             if (upgrade.effect == PortalTowerBalance.Effect.UnlockWeapon)
-                return (IsInitialWeaponChoice || (ChoiceLevel >= 5 && ChoiceLevel % 5 == 0)) &&
+                return !UsesArsenal && (IsInitialWeaponChoice || (ChoiceLevel >= 5 && ChoiceLevel % 5 == 0)) &&
                     upgrade.weapon != PortalTowerBalance.Weapon.None && balance.IsWeaponEnabled(upgrade.weapon) && !HasWeapon(upgrade.weapon);
             if (upgrade.scope == PortalTowerBalance.UpgradeScope.Portal) return true;
-            return balance.weapons.Exists(w => HasWeapon(w.weapon) && PortalUpgradeModifiers.Applies(upgrade, w));
+            return balance.weapons.Exists(w => OwnsWeapon(w.weapon) && PortalUpgradeModifiers.Applies(upgrade, w));
         }
-        public bool CanPurchase(PortalTowerBalance.Upgrade upgrade) => CrystalTechnologyAvailable && upgrade != null && LevelPoints > 0 && offers.Contains(upgrade) && !IsComplete(upgrade) && IsUnlocked(upgrade);
+        public bool CanPurchase(PortalTowerBalance.Upgrade upgrade) => (!UsesEnergyLoadout || IsTutorialLightChoice) && (CrystalTechnologyAvailable || IsTutorialLightChoice) && upgrade != null && (LevelPoints > 0 || IsTutorialLightChoice) && offers.Contains(upgrade) && !IsComplete(upgrade) && IsUnlocked(upgrade);
         private void RollOffers()
         {
             offers.Clear();
             var weapons = balance.upgrades.FindAll(u => u.effect == PortalTowerBalance.Effect.UnlockWeapon && IsUnlocked(u));
-            var upgrades = balance.upgrades.FindAll(u => u.effect != PortalTowerBalance.Effect.UnlockWeapon && !IsComplete(u) && IsUnlocked(u));
+            var upgrades = balance.upgrades.FindAll(u => u.effect != PortalTowerBalance.Effect.UnlockWeapon && u.effect != PortalTowerBalance.Effect.ExtraLight && !IsComplete(u) && IsUnlocked(u));
             void Draw(List<PortalTowerBalance.Upgrade> pool, int count)
             {
                 while (count-- > 0 && pool.Count > 0)
@@ -196,6 +298,15 @@ namespace GameFoundation.MetaProgression
                     rerollPriceStep = Mathf.Max(0, rerollPriceStep - 3 * advancedLevels);
                     lastRerollChoiceLevel = ChoiceLevel;
                 }
+                IsGuaranteedLightChoice = false;
+                var lightReward = balance.upgrades.Find(u => u.effect == PortalTowerBalance.Effect.ExtraLight);
+                if (!IsInitialWeaponChoice && IsLightRewardLevel(ChoiceLevel) && !claimedLightLevels.Contains(ChoiceLevel) &&
+                    LightCount < WorldFlashlightAvailability.MaximumCount && lightReward != null)
+                {
+                    IsGuaranteedLightChoice = true;
+                    offers.Clear(); offers.Add(lightReward.CreateOffer(PortalTowerBalance.Quality.Common));
+                    return true;
+                }
                 RollOffers();
                 if (offers.Count > 0) return true;
                 LevelPoints--;
@@ -217,7 +328,20 @@ namespace GameFoundation.MetaProgression
             var range = HexCrystalDropRange;
             DropExperienceCrystals(UnityEngine.Random.Range(range.x, range.y + 1), position, true);
         }
-        public void AwardEnemyExperience(Vector3 position) => DropExperienceCrystals(balance.experiencePerEnemy, position, false);
+        public void RegisterOpenedHex(HexBlocker hex)
+        {
+            if (expeditionEnded || hex == null || hex.gameObject.scene != gameObject.scene ||
+                !openedCrystalBudgetHexes.Add(hex)) return;
+            enemyCrystalBudget.RegisterOpenedHex();
+            if (UsesArsenal) PortalArsenalProgress.RecordHex();
+        }
+
+        public void AwardEnemyExperience(Vector3 position)
+        {
+            if (!CrystalTechnologyAvailable || expeditionEnded || enemyCrystalBudget.Remaining <= 0) return;
+            if (enemyCrystalBudget.CanDrop(UnityEngine.Random.value) && DropExperienceCrystals(1, position, false))
+                enemyCrystalBudget.RecordDrop();
+        }
 
         public void AwardDepletedHexExperience(GameObject depletedObject, Vector3 hexCenter)
         {
@@ -232,14 +356,14 @@ namespace GameFoundation.MetaProgression
             if (!expeditionEnded && gameObject.scene.isLoaded) AwardHexExperience(hexCenter);
         }
 
-        private void DropExperienceCrystals(int amount, Vector3 position, bool spreadAcrossHex)
+        private bool DropExperienceCrystals(int amount, Vector3 position, bool spreadAcrossHex)
         {
-            if (!CrystalTechnologyAvailable || expeditionEnded || amount <= 0) return;
+            if (!CrystalTechnologyAvailable || expeditionEnded || amount <= 0) return false;
             var source = experienceCrystalPrefab != null ? experienceCrystalPrefab.GetComponent<SpriteRenderer>() : null;
             if (source == null || source.sprite == null)
             {
                 Debug.LogError("Portal tower requires an experience crystal sprite for ground drops.", this);
-                return;
+                return false;
             }
             _ = ExperienceCrystalResource;
             var positions = new List<Vector2>(amount);
@@ -269,7 +393,9 @@ namespace GameFoundation.MetaProgression
                 visual.sortingLayerID = source.sortingLayerID; visual.sortingOrder = 2;
                 var item = drop.AddComponent<ResourceItem>();
                 item.type = crystalResource; item.carrySprite = source.sprite; item.weight = .1f;
+                GameAudioController.PlayResourceGain(.4f);
             }
+            return true;
         }
 
         public bool TryDeliverCrystal(ResourceType type, Vector3 portalPosition)
@@ -295,8 +421,8 @@ namespace GameFoundation.MetaProgression
                         int units=amount/count+(i<amount%count?1:0);
                         targetExperience+=units;
                         int incoming = targetExperience - Experience;
-                        float targetFill=Mathf.Clamp01((float)(incoming < CrystalDebt ? CrystalDebt - incoming : PreviewExperience(incoming))/RequiredExperience);
-                        Instantiate(experienceCrystalPrefab,position,Quaternion.identity).Launch(position,bar,i*.06f,i==count-1,()=>CommitIncomingExperience(units),targetFill);
+                        float targetFill=UsesEnergyLoadout ? Mathf.Clamp01((float)(Energy + incoming * balance.energyPerCrystal) / EnergyCapacity) : Mathf.Clamp01((float)(incoming < CrystalDebt ? CrystalDebt - incoming : PreviewExperience(incoming))/RequiredExperience);
+                        Instantiate(experienceCrystalPrefab,position,Quaternion.identity).Launch(position,bar,i*.06f,()=>CommitIncomingExperience(units),targetFill);
                     }
                     return;
                 }
@@ -309,7 +435,7 @@ namespace GameFoundation.MetaProgression
             PendingExperience=Mathf.Max(0,PendingExperience-amount);
             ReceiveExperience(amount);
             Changed?.Invoke();
-            if(Experience>=RequiredExperience)StartCoroutine(DelayedLevel(Experience+processedExperience));
+            if(!UsesEnergyLoadout && Experience>=RequiredExperience)StartCoroutine(DelayedLevel(Experience+processedExperience));
         }
         private IEnumerator DelayedLevel(int arrivedExperience)
         {
@@ -323,7 +449,7 @@ namespace GameFoundation.MetaProgression
         {
             if (!CrystalTechnologyAvailable || amount <= 0 || balance == null || expeditionEnded) return;
             ReceiveExperience(amount);
-            ProcessLevels(Experience+processedExperience);
+            if (!UsesEnergyLoadout) ProcessLevels(Experience+processedExperience);
         }
         private int processedExperience;
         private void ProcessLevels(int availableExperience)
@@ -338,6 +464,7 @@ namespace GameFoundation.MetaProgression
                 processedExperience+=required;
                 Experience -= required;
                 Level++;
+                if (UsesArsenal) PortalArsenalProgress.RecordLevel(Level);
                 LevelPoints++;
                 gainedLevel = true;
             }
@@ -355,6 +482,29 @@ namespace GameFoundation.MetaProgression
         {
             var upgrade = offers.Find(u => u.id == id);
             if (!CanPurchase(upgrade)) return false;
+            if (IsTutorialLightChoice)
+            {
+                guaranteedLights++;
+                IsTutorialLightChoice = IsGuaranteedLightChoice = false; offers.Clear();
+                upgradeWindow.SetActive(false); RestoreInterface(); Changed?.Invoke();
+                GameSpeedControls.SetSimulationSpeed(previousSpeed);
+                var closed = tutorialLightClosed; tutorialLightClosed = null; closed?.Invoke(); return true;
+            }
+            if (IsGuaranteedLightChoice)
+            {
+                claimedLightLevels.Add(ChoiceLevel);
+                guaranteedLights++;
+                IsGuaranteedLightChoice = false;
+                // The reward does not consume the normal upgrade choice for this level.
+                RollPendingOffers();
+                GameAudioController.PlayUI(GameAudioCue.UiConfirm);
+                Changed?.Invoke();
+                if (LevelPoints == 0)
+                {
+                    upgradeWindow.SetActive(false); RestoreInterface(); GameSpeedControls.SetSimulationSpeed(previousSpeed);
+                }
+                return true;
+            }
             acquiredValues[id] = AcquiredValue(upgrade) + upgrade.OfferedValue;
             ranks[id] = Rank(id) + 1;
             IsInitialWeaponChoice = false;

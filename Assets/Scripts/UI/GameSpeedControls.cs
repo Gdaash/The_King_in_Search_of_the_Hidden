@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
@@ -47,19 +47,31 @@ public sealed class GameSpeedControls : MonoBehaviour
 
     private void Update()
     {
-        if (gameObject.scene.name != "World" || !Input.GetKeyDown(KeyCode.Space)) return;
+        if (gameObject.scene.name != "World") return;
+        bool loadout = GameFoundation.MetaProgression.PortalTowerProgression.Instance?.UsesEnergyLoadout == true;
+        bool normal = loadout ? Input.GetKeyDown(KeyCode.F1) : Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1);
+        bool fast = loadout ? Input.GetKeyDown(KeyCode.F2) : Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2);
+        bool fastest = loadout ? Input.GetKeyDown(KeyCode.F3) : Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3);
+        bool pause = Input.GetKeyDown(KeyCode.Space);
+        if (!normal && !fast && !fastest && !pause) return;
         var selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
         if (selected != null && (selected.GetComponent<InputField>() != null || selected.GetComponent<TMPro.TMP_InputField>() != null)) return;
         if (!CanTogglePause()) return;
         // Space is also a UI Submit key. Clear focus before EventSystem handles it.
         EventSystem.current?.SetSelectedGameObject(null);
-        TogglePause();
+        if (normal) SetSpeed(1f);
+        else if (fast) SetSpeed(3f);
+        else if (fastest) SetSpeed(6f);
+        else if (pause) TogglePause();
     }
 
     private bool CanTogglePause()
     {
-        if (GameFoundation.MetaProgression.PortalCloudTransition.IsLoading) return false;
-        if (GameFoundation.MetaProgression.PortalTowerProgression.IsChoosingUpgrade ||
+#if UNITY_EDITOR
+        if (EditorWaveCheatPopup.IsOpen) return false;
+#endif
+        if (GameFoundation.MetaProgression.PortalCloudTransition.IsLoading || GameFoundation.MetaProgression.WorldEscapeController.ResultsActive) return false;
+        if (GameFoundation.MetaProgression.PortalArsenalPopup.IsOpen || GameFoundation.MetaProgression.PortalTowerProgression.IsChoosingUpgrade ||
             GameFoundation.MetaProgression.FirstRunLightTutorial.BlocksInput) return false;
         if (Object.FindFirstObjectByType<GameFoundation.Settings.GameMenuController>() != null) return false;
         // A dialogue or another system owns this pause; Space must not release it.
@@ -74,7 +86,8 @@ public sealed class GameSpeedControls : MonoBehaviour
 
     public static float SetSimulationSpeed(float speed)
     {
-        if (GameFoundation.MetaProgression.PortalTowerProgression.IsChoosingUpgrade) speed = 0;
+        if (GameFoundation.MetaProgression.PortalArsenalPopup.IsOpen || GameFoundation.MetaProgression.PortalTowerProgression.IsChoosingUpgrade ||
+            GameFoundation.MetaProgression.WorldEscapeController.ResultsActive) speed = 0;
         SimulationSpeed = Mathf.Clamp(speed, 0f, 6f);
         Time.timeScale = SimulationSpeed;
         return SimulationSpeed;

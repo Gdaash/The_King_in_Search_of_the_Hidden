@@ -14,11 +14,11 @@ namespace GameFoundation.Saves
         [SerializeField] private TMP_Text humanAmount, oreAmount;
         public void Present(int slot)
         {
-            summary.rectTransform.anchorMin=summary.rectTransform.anchorMax=summary.rectTransform.pivot=new Vector2(.5f,.5f);summary.rectTransform.sizeDelta=new Vector2(736,44);summary.rectTransform.anchoredPosition=new Vector2(0,30);summary.fontSize=27;
-            var resourceRect=(RectTransform)resources.transform;resourceRect.sizeDelta=new Vector2(520,56);resourceRect.anchoredPosition=new Vector2(0,-32);
+            summary.rectTransform.anchorMin=summary.rectTransform.anchorMax=summary.rectTransform.pivot=new Vector2(.5f,.5f);summary.rectTransform.sizeDelta=new Vector2(836,64);summary.rectTransform.anchoredPosition=Vector2.zero;summary.fontSize=26;summary.textWrappingMode=TextWrappingModes.NoWrap;
+            var resourceRect=(RectTransform)resources.transform;resourceRect.sizeDelta=new Vector2(520,56);resourceRect.anchoredPosition=Vector2.zero;
             bool exists = SaveSlotPrefs.SlotExists(slot);
             resources.SetActive(exists);
-            if (!exists) { summary.rectTransform.anchoredPosition=Vector2.zero;summary.rectTransform.sizeDelta=new Vector2(736,72);summary.text = GameText.Format("Ячейка {0}\nНовое сохранение", slot); return; }
+            if (!exists) { summary.rectTransform.anchoredPosition=Vector2.zero;summary.alignment=TextAlignmentOptions.Center;summary.rectTransform.sizeDelta=new Vector2(836,84);summary.textWrappingMode=TextWrappingModes.Normal;summary.text = GameText.Format("Ячейка {0}\nНовое сохранение", slot); return; }
             int seconds = Mathf.FloorToInt(SaveSlotPrefs.SlotPlaySeconds(slot));
             summary.text = GameText.Format("Ячейка {0}", slot) + "   ·   " + $"{seconds / 3600:00}:{seconds / 60 % 60:00}:{seconds % 60:00}";
             ResourceIconSizing.Apply(humanIcon, human.resourceIcon);
@@ -29,7 +29,7 @@ namespace GameFoundation.Saves
         }
         private void LayoutResources()
         {
-            const float iconGap = 10f, pairGap = 48f;
+            const float iconGap = 10f, pairGap = 24f;
             float humanWidth = AmountWidth(humanAmount), oreWidth = AmountWidth(oreAmount);
             float firstWidth = humanIcon.rectTransform.rect.width + iconGap + humanWidth;
             float secondWidth = oreIcon.rectTransform.rect.width + iconGap + oreWidth;
@@ -37,7 +37,12 @@ namespace GameFoundation.Saves
             var rect = (RectTransform)resources.transform;
             rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
             rect.sizeDelta = new Vector2(totalWidth, 56f);
-            rect.anchoredPosition = new Vector2(0, -32f);
+            float rowWidth = ((RectTransform)transform).rect.width;
+            rect.anchoredPosition = new Vector2(rowWidth * .5f - 24 - totalWidth * .5f, 0);
+            float summaryWidth = rowWidth - 48 - totalWidth - 32;
+            summary.rectTransform.sizeDelta = new Vector2(summaryWidth, 64);
+            summary.rectTransform.anchoredPosition = new Vector2(-rowWidth * .5f + 24 + summaryWidth * .5f, 0);
+            summary.alignment = TextAlignmentOptions.MidlineLeft;
             LayoutPair(humanIcon, humanAmount, -totalWidth * .5f, humanWidth, iconGap);
             LayoutPair(oreIcon, oreAmount, -totalWidth * .5f + firstWidth + pairGap, oreWidth, iconGap);
         }

@@ -35,7 +35,7 @@ namespace GameFoundation.Base
         private bool languageSubscribed;
         private CanvasGroup availabilityGroup;
         private string SaveKey => "foundation.building." + buildingId + ".built";
-        public bool IsBuilt => built;
+        public bool IsBuilt => SaveSlotPrefs.GetInt(SaveKey, 0) != 0;
         public string BuildingId => buildingId;
         public string DisplayName => Tr(nameKey, fallbackName);
         public ResourceType Wood => wood;
@@ -58,6 +58,7 @@ namespace GameFoundation.Base
         {
             GlobalResourceManager.OnResourceChanged += OnResourceChanged;
             ContentUnlocks.Changed += Refresh;
+            BuildingUpgradeService.Changed += Refresh;
             SubscribeLanguage();
             Refresh();
         }
@@ -72,6 +73,7 @@ namespace GameFoundation.Base
         {
             GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
             ContentUnlocks.Changed -= Refresh;
+            BuildingUpgradeService.Changed -= Refresh;
             if (languageSubscribed && LocalizationService.Instance != null)
                 LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
             languageSubscribed = false;
@@ -94,6 +96,7 @@ namespace GameFoundation.Base
 
         public void ConfirmBuild()
         {
+            using var save = GameFoundation.Saves.SaveSlotPrefs.Batch();
             using var notification = GameFoundation.UI.GameNotifications.BeginAction();
             if (built || !ConstructionUnlocked || !CanAfford()) return;
             GlobalResourceManager resources = GlobalResourceManager.Instance;
@@ -127,6 +130,7 @@ namespace GameFoundation.Base
 
         private void Refresh()
         {
+            built = IsBuilt;
             bool visible = built || ConstructionUnlocked;
             if (availabilityGroup != null)
             {
@@ -138,7 +142,7 @@ namespace GameFoundation.Base
             {
                 buildButton.gameObject.SetActive(!built && ConstructionUnlocked);
                 buildButton.interactable = !built && ConstructionUnlocked && CanAfford();
-                BaseDisabledButtonHint.Set(buildButton, !ConstructionUnlocked ? BaseDisabledButtonHint.Reason.Quest : BaseDisabledButtonHint.Reason.Resources);
+                if (buildButton.TryGetComponent<BaseDisabledButtonHint>(out var hint)) hint.enabled = false;
             }
             if (buildButtonLabel != null)
                 buildButtonLabel.text = Tr(nameKey, fallbackName);

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -20,10 +20,16 @@ public class Porter : MonoBehaviour, IEnemyAI
     private bool _isDeliveringToWarehouse = false;
     private bool _isGoingToResource = false;
     private bool _portalReturnCompleted;
+    private ResourceType assignedCart;
+    public ResourceType CartResource => assignedCart;
+    public bool OwnsCart => assignedCart != null && !_portalReturnCompleted &&
+        (!TryGetComponent<Health>(out var health) || !health.IsDead);
+    public void InitializeCart(ResourceType resource) { assignedCart = resource; _portalReturnCompleted = false; }
+    public void ForfeitCart() { assignedCart = null; _portalReturnCompleted = true; }
 
     public bool TryCompletePortalReturn()
     {
-        if (_portalReturnCompleted) return false;
+        if (!OwnsCart) return false;
         _portalReturnCompleted = true;
         return true;
     }
@@ -113,6 +119,7 @@ public class Porter : MonoBehaviour, IEnemyAI
 
     void Update() 
     {
+        if (_portalReturnCompleted) return;
         if (TryGetComponent<Health>(out var health) && health.IsDead) return;
         if (!_hasResourceInHands && _isGoingToResource && _currentTarget != null &&
             _currentTarget.TryGetComponent<ResourceItem>(out var targetItem) && !targetItem.IsIlluminated)

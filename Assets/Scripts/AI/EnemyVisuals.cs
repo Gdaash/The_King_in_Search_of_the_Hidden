@@ -13,7 +13,7 @@ public class EnemyVisuals : MonoBehaviour
     [SerializeField] private Transform spriteParent; 
     private IEnemyAI _ai;
     private EnemyMovement movement;
-    private float AttackRate => movement != null ? movement.AreaSlowMultiplier : 1f;
+    private float AttackRate => movement != null ? (movement.IsStunned ? 0f : movement.AreaSlowMultiplier) : 1f;
 
     [Header("Прыжки (Движение)")]
     [SerializeField] private float bounceHeight = 0.3f;
@@ -34,7 +34,7 @@ public class EnemyVisuals : MonoBehaviour
 
     void Awake()
     {
-        if (spriteParent != null) _baseScale = spriteParent.localScale;
+        if (spriteParent != null) { _baseScale = spriteParent.localScale; _startPos = spriteParent.localPosition; }
         _ai = GetComponent<IEnemyAI>();
         movement = GetComponent<EnemyMovement>();
         _rb = GetComponent<Rigidbody2D>();
@@ -50,7 +50,7 @@ public class EnemyVisuals : MonoBehaviour
 
     void Update() 
     {
-        if (_rb != null && _rb.linearVelocity.magnitude < 0.1f) _isMoving = false;
+        if (_rb != null) _isMoving = _rb.linearVelocity.sqrMagnitude >= .01f && (movement == null || !movement.IsStunned);
 
         if (_isMoving) 
         {
@@ -63,6 +63,17 @@ public class EnemyVisuals : MonoBehaviour
         }
     }
 
+    public void BeginTravel()
+    {
+        StopAllCoroutines();
+        _ai?.FinishAttack();
+        if (spriteParent != null)
+        {
+            spriteParent.localPosition = _startPos;
+            spriteParent.localScale = new Vector3(Mathf.Abs(_baseScale.x) * Mathf.Sign(spriteParent.localScale.x), _baseScale.y, _baseScale.z);
+        }
+        _isMoving = true;
+    }
     public void SetMoving(bool state) => _isMoving = state;
 
     public void StartJab() 
@@ -88,6 +99,8 @@ public class EnemyVisuals : MonoBehaviour
         Vector3 preparedScale = new(baseScale.x * windupScale.x, baseScale.y * windupScale.y, baseScale.z);
         yield return AnimatePose(_startPos, _startPos - localDir * jabDist * 0.18f, baseScale, preparedScale, windupDuration);
 
+        while (movement != null && movement.IsStunned) yield return null;
+        while (movement != null && movement.IsStunned) yield return null;
         target = _ai.GetTarget();
         if (target == null) { RestorePose(baseScale); _ai.FinishAttack(); yield break; }
         worldDir = (target.position - transform.position).normalized;
@@ -99,15 +112,14 @@ public class EnemyVisuals : MonoBehaviour
         yield return AnimatePose(spriteParent.localPosition, targetLocalPos, spriteParent.localScale,
             new Vector3(baseScale.x * 0.92f, baseScale.y * 1.08f, baseScale.z), 1f / Mathf.Max(0.01f, jabSpeed));
 
+        while (movement != null && movement.IsStunned) yield return null;
+        if (target == null) { RestorePose(baseScale); _ai.FinishAttack(); yield break; }
         if (target.TryGetComponent<Health>(out var h) && GetComponent<Combatant>() is Combatant combat && combat.weapon!=null) combat.Hit(h);
         else if (target.TryGetComponent<Health>(out h) && stats != null) 
         {
-            foreach (var dmgInfo in stats.damageSettings)
-            {
-                h.TakeDamage(dmgInfo.TotalDamage * MilitaryExperience.Multiplier(this), dmgInfo.type, transform);
-            }
+            h.TakeDamage(stats.UnifiedDamage * MilitaryExperience.Multiplier(this),
+                stats.damageSettings.Count > 0 ? stats.damageSettings[0].type : DamageType.Physical, transform);
         }
-        CombatImpactBurst.Spawn(target.position, new Color(1f, 0.82f, 0.48f, 1f));
         float hold = 0;
         while (hold < impactHoldDuration) { hold += Time.deltaTime * AttackRate; yield return null; }
         yield return AnimatePose(spriteParent.localPosition, _startPos, spriteParent.localScale, baseScale,

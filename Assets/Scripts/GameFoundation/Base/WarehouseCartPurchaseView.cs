@@ -62,6 +62,7 @@ namespace GameFoundation.Base
 
         public bool TryBuy()
         {
+            using var save = GameFoundation.Saves.SaveSlotPrefs.Batch();
             GlobalResourceManager manager = GlobalResourceManager.Instance;
             if (manager == null || wood == null || cart == null ||
                 !manager.TrySpendResource(wood, woodCost))

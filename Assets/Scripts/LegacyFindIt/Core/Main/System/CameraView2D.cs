@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class CameraView2D : MonoBehaviour
 {
@@ -100,7 +100,7 @@ public class CameraView2D : MonoBehaviour
         if (Mathf.Abs(horizontal) > 0.1f || Mathf.Abs(vertical) > 0.1f)
         {
             float speedMultiplier = _camera.orthographicSize / zoomMax;
-            Vector3 move = new Vector3(horizontal, vertical, 0) * (keyboardSpeed * speedMultiplier * Time.deltaTime);
+            Vector3 move = new Vector3(horizontal, vertical, 0) * (keyboardSpeed * speedMultiplier * Time.unscaledDeltaTime);
             Vector3 targetPos = _camera.transform.position + move;
 
             _camera.transform.position = infinitePan ? targetPos : ClampCamera(targetPos);

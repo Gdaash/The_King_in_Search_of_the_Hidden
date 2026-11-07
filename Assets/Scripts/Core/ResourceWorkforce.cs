@@ -81,6 +81,19 @@ public sealed class ResourceWorkforce : MonoBehaviour
         for (int i = workers.Count - 1; i >= 0; i--)
             if (workers[i] != null) workers[i].OnTakeDamage(null);
     }
+    public void LoseResidentsToFog()
+    {
+        if (requester == null) requester = GetComponent<ResourceRequester>();
+        if (requester == null) return;
+        while (requester.ResidentHumanCount > 0)
+        {
+            var type = requester.RemoveResidentHuman();
+            GameFoundation.MetaProgression.WorldCasualties.WorkplaceDeath(type);
+            if (type != null) GlobalResourceManager.Instance?.TrySpendResource(type, 1);
+        }
+        foreach (var worker in workers) if (worker != null) Destroy(worker.gameObject);
+        workers.Clear();
+    }
     private void EvacuateAll()
     {
         if (requester == null) return;
@@ -113,7 +126,7 @@ public sealed class ResourceWorker : MonoBehaviour, IEnemyAI
     }
     private void Update()
     {
-        if (job == null || leaving || Time.timeScale <= 0) return;
+        if (job == null || leaving || Time.timeScale <= 0 || WorldHexFog.BlocksWork(job.WorkerPosition)) return;
         float t = Time.time * 2 + phase;
         Vector3 next = origin + (wander ? new Vector3(Mathf.Sin(t * .4f) * .45f, Mathf.Cos(t * .55f) * .18f, 0) : Vector3.zero)
             + Vector3.up * Mathf.Abs(Mathf.Sin(t * 3)) * .035f;

@@ -1,4 +1,4 @@
-using GameFoundation.Saves;
+﻿using GameFoundation.Saves;
 
 namespace GameFoundation.Quests
 {
@@ -138,16 +138,6 @@ namespace GameFoundation.Quests
         public static QuestDefinition Current(QuestCatalog catalog, bool parallel = false)
         {
             if (PlaytestSettings.TutorialsAndQuestsDisabled) return null;
-            if (!parallel && GameFoundation.Base.FirstExpeditionRecovery.Pending)
-            {
-                var recovery = GameFoundation.Base.FirstExpeditionRecovery.Quest;
-                return IsAccepted(recovery) ? recovery : null;
-            }
-            if (!parallel && GameFoundation.Base.ResidentRecovery.Pending)
-            {
-                var recovery = GameFoundation.Base.ResidentRecovery.Quest;
-                return IsAccepted(recovery) ? recovery : null;
-            }
             if (catalog == null || catalog.quests == null) return null;
             foreach (var quest in catalog.quests)
             {

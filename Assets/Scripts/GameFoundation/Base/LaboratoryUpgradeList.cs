@@ -16,12 +16,15 @@ namespace GameFoundation.Base
         public Text totalLabel, detailTitle, detailLevel, detailDescription, detailRequirement, detailStatus, detailCost;
         public Image detailIcon, detailCostIcon;
         public GameObject detailPrice;
+        public Button researchButton;
+        public Text researchLabel;
         private LaboratoryUpgradeRow[] rows;
         private LaboratoryUpgradeRow selected;
         private LocalizationService language;
 
         private void OnEnable()
         {
+            if (researchButton != null) researchButton.onClick.AddListener(ResearchSelected);
             GlobalResourceManager.OnResourceChanged += ResourceChanged;
             GameFoundation.Quests.ContentUnlocks.Changed += Refresh;
             if (stats != null) stats.OnStatsUpdated += Refresh;
@@ -33,6 +36,7 @@ namespace GameFoundation.Base
         }
         private void OnDisable()
         {
+            if (researchButton != null) researchButton.onClick.RemoveListener(ResearchSelected);
             GlobalResourceManager.OnResourceChanged -= ResourceChanged;
             GameFoundation.Quests.ContentUnlocks.Changed -= Refresh;
             if (stats != null) stats.OnStatsUpdated -= Refresh;
@@ -87,7 +91,7 @@ namespace GameFoundation.Base
             if (row.Entry == null) return;
             selected = row;
             foreach (var item in rows) item.SetSelected(item == row);
-            if (portalProgression != null) { SelectPortal(row); return; }
+            if (portalProgression != null) { SelectPortal(row); RefreshResearch(row); return; }
             var entry = row.Entry;
             var levels = stats.UpgradeTable.entries.Where(e => e.GroupId == entry.GroupId && e.IsAvailable).ToArray();
             detailTitle.text = Title(entry);
@@ -102,9 +106,25 @@ namespace GameFoundation.Base
             detailCost.text = entry.cost.ToString();
             detailStatus.text = row.IsComplete ? Tr("laboratory.maximum", GameFoundation.Localization.GameText.Get("Все уровни этого улучшения изучены")) :
                 !stats.IsUpgradeUnlocked(entry) ? Tr("laboratory.unlock_hint", GameFoundation.Localization.GameText.Get("Изучайте другие улучшения, чтобы открыть этот уровень")) :
-                stats.CanPurchaseUpgrade(entry) ? Tr("laboratory.buy_hint", GameFoundation.Localization.GameText.Get("Нажмите на улучшение слева, чтобы изучить")) :
+                stats.CanPurchaseUpgrade(entry) ? Tr("laboratory.buy_hint", GameFoundation.Localization.GameText.Get("Нажмите кнопку исследования, чтобы изучить улучшение")) :
                 Tr("laboratory.no_resources", GameFoundation.Localization.GameText.Get("Не хватает ресурсов"));
             detailStatus.color = row.statusLabel.color;
+            RefreshResearch(row);
+        }
+        private void ResearchSelected()
+        {
+            if (selected != null && selected.CanPurchase) Purchase(selected.Entry.id);
+        }
+        private void RefreshResearch(LaboratoryUpgradeRow row)
+        {
+            if (researchButton == null) return;
+            researchLabel.text = Tr("laboratory.research", "Исследовать");
+            researchButton.interactable = row.CanPurchase;
+            BaseDisabledButtonHint.Set(researchButton, row.PurchaseBlock);
+            detailCost.color = row.costLabel.color;
+            detailCostIcon.gameObject.SetActive(!row.IsComplete);
+            detailCost.gameObject.SetActive(!row.IsComplete);
+            researchButton.GetComponent<GameFoundation.UI.PriceButtonLayout>()?.Refresh();
         }
         public bool Purchase(string id)
         {

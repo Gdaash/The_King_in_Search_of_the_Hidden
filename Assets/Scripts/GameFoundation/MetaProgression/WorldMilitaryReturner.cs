@@ -37,8 +37,8 @@ namespace GameFoundation.MetaProgression
 
             meleeVisuals = GetComponent<EnemyVisuals>();
             rangedVisuals = GetComponent<EnemyVisuals_Ranged>();
-            if (meleeVisuals != null) meleeVisuals.SetMoving(true);
-            if (rangedVisuals != null) rangedVisuals.SetMoving(true);
+            if (meleeVisuals != null) meleeVisuals.BeginTravel();
+            if (rangedVisuals != null) rangedVisuals.BeginTravel();
         }
 
         private void FixedUpdate()

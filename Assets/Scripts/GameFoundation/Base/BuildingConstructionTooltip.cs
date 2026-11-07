@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace GameFoundation.Base
@@ -26,10 +26,31 @@ namespace GameFoundation.Base
 
         private CanvasGroup group;
         private RectTransform rect;
+        private ResourceType firstResource, secondResource;
+        private int firstCost, secondCost;
+        private GameFoundation.UI.ButtonVisualTheme theme;
+        private void OnEnable() => GlobalResourceManager.OnResourceChanged += OnResourceChanged;
+        private void OnDisable() => GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
+        private void OnResourceChanged(ResourceType resource, int amount)
+        {
+            if (group != null && group.alpha > 0 && (resource == firstResource || resource == secondResource)) RefreshPriceColors();
+        }
+        private void RefreshPriceColors()
+        {
+            void Tint(Text label, ResourceType resource, int cost)
+            {
+                if (label == null || resource == null || cost <= 0) return;
+                bool enough = (GlobalResourceManager.Instance != null ? GlobalResourceManager.Instance.GetResourceAmount(resource) : 0) >= cost;
+                label.color = enough ? (theme != null ? theme.positiveLabelColor : new Color(.38f,.9f,.48f))
+                    : (theme != null ? theme.negativeLabelColor : new Color(1f,.38f,.38f));
+            }
+            Tint(woodAmount,firstResource,firstCost); Tint(stoneAmount,secondResource,secondCost);
+        }
 
         private void Awake()
         {
             Instance = this;
+            theme = Resources.Load<GameFoundation.UI.ButtonVisualTheme>("UI/ButtonVisualTheme");
             group = GetComponent<CanvasGroup>();
             rect = transform as RectTransform;
             Hide();
@@ -49,8 +70,10 @@ namespace GameFoundation.Base
             bool second = stone != null && stoneCost > 0;
             if (priceLabel != null) priceLabel.text = first || second ? price
                 : GameFoundation.Localization.LocalizationService.Instance?.Language == "en" ? "Free" : GameFoundation.Localization.GameText.Get("Бесплатно");
+            firstResource = wood; firstCost = woodCost; secondResource = stone; secondCost = stoneCost;
             SetResource(woodIcon, woodAmount, wood, woodCost);
             SetResource(stoneIcon, stoneAmount, stone, stoneCost);
+            RefreshPriceColors();
             CenterPrice(first, second);
             FitContent(first, second);
             group.alpha = 1f;

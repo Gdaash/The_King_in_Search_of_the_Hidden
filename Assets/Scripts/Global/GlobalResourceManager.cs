@@ -66,6 +66,7 @@ public class GlobalResourceManager : MonoBehaviour
 
     public void SetResourceAmount(ResourceType type, int amount)
     {
+        using var save = PlayerPrefs.Batch();
         if (type == null) return;
         amount = Mathf.Max(0, amount);
         if (Application.isPlaying && Instance == this)
@@ -118,6 +119,10 @@ public class GlobalResourceManager : MonoBehaviour
     private void InitializeResources()
     {
         _resourceAmounts.Clear();
+        AddOptionalResource("Engineer");
+        AddOptionalResource("Chicken");
+        AddOptionalResource("Hide");
+        AddOptionalResource("Leather");
         if (availableResources != null)
         {
             foreach (var res in availableResources)
@@ -130,8 +135,17 @@ public class GlobalResourceManager : MonoBehaviour
         }
     }
 
+    private void AddOptionalResource(string id)
+    {
+        var resource = ResourceCatalog.Find(id);
+        if (resource == null) return;
+        availableResources ??= new List<ResourceType>();
+        if (!availableResources.Contains(resource)) availableResources.Add(resource);
+    }
+
     public void AddResource(ResourceType type, int amount)
     {
+        using var save = PlayerPrefs.Batch();
         if (type == null) return;
         if (!_resourceAmounts.ContainsKey(type)) _resourceAmounts[type] = 0;
 
@@ -144,6 +158,7 @@ public class GlobalResourceManager : MonoBehaviour
 
     public bool TrySpendResource(ResourceType type, int cost)
     {
+        using var save = PlayerPrefs.Batch();
         if (type == null) return false;
         if (!_resourceAmounts.ContainsKey(type)) _resourceAmounts[type] = 0;
 
@@ -174,14 +189,13 @@ public class GlobalResourceManager : MonoBehaviour
         if (availableA < requiredA || (inputA != inputB && availableB < inputBAmount))
             return false;
 
+        using var save = PlayerPrefs.Batch();
         // Record the boundary before mutating balances, as AddResource and TrySpendResource do.
         DayResourceLedger.RecordResourceChange(inputA, -inputAAmount);
         DayResourceLedger.RecordResourceChange(inputB, -inputBAmount);
         DayResourceLedger.RecordResourceChange(output, outputAmount);
-        SetResourceAmountWithoutSaving(inputA, availableA - inputAAmount);
-        if (inputA == inputB)
-            SetResourceAmountWithoutSaving(inputA, availableA - inputAAmount - inputBAmount);
-        else
+        SetResourceAmountWithoutSaving(inputA, availableA - requiredA);
+        if (inputA != inputB)
             SetResourceAmountWithoutSaving(inputB, availableB - inputBAmount);
         SetResourceAmountWithoutSaving(output, GetResourceAmount(output) + outputAmount);
 

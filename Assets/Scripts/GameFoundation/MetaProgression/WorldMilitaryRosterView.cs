@@ -30,6 +30,15 @@ namespace GameFoundation.MetaProgression
             Sync();
         }
 
+        public void RebuildRoster()
+        {
+            if (deployment == null || content == null || itemTemplate == null) return;
+            foreach (var entry in entries.Values)
+                if (entry != null) { entry.gameObject.SetActive(false); Destroy(entry.gameObject); }
+            entries.Clear();
+            Sync();
+        }
+
         private void Sync()
         {
             IReadOnlyList<GameObject> units = deployment.ActiveUnits;

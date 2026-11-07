@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace GameFoundation.Base
 {
     /// <summary>One authored row represents all levels of a scientific upgrade.</summary>
-    public sealed class LaboratoryUpgradeRow : MonoBehaviour, IPointerEnterHandler
+    public sealed class LaboratoryUpgradeRow : MonoBehaviour
     {
         public string groupId;
         public Button purchaseButton;
@@ -20,6 +20,8 @@ namespace GameFoundation.Base
         public Color purchasedColor = new(.68f, .58f, .36f);
         public ScientificUpgradeTable.Entry Entry { get; private set; }
         public bool IsComplete { get; private set; }
+        public bool CanPurchase { get; private set; }
+        public BaseDisabledButtonHint.Reason PurchaseBlock { get; private set; }
         private LaboratoryUpgradeList owner;
         private bool pipsResolved;
 
@@ -45,7 +47,7 @@ namespace GameFoundation.Base
             bool unlocked = portal != null ? portal.IsUnlocked(upgrade) : stats.IsUpgradeUnlocked(entry);
             bool affordable = portal != null ? portal.CanPurchase(upgrade) : stats.CanPurchaseUpgrade(entry);
             Color tint = IsComplete ? purchasedColor : !unlocked ? lockedColor : affordable ? affordableColor : unaffordableColor;
-            border.color = tint;
+            border.color = Color.white;
             lockIcon.color = unlocked || IsComplete ? new Color(.85f, .77f, .55f) : new Color(.64f, .59f, .68f);
             requirementLabel.text = (portal != null ? bought : entry.requiredPurchases).ToString();
             if (portal != null) ResourceIconSizing.Apply(lockIcon, upgrade.icon);
@@ -60,24 +62,26 @@ namespace GameFoundation.Base
             ResourceIconSizing.Apply(costIcon, portal != null ? portal.Balance.levelPointIcon : entry.costResource != null ? entry.costResource.resourceIcon : null);
             costIcon.enabled = costIcon.sprite != null;
             costLabel.text = entry.cost.ToString();
-            costLabel.color = IsComplete ? new Color(.64f, .59f, .68f) : new Color(.94f, .91f, .82f);
-            // A locked row still receives hover for its explanation.
-            purchaseButton.interactable = !IsComplete && unlocked && affordable;
-            BaseDisabledButtonHint.Set(purchaseButton, IsComplete ? BaseDisabledButtonHint.Reason.Maximum : !unlocked ? BaseDisabledButtonHint.Reason.Research : BaseDisabledButtonHint.Reason.Resources);
+            bool sufficient = portal != null ? portal.LevelPoints > 0 : entry.costResource == null || GlobalResourceManager.Instance != null && GlobalResourceManager.Instance.GetResourceAmount(entry.costResource) >= entry.cost;
+            costLabel.color = sufficient ? new Color(.55f, .85f, .35f) : new Color(1f, .3f, .35f);
+            // Selection is always available; spending is exclusively the detail-panel action.
+            CanPurchase = !IsComplete && unlocked && affordable;
+            PurchaseBlock = IsComplete ? BaseDisabledButtonHint.Reason.Maximum : !unlocked ? BaseDisabledButtonHint.Reason.Research : BaseDisabledButtonHint.Reason.Resources;
+            purchaseButton.interactable = true;
+            if (purchaseButton.TryGetComponent<BaseDisabledButtonHint>(out var hint)) hint.enabled = false;
             var actionColor = purchaseButton.GetComponent<GameFoundation.UI.ActionButtonLabelColor>();
-            if (actionColor != null) actionColor.ActionAvailable = !IsComplete && affordable && unlocked;
+            if (actionColor != null) actionColor.enabled = false;
         }
         public void SetSelected(bool selected)
         {
-            selection.enabled = selected;
+            selection.enabled = false;
             surface.color = selected ? new Color(.20f, .16f, .24f) : new Color(.16f, .13f, .19f);
         }
-        public void OnPointerEnter(PointerEventData eventData) => owner?.Select(this);
         private void Purchase()
         {
             if (owner == null || Entry == null) return;
             owner.Select(this);
-            owner.Purchase(Entry.id);
+
         }
     }
 }

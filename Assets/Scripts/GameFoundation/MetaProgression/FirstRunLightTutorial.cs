@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using GameFoundation.Localization;
 using GameFoundation.Quests;
 using GameFoundation.Saves;
@@ -19,8 +19,10 @@ namespace GameFoundation.MetaProgression
         [SerializeField, Min(0)] private float lightIntroDelay = .6f;
         public static bool BlocksInput { get; private set; }
         public static bool AllowsLightDrag { get; private set; }
+        public static bool AllowsLightActivation => active != null && active.step == Step.Activate;
+        public static bool AllowsMilitaryToggle { get; private set; }
         private static FirstRunLightTutorial active;
-        enum Step { Inactive, Activate, Scout, Opening, Drag, Workers, Supplies, EmergencyReturn, Complete, Mining, Carriers, Delivery, CrystalIntro, FoodWarning, Activating }
+        enum Step { Inactive, Activate, Scout, Opening, Drag, Workers, Supplies, EmergencyReturn, Complete, Mining, Carriers, Delivery, CrystalIntro, FoodWarning, Activating, Military, MilitaryIntro, SecondLight }
         private Step step;
         public static bool WaitsForLightExplanation => active != null &&
             (active.step == Step.Activate || active.step == Step.Activating || active.step == Step.Scout);
@@ -40,7 +42,7 @@ namespace GameFoundation.MetaProgression
         private System.Action crystalIntroCompleted;
         private System.Action warningClosed;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetState() { active = null; BlocksInput = false; AllowsLightDrag = false; }
+        private static void ResetState() { active = null; BlocksInput = false; AllowsLightDrag = false; AllowsMilitaryToggle = false; }
         private void Awake()
         {
             if (window == null || instruction == null || lights == null || nextButton == null || continueHint == null)
@@ -52,11 +54,12 @@ namespace GameFoundation.MetaProgression
             window.SetActive(false); continueHint.SetActive(false); nextButton.gameObject.SetActive(false);
             var hold = nextButton.GetComponent<DialogueHoldButton>();
             if (hold == null) hold = nextButton.gameObject.AddComponent<DialogueHoldButton>();
-            hold.Configure(()=>step==Step.Scout || step==Step.Workers || step==Step.Carriers || step==Step.Supplies || step==Step.CrystalIntro || step==Step.FoodWarning, OnNext);
+            hold.Configure(()=>step==Step.Scout || step==Step.Workers || step==Step.Carriers || step==Step.Supplies || step==Step.SecondLight || step==Step.CrystalIntro || step==Step.FoodWarning || step==Step.MilitaryIntro, OnNext);
         }
         private void OnEnable()
         {
             if (!enabled) return;
+            instruction.OnPreRenderText += MirrorMilitaryMouseIcon;
             lights.LightsTurnedOn += OnActivated; lights.LightHexOpened += OnHexOpened; lights.LightDraggedToHex += OnLightMoved;
             ResourceRequester.ResourceProduced += OnResourceProduced;
             Warehouse.ResourceDeposited += OnResourceDeposited;
@@ -79,8 +82,47 @@ namespace GameFoundation.MetaProgression
                 DayCycleService.Instance==null||DayCycleService.Instance.Day<2||SaveSlotPrefs.GetInt(CrystalIntroKey,0)!=0)return false;
             crystalIntroCompleted=onComplete;
             LockInput();AllowsLightDrag=false;step=Step.CrystalIntro;Pause();
+            if (PortalTowerProgression.Instance?.UsesEnergyLoadout == true)
+            {
+                Show(PortalArsenalPopup.T("energy.tutorial", "Арсенал находится в магической башне на базе. Назначь оружие в слоты перед вылазкой, а в бою переключай его клавишами 2–5. Клавиша 1 выключает оружие. Кристаллы дают энергию для выстрелов и дополнительных рабочих лучей. Если энергии станет меньше отметки, дополнительный луч погаснет."));
+                ShowNext(); return true;
+            }
+            if (PortalTowerProgression.Instance?.UsesArsenal == true)
+            {
+                Show(PortalArsenalPopup.T("tutorial", "Башня уже вооружена магическими снарядами. Нажми на неё, чтобы открыть арсенал: там можно изучить оружие и условия его открытия, а затем свободно переключаться между открытыми видами. Кристаллы по-прежнему повышают уровень башни и дают улучшения и рабочие лучи."));
+                ShowNext(); return true;
+            }
             Show("А теперь маленький секрет: башню можно вооружить. Я называю это Кристальной эгидой. Кристаллы встречаются на открытых участках Тёмных земель; носильщики привезут их к порталу, и башня станет сильнее. Для начала выбери ей оружие. Соседям с клыками такой поворот вряд ли понравится!");
             ShowNext();return true;
+        }
+        public bool TryExplainMilitary()
+        {
+            if (!isActiveAndEnabled || BlocksInput || (PlaytestSettings.TutorialsAndQuestsDisabled && !PlaytestSettings.ForceMilitaryLightTutorial)) return false;
+            LockInput(); Pause(); step = Step.MilitaryIntro; AllowsMilitaryToggle = false;
+            const string key = "world.military.intro";
+            string text = LocalizationService.Instance?.Get(key);
+            Show(string.IsNullOrEmpty(text) || text == key ? "Открытый гекс в луче света можно перевести в военный режим. Вместо работников и носильщиков его займут воины: лучники встанут в центре, а мечники прикроют их снаружи. Если военных гексов несколько, войска разделятся между ними. Повторное переключение вернёт гекс к добыче и сбору." : text);
+            ShowNext();
+            return true;
+        }
+        public void CompleteMilitaryExplanation()
+        {
+            if (step != Step.Military) return;
+            SaveSlotPrefs.SetInt(WorldFlashlightAvailability.MilitaryTutorialKey, 1); SaveSlotPrefs.Save();
+            step = Step.Complete; window.SetActive(false); Unlock(); ResumeTime();
+        }
+        private void MirrorMilitaryMouseIcon(TMP_TextInfo textInfo)
+        {
+            if (step != Step.Military) return;
+            for (int i = 0; i < textInfo.characterCount; i++)
+            {
+                var character = textInfo.characterInfo[i];
+                if (character.elementType != TMP_TextElementType.Sprite) continue;
+                var uv = textInfo.meshInfo[character.materialReferenceIndex].uvs0;
+                int v = character.vertexIndex;
+                var lower = uv[v]; uv[v] = uv[v + 3]; uv[v + 3] = lower;
+                var upper = uv[v + 1]; uv[v + 1] = uv[v + 2]; uv[v + 2] = upper;
+            }
         }
         private void LockInput()
         {
@@ -110,6 +152,14 @@ namespace GameFoundation.MetaProgression
             if (!isActiveAndEnabled || BlocksInput || PortalTowerProgression.IsChoosingUpgrade) return false;
             warningClosed = closed; LockInput(); AllowsLightDrag = false; step = Step.FoodWarning; Pause();
             Show(text); ShowNext(); return true;
+        }
+        public bool TryExplainReturnOptions()
+        {
+            if (PlaytestSettings.TutorialsAndQuestsDisabled) return false;
+            const string key = "world.tutorial.return_options";
+            string text = LocalizationService.Instance?.Get(key);
+            return TryShowCartRecovery(string.IsNullOrEmpty(text) || text == key
+                ? "Монстры услышали наших рабочих! Теперь ты можешь вернуться домой или попробовать добыть ещё немного ресурсов. Только следи за людьми и башней – не стоит рисковать всем ради лишней охапки дров." : text, null);
         }
         public bool TryWarnAboutFood(bool lastWarning)
         {
@@ -161,7 +211,11 @@ namespace GameFoundation.MetaProgression
         private void ShowNext()
         {
             continueHint.SetActive(false);
-            nextButton.GetComponentInChildren<TMP_Text>(true).text=GameText.Get("Далее");
+            bool closes = step == Step.SecondLight || step == Step.FoodWarning || step == Step.CrystalIntro;
+            var label = nextButton.GetComponentInChildren<TMP_Text>(true);
+            label.text=GameText.Get(closes ? "Закрыть" : "Далее");
+            var theme = Resources.Load<GameFoundation.UI.ButtonVisualTheme>("UI/ButtonVisualTheme");
+            if (theme != null) label.color = theme.neutralLabelColor;
             nextButton.gameObject.SetActive(true);
         }
         private void OnActivated()
@@ -247,6 +301,14 @@ namespace GameFoundation.MetaProgression
         }
         private void OnNext()
         {
+            if (step == Step.MilitaryIntro)
+            {
+                step = Step.Military; AllowsMilitaryToggle = true;
+                const string key = "world.military.practice";
+                string text = LocalizationService.Instance?.Get(key);
+                Show(string.IsNullOrEmpty(text) || text == key ? "А теперь нажми <size=64><sprite=0></size> на отпущенный луч света на открытом гексе. Рамка станет синей, а воины займут позицию!" : text);
+                return;
+            }
             if(step==Step.FoodWarning)
             {
                 var closed=warningClosed;warningClosed=null;
@@ -274,13 +336,60 @@ namespace GameFoundation.MetaProgression
             }
             if(step==Step.Supplies)
             {
-                step=Step.Complete;window.SetActive(false);SaveSlotPrefs.SetInt(CompletedKey,1);SaveSlotPrefs.Save();Unlock();ResumeTime();return;
+                step=Step.SecondLight;
+                Show(LocalizationService.Instance.Get("world.tutorial.second_light")); ShowNext(); return;
             }
+            if (step == Step.SecondLight)
+            {
+                step=Step.Complete;window.SetActive(false);SaveSlotPrefs.SetInt(CompletedKey,1);SaveSlotPrefs.Save();Unlock();ResumeTime();
+                if (PortalTowerProgression.Instance == null || !PortalTowerProgression.Instance.ShowTutorialLightReward(ShowCameraHint)) ShowCameraHint(); return;
+            }
+        }
+        private void ShowCameraHint()
+        {
+            StartCoroutine(CameraHint());
+        }
+        private System.Collections.IEnumerator CameraHint()
+        {
+            var canvas = window.GetComponentInParent<Canvas>().rootCanvas;
+            var root = new GameObject("Camera movement hint", typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
+            root.transform.SetParent(canvas.transform, false);
+            var rect = (RectTransform)root.transform;
+            rect.anchorMin = rect.anchorMax = new Vector2(.5f, 0); rect.pivot = new Vector2(.5f, 0); rect.anchoredPosition = new Vector2(0, 96);
+            var background = root.GetComponent<Image>();
+            var authored = continueHint.GetComponent<Image>();
+            background.sprite = authored != null ? authored.sprite : null;
+            background.type = Image.Type.Sliced; background.raycastTarget = false;
+            background.color = background.sprite != null ? Color.white : new Color(.12f,.09f,.15f,.97f);
+            var labelRoot = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));labelRoot.transform.SetParent(rect, false);
+            var label = labelRoot.GetComponent<TextMeshProUGUI>();label.font = instruction.font;label.fontSize = 24;label.alignment = TextAlignmentOptions.Center;label.color = new Color(.95f,.91f,.76f);label.raycastTarget = false;
+            var lr = label.rectTransform;lr.anchorMin = Vector2.zero;lr.anchorMax = Vector2.one;lr.offsetMin = new Vector2(20,8);lr.offsetMax = new Vector2(-20,-8);
+            var group = root.GetComponent<CanvasGroup>();group.blocksRaycasts = false;group.interactable = false;
+            float started = Time.unscaledTime;float dismissed = -1;string previousLanguage = null;
+            while (root != null && lights != null && !lights.Escaped)
+            {
+                string language = LocalizationService.Instance?.Language;
+                if (previousLanguage != language || string.IsNullOrEmpty(label.text))
+                {
+                    previousLanguage = language;
+                    const string key = "world.tutorial.camera_hint";string format = LocalizationService.Instance?.Get(key);
+                    label.text = string.Format(string.IsNullOrEmpty(format) || format == key ? "Перемещать камеру: {0}" : format, "<b>WASD</b>");
+                    rect.sizeDelta = new Vector2(Mathf.Ceil(label.GetPreferredValues(label.text).x) + 48, 56);
+                }
+                bool blocked = BlocksInput || PortalTowerProgression.IsChoosingUpgrade;
+                if (!blocked && Time.unscaledTime - started > 3 && dismissed < 0 &&
+                    (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D))) dismissed = Time.unscaledTime;
+                float alpha = dismissed < 0 ? 1 : 1 - (Time.unscaledTime - dismissed) / .4f;
+                group.alpha = blocked ? 0 : Mathf.Clamp01(alpha);
+                if (alpha <= 0) break;
+                yield return null;
+            }
+            if (root != null) Destroy(root);
         }
         private void Unlock(bool preserveGroups=false)
         {
             if(active!=this)return;
-            active=null;BlocksInput=false;AllowsLightDrag=false;
+            active=null;BlocksInput=false;AllowsLightDrag=false;AllowsMilitaryToggle=false;
             if(autoRepeatOverridden&&lights!=null){autoRepeatOverridden=false;lights.SetAutoRepeat(previousAutoRepeat);}
             foreach(var blocker in blockers)
             {
@@ -293,6 +402,7 @@ namespace GameFoundation.MetaProgression
         }
         private void OnDisable()
         {
+            if (instruction != null) instruction.OnPreRenderText -= MirrorMilitaryMouseIcon;
             if(lights!=null){lights.LightsTurnedOn-=OnActivated;lights.LightHexOpened-=OnHexOpened;lights.LightDraggedToHex-=OnLightMoved;}
             ResourceRequester.ResourceProduced-=OnResourceProduced;
             Warehouse.ResourceDeposited-=OnResourceDeposited;

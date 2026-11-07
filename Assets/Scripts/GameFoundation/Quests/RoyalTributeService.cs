@@ -1,6 +1,8 @@
-using GameFoundation.Saves;
+﻿using GameFoundation.Saves;
 using GameFoundation.Localization;
 using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace GameFoundation.Quests
 {
@@ -12,6 +14,22 @@ namespace GameFoundation.Quests
         public const string ResidentDebtKey = "foundation.royal.residentDebt";
         public static int ResidentDebt => Mathf.Max(0, SaveSlotPrefs.GetInt(ResidentDebtKey, 0));
         public const string ResidentDebtTemplate = "И ещё {0} единиц магической руды за предоставленных вам жителей.";
+        public const string ChangesKey = "foundation.royal.noticeChanges";
+        [System.Serializable] private sealed class Delta { public string id; public int amount; }
+        [System.Serializable] private sealed class Changes { public List<Delta> items = new(); }
+        public static List<QuestDefinition.ResourceReward> NoticeChanges()
+        {
+            string json = SaveSlotPrefs.GetString(ChangesKey, "");
+            var result = new List<QuestDefinition.ResourceReward>(); if (string.IsNullOrEmpty(json)) return result;
+            var data = JsonUtility.FromJson<Changes>(json);
+            var types = Resources.LoadAll<ResourceType>("ResourceTypes");
+            foreach(var delta in data.items)
+            {
+                var resource = types.FirstOrDefault(r=>r.Id==delta.id);
+                if(resource!=null&&delta.amount!=0)result.Add(new QuestDefinition.ResourceReward{resource=resource,amount=delta.amount});
+            }
+            return result;
+        }
         public const string NoticeKey = "foundation.royal.notice";
         public static int CartDebt => Mathf.Max(0, SaveSlotPrefs.GetInt(CartDebtKey, 0));
         public static bool IsRoyal(QuestDefinition quest) => quest != null && quest.id == QuestId;
@@ -35,6 +53,7 @@ namespace GameFoundation.Quests
                     Restart(quest, today + 30); QuestProgress.NotifyChanged(); return;
                 }
                 if (QuestProgress.DeadlineDay(quest) > today) continue;
+                var before = new Dictionary<ResourceType,int>(resources.GetAllResourcesData());
                 bool paid = quest.HasRequiredStock(resources.GetResourceAmount);
                 int due = quest.requirements.Count > 0 ? Required(quest, quest.requirements[0]) : 30;
                 using (SaveSlotPrefs.Batch())
@@ -56,6 +75,14 @@ namespace GameFoundation.Quests
                                 if (resource != null && resource != quest.penaltyResource && !quest.protectedResources.Contains(resource)) resources.SetResourceAmount(resource, 0);
                         if (quest.penaltyResource != null && quest.penaltyAmount > 0) resources.AddResource(quest.penaltyResource, -quest.penaltyAmount);
                     }
+                    var changes = new Changes();
+                    foreach(var resource in before.Keys.Union(resources.GetAllResourcesData().Keys))
+                    {
+                        before.TryGetValue(resource,out int previous);
+                        int delta = resources.GetResourceAmount(resource)-previous;
+                        if(delta!=0)changes.items.Add(new Delta{id=resource.Id,amount=delta});
+                    }
+                    SaveSlotPrefs.SetString(ChangesKey,JsonUtility.ToJson(changes));
                     SaveSlotPrefs.SetString(NoticeKey, paid ? "paid:" + due : "failed:" + due);
                     SaveSlotPrefs.Save();
                 }

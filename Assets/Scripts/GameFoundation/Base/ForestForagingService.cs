@@ -9,7 +9,7 @@ namespace GameFoundation.Base
         private const string Key = "foundation.forestForaging";
         [Serializable] public sealed class Result
         {
-            public int day, sent, survived, dead, food, humanDeaths, swordsmanDeaths, archerDeaths;
+            public int day, sent, survived, dead, food, humanDeaths, swordsmanDeaths, archerDeaths, spearmanDeaths;
             public long readyTicks;
             public bool completed;
         }
@@ -47,14 +47,15 @@ namespace GameFoundation.Base
             var forecast = DayCycleService.Instance.GetFoodForecast();
             var result = new Result { day = DayCycleService.Instance.Day, sent = forecast.Starving,
                 readyTicks = DateTime.UtcNow.AddSeconds(Mathf.Max(.1f, settings.duration)).Ticks };
-            int humans = forecast.Humans, swordsmen = forecast.Swordsmen, archers = forecast.Archers;
+            int humans = forecast.Humans, swordsmen = forecast.Swordsmen, archers = forecast.Archers, spearmen = forecast.Spearmen;
             for (int i = 0; i < result.sent; i++)
             {
-                int group = UnityEngine.Random.Range(0, humans + swordsmen + archers);
+                int group = UnityEngine.Random.Range(0, humans + swordsmen + archers + spearmen);
                 int type;
                 if (group < humans) { humans--; type = 0; }
                 else if (group < humans + swordsmen) { swordsmen--; type = 1; }
-                else { archers--; type = 2; }
+                else if (group < humans + swordsmen + archers) { archers--; type = 2; }
+                else { spearmen--; type = 3; }
                 if (UnityEngine.Random.value < settings.survivalChance)
                 {
                     result.survived++;
@@ -66,7 +67,8 @@ namespace GameFoundation.Base
                     result.dead++;
                     if (type == 0) result.humanDeaths++;
                     else if (type == 1) result.swordsmanDeaths++;
-                    else result.archerDeaths++;
+                    else if (type == 2) result.archerDeaths++;
+                    else result.spearmanDeaths++;
                 }
             }
             using var batch = SaveSlotPrefs.Batch();
@@ -90,8 +92,11 @@ namespace GameFoundation.Base
             if (result.humanDeaths > 0) resources.TrySpendResource(settings.humans, result.humanDeaths);
             if (result.swordsmanDeaths > 0) resources.TrySpendResource(settings.swordsmen, result.swordsmanDeaths);
             if (result.archerDeaths > 0) resources.TrySpendResource(settings.archers, result.archerDeaths);
+            var spearman = ResourceCatalog.Find("Spearman");
+            if (result.spearmanDeaths > 0 && spearman != null) resources.TrySpendResource(spearman, result.spearmanDeaths);
             for (int i = 0; i < result.swordsmanDeaths; i++) MilitaryExperienceService.RemoveStored(settings.swordsmen);
             for (int i = 0; i < result.archerDeaths; i++) MilitaryExperienceService.RemoveStored(settings.archers);
+            for (int i = 0; i < result.spearmanDeaths; i++) MilitaryExperienceService.RemoveStored(spearman);
             if (result.food > 0) resources.AddResource(settings.food, result.food);
             SaveSlotPrefs.Save();
             ForagingInputLock.SetLocked(false);

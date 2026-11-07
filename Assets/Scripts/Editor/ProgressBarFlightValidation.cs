@@ -20,9 +20,11 @@ public static class ProgressBarFlightValidation
     static void DeliverEnemyCrystal(PortalTowerProgression tower)
     {
         var before = new HashSet<ResourceItem>(Object.FindObjectsByType<ResourceItem>(FindObjectsSortMode.None));
-        tower.AwardEnemyExperience(Vector3.zero);
+        // This checks delivery visuals, independently of randomized enemy loot and its expedition cap.
+        typeof(PortalTowerProgression).GetMethod("DropExperienceCrystals", BindingFlags.NonPublic | BindingFlags.Instance)
+            .Invoke(tower, new object[] { 1, Vector3.zero, false });
         var drops = Object.FindObjectsByType<ResourceItem>(FindObjectsSortMode.None).Where(item => !before.Contains(item)).ToArray();
-        Check(drops.Length == tower.Balance.experiencePerEnemy, "Enemy XP drops as transportable resources");
+        Check(drops.Length == 1, "Crystal drops as a transportable resource");
         foreach (var drop in drops)
         {
             var type = drop.type;

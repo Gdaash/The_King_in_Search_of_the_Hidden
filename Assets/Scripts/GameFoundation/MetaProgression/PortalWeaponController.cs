@@ -34,6 +34,15 @@ namespace GameFoundation.MetaProgression
         public static bool OwnsPointer => false;
         public Vector2 BeamAim => aim;
         public float BeamRadius => Radius(PortalTowerBalance.Weapon.Beam);
+        public void WeaponSelectionChanged()
+        {
+            // Retain individual cooldowns. Switching cannot reset an attack timer.
+            StopAllCoroutines(); ClearFrostSeals(); ClearLightTrails(); ClearDefenseField(); HideHealingBeam();
+            if (beam != null) beam.transform.root.gameObject.SetActive(false);
+            foreach (var effect in effects) if (effect != null) Destroy(effect);
+            effects.Clear(); lightTrails.Clear();
+            // Already launched projectiles finish their flight; no new old-weapon shots spawn.
+        }
         private void Awake() { Instance=this; }
         private void Start()
         {
@@ -44,14 +53,16 @@ namespace GameFoundation.MetaProgression
         private PortalTowerBalance.WeaponDefinition Def(PortalTowerBalance.Weapon w) => progression.Balance.FindWeapon(w);
         private float Range(PortalTowerBalance.Weapon w) => Mathf.Max(0,Def(w).range+(tower.GetStats()?.bonusAttackRange??0)+progression.AddedRange(w));
         private float Radius(PortalTowerBalance.Weapon w) => Def(w).radius*progression.Multiplier(w,PortalTowerBalance.Effect.Area);
-        private float Damage(PortalTowerBalance.Weapon w) => (Def(w).damage+(tower.GetStats()?.damageSettings.Find(d=>d.type==Def(w).damageType)?.bonusDamage??0))*progression.Multiplier(w,PortalTowerBalance.Effect.Damage);
+        private float Damage(PortalTowerBalance.Weapon w) => (Def(w).damage+(tower.GetStats()?.UnifiedBonusDamage??0))*progression.WeaponDamageMultiplier(w);
         private float Cooldown(PortalTowerBalance.Weapon w) => progression.AttackInterval(w,tower.GetStats()?.bonusAttackSpeed??0);
         private Transform Source => tower.GetComponent<TowerVisuals>()?.ShootPoint ?? tower.transform;
         private void Update()
         {
-            if(tower==null || !progression.CrystalTechnologyAvailable || progression.ExpeditionEnded){if(beam!=null)beam.transform.root.gameObject.SetActive(false);ClearLightTrails();ClearFrostSeals();ClearPortalProjectiles();return;}
+            if(tower==null || !progression.WeaponsAvailable || progression.ExpeditionEnded){if(beam!=null)beam.transform.root.gameObject.SetActive(false);ClearLightTrails();ClearFrostSeals();ClearPortalProjectiles();ClearDefenseField(); HideHealingBeam();return;}
             if(Time.timeScale<=0){return;}
+            if(TowerDarkness.Blocks(tower.transform)){if(beam!=null)beam.transform.root.gameObject.SetActive(false);ClearLightTrails();ClearDefenseField(); HideHealingBeam();return;}
             if(Time.time>=cacheTime){CombatTargetRegistry.CollectHealth("Enemy1",enemies);RefreshEnemyHeights();cacheTime=Time.time+.15f;}
+            UpdateSupportWeapon();
             UpdateFrostSeals();
             UpdatePortalProjectiles();
             if(progression.HasWeapon(PortalTowerBalance.Weapon.Beam)) UpdateBeam();
@@ -64,7 +75,7 @@ namespace GameFoundation.MetaProgression
             if(progression.HasWeapon(PortalTowerBalance.Weapon.Lightning) && Time.time>=lightningTime)
                 LightningVolley();
         }
-        private bool Enemy(Health h) => h!=null && h.isActiveAndEnabled && !h.IsDead && h.CompareTag("Enemy1");
+        private bool Enemy(Health h) => !TowerDarkness.Blocks(tower!=null?tower.transform:null) && h!=null && h.isActiveAndEnabled && !h.IsDead && h.CompareTag("Enemy1");
         private void UpdateBeam()
         {
             Health target=null;
@@ -76,7 +87,7 @@ namespace GameFoundation.MetaProgression
                 float distance=((Vector2)h.transform.position-(Vector2)tower.transform.position).sqrMagnitude;
                 if(distance<=nearest){nearest=distance;target=h;}
             }
-            if(target==null)
+            if(target==null || !progression.CanPayForShot(PortalTowerBalance.Weapon.Beam))
             {
                 if(beam!=null)beam.transform.root.gameObject.SetActive(false);ClearLightTrails();
                 return;
@@ -102,6 +113,7 @@ namespace GameFoundation.MetaProgression
             UpdateLightTrails();
             if(Time.time>=beamTime)
             {
+                if (!progression.TrySpendShot(PortalTowerBalance.Weapon.Beam)) return;
                 beamTime=Time.time+progression.TickInterval(PortalTowerBalance.Weapon.Beam);
                 bool hit=false;
                 foreach(var h in enemies)if(Enemy(h) && Vector2.Distance(h.transform.position,aim)<=BeamRadius)
@@ -174,10 +186,13 @@ namespace GameFoundation.MetaProgression
         }
         private IEnumerator RingVolley()
         {
+            if (!progression.CanPayForShot(PortalTowerBalance.Weapon.Rings)) yield break;
             GameAudioController.PlayAt(GameAudioCue.MagicAttack,tower.transform.position);
             for(int i=0;i<progression.Count(PortalTowerBalance.Weapon.Rings);i++)
             {
-                if(progression.ExpeditionEnded)yield break;
+                if(progression.ExpeditionEnded || TowerDarkness.Blocks(tower.transform))yield break;
+                if (!progression.TrySpendShot(PortalTowerBalance.Weapon.Rings)) yield break;
+                if (i == 0) progression.ReportReload(PortalTowerBalance.Weapon.Rings, ringTime);
                 StartCoroutine(Ring());yield return new WaitForSeconds(.22f);
             }
         }
@@ -198,6 +213,7 @@ namespace GameFoundation.MetaProgression
             var hit=new HashSet<Health>();float radius=0,previous=0;
             float speed=Def(w).expansionSpeed*progression.Multiplier(w,PortalTowerBalance.Effect.ExpansionSpeed);
             float range=Range(w),thickness=Radius(w),damage=Damage(w);
+            line.startWidth = line.endWidth = thickness * 2;
             while(radius<range && !progression.ExpeditionEnded)
             {
                 if(Time.timeScale<=0){yield return null;continue;}
@@ -231,15 +247,17 @@ namespace GameFoundation.MetaProgression
                         if(Enemy(enemy) && Vector2.Distance(tower.transform.position,enemy.transform.position)<=Range(w)) candidates.Add(enemy);
                 candidates.RemoveAll(enemy => !Enemy(enemy));
                 if(candidates.Count==0) break;
+                if (!progression.TrySpendShot(w)) break;
+                if (i == 0) progression.ReportReload(w, lightningTime);
                 int index=Random.Range(0,candidates.Count);var h=candidates[index];candidates.RemoveAt(index);
-                Vector3 end=h.transform.position;
+                Vector3 end=h.HitEffectPosition;
                 h.TakeDamage(Damage(w),Def(w).damageType,tower.transform);
                 CombatImpactBurst.Spawn(end,DamagePalette.Electric);
                 GameAudioController.PlayAt(GameAudioCue.MagicAttack,end);
-                StartCoroutine(Lightning(end));
+                StartCoroutine(Lightning(h,end));
             }
         }
-        private IEnumerator Lightning(Vector3 end)
+        private IEnumerator Lightning(Health target, Vector3 end)
         {
             if(lightningSprite==null)yield break;
             var w=PortalTowerBalance.Weapon.Lightning;
@@ -252,11 +270,14 @@ namespace GameFoundation.MetaProgression
             var glow=go.AddComponent<Light2D>();glow.lightType=Light2D.LightType.Point;
             renderer.sharedMaterial=DamagePalette.MaterialFor(DamageType.Electric) ?? effectMaterial;
             glow.color=DamagePalette.Electric;glow.intensity=1.5f;glow.pointLightOuterRadius=1.2f;
-            float duration=Def(w).duration*progression.Multiplier(w,PortalTowerBalance.Effect.Duration);
+            float duration=Mathf.Max(.3f,Def(w).duration*progression.Multiplier(w,PortalTowerBalance.Effect.Duration));
+            int targetVersion=target!=null?target.SpawnVersion:-1;
             float elapsed=0;
             while(elapsed<duration)
             {
-                elapsed+=Time.deltaTime;float alpha=1-Mathf.Clamp01(elapsed/duration);
+                if(target!=null && target.SpawnVersion==targetVersion && !target.IsDead) end=target.HitEffectPosition;
+                go.transform.position=new Vector3(Mathf.Round(end.x*32)/32,Mathf.Round((end.y+height*.5f)*32)/32,end.z);
+                elapsed+=Time.timeScale>0?Time.unscaledDeltaTime:0;float alpha=1-Mathf.Clamp01(elapsed/duration);
                 renderer.color=new Color(1,1,1,alpha);glow.intensity=1.5f*alpha;
                 yield return null;
             }
@@ -268,6 +289,11 @@ namespace GameFoundation.MetaProgression
             ClearFrostSeals();
             if(frostEmitterMesh!=null)Destroy(frostEmitterMesh);
             if(frostFlakeMesh!=null)Destroy(frostFlakeMesh);
+            if(defenseField!=null)Destroy(defenseField.gameObject);
+            if(defenseBeamRoot!=null)Destroy(defenseBeamRoot);
+            if(defenseEmitterMesh!=null)Destroy(defenseEmitterMesh);
+            if(defenseShieldMesh!=null)Destroy(defenseShieldMesh);
+            if(healingBeamRoot!=null)Destroy(healingBeamRoot);
             if(Instance==this)Instance=null;
             if(beam!=null)Destroy(beam.transform.root.gameObject);
             foreach(var g in effects)if(g!=null)Destroy(g);

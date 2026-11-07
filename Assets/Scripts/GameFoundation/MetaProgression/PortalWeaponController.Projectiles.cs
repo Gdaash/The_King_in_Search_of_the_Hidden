@@ -37,6 +37,8 @@ namespace GameFoundation.MetaProgression
             float speed = definition.projectileSpeedMultiplier * progression.Multiplier(weapon, PortalTowerBalance.Effect.ExpansionSpeed);
             for (int i = 0; i < count; i++)
             {
+                if (!progression.TrySpendShot(weapon)) break;
+                if (i == 0) progression.ReportReload(weapon, projectileTimes[weapon]);
                 // Extra pellets stay inside the same narrow fan; zero-spread orbs fly in parallel.
                 float angle = count <= 1 ? 0 : definition.spreadAngle * (i / (float)(count - 1) - .5f);
                 Vector3 shotDirection = Quaternion.Euler(0, 0, angle) * direction;
@@ -47,7 +49,8 @@ namespace GameFoundation.MetaProgression
                 if (root.TryGetComponent<EnemyProjectile>(out var projectile))
                 {
                     float lifetime = (Range(weapon) + Vector2.Distance(origin, tower.transform.position) + 1) / Mathf.Max(.01f, projectile.BaseSpeed * speed);
-                    projectile.SetupHit(shotDirection, "Enemy1", Damage(weapon), definition.damageType, tower.transform, speed, lifetime);
+                    projectile.SetupHit(shotDirection, "Enemy1", Damage(weapon), definition.damageType, tower.transform, speed, lifetime,
+                        definition.combat != null ? definition.combat.targetMode : GameFoundation.Combat.CombatWeapon.TargetMode.SingleTarget);
                     portalProjectiles.Add(projectile);
                 }
                 else Destroy(root);

@@ -77,7 +77,7 @@ public static class BuildingUpgradeValidation
         var manager = GlobalResourceManager.Instance;
         Check(manager != null, "resource manager exists");
         Check(BuildingUpgradeService.Capacity("housing") == 3 && !BuildingUpgradeService.CanAdmitResident, "initial civilian limit");
-        foreach (var b in BuildingUpgradeService.Catalog.buildings.Where(b => b.effect == BuildingUpgradeCatalog.UpgradeEffect.Capacity))
+        foreach (var b in BuildingUpgradeService.Catalog.buildings.Where(b => b.effect == BuildingUpgradeCatalog.UpgradeEffect.Capacity && b.levels.Count > 0))
         {
             Check(!BuildingUpgradeService.TryUpgrade(b.id), "cannot upgrade before construction");
             var construction = UnityEngine.Object.FindObjectsByType<BaseBuildingConstruction>(FindObjectsInactive.Include, FindObjectsSortMode.None).First(c => c.BuildingId == b.id);

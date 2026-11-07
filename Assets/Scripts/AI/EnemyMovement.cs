@@ -15,6 +15,8 @@ public class EnemyMovement : MonoBehaviour
     [Header("Настройки разворота")]
     [SerializeField] private float flipThreshold = 0.1f; 
 
+    private Health health;
+    public bool IsStunned => health != null && health.IsStunned;
     private Combatant combat;
     private Rigidbody2D _rb;
     private IEnemyAI _ai; 
@@ -50,10 +52,13 @@ public class EnemyMovement : MonoBehaviour
     void Awake()
     {
         combat=GetComponent<Combatant>();
+        health=GetComponent<Health>();
         _rb = GetComponent<Rigidbody2D>();
         _ai = GetComponent<IEnemyAI>(); 
         _initialScaleX = Mathf.Abs(transform.localScale.x);
-        
+        if (combat != null && (CompareTag("Player") || CompareTag("Enemy1")) && GetComponent<UnitPassThrough>() == null)
+            gameObject.AddComponent<UnitPassThrough>();
+
         _rb.gravityScale = 0;
         _rb.constraints = RigidbodyConstraints2D.FreezeRotation;
         _rb.interpolation = RigidbodyInterpolation2D.Interpolate;
@@ -114,10 +119,10 @@ public class EnemyMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (!_canMove || _ai == null || _ai.GetTarget() == null) 
-        { 
-            _rb.linearVelocity = Vector2.zero; 
-            return; 
+        if (IsStunned || !_canMove || _ai == null || _ai.GetTarget() == null)
+        {
+            _rb.linearVelocity = Vector2.zero;
+            return;
         }
 
         Vector2 targetPos = _ai.GetTarget().position;
@@ -126,16 +131,21 @@ public class EnemyMovement : MonoBehaviour
         Vector2 direction = (targetPos - currentPos);
         float distance = direction.magnitude;
 
-        if (distance < 0.1f)
+        if (distance < 0.05f)
         {
             _rb.linearVelocity = Vector2.zero;
             return;
         }
 
         Vector2 moveDirection = direction.normalized;
+        if (TryGetComponent<SpearmanTactics>(out var spear) && spear.RetreatFrom(_ai.GetTarget())) moveDirection = -moveDirection;
         if (CompareTag("Player"))
             moveDirection = PlayerHexNavigation.ResolveDirection(currentPos, moveDirection);
-        _rb.linearVelocity = moveDirection * _finalSpeed * AreaSlowMultiplier;
+        float travelSpeed = _finalSpeed * AreaSlowMultiplier;
+        if ((_ai is EnemyAI_Ranged ranged && (ranged.IsTacticalRetreat || ranged.HasAssignedHomePoint)) ||
+            (_ai is EnemyAI melee && melee.HasAssignedHomePoint))
+            travelSpeed = Mathf.Min(travelSpeed, distance / Time.fixedDeltaTime);
+        _rb.linearVelocity = moveDirection * travelSpeed;
         HandleFlip();
     }
 

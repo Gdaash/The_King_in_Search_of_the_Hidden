@@ -45,8 +45,12 @@ namespace GameFoundation.Base
         [SerializeField] private ResourceType magicOre;
         [SerializeField] private DayReportPopup dayReportPopup;
         private bool CanAdvanceDay => PlaytestSettings.TutorialsAndQuestsDisabled || BuildingUpgradeService.IsBuilt("housing");
+        private EngineeringBureauRecruitment engineeringBureau;
+        private PortalArsenalPopup baseArsenal;
         private bool daySubscribed;
         private bool languageSubscribed;
+        private RectTransform waitingIcons;
+        private readonly List<Image> waitingPeople = new();
 
         private void Awake()
         {
@@ -101,6 +105,11 @@ namespace GameFoundation.Base
         private void Start()
         {
             DayResourceLedger.EnterShelter();
+            if (warehouse != null)
+            {
+                engineeringBureau = warehouse.AddComponent<EngineeringBureauRecruitment>();
+                engineeringBureau.Initialize(buyCartButton, human);
+            }
             SubscribeDay();
             SubscribeLanguage();
             Refresh();
@@ -119,6 +128,8 @@ namespace GameFoundation.Base
         }
         private void Refresh()
         {
+            if (warehouseButton != null)
+                warehouseButton.gameObject.SetActive(PlaytestSettings.TutorialsAndQuestsDisabled);
             bool canAdvanceDay = CanAdvanceDay;
             var dayBlock = nextDayPanel != null ? nextDayPanel : nextDayButton != null && nextDayButton.transform.parent.name == "Day Panel"
                 ? nextDayButton.transform.parent.gameObject : nextDayButton != null ? nextDayButton.gameObject : null;
@@ -141,6 +152,7 @@ namespace GameFoundation.Base
             if (search) search.gameObject.SetActive(false);
             var available = refugeesAvailableText;
             if (available) available.text = Tr("base.waiting", GameFoundation.Localization.GameText.Get("Ожидают:")) + " " + (day?.RefugeesAvailable ?? 0);
+            RefreshRefugeePresentation(day?.RefugeesAvailable ?? 0);
             var admit = admitRefugeeButton;
             if (admit) admit.interactable = day != null && day.RefugeesAvailable > 0 && BuildingUpgradeService.CanAdmitResident;
             BaseDisabledButtonHint.Set(admit, day != null && day.RefugeesAvailable > 0 ? BaseDisabledButtonHint.Reason.Housing : BaseDisabledButtonHint.Reason.Refugees);
@@ -163,6 +175,50 @@ namespace GameFoundation.Base
                 button.onClick.AddListener(() => SelectPortal(portal));
             }
             RefreshForecasts();
+        }
+
+        private void RefreshRefugeePresentation(int count)
+        {
+            if (admitRefugeeButton == null || refugeesAvailableText == null || human == null) return;
+            var label = admitRefugeeButton.GetComponentInChildren<Text>(true);
+            float width = 360;
+            if (label != null) { label.fontSize = 26; label.resizeTextForBestFit = false; width = Mathf.Max(width, label.preferredWidth + 48); }
+            foreach (var text in admitRefugeeButton.GetComponentsInChildren<TMPro.TMP_Text>(true))
+            {
+                text.fontSize = 26; text.enableAutoSizing = false;
+                width = Mathf.Max(width, text.GetPreferredValues(text.text, Mathf.Infinity, Mathf.Infinity).x + 48);
+            }
+            var buttonRect = (RectTransform)admitRefugeeButton.transform;
+            buttonRect.sizeDelta = new Vector2(Mathf.Min(720, width), 60);
+            buttonRect.anchoredPosition = new Vector2(0, -95);
+            refugeesAvailableText.rectTransform.anchoredPosition = new Vector2(0,-5);
+            refugeesAvailableText.fontSize = 28;
+            refugeesAvailableText.resizeTextForBestFit = false;
+            var parent = refugeesAvailableText.transform.parent;
+            var frame = parent.Find("Artwork Frame") as RectTransform;
+            if (frame != null) frame.sizeDelta = new Vector2(800,340);
+            var title = parent.Find("Title") as RectTransform;
+            if (title != null) title.anchoredPosition = new Vector2(0,120);
+            var close = parent.Find("Close") as RectTransform;
+            if (close != null) close.anchoredPosition = new Vector2(388,158);
+            if (waitingIcons == null)
+            {
+                waitingIcons = new GameObject("Waiting residents",typeof(RectTransform)).GetComponent<RectTransform>();
+                waitingIcons.SetParent(parent,false); waitingIcons.anchorMin = waitingIcons.anchorMax = new Vector2(.5f,.5f);
+                waitingIcons.anchoredPosition = new Vector2(0,55);
+            }
+            while (waitingPeople.Count < count)
+            {
+                var image = new GameObject("Waiting resident", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+                image.transform.SetParent(waitingIcons,false); image.raycastTarget = false;
+                ResourceIconSizing.Apply(image,human.resourceIcon); waitingPeople.Add(image);
+            }
+            float spacing = human.resourceIcon.rect.width * 2 + 12;
+            for (int i = 0; i < waitingPeople.Count; i++)
+            {
+                waitingPeople[i].gameObject.SetActive(i < count);
+                if (i < count) waitingPeople[i].rectTransform.anchoredPosition = new Vector2((i-(count-1)*.5f)*spacing,0);
+            }
         }
 
         private void RefreshForecasts()
@@ -204,11 +260,24 @@ namespace GameFoundation.Base
         public void OpenMap() { Refresh(); Show(globalMap, true); }
         public void OpenLaboratory() => Show(laboratory, true);
         public void OpenSettings() => Show(settings, true);
-        public void OpenWarehouse() => Show(warehouse, true);
-        public void OpenHousing() { RefreshForecasts(); Show(housing, true); }
+        public void OpenWarehouse()
+        {
+            Show(warehouse, true);
+            engineeringBureau?.Refresh();
+        }
+        public void OpenHousing() { HousingDistrictView.Install(housing); Show(housing, true); }
         public void OpenRefugees() => Show(refugees, true);
         public void OpenBlacksmith() => Show(blacksmith, true);
-        public void OpenMagicLibrary() => Show(magicLibrary, true);
+        public void OpenMagicLibrary()
+        {
+            var balance = Resources.Load<PortalTowerBalance>("World/PortalTowerBalance");
+            if (balance != null && balance.useSelectableArsenal && balance.useEnergyLoadout && balance.arsenalPopupPrefab != null)
+            {
+                if (baseArsenal == null) baseArsenal = Instantiate(balance.arsenalPopupPrefab).GetComponent<PortalArsenalPopup>();
+                baseArsenal.OpenBase(balance);
+            }
+            else Show(magicLibrary, true);
+        }
         public void CloseMap() => Show(globalMap, false);
         public void CloseLaboratory() => Show(laboratory, false);
         public void CloseSettings() => Show(settings, false);
@@ -216,7 +285,8 @@ namespace GameFoundation.Base
         public void CloseHousing() => Show(housing, false);
         public void CloseRefugees() => Show(refugees, false);
         public void CloseBlacksmith() => Show(blacksmith, false);
-        public void CloseMagicLibrary() => Show(magicLibrary, false);
+        public void CloseMagicLibrary() { baseArsenal?.Close(); Show(magicLibrary, false); }
+        private void OnDestroy() { if (baseArsenal != null) Destroy(baseArsenal.gameObject); }
         public void NextDay() { if (PortalCloudTransition.IsLoading || !CanAdvanceDay || DayCycleService.Instance == null) return; RefreshForecasts(); Show(nextDayConfirmation, true); }
         public void CancelNextDay() { if (!ForestForagingService.IsPending) Show(nextDayConfirmation, false); }
         public void ConfirmNextDay()

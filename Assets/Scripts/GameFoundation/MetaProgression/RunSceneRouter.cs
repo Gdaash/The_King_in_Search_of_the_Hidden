@@ -12,6 +12,7 @@ namespace GameFoundation.MetaProgression
         {
             if (!CanEnterRun) return;
             GameFoundation.Saves.SaveSlotPrefs.BeginRunCheckpoint();
+            ExpeditionTasks.Begin();
             DayResourceLedger.BeginRun();
             PortalCloudTransition.Load(runScene);
         }
@@ -20,6 +21,8 @@ namespace GameFoundation.MetaProgression
             if (!PortalCloudTransition.CanLoad(baseScene)) return;
             var military = FindAnyObjectByType<WorldMilitaryDeploymentController>();
             if (military != null) military.FinalizeSurvivors();
+            Warehouse.SettlePorterCarts();
+            ExpeditionTasks.Settle();
             DayResourceLedger.EndRun(); GameFoundation.Saves.SaveSlotPrefs.CompleteRunCheckpoint(); PortalCloudTransition.Load(baseScene);
         }
     }

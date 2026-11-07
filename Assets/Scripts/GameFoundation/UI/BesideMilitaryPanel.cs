@@ -11,7 +11,7 @@ namespace GameFoundation.UI
         private void LateUpdate() => Align();
         public void Align()
         {
-            if (panel == null) return;
+            if (panel == null || (TryGetComponent<ResourceUI>(out var resources) && resources.DisplaysGlobalResources)) return;
             var rect = (RectTransform)transform;
             rect.anchoredPosition = new Vector2(-panel.Width - gap, preserveVerticalPosition ? rect.anchoredPosition.y : 24);
         }

@@ -91,11 +91,14 @@ public partial class AlarmSystem : MonoBehaviour
     private AlarmThreshold firstRunWaveTemplate;
     public event Action DangerNotificationsFinished;
     private DangerLevelNotificationView _activeDangerNotification;
+    private DangerLevelNotificationView _energyLightNotification;
     private readonly List<Image> _thresholdSkulls = new();
     private float _displayedFill;
     private float _pendingAlarm;
     private int alarmRevision;
     private int reportedEnemyLevel = 1;
+    private float passiveAlarmElapsed;
+    public const float PassiveAlarmInterval = 5f;
     public const int MaximumEnemyLevel = 50;
     public const float AlarmPerEnemyLevel = 10f;
     public int EnemyLevel => LevelForAlarm(currentAlarm, maximumAlarm);
@@ -159,6 +162,9 @@ public partial class AlarmSystem : MonoBehaviour
         }
         _canvas = GetComponentInParent<Canvas>() ?? UnityEngine.Object.FindFirstObjectByType<Canvas>();
         _canvasRect = _canvas != null ? _canvas.transform as RectTransform : null;
+#if UNITY_EDITOR
+        if (GetComponent<EditorWaveCheatPopup>() == null) gameObject.AddComponent<EditorWaveCheatPopup>();
+#endif
     }
 
     public IReadOnlyList<AlarmThreshold> ConfiguredThresholds => Application.isPlaying ? thresholds :
@@ -291,13 +297,33 @@ public partial class AlarmSystem : MonoBehaviour
 
     private void Update()
     {
+        AdvancePassiveAlarm(Time.deltaTime);
         float desiredFill = Mathf.Clamp01(currentAlarm / maximumAlarm);
         _displayedFill = Mathf.MoveTowards(_displayedFill, desiredFill, fillSpeed * Time.deltaTime);
         ApplyFill(_displayedFill);
     }
 
+    private void AdvancePassiveAlarm(float deltaTime)
+    {
+        if (currentAlarm < maximumAlarm || currentAlarm >= MaximumTotalAlarm)
+        { passiveAlarmElapsed = 0f; return; }
+        if (deltaTime <= 0f || GameFoundation.MetaProgression.WorldEscapeController.ResultsActive ||
+            (GameFoundation.MetaProgression.PortalTowerProgression.Instance != null && GameFoundation.MetaProgression.PortalTowerProgression.Instance.ExpeditionEnded)) return;
+        passiveAlarmElapsed += deltaTime;
+        int ticks = Mathf.FloorToInt(passiveAlarmElapsed / PassiveAlarmInterval);
+        if (ticks == 0) return;
+        passiveAlarmElapsed -= ticks * PassiveAlarmInterval;
+        float amount = AcceptedAlarm(ticks);
+        if (amount <= 0f) return;
+        // Ambient danger has no world source: commit it directly, without resource-flight orbs.
+        currentAlarm = Mathf.Min(MaximumTotalAlarm, currentAlarm + amount);
+        RefreshEnemyLevel();
+        OnAlarmChanged?.Invoke(currentAlarm);
+    }
+
     private void OnDisable()
     {
+        passiveAlarmElapsed = 0f;
         StopDirectedWaves();
         alarmRevision++;
         _pendingAlarm = 0f;
@@ -343,6 +369,7 @@ public partial class AlarmSystem : MonoBehaviour
     /// <summary>Устанавливает абсолютное значение тревоги.</summary>
     public void SetAlarm(float value)
     {
+        passiveAlarmElapsed = 0f;
         alarmRevision++;
         currentAlarm = Mathf.Clamp(value, 0f, MaximumTotalAlarm);
         RefreshEnemyLevel();
@@ -355,6 +382,7 @@ public partial class AlarmSystem : MonoBehaviour
 
     public void ResetAlarm()
     {
+        passiveAlarmElapsed = 0f;
         _actionAlarmReservations.Clear();
         _pausedActionAlarmSources.Clear();
         alarmRevision++;
@@ -417,12 +445,29 @@ public partial class AlarmSystem : MonoBehaviour
             int level = _dangerNotificationQueue.Dequeue();
             Transform parent = _canvas != null ? _canvas.transform : transform.parent;
             _activeDangerNotification = Instantiate(dangerLevelNotificationPrefab, parent, false);
+            var bar = fillImage != null ? fillImage.rectTransform.parent as RectTransform : transform as RectTransform;
+            _activeDangerNotification.FollowBar(bar, false);
             yield return _activeDangerNotification.Play(level, thresholds.Count);
             if (_activeDangerNotification != null) Destroy(_activeDangerNotification.gameObject);
             _activeDangerNotification = null;
         }
         _dangerNotificationRoutine = null;
         DangerNotificationsFinished?.Invoke();
+    }
+
+    public void ShowEnergyLightNotification(int change, int lightCount, Sprite crystalIcon, RectTransform bar, RectTransform crystal)
+    {
+        if (change == 0 || dangerLevelNotificationPrefab == null || !isActiveAndEnabled) return;
+        if (_energyLightNotification != null)
+        {
+            _energyLightNotification.gameObject.SetActive(false);
+            Destroy(_energyLightNotification.gameObject);
+        }
+        Transform parent = _canvas != null ? _canvas.transform : transform.parent;
+        _energyLightNotification = Instantiate(dangerLevelNotificationPrefab, parent, false);
+        _energyLightNotification.name = "Energy Light Notification";
+        _energyLightNotification.FollowBar(bar, true, crystal);
+        _energyLightNotification.ShowLightChange(change, lightCount, crystalIcon);
     }
 
     private IEnumerator SpawnWavesForever(AlarmThreshold threshold)

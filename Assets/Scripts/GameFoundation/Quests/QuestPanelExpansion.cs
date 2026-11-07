@@ -12,6 +12,8 @@ namespace GameFoundation.Quests
         [SerializeField, Min(.01f)] private float duration = .25f;
         private bool hovered;
         private bool keepExpanded;
+        private bool questDefaultsInitialized;
+        private string displayedQuestId;
         private float progress;
         private bool IsWorld => gameObject.scene.name == "World";
         [SerializeField] private UnityEngine.UI.Button toggleButton;
@@ -40,9 +42,18 @@ namespace GameFoundation.Quests
             if (value) SetExpanded(true, true);
         }
         private void OnDisable() { if(toggleButton) toggleButton.onClick.RemoveListener(ToggleObjectives); hovered = false; progress = 0; Apply(); }
-        private void OnEnable() { if (IsWorld) { showObjectives = false; keepExpanded = false; } if(toggleButton) toggleButton.onClick.AddListener(ToggleObjectives); hovered = false; progress = 0; Apply(); }
+        private void OnEnable() { if (IsWorld) { keepExpanded = false; ApplyQuestDefaults(); } if(toggleButton) toggleButton.onClick.AddListener(ToggleObjectives); hovered = false; progress = 0; Apply(); }
+        private void ApplyQuestDefaults()
+        {
+            if (!IsWorld) return;
+            string id = GetComponent<QuestPanel>()?.CurrentQuestId;
+            if (questDefaultsInitialized && displayedQuestId == id) return;
+            questDefaultsInitialized = true; displayedQuestId = id;
+            showObjectives = id == "first_expedition_supplies";
+        }
         private void LateUpdate()
         {
+            ApplyQuestDefaults();
             progress = Mathf.MoveTowards(progress, hovered ? 1 : 0, Time.unscaledDeltaTime / duration);
             Apply();
         }

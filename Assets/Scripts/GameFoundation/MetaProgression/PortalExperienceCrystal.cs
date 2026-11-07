@@ -1,5 +1,4 @@
-﻿using GameFoundation.Audio;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace GameFoundation.MetaProgression
@@ -16,9 +15,8 @@ namespace GameFoundation.MetaProgression
         private Vector2 origin, scatter;
         private float elapsed, delay;
         private float destinationFill;
-        private bool arrivalSound;
         private System.Action arrived;
-        public void Launch(Vector3 position, PortalTowerExperienceBar bar, float launchDelay, bool playArrivalSound, System.Action onArrival=null, float targetFill=1f)
+        public void Launch(Vector3 position, PortalTowerExperienceBar bar, float launchDelay, System.Action onArrival=null, float targetFill=1f)
         {
             if(bar==null || bar.fill==null){Destroy(gameObject);return;}
             arrived=onArrival;
@@ -38,7 +36,7 @@ namespace GameFoundation.MetaProgression
             Vector2 screen=Camera.main!=null?(Vector2)Camera.main.WorldToScreenPoint(position):RectTransformUtility.WorldToScreenPoint(UiCamera,destination.position);
             RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect,screen,UiCamera,out origin);
             visual.anchoredPosition=origin;
-            delay=launchDelay;arrivalSound=playArrivalSound;
+            delay=launchDelay;
             scatter=Random.insideUnitCircle*scatterRadius*32;
         }
         private Camera UiCamera=>canvas.renderMode==RenderMode.ScreenSpaceOverlay?null:canvas.worldCamera;
@@ -57,7 +55,6 @@ namespace GameFoundation.MetaProgression
             float scale=t<.12f?Mathf.Lerp(.65f,1,t/.12f):t>.8f?Mathf.Lerp(1,.15f,(t-.8f)/.2f):1;
             visual.localScale=Vector3.one*scale;
             if(t<1)return;
-            if(arrivalSound)GameAudioController.PlayAt(GameAudioCue.ResourceGain,transform.position,.3f,1.1f,1.2f,.1f);
             var callback=arrived;arrived=null;callback?.Invoke();
             Destroy(gameObject);
         }

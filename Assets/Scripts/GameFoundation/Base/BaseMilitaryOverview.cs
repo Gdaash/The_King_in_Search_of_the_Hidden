@@ -18,6 +18,7 @@ namespace GameFoundation.Base
         [Header("Resources")]
         [SerializeField] private MilitaryCount swordsmen = new();
         [SerializeField] private MilitaryCount archers = new();
+        [SerializeField] private ResourceType[] additionalWarriors = Array.Empty<ResourceType>();
 
         [Header("Prefab hierarchy")]
         [SerializeField] private RectTransform title;
@@ -25,7 +26,10 @@ namespace GameFoundation.Base
         [SerializeField] private Text emptyLabel;
         [SerializeField] private WorldMilitaryRosterItemView itemTemplate;
 
-        private readonly List<WorldMilitaryRosterItemView> items = new();
+        private readonly Dictionary<string, WorldMilitaryRosterItemView> items = new();
+        private readonly HashSet<string> visible = new();
+        private readonly List<string> stale = new();
+        private bool needsRefresh;
         private float nextHealthRefresh;
 
         private void Awake()
@@ -40,23 +44,49 @@ namespace GameFoundation.Base
         }
 
         private void OnDisable() => GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
-        private void OnResourceChanged(ResourceType _, int __) => Refresh();
+        private void OnResourceChanged(ResourceType resource, int _)
+        {
+            if (resource == null) return;
+            if (resource == swordsmen?.resource || resource == archers?.resource ||
+                Array.IndexOf(additionalWarriors, resource) >= 0 || resource.Id == "Engineer")
+                needsRefresh = true;
+        }
         private void LateUpdate()
         {
+            if (needsRefresh) Refresh();
             if (Time.unscaledTime < nextHealthRefresh) return;
             nextHealthRefresh = Time.unscaledTime + .2f;
-            foreach (var item in items) if (item != null) item.Refresh();
+            foreach (var item in items.Values) if (item != null) item.Refresh();
         }
+
+        public void RebuildRoster() => Refresh();
 
         private void Refresh()
         {
             if (content == null || itemTemplate == null) return;
-            foreach (WorldMilitaryRosterItemView item in items)
-                if (item != null) Destroy(item.gameObject);
-            items.Clear();
+            needsRefresh = false;
+            visible.Clear();
             AddWarriors(swordsmen);
             AddWarriors(archers);
+            foreach(var resource in additionalWarriors) AddWarriors(new MilitaryCount{resource=resource});
 
+            var engineer = ResourceCatalog.Find("Engineer");
+            if (engineer != null && Array.IndexOf(additionalWarriors, engineer) < 0)
+                AddWarriors(new MilitaryCount { resource = engineer });
+
+            stale.Clear();
+            foreach (var entry in items)
+                if (!visible.Contains(entry.Key)) stale.Add(entry.Key);
+            foreach (var key in stale)
+            {
+                var item = items[key];
+                if (item != null)
+                {
+                    item.gameObject.SetActive(false);
+                    Destroy(item.gameObject);
+                }
+                items.Remove(key);
+            }
             if (emptyLabel != null) emptyLabel.gameObject.SetActive(items.Count == 0);
         }
 
@@ -67,11 +97,18 @@ namespace GameFoundation.Base
             IReadOnlyList<MilitaryProfile> profiles = MilitaryExperienceService.GetStored(type.resource, count);
             for (int i = 0; i < profiles.Count; i++)
             {
-                WorldMilitaryRosterItemView item = Instantiate(itemTemplate, content);
-                item.name = type.resource.resourceName + " " + (i + 1);
-                item.gameObject.SetActive(true);
-                item.SetProfile(type.resource, profiles[i]);
-                items.Add(item);
+                var profile = profiles[i];
+                if (!visible.Add(profile.id)) continue;
+                if (!items.TryGetValue(profile.id, out var item) || item == null)
+                {
+                    item = Instantiate(itemTemplate, content);
+                    item.name = type.resource.resourceName + " " + (i + 1);
+                    item.gameObject.SetActive(true);
+                    items[profile.id] = item;
+                }
+                item.SetProfile(type.resource, profile);
+                int sibling = itemTemplate.transform.GetSiblingIndex() + visible.Count;
+                if (item.transform.GetSiblingIndex() != sibling) item.transform.SetSiblingIndex(sibling);
             }
         }
     }

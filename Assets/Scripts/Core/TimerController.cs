@@ -31,8 +31,8 @@ public class TimerController : MonoBehaviour
     private bool _crystalPaused;
     public bool IsPaused => _crystalPaused && !_stoppedForEscape;
     public void BindCrystalOwner(ResourceRequester requester) => CrystalOwner = requester;
-    private bool CrystalCanStart => CrystalOwner == null ||
-        (CrystalOwner.HasLogisticFlag() && CrystalOwner.CrystalResourcesReady);
+    private bool CrystalCanStart => !WorldHexFog.BlocksWork(CrystalOwner != null ? CrystalOwner.WorkerPosition : transform.position) &&
+        (CrystalOwner == null || (CrystalOwner.HasLogisticFlag() && CrystalOwner.CrystalResourcesReady));
     public void ResumeCrystalCycle()
     {
         if ((_crystalPending || _crystalPaused) && CrystalCanStart) StartTimer();
@@ -192,5 +192,17 @@ public class TimerController : MonoBehaviour
         _isActive = false;
         if (progressBarObject != null)
             progressBarObject.SendMessage("Hide", SendMessageOptions.DontRequireReceiver);
+    }
+
+    public void ResetForFog()
+    {
+        _isActive = false;
+        _crystalPaused = _crystalPending = true;
+        _cycleDuration = _cycleDuration > 0 ? _cycleDuration : CurrentDuration;
+        _currentTime = _cycleDuration;
+        _remainingRepeats = repeatCount;
+        SendProgressToBar();
+        if (progressBarObject != null)
+            progressBarObject.SendMessage("ResetProgress", SendMessageOptions.DontRequireReceiver);
     }
 }

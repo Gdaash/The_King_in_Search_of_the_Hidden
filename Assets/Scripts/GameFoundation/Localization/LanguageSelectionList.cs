@@ -14,14 +14,18 @@ namespace GameFoundation.Localization
         public bool firstLaunch;
         public static bool RequiredChoicePending => !PlayerPrefs.HasKey("foundation.language");
         private readonly List<Button> buttons=new();
+        private LocalizationService subscribed;
         
-        private void OnEnable(){if(firstLaunch&&!RequiredChoicePending){gameObject.SetActive(false);return;}Rebuild();}
+        private void OnEnable(){if(firstLaunch&&!RequiredChoicePending){gameObject.SetActive(false);return;}Subscribe();Rebuild();}
+        private void OnDisable(){if(subscribed!=null)subscribed.LanguageChanged-=RefreshSelection;subscribed=null;}
+        private void Subscribe(){var service=LocalizationService.Instance;if(service==subscribed)return;if(subscribed!=null)subscribed.LanguageChanged-=RefreshSelection;subscribed=service;if(service!=null)service.LanguageChanged+=RefreshSelection;}
         private void Start(){if(gameObject.activeSelf)Rebuild();}
         public void Rebuild()
         {
             // Nested prefab overrides can leave a second list on the same popup.
             if (GetComponents<LanguageSelectionList>()[0] != this) return;
             var service=LocalizationService.Instance;if(service?.Table==null)return;
+            Subscribe();
             for (int i=container.childCount-1;i>=0;i--)
             {
                 var child=container.GetChild(i).gameObject;
@@ -42,11 +46,21 @@ namespace GameFoundation.Localization
                 if(code=="zh-Hans")name="\u7b80\u4f53\u4e2d\u6587";
                 var text=button.GetComponentInChildren<UnityEngine.UI.Text>(true);if(text!=null)text.text=name;
                 var tmp=button.GetComponentInChildren<TMPro.TMP_Text>(true);if(tmp!=null)tmp.text=name;
-                if(text!=null){text.resizeTextForBestFit=true;text.resizeTextMinSize=16;text.resizeTextMaxSize=24;}
-                if(tmp!=null){tmp.enableAutoSizing=true;tmp.fontSizeMin=16;tmp.fontSizeMax=24;}
+                if(text!=null){text.resizeTextForBestFit=true;text.resizeTextMinSize=22;text.resizeTextMaxSize=24;}
+                if(tmp!=null){tmp.enableAutoSizing=true;tmp.fontSizeMin=22;tmp.fontSizeMax=24;}
                 button.onClick=new Button.ButtonClickedEvent();button.onClick.AddListener(()=>Choose(code));
             }
             ApplyLayout(languages.Count);
+            RefreshSelection();
+        }
+        private void RefreshSelection()
+        {
+            var service=LocalizationService.Instance;if(service?.Table==null)return;
+            for(int i=0;i<buttons.Count&&i<service.Table.languages.Count;i++)
+            {
+                var feedback=buttons[i].GetComponent<GameFoundation.UI.UnifiedButtonFeedback>();
+                if(feedback!=null)feedback.Toggled=service.Table.languages[i]==service.Language;
+            }
         }
         public void ApplyLayout(int languageCount)
         {
@@ -66,7 +80,10 @@ namespace GameFoundation.Localization
             }
             else if(window!=null)
             {
-                float height=424+rows*68-16;
+                var settings = GetComponent<GameFoundation.Settings.SettingsPopupController>();
+                float resolutionHeight = settings != null && Application.isPlaying
+                    ? GameFoundation.Settings.SettingsPopupController.ResolutionRowHeight : 0;
+                float height=424+rows*68-16+resolutionHeight;
                 float top=height*.5f;
                 void Place(string name,float x,float y)
                 {
@@ -88,9 +105,10 @@ namespace GameFoundation.Localization
                 Place("Music Label",-166,195);Place("Music",128,198);
                 Place("Effects Label",-166,260);Place("Effects",128,263);
                 Place("Fullscreen",-166,320);Place("VSync",128,320);
+                if (settings != null) settings.PositionResolutionRow(top - 380);
                 container.anchorMin=container.anchorMax=new Vector2(.5f,.5f);
                 container.pivot=new Vector2(.5f,1);
-                container.anchoredPosition=new Vector2(0,top-380);
+                container.anchoredPosition=new Vector2(0,top-380-resolutionHeight);
             }
             if(firstLaunch)transform.SetAsLastSibling();
         }

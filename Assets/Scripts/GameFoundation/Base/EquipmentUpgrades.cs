@@ -10,6 +10,12 @@ namespace GameFoundation.Base
     public static class EquipmentUpgrades
     {
         public static event Action Changed;
+        internal static void ResetBlacksmithUpgrades()
+        {
+            foreach (var kind in new[] { EquipmentKind.Sword, EquipmentKind.Bow, EquipmentKind.Cart })
+                PlayerPrefs.SetInt(Key(kind), 0);
+            Changed?.Invoke();
+        }
         public static string Key(EquipmentKind kind) => "blacksmith.upgrade." + kind;
         public static int Maximum(EquipmentKind kind) => kind == EquipmentKind.None ? 0 : kind == EquipmentKind.Cart ? 5 : 10;
         public static int Level(EquipmentKind kind) => Mathf.Clamp(PlayerPrefs.GetInt(Key(kind), 0), 0, Maximum(kind));
@@ -21,6 +27,7 @@ namespace GameFoundation.Base
             && resource != null && GlobalResourceManager.Instance != null && GlobalResourceManager.Instance.GetResourceAmount(resource) >= Cost(kind);
         public static bool TryBuy(EquipmentKind kind, ResourceType resource)
         {
+            using var save = GameFoundation.Saves.SaveSlotPrefs.Batch();
             if (!CanBuy(kind, resource)) return false;
             int next = Level(kind) + 1;
             if (!GlobalResourceManager.Instance.TrySpendResource(resource, Cost(kind))) return false;

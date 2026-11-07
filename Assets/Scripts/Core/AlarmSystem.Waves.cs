@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,8 +31,9 @@ public partial class AlarmSystem
     public float WavePreparationDuration { get; private set; }
     public int WaveNumber { get; private set; }
     public static int ProvokeRewardForSeconds(float seconds) => Mathf.FloorToInt(Mathf.Max(0, seconds) / 10f);
-    public int ProvokeReward => CurrentWaveStage == WaveStage.Countdown ? ProvokeRewardForSeconds(WaveSecondsRemaining) : 0;
-    public bool CanProvoke => isActiveAndEnabled && CurrentWaveStage == WaveStage.Countdown && ProvokeReward > 0 && Time.timeScale > 0 &&
+    public int ProvokeReward => CurrentWaveStage == WaveStage.Countdown ? ProvokeRewardForSeconds(WaveSecondsRemaining) * Mathf.Max(1, _activatedThresholds.Count) : 0;
+    public bool CanProvoke => isActiveAndEnabled && CurrentWaveStage == WaveStage.Countdown && ProvokeReward > 0 && !GameFoundation.MetaProgression.WorldEscapeController.ResultsActive &&
+        !GameFoundation.MetaProgression.FirstRunLightTutorial.BlocksInput && !GameFoundation.MetaProgression.PortalCloudTransition.IsLoading &&
         GameFoundation.MetaProgression.PortalTowerProgression.Instance != null && GameFoundation.MetaProgression.PortalTowerProgression.Instance.CanReceiveWaveReward;
     public bool TryProvokeWave()
     {
@@ -89,6 +90,9 @@ public partial class AlarmSystem
             var threshold = CurrentWaveThreshold();
             if (threshold == null) { yield return null; continue; }
             var composition = SelectComposition(threshold);
+#if UNITY_EDITOR
+            composition = PrepareEditorWave(composition);
+#endif
             if (composition == null || composition.units.Count == 0) { yield return new WaitForSeconds(1); continue; }
             if (!continuousFirstRunWaves)
             {
@@ -124,6 +128,10 @@ public partial class AlarmSystem
             }
             RefreshDirectedGroups();
             CurrentWaveStage = WaveStage.Attacking;
+#if UNITY_EDITOR
+            editorPreparedWave = null;
+            editorCountdownAdditions.Clear();
+#endif
             WaveChanged?.Invoke();
             // A group appears together. Small batches only distribute initialization over frames.
             int ordinal = 0;
@@ -240,6 +248,11 @@ public partial class AlarmSystem
 
     private void StopDirectedWaves()
     {
+#if UNITY_EDITOR
+        editorPreparedWave = null;
+        editorQueuedEnemies.Clear();
+        editorCountdownAdditions.Clear();
+#endif
         if (directedRoutine != null) StopCoroutine(directedRoutine);
         directedRoutine = null;
         continuousFirstRunWaves = false;

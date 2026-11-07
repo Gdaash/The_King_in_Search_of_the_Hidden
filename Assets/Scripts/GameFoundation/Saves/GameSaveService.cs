@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
@@ -159,6 +159,35 @@ namespace GameFoundation.Saves
             Save(slot);
         }
         internal static bool HasActiveRunCheckpoint(int slot) => activeRuns.Contains(slot);
+        internal static void CommitArsenalUnlock(int slot, string spentResourceKey, int cost)
+        {
+            if (WritesSuspended) return;
+            var data = Data(slot);
+            if (activeRuns.Contains(slot) && !string.IsNullOrEmpty(data.unfinishedRunCheckpoint))
+            {
+                // Keep the run rollback, but retain the permanent purchase and its cost.
+                UpdateArsenalCheckpoint(data, spentResourceKey, cost);
+                Persist(slot, data); UnityEngine.PlayerPrefs.Save();
+            }
+            else Save(slot);
+        }
+        private static void UpdateArsenalCheckpoint(SlotData data, string spentResourceKey, int cost)
+        {
+            var baseline = Parse(data.unfinishedRunCheckpoint);
+            foreach (var entry in data.entries)
+            {
+                if (entry == null || entry.key == null || !entry.key.StartsWith(MetaProgression.PortalArsenalProgress.Prefix, StringComparison.Ordinal)) continue;
+                baseline.entries.RemoveAll(e => e.key == entry.key);
+                baseline.entries.Add(new Entry { key = entry.key, type = entry.type, value = entry.value });
+            }
+            if (cost > 0 && spentResourceKey != null)
+            {
+                var resource = baseline.entries.Find(e => e.key == spentResourceKey);
+                if (resource != null && int.TryParse(resource.value, out int available))
+                    resource.value = Mathf.Max(0, available - cost).ToString(CultureInfo.InvariantCulture);
+            }
+            data.unfinishedRunCheckpoint = JsonUtility.ToJson(baseline);
+        }
         private static SlotData Parse(string json)
         {
             var result = JsonUtility.FromJson<SlotData>(json);

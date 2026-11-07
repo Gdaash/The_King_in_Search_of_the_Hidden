@@ -12,6 +12,7 @@ namespace GameFoundation.Quests
         [SerializeField] private Text deadlineLabel;
         [SerializeField] private QuestObjectiveRow penaltyRow;
         private GameFoundation.MetaProgression.DayCycleService observedDay;
+        public string CurrentQuestId => QuestProgress.Current(catalog, showParallelQuest)?.id;
         public bool HasQuest => QuestProgress.Current(catalog, showParallelQuest) != null;
         public bool HasDeadline => (QuestProgress.Current(catalog, showParallelQuest)?.deadlineDays ?? 0) > 0;
         [SerializeField] private Text title;
