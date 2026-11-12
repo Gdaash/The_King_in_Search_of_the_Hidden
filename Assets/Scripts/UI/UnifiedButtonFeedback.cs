@@ -35,11 +35,37 @@ namespace GameFoundation.UI
         private bool pressed;
         private Transform animatedTransform;
         private PointerEventData hoverPointer;
+        private static Sprite goldButton, goldActiveButton;
+        private Sprite standardButtonSprite;
+        private bool goldSelected;
+
+        internal void SetGoldSelection(bool selected)
+        {
+            if (GetComponent<Button>().targetGraphic is not Image image) return;
+            if (!selected && standardButtonSprite == null) return;
+
+            standardButtonSprite ??= image.sprite;
+            goldSelected = selected;
+            if (selected)
+            {
+                goldButton ??= Resources.Load<Sprite>("UI/Popup Button Gold");
+                goldActiveButton ??= Resources.Load<Sprite>("UI/Popup Button Gold Active");
+            }
+            image.sprite = selected ? (Toggled ? goldActiveButton : goldButton) : standardButtonSprite;
+        }
 
         /// <summary>Latched task state, separate from hover and availability.</summary>
         public bool Toggled { get; set; }
 
         public float ExternalScaleMultiplier { get; set; } = 1f;
+
+        internal void UseChoiceRowFeedback()
+        {
+            animateGraphic = false;
+            hoverScaleOverride = 1.02f;
+            hoverScaleMultiplier = 1f;
+            keepHoverScaleWhenPressed = true;
+        }
 
         private void Awake()
         {
@@ -59,6 +85,22 @@ namespace GameFoundation.UI
                     graphic.color = originalColor;
                 }
             }
+        }
+
+        private void OnEnable()
+        {
+            if (graphic == null || theme == null || !animateGraphic || button.interactable) return;
+            graphic.color = ApplyOpacity(DisabledColor(), false);
+        }
+
+        private Color DisabledColor() => Color.Lerp(originalColor,
+            useButtonPalette ? button.colors.disabledColor : theme.disabledColor, 0.85f);
+
+        private Color ApplyOpacity(Color color, bool hover)
+        {
+            if (preserveGraphicAlpha) color.a = originalColor.a;
+            if (useHoverGraphicAlpha) color.a = (hover ? hoverGraphicAlpha : idleGraphicAlpha) / 255f;
+            return color;
         }
 
         private void Update()
@@ -92,24 +134,19 @@ namespace GameFoundation.UI
             var palette = button.colors;
             Color target;
             if (!enabledButton)
-                target = Color.Lerp(originalColor,
-                    useButtonPalette ? palette.disabledColor : theme.disabledColor, 0.85f);
+                target = DisabledColor();
             else if (pressed)
-                target = Color.Lerp(originalColor,
+                target = Color.Lerp(ToggledColor,
                     useButtonPalette ? palette.pressedColor : theme.pressedColor, 0.8f);
             else if (highlighted)
-                target = Color.Lerp(originalColor,
+                target = Color.Lerp(ToggledColor,
                     useButtonPalette ? palette.highlightedColor : theme.hoverColor,
                     theme.hoverColorStrength);
             else
-                target = Toggled ? new Color(.58f, .86f, .55f, originalColor.a) : originalColor;
+                target = ToggledColor;
 
-            if (preserveGraphicAlpha) target.a = originalColor.a;
             // Unavailable building actions still show their cost tooltip on hover.
-            // Only the background fades in; their disabled tint and scale stay intact.
-            if (useHoverGraphicAlpha)
-                target.a = button.IsActive() && !overChildButton && (hovered || focused)
-                    ? hoverGraphicAlpha / 255f : idleGraphicAlpha / 255f;
+            target = ApplyOpacity(target, button.IsActive() && !overChildButton && (hovered || focused));
 
             if (((Vector4)(graphic.color - target)).sqrMagnitude > 0.000001f)
                 graphic.color = Color.Lerp(graphic.color, target, step);
@@ -125,6 +162,8 @@ namespace GameFoundation.UI
                     outline.effectColor = Color.Lerp(outline.effectColor, targetOutline, step);
             }
         }
+
+        private Color ToggledColor => Toggled && !goldSelected ? new Color(.58f, .86f, .55f, originalColor.a) : originalColor;
 
         public void OnPointerEnter(PointerEventData eventData) { hoverPointer = eventData; hovered = true; }
         public void OnPointerExit(PointerEventData eventData) { hoverPointer = null; hovered = false; pressed = false; }

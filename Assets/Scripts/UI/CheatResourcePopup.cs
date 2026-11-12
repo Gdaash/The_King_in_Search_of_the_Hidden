@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using GameFoundation.Base;
 using GameFoundation.Localization;
@@ -45,6 +45,21 @@ public sealed class CheatResourcePopup : MonoBehaviour
     private GameObject resetBuildingsRail;
     private readonly List<Button> buildingResetButtons = new();
 #endif
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void RegisterSceneStartup()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= EnableHotkeyListener;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += EnableHotkeyListener;
+    }
+
+    private static void EnableHotkeyListener(UnityEngine.SceneManagement.Scene scene,
+        UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        foreach (var root in scene.GetRootGameObjects())
+            if (!root.activeSelf && root.TryGetComponent<CheatResourcePopup>(out _))
+                root.SetActive(true);
+    }
 
     private void Awake()
     {
@@ -98,7 +113,7 @@ public sealed class CheatResourcePopup : MonoBehaviour
     {
         if (GameFoundation.MetaProgression.PortalCloudTransition.IsLoading) return;
         if (GameFoundation.Base.ForestForagingService.IsPending || GameFoundation.MetaProgression.PortalTowerProgression.IsChoosingUpgrade) return;
-        if (Input.GetKeyDown(KeyCode.L) && !IsEditingText())
+        if (!GameFoundation.Base.BuildingConstructionEffect.BlocksInput && Input.GetKeyDown(KeyCode.L) && !IsEditingText())
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (window != null && !window.activeSelf) PrepareBuildingResets();

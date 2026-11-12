@@ -85,7 +85,7 @@ namespace GameFoundation.Base
                 var root = Rect(window, "District card " + (i + 1), CardWidth, height,
                     -549 + i % 4 * 366, i < 4 ? 274 : i < 8 ? 102 : -216);
                 Panel(root, frame, false);
-                if (i == 11) continue;
+                if (i >= 10) continue;
                 var card = new Card();
                 cards.Add(card);
                 card.title = Label(root, "Building", 308, 44, 0, height / 2 - 31, 28, TextAlignmentOptions.Left);
@@ -93,7 +93,7 @@ namespace GameFoundation.Base
                 card.description = Label(root, "Description", 308, house ? 40 : 84, 0, house ? 10 : 126, 22, TextAlignmentOptions.TopLeft);
                 card.description.textWrappingMode = TextWrappingModes.Normal;
                 if (!house)
-                    for (int j = 0; j < (i == 10 ? 1 : 3); j++)
+                    for (int j = 0; j < (i == 9 ? 1 : 3); j++)
                     {
                         float y = 50 - 54 * j;
                         card.stats[j] = Label(root, "Production " + j, 200, 40, -54, y, 22, TextAlignmentOptions.Left);
@@ -205,7 +205,7 @@ namespace GameFoundation.Base
             if (convertHen != null)
             {
                 convertHen.button.gameObject.SetActive(ExpeditionTasks.CoopBuilt);
-                convertHen.button.interactable = production.Chickens > 0;
+                convertHen.button.interactable = CraftProduction.Morning && production.Chickens > 0;
                 convertHen.action.text = T("hen_to_food", "Курицу в еду");
                 if (convertHen.stars != null) convertHen.stars.Emit = convertHen.button.interactable;
                 Price(convertHen, new BuildingUpgradeCatalog.Level
@@ -239,13 +239,6 @@ namespace GameFoundation.Base
                     Stat(card, 1, T("chicks_per_day", "Цыплят в день"), "Chicken", Rate((production.Chickens / 2) / 2f));
                     Stat(card, 2, T("eggs_per_day", "Яиц в день"), "Berry", Rate(production.Chickens / 3f));
                 }
-                else if (i == 9)
-                {
-                    card.description.text = T("tannery_desc", "За день превращает все принесённые шкуры в кожу.");
-                    Stat(card, 0, T("hides", "Шкуры в запасе"), "Hide", stock?.GetResourceAmount(ResourceCatalog.Find("Hide")) ?? 0);
-                    Stat(card, 1, T("leather_per_day", "Кожи за день"), "Leather", production.Hides);
-                    Stat(card, 2, T("leather_stock", "Кожа в запасе"), "Leather", stock?.GetResourceAmount(ResourceCatalog.Find("Leather")) ?? 0);
-                }
                 else
                 {
                     card.description.text = T("fields_desc", "Каждый день дают еду для жителей квартала.");
@@ -274,7 +267,7 @@ namespace GameFoundation.Base
             }
         }
 
-        private static string Annex(int index) => index == 8 ? ExpeditionTasks.Coop : index == 9 ? ExpeditionTasks.Tannery : HousingDistrict.Fields;
+        private static string Annex(int index) => index == 8 ? ExpeditionTasks.Coop : HousingDistrict.Fields;
 
         private static string Rate(float amount)
         {

@@ -9,6 +9,9 @@ namespace GameFoundation.MetaProgression
 {
     public sealed partial class PortalWeaponController
     {
+        private float SupportAmount(Weapon weapon) => Def(weapon).supportAmount * progression.Profile(weapon).Support *
+            progression.RunMultiplier(weapon, CombatUpgradeCatalog.Stat.Support) +
+            progression.RunAdjustment(weapon, CombatUpgradeCatalog.Stat.Armor);
         private readonly List<Health> supportTargets = new();
         private readonly Dictionary<Weapon, float> supportCooldowns = new();
         private Light2D defenseField;
@@ -37,7 +40,7 @@ namespace GameFoundation.MetaProgression
                     point.x < a.x + (b.x - a.x) * (point.y - a.y) / (b.y - a.y))
                     inside = !inside;
             }
-            return inside ? Def(Weapon.DefenseField).supportAmount : 0;
+            return inside ? SupportAmount(Weapon.DefenseField) : 0;
         }
 
         private bool IsSupportTarget(Health target) =>
@@ -84,11 +87,11 @@ namespace GameFoundation.MetaProgression
             switch (weapon)
             {
                 case Weapon.HealingRay:
-                    chosen.RestoreHealth(definition.supportAmount);
+                    chosen.RestoreHealth(SupportAmount(weapon));
                     StartCoroutine(ShowHealingBeam(chosen));
                     break;
                 case Weapon.MagicShield:
-                    chosen.GrantShield(definition.supportAmount);
+                    chosen.GrantShield(SupportAmount(weapon));
                     StartCoroutine(ShowShield(chosen, definition.icon));
                     break;
             }
@@ -244,7 +247,8 @@ namespace GameFoundation.MetaProgression
                 defenseBeam.SetCrystalTarget(defenseTarget.transform.position, true);
             }
 
-            defenseEnergyRemainder += definition.energyPerSecond * Time.deltaTime;
+            defenseEnergyRemainder += progression.Profile(Weapon.DefenseField).Cost(definition.energyPerSecond) *
+                progression.RunMultiplier(Weapon.DefenseField, CombatUpgradeCatalog.Stat.Drain) * Time.deltaTime;
             int spend = Mathf.FloorToInt(defenseEnergyRemainder);
             if (spend == 0) return;
             defenseEnergyRemainder -= spend;

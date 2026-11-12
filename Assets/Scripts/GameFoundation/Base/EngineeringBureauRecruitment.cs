@@ -59,7 +59,7 @@ namespace GameFoundation.Base
         private void Recruit()
         {
             var resources = GlobalResourceManager.Instance;
-            if (resources == null || !resources.TryExchangeResources(human, 1, wood, WoodCost, engineer, 1)) return;
+            if (!CraftProduction.Morning || CraftProduction.FreeResidents(human) == 0 || resources == null || !resources.TryExchangeResources(human, 1, wood, WoodCost, engineer, 1)) return;
             GameAudioController.PlayUI(GameAudioCue.RecruitWarrior, .7f);
             GameNotifications.Post(Translate("engineering.recruited", "Инженер нанят"), NotificationKind.Positive, engineer.resourceIcon);
             Refresh();
@@ -71,10 +71,10 @@ namespace GameFoundation.Base
             title.text = Translate("engineering.bureau", "Инженерное бюро");
             label.text = Translate("engineering.recruit", "Нанять инженера");
             var resources = GlobalResourceManager.Instance;
-            recruit.interactable = resources != null && resources.GetResourceAmount(human) >= 1 &&
+            recruit.interactable = CraftProduction.Morning && CraftProduction.FreeResidents(human) >= 1 &&
                 resources.GetResourceAmount(wood) >= WoodCost;
             BaseDisabledButtonHint.Set(recruit, BaseDisabledButtonHint.Reason.Resources);
-            humanPrice.color = resources != null && resources.GetResourceAmount(human) >= 1 ? new Color(.55f,.85f,.35f) : new Color(1f,.3f,.35f);
+            humanPrice.color = CraftProduction.Morning && CraftProduction.FreeResidents(human) >= 1 ? new Color(.55f,.85f,.35f) : new Color(1f,.3f,.35f);
             woodPrice.color = resources != null && resources.GetResourceAmount(wood) >= WoodCost ? new Color(.55f,.85f,.35f) : new Color(1f,.3f,.35f);
             count.text = (resources != null ? resources.GetResourceAmount(engineer) : 0).ToString();
         }

@@ -9,8 +9,8 @@ namespace GameFoundation.Quests
     [RequireComponent(typeof(Button))]
     public sealed class DialogueHoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerExitHandler, IPointerEnterHandler
     {
-        [SerializeField] private Color holdFillColor = new Color(.9811321f, .8801197f, .33784264f, 1);
-        [SerializeField, Min(.1f)] private float holdDuration = .7f;
+        [SerializeField] private Color holdFillColor = new Color(.84f, .74f, .38f, 1);
+        [SerializeField, Min(.1f)] private float holdDuration = .4f;
         [SerializeField] private Material holdTintMaterial;
         [SerializeField] private Sprite leftMouseSprite;
         [SerializeField] private Sprite tooltipBackground;

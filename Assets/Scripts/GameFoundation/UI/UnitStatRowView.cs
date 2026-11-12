@@ -38,7 +38,7 @@ namespace GameFoundation.UI
                 label.text = caption;
                 label.rectTransform.offsetMax = new Vector2(-(defense ? defenseLabelRightInset : normalLabelRightInset), 0f);
             }
-            if (value != null) { value.gameObject.SetActive(!defense); value.text = amount; value.color = valueColor; }
+            if (value != null) { value.gameObject.SetActive(!defense); if (amount.Contains("<color=")) value.supportRichText = true; value.text = amount; value.color = valueColor; }
             if (background != null) background.color = stripe;
         }
 

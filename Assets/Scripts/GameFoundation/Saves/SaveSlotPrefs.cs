@@ -28,6 +28,10 @@ namespace GameFoundation.Saves
         public static System.IDisposable Batch() => GameSaveService.Batch();
         public static bool BeginRunCheckpoint() => GameSaveService.BeginRunCheckpoint(SelectedSlot);
         public static void CompleteRunCheckpoint() => GameSaveService.CompleteRunCheckpoint(SelectedSlot);
+        internal static void CancelRunCheckpoint(int slot)
+        {
+            if (GameSaveService.CancelRunCheckpoint(slot) && SelectedSlot == slot) SelectionChanged?.Invoke();
+        }
         public static void ResetAll()
         {
             if (GameSaveService.WritesSuspended) return;

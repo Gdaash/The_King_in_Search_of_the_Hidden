@@ -19,6 +19,9 @@ namespace GameFoundation.Base
         [SerializeField] private GameFoundation.UI.BuildingButtonHighlight highlight;
         [SerializeField] private string upgradeBuildingId;
 
+        private System.Func<bool> militaryDistrict;
+        internal void SetMilitaryDistrict(System.Func<bool> available) => militaryDistrict = available;
+
         private bool daySubscribed;
         private RoyalDecreeRow[] royalDecrees;
         private PortalTowerBalance portalBalance;
@@ -56,6 +59,7 @@ namespace GameFoundation.Base
             GlobalResourceManager.OnResourceChanged += OnResourceChanged;
             RoyalDecreeService.Changed += OnDecreeChanged;
             BuildingUpgradeService.Changed += Refresh;
+            CraftProduction.Changed += Refresh;
             GameFoundation.Quests.ContentUnlocks.Changed += Refresh;
             SubscribeDay();
             Refresh();
@@ -75,6 +79,7 @@ namespace GameFoundation.Base
             GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
             RoyalDecreeService.Changed -= OnDecreeChanged;
             BuildingUpgradeService.Changed -= Refresh;
+            CraftProduction.Changed -= Refresh;
             GameFoundation.Quests.ContentUnlocks.Changed -= Refresh;
             if (daySubscribed && DayCycleService.Instance != null) DayCycleService.Instance.Changed -= Refresh;
             daySubscribed = false;
@@ -96,10 +101,10 @@ namespace GameFoundation.Base
             {
                 ActionType.CartPurchase => warehouse != null && warehouse.CanBuyCart,
                 ActionType.BlacksmithProduction => (blacksmith != null && blacksmith.CanProduceAny) || (warehouse != null && warehouse.CanBuyCart),
-                ActionType.MilitaryTraining => training != null && training.CanArmWarrior,
+                ActionType.MilitaryTraining => training != null && (training.TryGetComponent<RangeTrainingTabs>(out var range) ? range.CanTrain : training.CanArmWarrior),
                 ActionType.BuildingConstruction => construction != null && construction.CanAffordConstruction,
                 ActionType.LaboratoryUpgrade => HasAvailableLaboratoryUpgrade(),
-                ActionType.PortalTravel => DayCycleService.Instance != null && !DayCycleService.Instance.EnteredToday,
+                ActionType.PortalTravel => DayCycleService.Instance != null && !DayCycleService.Instance.EnteredToday && DayCycleService.Instance.HasExpeditionResidents,
                 ActionType.RefugeeAdmission => DayCycleService.Instance != null && DayCycleService.Instance.RefugeesAvailable > 0 && BuildingUpgradeService.CanAdmitResident,
                 ActionType.MagicTowerUnlock => arsenal != null && portalBalance.useSelectableArsenal &&
                     portalBalance.useEnergyLoadout && arsenal.HasAffordableBaseUnlock(portalBalance),
@@ -108,7 +113,7 @@ namespace GameFoundation.Base
             bool buildingReady = actionType == ActionType.BuildingConstruction || construction == null || construction.IsBuilt;
             bool upgrade = upgradeBuildingId == "housing" ? HousingDistrict.HasAvailableAction()
                 : !string.IsNullOrEmpty(upgradeBuildingId) && BuildingUpgradeService.CanUpgrade(upgradeBuildingId);
-            if (highlight != null) highlight.SetAvailable(buildingReady && (actionAvailable || upgrade));
+            if (highlight != null) highlight.SetAvailable(buildingReady && (militaryDistrict?.Invoke() ?? (actionAvailable || upgrade)));
         }
 
         private bool HasAvailableDecree()

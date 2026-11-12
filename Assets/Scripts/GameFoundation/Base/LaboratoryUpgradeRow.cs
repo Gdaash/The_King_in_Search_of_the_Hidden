@@ -1,3 +1,4 @@
+using GameFoundation.UI;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -24,6 +25,7 @@ namespace GameFoundation.Base
         public BaseDisabledButtonHint.Reason PurchaseBlock { get; private set; }
         private LaboratoryUpgradeList owner;
         private bool pipsResolved;
+        private PopupChoiceRowStyle rowStyle;
 
         private void Awake() => purchaseButton.onClick.AddListener(Purchase);
         private void OnDestroy() => purchaseButton.onClick.RemoveListener(Purchase);
@@ -46,18 +48,13 @@ namespace GameFoundation.Base
             IsComplete = portal != null ? portal.IsComplete(upgrade) : bought == total;
             bool unlocked = portal != null ? portal.IsUnlocked(upgrade) : stats.IsUpgradeUnlocked(entry);
             bool affordable = portal != null ? portal.CanPurchase(upgrade) : stats.CanPurchaseUpgrade(entry);
-            Color tint = IsComplete ? purchasedColor : !unlocked ? lockedColor : affordable ? affordableColor : unaffordableColor;
-            border.color = Color.white;
             lockIcon.color = unlocked || IsComplete ? new Color(.85f, .77f, .55f) : new Color(.64f, .59f, .68f);
             requirementLabel.text = (portal != null ? bought : entry.requiredPurchases).ToString();
             if (portal != null) ResourceIconSizing.Apply(lockIcon, upgrade.icon);
             titleLabel.text = owner.Title(entry) + "  " + LaboratoryUpgradeList.Tr("laboratory.level", GameFoundation.Localization.GameText.Get("ур.")) + entry.level;
             titleLabel.color = IsComplete ? purchasedColor : unlocked ? new Color(.94f, .91f, .82f) : new Color(.64f, .60f, .67f);
-            statusLabel.text = IsComplete ? LaboratoryUpgradeList.Tr("laboratory.complete", GameFoundation.Localization.GameText.Get("Изучено")) :
-                !unlocked ? LaboratoryUpgradeList.Tr("laboratory.locked", GameFoundation.Localization.GameText.Get("Заблокировано")) :
-                affordable ? LaboratoryUpgradeList.Tr("laboratory.available", GameFoundation.Localization.GameText.Get("Можно изучить")) : LaboratoryUpgradeList.Tr("laboratory.no_resources", GameFoundation.Localization.GameText.Get("Не хватает ресурсов"));
+            (statusLabel.text, statusLabel.color) = PopupChoiceRowStyle.PurchaseStatus(IsComplete, !unlocked, affordable);
             if (total > 1 || total == 0) statusLabel.text += "  ·  " + bought + "/" + (total == 0 ? "∞" : total.ToString());
-            statusLabel.color = !unlocked && !IsComplete ? new Color(.64f, .59f, .68f) : tint;
             price.SetActive(true);
             ResourceIconSizing.Apply(costIcon, portal != null ? portal.Balance.levelPointIcon : entry.costResource != null ? entry.costResource.resourceIcon : null);
             costIcon.enabled = costIcon.sprite != null;
@@ -74,8 +71,35 @@ namespace GameFoundation.Base
         }
         public void SetSelected(bool selected)
         {
-            selection.enabled = false;
-            surface.color = selected ? new Color(.20f, .16f, .24f) : new Color(.16f, .13f, .19f);
+            if (rowStyle == null)
+            {
+                surface.enabled = false;
+                selection.enabled = false;
+                rowStyle = new PopupChoiceRowStyle(purchaseButton, border);
+                if (owner.portalProgression == null)
+                {
+                    var card = border.rectTransform;
+                    card.offsetMin = new Vector2(9, card.offsetMin.y);
+                }
+                MoveInside(lockIcon.rectTransform, new Vector2(34, 15));
+                MoveInside(requirementLabel.rectTransform, new Vector2(34, -16));
+                foreach (var rect in new[] { titleLabel.rectTransform, statusLabel.rectTransform })
+                {
+                    rect.anchoredPosition += new Vector2(42, 0);
+                    rect.sizeDelta -= new Vector2(42, 0);
+                }
+                if (levelPips != null)
+                    ((RectTransform)levelPips.transform).anchoredPosition += new Vector2(42, 0);
+            }
+            rowStyle.SetSelected(selected);
+        }
+
+        private void MoveInside(RectTransform rect, Vector2 position)
+        {
+            rect.SetParent(border.transform, false);
+            rect.anchorMin = rect.anchorMax = new Vector2(0, .5f);
+            rect.pivot = Vector2.one * .5f;
+            rect.anchoredPosition = position;
         }
         private void Purchase()
         {

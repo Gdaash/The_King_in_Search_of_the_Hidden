@@ -1,5 +1,6 @@
 using UnityEngine;
 using GameFoundation.MetaProgression;
+using GameFoundation.Base;
 namespace GameFoundation.Combat
 {
     [DisallowMultipleComponent]
@@ -16,10 +17,16 @@ namespace GameFoundation.Combat
         [Header("Upgrade modifiers only")]
         public GlobalStats modifiers;
         public GameFoundation.Base.EquipmentKind equipment;
-        public float HealthBeforeLevel => modifiers!=null?modifiers.ApplyHealthModifiers(baseHealth):baseHealth;
+        public float HealthBeforeLevel => (modifiers != null ? modifiers.ApplyHealthModifiers(baseHealth) : baseHealth) *
+            (equipment switch
+            {
+                EquipmentKind.Bow => EquipmentUpgrades.Multiplier(EquipmentKind.LeatherArmor),
+                EquipmentKind.Sword => EquipmentUpgrades.Multiplier(EquipmentKind.IronArmor),
+                _ => 1f
+            });
         public float SpeedBeforeLevel => Mathf.Max(.1f,baseSpeed+(modifiers!=null?modifiers.bonusSpeed:0)) * (equipment == GameFoundation.Base.EquipmentKind.Cart ? GameFoundation.Base.EquipmentUpgrades.Multiplier(equipment) : 1);
         public float DamageBeforeLevel => (weapon!=null?Mathf.Max(0,weapon.damage+(modifiers!=null?modifiers.UnifiedBonusDamage:0)):0) *
-            (equipment == GameFoundation.Base.EquipmentKind.Sword || equipment == GameFoundation.Base.EquipmentKind.Bow ? GameFoundation.Base.EquipmentUpgrades.Multiplier(equipment) : 1);
+            (equipment is EquipmentKind.Sword or EquipmentKind.Bow or EquipmentKind.Spear ? GameFoundation.Base.EquipmentUpgrades.Multiplier(equipment) : 1);
         public float IntervalBeforeLevel => Mathf.Max(.05f,(weapon!=null?weapon.interval:1.5f)-(modifiers!=null?modifiers.bonusAttackSpeed:0));
         public float RangeBeforeLevel => Mathf.Max(0,(weapon!=null?weapon.range:0)+(modifiers!=null?modifiers.bonusAttackRange:0));
         public float Damage => DamageBeforeLevel*MilitaryExperience.Multiplier(this);

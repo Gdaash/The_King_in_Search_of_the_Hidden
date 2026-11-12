@@ -35,6 +35,10 @@ public static class TutorialCarrierValidation
         var item=new GameObject("QA mined resource").AddComponent<ResourceItem>();var wood=Resources.Load<ResourceType>("ResourceTypes/Wood");var stone=Resources.Load<ResourceType>("ResourceTypes/Stone");item.type=wood;
         var produced=typeof(FirstRunLightTutorial).GetMethod("OnResourceProduced",Private);produced.Invoke(tutorial,new object[]{source,item});
         var window=(GameObject)Get(tutorial,"window");var next=(Button)Get(tutorial,"nextButton");
+        Check(stepField.GetValue(tutorial).ToString()=="FirstHarvest"&&Time.timeScale==3&&!window.activeSelf,"First harvest must stay visible before pausing for the carrier explanation");
+        var presentation=(System.Collections.IEnumerator)typeof(FirstRunLightTutorial).GetMethod("ShowCarriers",Private).Invoke(tutorial,null);
+        Check(presentation.MoveNext()&&presentation.Current is WaitForSecondsRealtime wait&&Mathf.Approximately(wait.waitTime,.5f),"Carrier presentation waits half a second");
+        presentation.MoveNext();
         Check(stepField.GetValue(tutorial).ToString()=="Carriers"&&Time.timeScale==0&&window.activeSelf&&next.gameObject.activeSelf,"Mining must pause for the carrier explanation with Next");
         Check(FirstRunLightTutorial.BlocksInput&&!FirstRunLightTutorial.AllowsLightDrag,"Carrier explanation must keep gameplay and dragging locked");
         Warehouse.Instance.DepositResource(wood);
@@ -48,7 +52,7 @@ public static class TutorialCarrierValidation
         item.type=stone;produced.Invoke(tutorial,new object[]{source,item});Warehouse.Instance.DepositResource(stone);
         Check(stepField.GetValue(tutorial).ToString()=="Drag"&&Time.timeScale==0&&window.activeSelf&&FirstRunLightTutorial.AllowsLightDrag,"Second deposited unit, including a different resource, must pause and unlock the beam-drag lesson");
         var table=AssetDatabase.LoadAssetAtPath<GameFoundation.Localization.LocalizationTable>("Assets/Resources/Localization/Base Localization.asset");
-        Check(table.Get("world.tutorial.carriers","en").Contains("two units"),"Carrier explanation must be localized in English");
+        Check(table.Get("world.tutorial.carriers","en").Contains("first supplies to arrive"),"Carrier explanation must be localized in English");
         go.SetActive(false);source.gameObject.SetActive(false);item.gameObject.SetActive(false);
         Object.Destroy(go);Object.Destroy(parent);Object.Destroy(source.gameObject);Object.Destroy(item.gameObject);
         SessionState.SetString("TutorialCarrierQA","PASS: production explanation pause, held Next, locked delivery phase, one-unit wait, second mixed-resource delivery, drag pause and RU/EN");

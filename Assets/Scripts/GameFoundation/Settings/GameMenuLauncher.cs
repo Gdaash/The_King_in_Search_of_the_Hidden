@@ -18,7 +18,7 @@ namespace GameFoundation.Settings
             if (EditorWaveCheatPopup.IsOpen || EditorWaveCheatPopup.ClosedFrame == Time.frameCount) return;
 #endif
             // The popup is inactive while closed, so its launcher owns the opening shortcut.
-            if (Input.GetKeyDown(KeyCode.Escape) && (!menu || !menu.gameObject.activeInHierarchy && menu.ClosedFrame != Time.frameCount) &&
+            if (!GameFoundation.Base.BuildingConstructionEffect.BlocksInput && Input.GetKeyDown(KeyCode.Escape) && (!menu || !menu.gameObject.activeInHierarchy && menu.ClosedFrame != Time.frameCount) &&
                 !GameFoundation.MetaProgression.PortalCloudTransition.IsLoading)
                 Open();
         }

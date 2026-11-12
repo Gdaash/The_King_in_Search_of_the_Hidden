@@ -29,7 +29,8 @@ public sealed class BottomRunBarsLayout : MonoBehaviour
         var center = canvas.InverseTransformPoint(experience.TransformPoint(experience.rect.center));
         if (!battleSlots && experience.parent != null)
             battleSlots = experience.parent.GetComponentInChildren<PortalWeaponSlots>(true);
-        if (battleSlots && battleSlots.context == PortalWeaponSlots.Context.Battle && battleSlots.isActiveAndEnabled)
+        if (battleSlots && (Application.isPlaying ? battleSlots.HasVisibleBattleSlots :
+                battleSlots.context == PortalWeaponSlots.Context.Battle && battleSlots.isActiveAndEnabled))
         {
             var slots = (RectTransform)battleSlots.transform;
             if (controls && returnPanel)

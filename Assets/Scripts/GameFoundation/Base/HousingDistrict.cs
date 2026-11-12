@@ -72,7 +72,7 @@ namespace GameFoundation.Base
             for (int i = 0; i < HouseCount; i++)
                 if (CanPurchaseHouse(i)) return true;
             return CanPurchaseAnnex(ExpeditionTasks.Coop) ||
-                CanPurchaseAnnex(ExpeditionTasks.Tannery) || CanPurchaseAnnex(Fields);
+                CanPurchaseAnnex(Fields);
         }
 
         public static bool TryPurchaseHouse(int index)
@@ -85,7 +85,7 @@ namespace GameFoundation.Base
 
         public static bool TryConvertHenToFood()
         {
-            if (!ExpeditionTasks.CoopBuilt) return false;
+            if (!CraftProduction.Morning || !ExpeditionTasks.CoopBuilt) return false;
             var chicken = ResourceCatalog.Find("Chicken");
             return GlobalResourceManager.Instance != null && GlobalResourceManager.Instance.TryExchangeResources(
                 chicken, 1, chicken, 0, ResourceCatalog.Find("Berry"), 1);
@@ -93,14 +93,14 @@ namespace GameFoundation.Base
 
         public readonly struct Production
         {
-            public readonly int Chickens, Capacity, Chicks, Eggs, FieldFood, Hides;
+            public readonly int Chickens, Capacity, Chicks, Eggs, FieldFood;
             internal readonly int First, Second, RestingPairs;
             public int ChicksKept => Mathf.Min(Chicks, Mathf.Max(0, Capacity - Chickens));
             public int Food => Eggs + Chicks - ChicksKept + FieldFood;
-            internal Production(int chickens, int capacity, int chicks, int eggs, int fieldFood, int hides, int first, int second, int pairCredit)
+            internal Production(int chickens, int capacity, int chicks, int eggs, int fieldFood, int first, int second, int pairCredit)
             {
                 Chickens = chickens; Capacity = capacity; Chicks = chicks; Eggs = eggs;
-                FieldFood = fieldFood; Hides = hides; First = first; Second = second; RestingPairs = pairCredit;
+                FieldFood = fieldFood; First = first; Second = second; RestingPairs = pairCredit;
             }
         }
 
@@ -110,14 +110,13 @@ namespace GameFoundation.Base
             int chickens = ExpeditionTasks.CoopBuilt ? stock?.GetResourceAmount(ResourceCatalog.Find("Chicken")) ?? 0 : 0;
             int fieldFood = BuildingUpgradeService.IsBuilt(Fields)
                 ? BuildingUpgradeService.Catalog?.Find(Fields)?.constructionCapacity ?? 0 : 0;
-            int hides = ExpeditionTasks.TanneryBuilt ? stock?.GetResourceAmount(ResourceCatalog.Find("Hide")) ?? 0 : 0;
-            return Calculate(chickens, ExpeditionTasks.CoopCapacity, fieldFood, hides,
+            return Calculate(chickens, ExpeditionTasks.CoopCapacity, fieldFood,
                 SaveSlotPrefs.GetInt(Prefix + "egg.first"), SaveSlotPrefs.GetInt(Prefix + "egg.second"),
                 SaveSlotPrefs.GetInt(Prefix + "egg.third"), SaveSlotPrefs.GetInt(Prefix + "restingPairs"));
         }
 
         // Age buckets preserve each hen's three-day laying cadence. New birds start at age zero.
-        internal static Production Calculate(int chickens, int capacity, int fieldFood, int hides,
+        internal static Production Calculate(int chickens, int capacity, int fieldFood,
             int first, int second, int third, int pairCredit)
         {
             third = Mathf.Clamp(third, 0, chickens);
@@ -126,7 +125,7 @@ namespace GameFoundation.Base
             first += chickens - first - second - third;
             int pairs = chickens / 2;
             int completed = Mathf.Clamp(pairCredit, 0, pairs);
-            return new Production(chickens, capacity, completed, third, fieldFood, hides, first, second, pairs - completed);
+            return new Production(chickens, capacity, completed, third, fieldFood, first, second, pairs - completed);
         }
 
         public static void Produce()
@@ -143,11 +142,7 @@ namespace GameFoundation.Base
                 if (result.ChicksKept > 0) stock.AddResource(ResourceCatalog.Find("Chicken"), result.ChicksKept);
             }
             if (result.Food > 0) stock.AddResource(ResourceCatalog.Find("Berry"), result.Food);
-            if (result.Hides > 0)
-            {
-                var hide = ResourceCatalog.Find("Hide");
-                stock.TryExchangeResources(hide, result.Hides, hide, 0, ResourceCatalog.Find("Leather"), result.Hides);
-            }
+
         }
     }
 }

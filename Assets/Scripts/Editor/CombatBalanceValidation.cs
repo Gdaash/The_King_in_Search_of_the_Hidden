@@ -49,39 +49,43 @@ public static class CombatBalanceValidation
         {
             checks=0;await Task.Delay(250);GameSpeedControls.SetSimulationSpeed(1);
             var knight=Target("CursedKnight");var guardian=Target("OctopusGuardian");var mage=Target("CursedMage");var giant=Target("OctopusWarrior");
-            Check(knight.MaxHealth==100 && guardian.MaxHealth==80 && giant.MaxHealth==300 && mage.MaxHealth==60,"Enemy health archetypes");
-            Hit(knight,10,DamageType.Physical,7);Hit(knight,3,DamageType.Physical,0);Hit(knight,40,DamageType.Magic,37);
-            Hit(knight,5,DamageType.Fire,2);Hit(knight,40,DamageType.Electric,37);
-            Hit(guardian,10,DamageType.Physical,7);Hit(guardian,40,DamageType.Electric,37);
+            Check(knight.MaxHealth==220 && guardian.MaxHealth==165 && giant.MaxHealth==520 && mage.MaxHealth==76,"Enemy health archetypes");
+            Hit(knight,10,DamageType.Physical,3);Hit(knight,3,DamageType.Physical,0);Hit(knight,40,DamageType.Magic,33);
+            Hit(knight,5,DamageType.Fire,0);Hit(knight,40,DamageType.Electric,33);
+            Hit(guardian,10,DamageType.Physical,6);Hit(guardian,40,DamageType.Electric,36);
             foreach(var type in new[]{DamageType.Magic,DamageType.Fire,DamageType.Ice,DamageType.Electric})Hit(mage,40,type,40);
-            Hit(mage,40,DamageType.Physical,40);Hit(giant,40,DamageType.Physical,40);Hit(giant,5,DamageType.Fire,5);
-            Check(Prefab("Octopus").GetComponent<Combatant>().baseHealth==20 && Prefab("OctopusRaider").GetComponent<Combatant>().baseSpeed>Prefab("Octopus").GetComponent<Combatant>().baseSpeed,"Fast low-health enemies");
+            Hit(mage,40,DamageType.Physical,40);Hit(giant,40,DamageType.Physical,34);Hit(giant,5,DamageType.Fire,0);
+            Check(Prefab("Octopus").GetComponent<Combatant>().baseHealth==22 && Prefab("OctopusRaider").GetComponent<Combatant>().baseSpeed>Prefab("Octopus").GetComponent<Combatant>().baseSpeed,"Fast low-health enemies");
             var high=Target("CursedKnight",50);
-            Check(Mathf.Approximately(high.MaxHealth,590) && high.Armor>3 && high.Armor<7,"Level 50 scales health faster than armor");
-            var c=knight.GetComponent<Combatant>();c.modifiers.bonusArmor=2;Hit(knight,10,DamageType.Physical,5);c.modifiers.bonusArmor=0;
-            c.modifiers.resistances.Find(r=>r.type==DamageType.Electric).bonusResist=.25f;Hit(knight,40,DamageType.Electric,37);
+            Check(Mathf.Approximately(high.MaxHealth,1298) && Mathf.Approximately(high.Armor,15.575f),"Level 50 scales health faster than armor");
+            var c=knight.GetComponent<Combatant>();c.modifiers.bonusArmor=2;Hit(knight,10,DamageType.Physical,1);c.modifiers.bonusArmor=0;
+            c.modifiers.resistances.Find(r=>r.type==DamageType.Electric).bonusResist=.25f;Hit(knight,40,DamageType.Electric,33);
             c.modifiers.resistances.Find(r=>r.type==DamageType.Electric).bonusResist=0;
             var projectilePrefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Projectiles/ArrowTowerProjectile.prefab");
             var projectile=Object.Instantiate(projectilePrefab);spawned.Add(projectile);
             var p=projectile.GetComponent<EnemyProjectile>();knight.SetNormalizedHealth(1);p.SetupHit(Vector3.right,"Enemy1",10,DamageType.Physical,null);
             typeof(EnemyProjectile).GetMethod("ProcessHit",BindingFlags.NonPublic|BindingFlags.Instance).Invoke(p,new object[]{knight.gameObject});
-            Check(knight.CurrentHealth==93,"Projectile enters shared armor calculation");
+            Check(knight.CurrentHealth==217,"Projectile enters shared armor calculation");
             typeof(EnemyProjectile).GetMethod("ProcessHit",BindingFlags.NonPublic|BindingFlags.Instance).Invoke(p,new object[]{knight.gameObject});
-            Check(knight.CurrentHealth==93,"Same projectile cannot hit twice");
-            foreach(var name in new[]{"Archer Bow","Swordsman Sword","Sniper Bow","Arrow Tower","Magic Tower","Stone Tower","Portal Bolts","Portal Beam","Portal Rings","Portal Lightning","Barbarian Attack"})
-            {
-                var w=AssetDatabase.LoadAssetAtPath<CombatWeapon>(CombatBalanceSetup.Folder+"/Weapons/"+name+".asset");Check(w!=null && Mathf.Approximately(w.SingleTargetDps,20),name+" base DPS = 20");
-            }
+            Check(knight.CurrentHealth==217,"Same projectile cannot hit twice");
+            var sling=AssetDatabase.LoadAssetAtPath<CombatWeapon>(CombatBalanceSetup.Folder+"/Weapons/Slinger Stone.asset");
+            var bow=AssetDatabase.LoadAssetAtPath<CombatWeapon>(CombatBalanceSetup.Folder+"/Weapons/Archer Bow.asset");
+            var spear=AssetDatabase.LoadAssetAtPath<CombatWeapon>(CombatBalanceSetup.Folder+"/Weapons/Spearman Spear.asset");
+            var swordWeapon=AssetDatabase.LoadAssetAtPath<CombatWeapon>(CombatBalanceSetup.Folder+"/Weapons/Swordsman Sword.asset");
+            Check(sling.SingleTargetDps < bow.SingleTargetDps && sling.interval > bow.interval && sling.range < bow.range,
+                "Slinger starts below the archer in damage, fire rate and reach");
+            Check(spear.SingleTargetDps < swordWeapon.SingleTargetDps && spear.range > swordWeapon.range,
+                "Spearman trades DPS for reach");
             var balance=PortalTowerProgression.Instance.Balance;
             Check(balance.FindWeapon(PortalTowerBalance.Weapon.Lightning).damageType==DamageType.Electric,"Portal lightning retains its visual theme");
             Check(balance.weapons.All(w=>w.combat!=null && w.damage==w.combat.damage),"Portal weapon stats have one source");
             var swordsman=Target("RedSwordsman");var sword=swordsman.GetComponent<Combatant>();
-            Check(sword.Damage==40 && sword.Interval==2,"Melee weapon uses central attack data");
+            Check(sword.Damage==34 && Mathf.Approximately(sword.Interval,1.65f),"Melee weapon uses central attack data");
             sword.modifiers.damageSettings.Find(d=>d.type==DamageType.Physical).bonusDamage=5;
             sword.modifiers.bonusAttackSpeed=.5f;
-            Check(sword.Damage==45 && sword.Interval==1.5f,"Damage and attack upgrades remain effective");
+            Check(sword.Damage==39 && Mathf.Approximately(sword.Interval,1.15f),"Damage and attack upgrades remain effective");
             sword.modifiers.bonusHealth=20;sword.modifiers.bonusSpeed=.3f;
-            Check(swordsman.MaxHealth==120 && Mathf.Approximately(sword.SpeedBeforeLevel,1.8f),"Prefab bases combine with global modifiers");
+            Check(swordsman.MaxHealth==140 && Mathf.Approximately(sword.SpeedBeforeLevel,1.8f),"Prefab bases combine with global modifiers");
             var canvas=new GameObject("Combat info validation",typeof(Canvas));spawned.Add(canvas);canvas.GetComponent<Canvas>().renderMode=RenderMode.ScreenSpaceOverlay;canvas.GetComponent<Canvas>().sortingOrder=3000;
             var card=Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(UnitDescriptionSetup.CardPath),canvas.transform);spawned.Add(card);
             var rect=card.GetComponent<RectTransform>();rect.anchorMin=rect.anchorMax=rect.pivot=new Vector2(.5f,.5f);rect.anchoredPosition=Vector2.zero;rect.sizeDelta=new Vector2(640,Mathf.Min(880,Screen.height-60));

@@ -24,7 +24,7 @@ public static class GameMenuSetup
         var title = window.Find("Title").GetComponent<UnityEngine.UI.Text>();
         Place(title.rectTransform,new Vector2(500,48),new Vector2(0,154));title.text="Меню";title.fontSize=28;
         var description = Object.Instantiate(title,window);description.name="Description";
-        Place(description.rectTransform,new Vector2(512,112),new Vector2(0,60));description.fontSize=20;description.horizontalOverflow=HorizontalWrapMode.Wrap;description.text="Все люди, оставшиеся в портале, погибнут. Продолжить?";
+        Place(description.rectTransform,new Vector2(512,112),new Vector2(0,60));description.fontSize=20;description.horizontalOverflow=HorizontalWrapMode.Wrap;description.text="Прогресс вылазки не сохранится. Продолжить?";
         var exit = window.Find("Confirm").GetComponent<UnityEngine.UI.Button>();exit.name="Exit";
         var cancel = window.Find("Cancel").GetComponent<UnityEngine.UI.Button>();
         var settings = Object.Instantiate(cancel,window);settings.name="Settings";
@@ -78,7 +78,7 @@ public static class GameMenuSetup
         string original=EditorSceneManager.GetActiveScene().path;EditorSceneManager.SaveOpenScenes();
         foreach(var path in new[]{"Assets/Scenes/Base.unity","Assets/Scenes/World.unity"}){var scene=EditorSceneManager.OpenScene(path);foreach(var root in scene.GetRootGameObjects())count+=Configure(root,menu);EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);}
         var table=AssetDatabase.LoadAssetAtPath<LocalizationTable>("Assets/Resources/Localization/Base Localization.asset");
-        foreach(var pair in new[]{new[]{"menu.title","Меню","Menu"},new[]{"menu.resume","Продолжить игру","Resume game"},new[]{"menu.main","В главное меню","Main menu"},new[]{"menu.exit.question","Выйти в главное меню?","Exit to main menu?"},new[]{"menu.exit.warning","Все люди, оставшиеся в портале, погибнут. Продолжить?","Everyone left in the portal will die. Continue?"},new[]{"menu.exit.confirm","Выйти","Exit"}})
+        foreach(var pair in new[]{new[]{"menu.title","Меню","Menu"},new[]{"menu.resume","Продолжить игру","Resume game"},new[]{"menu.main","В главное меню","Main menu"},new[]{"menu.exit.question","Выйти в главное меню?","Exit to main menu?"},new[]{"menu.exit.warning","Прогресс вылазки не сохранится. Продолжить?","Expedition progress will be lost. Continue?"},new[]{"menu.exit.confirm","Выйти","Exit"}})
             if(!table.entries.Any(e=>e.key==pair[0]))table.entries.Add(new LocalizationTable.Entry{key=pair[0],values=new System.Collections.Generic.List<string>{pair[1],pair[2]}});
         EditorUtility.SetDirty(table);AssetDatabase.SaveAssets();if(!string.IsNullOrEmpty(original))EditorSceneManager.OpenScene(original);Debug.Log("Game menu launchers installed: "+count);
     }

@@ -69,6 +69,7 @@ namespace GameFoundation.MetaProgression
         private UnifiedButtonFeedback _buttonFeedback;
         private Color _normalButtonLabelColor = Color.white;
         private float _portalHealthNormalized = 1f;
+        private WorldCombatFeedback combatFeedback;
 
         private void Awake() { WorldCasualties.Begin();GameFoundation.Saves.SaveSlotPrefs.BeginRunCheckpoint(); }
 
@@ -107,6 +108,10 @@ namespace GameFoundation.MetaProgression
             if (buttonLabel != null) _normalButtonLabelColor = buttonLabel.color;
             if (escapeButton != null) _buttonFeedback = escapeButton.GetComponent<UnifiedButtonFeedback>();
             ResolvePortalTowerHealth();
+            combatFeedback = gameObject.AddComponent<WorldCombatFeedback>();
+            combatFeedback.Configure(portalTowerHealth);
+            if (portalTowerHealth != null) portalTowerHealth.Damaged += OnPortalDamaged;
+            WorldCasualties.AllyDied += OnAllyDied;
             if (escapeButton != null) escapeButton.onClick.AddListener(OnEscapeClicked);
             if (returnButton != null) returnButton.onClick.AddListener(ReturnToBase);
         }
@@ -114,6 +119,8 @@ namespace GameFoundation.MetaProgression
         private void OnDestroy()
         {
             ResultsActive = false;
+            WorldCasualties.AllyDied -= OnAllyDied;
+            if (portalTowerHealth != null) portalTowerHealth.Damaged -= OnPortalDamaged;
             WorldCasualties.End();
             GlobalResourceManager.OnResourceChanged -= OnRunResourceChanged;
             if (escapeButton != null) escapeButton.onClick.RemoveListener(OnEscapeClicked);
@@ -129,6 +136,19 @@ namespace GameFoundation.MetaProgression
             UpdateEscapeButtonWarning();
             if (!_escaping || _showingStatistics || _loading) return;
             RefreshProgress();
+        }
+
+        private void OnPortalDamaged(Transform attacker)
+        {
+            if (isActiveAndEnabled && !ResultsActive)
+                combatFeedback.PortalHit(attacker, criticalWarningThreshold, softWarningThreshold);
+        }
+
+        private void OnAllyDied(ResourceType resource, Vector3 position, float height)
+        {
+            if (!isActiveAndEnabled || ResultsActive) return;
+            combatFeedback.AllyDied(position, height);
+            AlarmSystem.Instance?.ShowAllyDeathNotification(resource.resourceIcon);
         }
 
         private void ResolvePortalTowerHealth()
@@ -340,7 +360,7 @@ namespace GameFoundation.MetaProgression
                 durationLabel.text = GameFoundation.Localization.GameText.Format("Длительность забега: {0}", $"{seconds / 3600:00}:{seconds / 60 % 60:00}:{seconds % 60:00}");
 
             var endingResources=CaptureResources();
-            void ContinueToStatistics(){if(statisticsPanel!=null)statisticsPanel.SetActive(true);StartCoroutine(RevealStatistics(endingResources));}
+            void ContinueToStatistics(){if(statisticsPanel!=null){statisticsPanel.SetActive(true);GameFoundation.UI.PopupMotion.ShowDimmed(statisticsPanel);}StartCoroutine(RevealStatistics(endingResources));}
             if(casualtyPopup!=null&&WorldCasualties.HasLosses)casualtyPopup.Show(WorldCasualties.Dead,WorldCasualties.Missing,ContinueToStatistics);
             else ContinueToStatistics();
         }
@@ -414,7 +434,9 @@ namespace GameFoundation.MetaProgression
             _loading = true;
             GameSpeedControls.SetSimulationSpeed(0f);
             DayResourceLedger.EndRun(_runDurationSeconds);
-            PortalCloudTransition.Load(baseScene);
+            if (statisticsPanel != null && statisticsPanel.activeInHierarchy)
+                GameFoundation.UI.PopupMotion.Hide(statisticsPanel, () => PortalCloudTransition.Load(baseScene));
+            else PortalCloudTransition.Load(baseScene);
         }
 
         public void ExitToMainMenu()
@@ -422,16 +444,19 @@ namespace GameFoundation.MetaProgression
             if (_loading) return;
             _loading = true;
             StopWorldForEscape();
-            SettleUnreturnedHumans();
-            Warehouse.SettlePorterCarts();
-            if (militaryDeployment != null) militaryDeployment.AbandonDeployedUnits();
-            ExpeditionTasks.Settle();
-            DayResourceLedger.EndRun(Mathf.Max(0, Mathf.FloorToInt(Time.realtimeSinceStartup - _runStartedAt)));
-            RecordFirstExpeditionRecovery();
-            GameFoundation.Saves.SaveSlotPrefs.CompleteRunCheckpoint();
-            GameFoundation.Saves.SaveSlotPrefs.Save();
-            SceneManager.LoadScene("MainMenu");
-            GameSpeedControls.SetSimulationSpeed(1f);
+            bool abandonRun = !_showingStatistics;
+            int slot = GameFoundation.Saves.SaveSlotPrefs.SelectedSlot;
+            SceneManager.LoadSceneAsync("MainMenu").completed += _ =>
+            {
+                // Roll back after the battle scene unloads, including any writes made during teardown.
+                if (abandonRun)
+                {
+                    ExpeditionTasks.Reset();
+                    DayResourceLedger.ResetForSlot();
+                    GameFoundation.Saves.SaveSlotPrefs.CancelRunCheckpoint(slot);
+                }
+                GameSpeedControls.SetSimulationSpeed(1f);
+            };
         }
     }
 }

@@ -42,6 +42,7 @@ public static class WorldDifficultyTablesMenu
         foreach (HexDifficultyTable.Difficulty difficulty in table.difficulties.OrderBy(item => item.level))
         foreach (HexManager.HexGroupSettings group in difficulty.groups.OrderBy(item => item.groupID))
         foreach (HexManager.HexPrefabData item in group.prefabsForGroup)
+        for (int i = 0; i < Mathf.Max(1, item.count); i++)
             rows.Add(Row(difficulty.level, group.groupID, AssetDatabase.GetAssetPath(item.prefab), item.contentID,
                 item.isMandatory, item.autoUnlockHex, item.startLocked));
         return string.Join("\r\n", rows);
@@ -239,7 +240,7 @@ public static class WorldDifficultyTablesMenu
             throw new InvalidDataException("Нужны столбцы: " + expected);
     }
 
-    private static int ParseLevel(string value) => Mathf.Clamp(ParseInt(value), 1, 5);
+    private static int ParseLevel(string value) => Mathf.Clamp(ParseInt(value), 1, GameFoundation.MetaProgression.DayCycleService.MaxPortals);
     private static int ParseInt(string value) => int.Parse(value, CultureInfo.InvariantCulture);
     private static float ParseFloat(string value) => float.Parse(value, CultureInfo.InvariantCulture);
     private static bool ParseBool(string value) => value == "1" || value.Equals("true", StringComparison.OrdinalIgnoreCase) || value.Equals("yes", StringComparison.OrdinalIgnoreCase);

@@ -30,8 +30,8 @@ public static class BaseBuildingConstructionSetup
         New("Fort", "fort", "base.base_panel.fort.label", "Форт", "Fort",
             "base.building.fort.description", "Позволяет вооружать жителей мечами и создавать мечников.", "Turns residents with swords into swordsmen."),
         New("Archery Range", "archery_range", "base.base_panel.archery_range.label", "Стрельбище", "Archery range",
-            "base.building.archery_range.description", "Позволяет вооружать жителей луками и создавать лучников.", "Turns residents with bows into archers."),
-        New("Blacksmith", "blacksmith", "base.base_panel.blacksmith.label", "Кузница", "Blacksmith",
+            "base.building.archery_range.description", "Обучает крестьян на пращников. После улучшения можно нанимать лучников.", "Trains peasants as slingers. Upgrade it to recruit archers."),
+        New("Blacksmith", "blacksmith", "base.base_panel.blacksmith.label", "Ремесленный квартал", "Craft Quarter",
             "base.building.blacksmith.description", "Куёт мечи из железной руды и изготавливает луки из дерева.", "Forges swords from iron ore and makes bows from wood."),
         New("Castle", "castle", "base.base_panel.castle.label", "Замок", "Castle",
             "base.building.castle.description", "Позволяет издавать указы, меняющие работу систем.", "Issues decrees that change how game systems work.")

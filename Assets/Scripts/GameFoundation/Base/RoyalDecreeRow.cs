@@ -41,14 +41,14 @@ namespace GameFoundation.Base
             bool affordable = GlobalResourceManager.Instance != null && decree.influence != null &&
                 GlobalResourceManager.Instance.GetResourceAmount(decree.influence) >= decree.activationCost;
             priceAmount.color = affordable ? new Color(.38f,.9f,.48f) : new Color(1,.38f,.38f);
-            toggle.interactable = !ForestForagingService.IsPending && (active || affordable);
+            toggle.interactable = CraftProduction.Morning && !ForestForagingService.IsPending && (active || affordable);
             BaseDisabledButtonHint.Set(toggle, ForestForagingService.IsPending ? BaseDisabledButtonHint.Reason.Busy : BaseDisabledButtonHint.Reason.Resources);
             var tint = toggle.GetComponent<GameFoundation.UI.ActionButtonLabelColor>();
             if (tint != null) tint.Negative = active;
         }
         public void Click()
         {
-            if (decree == null || ForestForagingService.IsPending) return;
+            if (decree == null || !CraftProduction.Morning || ForestForagingService.IsPending) return;
             if (RoyalDecreeService.IsEnabled(decree.id)) popup.ConfirmDisable(this);
             else RoyalDecreeService.TryEnable(decree);
             Refresh();

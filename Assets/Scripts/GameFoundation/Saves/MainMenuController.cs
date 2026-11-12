@@ -68,7 +68,7 @@ namespace GameFoundation.Saves
 
         public void CloseSlots()
         {
-            if (slotsPanel) slotsPanel.SetActive(false);
+            GameFoundation.UI.PopupMotion.Hide(slotsPanel);
         }
 
         public void OpenSettings() => settingsPopup?.Open();

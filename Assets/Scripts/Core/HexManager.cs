@@ -13,7 +13,8 @@ public class HexManager : MonoBehaviour
         public GameObject prefab;
         public bool isMandatory; 
         public bool autoUnlockHex; 
-        public bool startLocked; 
+        public bool startLocked;
+        [Min(1)] public int count = 1;
     }
 
     [System.Serializable]
@@ -158,7 +159,7 @@ public class HexManager : MonoBehaviour
                 return globalHexStats != null && globalHexStats.unlockedHexContentIDs.Contains(d.contentID);
             }
             return true;
-        }).ToList();
+        }).SelectMany(data => Enumerable.Repeat(data, Mathf.Max(1, data.count))).ToList();
 
         var mandatory = allowedData.Where(d => d.isMandatory).ToList();
         pool.AddRange(mandatory);

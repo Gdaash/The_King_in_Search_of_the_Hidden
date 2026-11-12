@@ -16,7 +16,7 @@ namespace GameFoundation.Localization
         private readonly List<Button> buttons=new();
         private LocalizationService subscribed;
         
-        private void OnEnable(){if(firstLaunch&&!RequiredChoicePending){gameObject.SetActive(false);return;}Subscribe();Rebuild();}
+        private void OnEnable(){if(firstLaunch&&!RequiredChoicePending){gameObject.SetActive(false);return;}Subscribe();Rebuild();if(firstLaunch)GameFoundation.UI.PopupMotion.ShowDimmed(gameObject);}
         private void OnDisable(){if(subscribed!=null)subscribed.LanguageChanged-=RefreshSelection;subscribed=null;}
         private void Subscribe(){var service=LocalizationService.Instance;if(service==subscribed)return;if(subscribed!=null)subscribed.LanguageChanged-=RefreshSelection;subscribed=service;if(service!=null)service.LanguageChanged+=RefreshSelection;}
         private void Start(){if(gameObject.activeSelf)Rebuild();}
@@ -112,6 +112,6 @@ namespace GameFoundation.Localization
             }
             if(firstLaunch)transform.SetAsLastSibling();
         }
-        private void Choose(string code){LocalizationService.Instance?.SetLanguage(code);if(firstLaunch)gameObject.SetActive(false);}
+        private void Choose(string code){LocalizationService.Instance?.SetLanguage(code);if(firstLaunch)GameFoundation.UI.PopupMotion.Hide(gameObject);}
     }
 }

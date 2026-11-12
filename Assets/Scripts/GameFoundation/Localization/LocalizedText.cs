@@ -14,6 +14,7 @@ namespace GameFoundation.Localization
         private void Start() { Subscribe(); Refresh(); }
         private void OnDisable() { if (subscribed && LocalizationService.Instance != null) LocalizationService.Instance.LanguageChanged -= Refresh; subscribed = false; }
         private void Subscribe() { if (subscribed || LocalizationService.Instance == null) return; LocalizationService.Instance.LanguageChanged += Refresh; subscribed = true; }
+        public void SetKey(string value) { if (key == value) return; key = value; Refresh(); }
         public void Refresh() { if (LocalizationService.Instance == null) return; var value=LocalizationService.Instance.Get(key); if(tmp!=null) tmp.text=value; if(legacy!=null) legacy.text=value; }
     }
 }

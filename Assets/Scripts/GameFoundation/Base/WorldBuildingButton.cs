@@ -29,6 +29,7 @@ namespace GameFoundation.Base
         private RectTransform rect;
         private Transform artwork;
         public GameObject PointerTarget => !Built && constructionButton != null ? constructionButton.gameObject : gameObject;
+        internal bool AcceptsMapInput => construction == null || !construction.DistrictInterior;
         private bool Built => construction == null || construction.IsBuilt;
 
         private void Awake() => Resolve();
@@ -56,10 +57,11 @@ namespace GameFoundation.Base
                 sprites[i].gameObject.SetActive(true);
                 sprites[i].sharedMaterial = !built && unbuiltMaterial != null ? unbuiltMaterial : originalMaterials[i];
             }
-            if (TryGetComponent<Image>(out var image)) { image.enabled = built; image.raycastTarget = built; }
+            bool showControl = built && AcceptsMapInput;
+            if (TryGetComponent<Image>(out var image)) { image.enabled = showControl; image.raycastTarget = showControl; }
             if (TryGetComponent<Button>(out var button) && button.targetGraphic != null)
-                button.targetGraphic.enabled = built;
-            if (buildingLabel != null) buildingLabel.SetActive(built);
+                button.targetGraphic.enabled = showControl;
+            if (buildingLabel != null) buildingLabel.SetActive(showControl);
         }
         private void LateUpdate() => UpdatePosition();
         private float ScreenScale => Mathf.Min(Screen.width / documentSize.x, Screen.height / documentSize.y);

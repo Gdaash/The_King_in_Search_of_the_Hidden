@@ -96,7 +96,7 @@ namespace GameFoundation.Base
 
         public void Close()
         {
-            if (panel != null) panel.SetActive(false);
+            GameFoundation.UI.PopupMotion.Hide(panel);
             pendingReports.Remove(this);
             foreach (var view in UnityEngine.Object.FindObjectsByType<GameFoundation.Quests.QuestDialogueView>(FindObjectsInactive.Include, FindObjectsSortMode.None))
                 if (view.gameObject.scene.IsValid() && view.gameObject.scene.isLoaded) view.ActivateIfNeeded();

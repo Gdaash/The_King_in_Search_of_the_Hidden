@@ -15,16 +15,19 @@ public partial class Health
     public bool IsStunned => !_dead && Time.time < stunnedUntil;
     public bool IsBurning => !_dead && burnTickDamage > 0 && Time.time <= burnUntil;
 
-    private void ApplyHitEffect(DamageType presentation, float resolvedDamage, Transform attacker)
+    private void ApplyHitEffect(DamageType presentation, float resolvedDamage, Transform attacker, float lightningJumpChance)
     {
         if (effectMovement == null) effectMovement = GetComponent<EnemyMovement>();
+        var portal = GameFoundation.MetaProgression.PortalTowerProgression.FromAttack(attacker);
+        float controlDuration = portal?.RunMultiplier(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.FrostSeal,
+            GameFoundation.MetaProgression.CombatUpgradeCatalog.Stat.Control) ?? 1;
         switch (presentation)
         {
             case DamageType.Physical:
                 if (effectMovement != null && Time.time >= stunImmuneUntil &&
                     CombatHitEffects.Procs(Random.value, CombatHitEffects.StunChance))
                 {
-                    stunnedUntil = Time.time + CombatHitEffects.StunSeconds;
+                    stunnedUntil = Time.time + CombatHitEffects.StunSeconds * controlDuration;
                     stunImmuneUntil = stunnedUntil + CombatHitEffects.StunRecoverySeconds;
                     if (TryGetComponent<Rigidbody2D>(out var body)) body.linearVelocity = Vector2.zero;
                     HitVfx.ShowStun(stunnedUntil);
@@ -50,12 +53,12 @@ public partial class Health
                 break;
             case DamageType.Ice:
                 if (effectMovement == null) break;
-                chilledUntil = Time.time + CombatHitEffects.ChillSeconds;
+                chilledUntil = Time.time + CombatHitEffects.ChillSeconds * controlDuration;
                 effectMovement.SetAreaSlow(this, CombatHitEffects.ChillFraction);
                 break;
             case DamageType.Electric:
                 HitVfx.ElectricBurst();
-                CombatChainLightning.Resolve(this, resolvedDamage, attacker);
+                CombatChainLightning.Resolve(this, resolvedDamage, attacker, chance: lightningJumpChance);
                 break;
             case DamageType.Magic:
                 if (CombatHitEffects.Procs(Random.value, CombatHitEffects.EchoChance))

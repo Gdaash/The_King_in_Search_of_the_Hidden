@@ -44,48 +44,57 @@ public static class StartingQuestChainSetup
         var build = Load<QuestDefinition>(CraftPath);
         var archers = Load<QuestDefinition>("Assets/Resources/Quests/Recruit Two Archers.asset");
         var range = Load<ContentUnlockDefinition>("Assets/Resources/Quests/BuildingUnlocks/archery_range.asset");
+        var barracks = Load<ContentUnlockDefinition>("Assets/Resources/Quests/BuildingUnlocks/barracks.asset");
         var smith = Load<ContentUnlockDefinition>("Assets/Resources/Quests/BuildingUnlocks/blacksmith.asset");
         var wood = Load<ResourceType>("Assets/Resources/ResourceTypes/Wood.asset");
-        var bow = Load<ResourceType>("Assets/Resources/ResourceTypes/Bow.asset");
+        var slinger = Load<ResourceType>("Assets/Resources/ResourceTypes/Slinger.asset");
         var table = Load<LocalizationTable>("Assets/Resources/Localization/Base Localization.asset");
 
-        materials.title = "Дерево для стрельбища";
-        materials.description = "Крыша над головой уже есть. Теперь людям нужно учиться защищать земли портала. Принеси десять связок дерева для стрельбища, и Стайк Пью подготовит всё для его строительства.";
-        materials.inProgressStatus = "Принеси десять связок дерева для стрельбища";
-        materials.requirements = new() { new QuestDefinition.Requirement { resource = wood, amount = 10, purpose = "Дерево для стрельбища", fulfilledByBuilding = "archery_range" } };
-        materials.resourceRewards.Clear(); materials.unlockRewards = new() { range };
+        materials.title = "Дерево для военного квартала";
+        materials.description = "Принеси десять связок дерева для военного квартала.";
+        materials.inProgressStatus = "Принеси десять связок дерева для военного квартала.";
+        materials.requirements = new() { new QuestDefinition.Requirement { resource = wood, amount = 10, purpose = "Дерево для военного квартала", fulfilledByBuilding = "barracks" } };
+        materials.resourceRewards = new() { new QuestDefinition.ResourceReward { resource = wood, amount = 12 } };
+        materials.unlockRewards = new() { barracks };
         materials.unlockRewardsOnCompletion = false; materials.consumeRequirementsOnClaim = false;
 
-        build.title = "Построй стрельбище";
-        build.description = "Поставь стрельбище из десяти связок дерева. Стайк Пью приберёг два лука для первых защитников и отдаст их, когда площадка будет готова.";
-        build.inProgressStatus = "Построй стрельбище";
-        build.requirements = new() { new QuestDefinition.Requirement { buildingId = "archery_range", amount = 1, buildingIcon = range.icon, purpose = "Готовое стрельбище" } };
-        build.resourceRewards = new() { new QuestDefinition.ResourceReward { resource = bow, amount = 2 } };
+        build.title = "Построй военный квартал";
+        build.description = "Построй военный квартал на карте базы за 12 дерева. Казарма откроется сразу.";
+        build.inProgressStatus = "Построй военный квартал";
+        build.requirements = new() { new QuestDefinition.Requirement { buildingId = "barracks", amount = 1, buildingIcon = barracks.icon, purpose = "Готовый военный квартал" } };
+        build.resourceRewards.Clear();
         build.unlockRewards.Clear(); build.unlockRewardsOnCompletion = false;
 
-        archers.description = "Два лука без дела не защитят даже капустную грядку. Найми двух лучников в стрельбище. С первой стражей можно будет взяться за кузницу и устроить лагерь для беженцев.";
-        archers.inProgressStatus = "Найми двух лучников";
-        archers.unlockRewards.RemoveAll(u => u == smith);
-        archers.unlockRewards.Insert(0, smith);
+        archers.title = "Первые пращники";
+        archers.description = "Открой военный квартал, выбери \"Казарма\" и \"Пращники\". Нажми \"Вооружить\" дважды. Для каждого пращника нужен один свободный житель.";
+        archers.inProgressStatus = "Найми двух пращников";
+        archers.requirements = new() { new QuestDefinition.Requirement { resource = slinger, amount = 2, purpose = "Два пращника на страже" } };
+        archers.resourceRewards.Clear();
+        archers.unlockRewards = new()
+        {
+            smith,
+            Load<ContentUnlockDefinition>("Assets/Resources/Quests/BuildingUnlocks/magic_library.asset"),
+            range
+        };
         archers.unlockRewardsOnCompletion = false;
 
-        Localize(table, "quest.archery_materials.title", materials.title, "Timber for the archery range");
-        Localize(table, "quest.archery_materials.description", materials.description, "Our people have a roof. Now they must learn to defend the Portal Lands. Bring ten bundles of wood for an archery range, and Stike Pew will prepare everything needed to build it.");
-        Localize(table, "quest.archery_materials.status", materials.inProgressStatus, "Bring ten bundles of wood for the archery range");
-        Localize(table, "quest.archery_materials.purpose", materials.requirements[0].purpose, "Timber for the archery range");
-        Localize(table, "quest.build_range.title", build.title, "A completed archery range");
-        Localize(table, "quest.build_range.description", build.description, "Build the archery range with ten bundles of wood. Stike Pew has set aside two bows for our first defenders and will hand them over when the range is ready.");
-        Localize(table, "quest.build_range.purpose", build.requirements[0].purpose, "A completed archery range");
-        Localize(table, "quest.recruit_archers.new_description", archers.description, "Two idle bows cannot guard so much as a cabbage patch. Recruit two archers at the range. With our first watch in place, we can turn to a blacksmith and a camp for refugees.");
+        Localize(table, "quest.archery_materials.title", materials.title, "Wood for the Military Quarter");
+        Localize(table, "quest.archery_materials.description", materials.description, "Bring ten bundles of wood for the Military Quarter.");
+        Localize(table, "quest.archery_materials.status", materials.inProgressStatus, "Bring ten bundles of wood for the Military Quarter");
+        Localize(table, "quest.archery_materials.purpose", materials.requirements[0].purpose, "Wood for the Military Quarter");
+        Localize(table, "quest.build_range.title", build.title, "A completed Military Quarter");
+        Localize(table, "quest.build_range.description", build.description, "Build the Military Quarter on the base map for 12 wood. Its barracks opens immediately.");
+        Localize(table, "quest.build_range.purpose", build.requirements[0].purpose, "A completed Military Quarter");
+        Localize(table, "quest.recruit_archers.new_description", archers.description, "Open the Military Quarter, select Barracks and Slingers, then press Arm twice. Each slinger needs one free resident.");
         Dialogue("Assets/Prefabs/Quests/02 Smithy Materials.prefab", materials, first,
-            "Ну вот, первая ночь под крышей! Уже похоже на хозяйство, а не на привал. Теперь позаботимся о страже: в Тёмных землях не все рады соседям.",
-            "There we are, our first night under a roof! Beginning to look like a settlement rather than a campsite. Time to think about a guard. Not everything in the Dark Lands welcomes neighbours.", table, "quest.archery_materials.dialogue", true);
+            "Ну вот, первая ночь позади. Уже похоже на хозяйство, а не на привал. Теперь позаботимся о страже.",
+            "The first night is behind us. This is starting to look like a settlement rather than a campsite. Now let's see to the guard.", table, "quest.archery_materials.dialogue", true);
         Dialogue("Assets/Prefabs/Quests/02 Smithy And Bows.prefab", build, materials,
-            "Вот это дерево! Из такого выйдет славное стрельбище. Всё для строительства готово, осталось взяться за дело.",
-            "Now that's good timber! It'll make a fine archery range. Everything is ready for building; we just need to get to work.", table, "quest.build_range.dialogue");
+            "Из этого дерева выйдет славная казарма. Всё готово, осталось взяться за дело.",
+            "This timber will make a fine barracks. Everything is ready to get to work.", table, "quest.build_range.dialogue");
         Dialogue("Assets/Prefabs/Quests/02 Two Archers.prefab", archers, build,
-            "Стрельбище готово! Держи обещанные два лука. Не новые, зато тетивы крепкие. И стреляют они всё ещё в ту сторону, куда целишься.",
-            "The range is ready! Here are the two bows I promised. Not new, but the strings are sound. And they still shoot in the direction you aim.", table, "quest.recruit_archers.new_dialogue");
+            "Казарма готова! Начнём с пращников – они смогут прикрывать наших людей издалека.",
+            "The barracks are ready! Start with slingers. They can cover our people from afar.", table, "quest.recruit_archers.new_dialogue");
 
         // Update construction sources and variants, including authored overrides.
         foreach (string path in new[] {
@@ -116,7 +125,7 @@ public static class StartingQuestChainSetup
         foreach (var asset in new UnityEngine.Object[] { materials, build, archers, table }) EditorUtility.SetDirty(asset);
         AssetDatabase.SaveAssets();
         InstallBlacksmithQuest();
-        Debug.Log("Post-housing chain: 10 wood -> unlock range -> build range -> 2 bows -> recruit 2 archers -> unlock smithy.");
+        Debug.Log("Post-housing chain: 10 wood -> unlock and build Military Quarter -> train 2 slingers -> Craft Quarter, Magic Tower and Archery Range.");
     }
     public static void InstallBlacksmithQuest()
     {
@@ -132,12 +141,12 @@ public static class StartingQuestChainSetup
         var laboratory = Load<ContentUnlockDefinition>("Assets/Resources/Quests/BuildingUnlocks/laboratory.asset");
         var smithy = Load<ContentUnlockDefinition>("Assets/Resources/Quests/BuildingUnlocks/blacksmith.asset");
         var archers = Load<QuestDefinition>("Assets/Resources/Quests/Recruit Two Archers.asset");
-        quest.title = "Построй кузницу";
-        quest.description = "Защитников станет больше, и каждому понадобится оружие. Построй кузницу. Стайк Пью приготовит две телеги для носильщиков и поможет наладить научную лабораторию.";
-        quest.inProgressStatus = "Построй кузницу";
-        quest.requirements = new() { new QuestDefinition.Requirement { buildingId = "blacksmith", amount = 1, buildingIcon = smithy.icon, purpose = "Кузница для защитников" } };
+        quest.title = "Построй ремесленный квартал";
+        quest.description = "Защитникам понадобится оружие. Построй ремесленный квартал. В столярном цехе можно делать копья, луки и телеги. За постройку Стайк Пью даст две телеги и откроет строительство научной лаборатории и лагеря беженцев.";
+        quest.inProgressStatus = "Построй ремесленный квартал";
+        quest.requirements = new() { new QuestDefinition.Requirement { buildingId = "blacksmith", amount = 1, buildingIcon = smithy.icon, purpose = "Ремесленный квартал" } };
         quest.resourceRewards = new() { new QuestDefinition.ResourceReward { resource = Load<ResourceType>("Assets/Resources/ResourceTypes/Cart.asset"), amount = 2 } };
-        quest.unlockRewards = new() { laboratory }; quest.unlockRewardsOnCompletion = false;
+        quest.unlockRewards = new() { laboratory, Load<ContentUnlockDefinition>("Assets/Resources/Quests/BuildingUnlocks/refugees.asset") }; quest.unlockRewardsOnCompletion = false;
         quest.consumeRequirementsOnClaim = false;
         EditorUtility.SetDirty(quest);
         var catalog = Load<QuestCatalog>("Assets/Resources/Quests/Quest Catalog.asset");
@@ -151,7 +160,7 @@ public static class StartingQuestChainSetup
             root.name = "03 Build Blacksmith";
             var d = root.GetComponent<QuestDialogueDefinition>(); d.id = "pew_build_blacksmith";
             d.quest = quest; d.prerequisite = archers; d.prerequisiteAccepted = false; d.prerequisiteNextDay = false; d.requiredBuildingAfterNight = "";
-            d.lines = QuestNarrativeRevision.Lines(d.id, new[] { "Два лучника на страже – уже спокойнее. Только на старых луках далеко не уедешь. Нашим людям понадобится своё оружие, а для него – кузница." });
+            d.lines = QuestNarrativeRevision.Lines(d.id, new[] { "Первые защитники уже на посту. Теперь нам нужна кузница, чтобы делать своё оружие." });
             PrefabUtility.SaveAsPrefabAsset(root, dialoguePath);
         }
         finally { PrefabUtility.UnloadPrefabContents(root); }
@@ -174,10 +183,10 @@ public static class StartingQuestChainSetup
         try { root.GetComponent<QuestDialogueDefinition>().prerequisite = quest; PrefabUtility.SaveAsPrefabAsset(root, "Assets/Prefabs/Quests/00 Royal Tribute.prefab"); }
         finally { PrefabUtility.UnloadPrefabContents(root); }
         var table = Load<LocalizationTable>("Assets/Resources/Localization/Base Localization.asset");
-        Localize(table, "quest.blacksmith_build.title", quest.title, "A forge for our defenders");
-        Localize(table, "quest.blacksmith_build.description", quest.description, "Our guard will grow, and every defender will need a weapon. Build the blacksmith. Stike Pew will provide two carts for the porters and help establish a scientific laboratory.");
-        Localize(table, "quest.blacksmith_build.purpose", quest.requirements[0].purpose, "A forge for our defenders");
-        Localize(table, "quest.blacksmith_build.dialogue", dialogue.lines[0], "Two archers on watch. That's a comfort. But old bows will only take us so far. Our people need weapons of their own, and that means a blacksmith.");
+        Localize(table, "quest.blacksmith_build.title", quest.title, "Craft Quarter");
+        Localize(table, "quest.blacksmith_build.description", quest.description, "Build the Craft Quarter. The carpentry workshop makes spears, bows and carts. Pew will give you two carts and unlock the Science Laboratory and Refugee Camp.");
+        Localize(table, "quest.blacksmith_build.purpose", quest.requirements[0].purpose, "Craft Quarter");
+        Localize(table, "quest.blacksmith_build.dialogue", dialogue.lines[0], "Our first defenders are on watch. Build the Craft Quarter so we can make our own weapons in the carpentry workshop.");
         EditorUtility.SetDirty(table); AssetDatabase.SaveAssets();
     }
 }

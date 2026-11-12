@@ -38,6 +38,7 @@ namespace GameFoundation.Settings
             if (EventSystem.current) EventSystem.current.SetSelectedGameObject(null);
             if (LocalizationService.Instance) LocalizationService.Instance.LanguageChanged += Refresh;
             Refresh();
+            GameFoundation.UI.PopupMotion.Show(gameObject, (RectTransform)window.transform, GetComponent<Image>());
         }
         private void Update()
         {
@@ -63,7 +64,7 @@ namespace GameFoundation.Settings
         {
             if (leaving) return;
             var battle = FindAnyObjectByType<WorldEscapeController>();
-            if (battle && !confirming) { confirming = true; Refresh(); return; }
+            if (battle && !WorldEscapeController.ResultsActive && !confirming) { confirming = true; Refresh(); return; }
             leaving = true;
             if (battle) battle.ExitToMainMenu();
             else { SaveSlotPrefs.Save(); SceneManager.LoadScene("MainMenu"); GameSpeedControls.SetSimulationSpeed(1); }
@@ -71,8 +72,7 @@ namespace GameFoundation.Settings
         public void Cancel()
         {
             if (confirming) { confirming = false; Refresh(); return; }
-            ClosedFrame = Time.frameCount;
-            gameObject.SetActive(false);
+            GameFoundation.UI.PopupMotion.Hide(gameObject, () => ClosedFrame = Time.frameCount);
         }
         private void Refresh()
         {
@@ -80,7 +80,7 @@ namespace GameFoundation.Settings
             ((RectTransform)cancelButton.transform).anchoredPosition = new Vector2(0, confirming ? -128 : -104);
             title.text = GameText.Get(confirming ? "Выйти в главное меню?" : "Меню");
             description.gameObject.SetActive(confirming);
-            description.text = GameText.Get("Все люди, оставшиеся в портале, погибнут. Продолжить?");
+            description.text = GameText.Get("Прогресс вылазки не сохранится. Продолжить?");
             settingsButton.gameObject.SetActive(!confirming);
             settingsLabel.text = GameText.Get("Настройки");
             exitLabel.text = GameText.Get(confirming ? "Выйти" : "В главное меню");

@@ -1,4 +1,4 @@
-﻿using PlayerPrefs = GameFoundation.Saves.SaveSlotPrefs;
+using PlayerPrefs = GameFoundation.Saves.SaveSlotPrefs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +30,7 @@ namespace GameFoundation.MetaProgression
             public readonly int Swordsmen;
             public readonly int Archers;
             public readonly int Spearmen;
+            public readonly int Slingers;
             public readonly int Residents;
             public readonly int Berries;
             public readonly int Crowns;
@@ -37,13 +38,14 @@ namespace GameFoundation.MetaProgression
             public int Starving => Mathf.Max(0, Residents - Food);
             public int CrownDelta => Starving > 0 ? (Crowns > 0 ? -1 : 0) : 1;
 
-            public FoodForecast(int humans, int swordsmen, int archers, int berries, int crowns, int spearmen = 0)
+            public FoodForecast(int humans, int swordsmen, int archers, int berries, int crowns, int spearmen = 0, int slingers = 0)
             {
                 Humans = humans;
                 Swordsmen = swordsmen;
                 Archers = archers;
                 Spearmen = spearmen;
-                Residents = humans + swordsmen + archers + spearmen;
+                Slingers = slingers;
+                Residents = humans + swordsmen + archers + spearmen + slingers;
                 Berries = berries;
                 Crowns = crowns;
             }
@@ -56,7 +58,7 @@ namespace GameFoundation.MetaProgression
         public string SelectedPortalLocationId { get; private set; } = "forest";
         public int RefugeesAvailable { get; private set; } = 2;
         public List<PortalSite> Portals { get; private set; } = new(); public event Action Changed;
-        public const int MaxPortals = 5;
+        public const int MaxPortals = 6;
         private const string Key="foundation.daycycle";
         private int totalPortalEntries;
         private bool firstPortalRun;
@@ -91,7 +93,9 @@ namespace GameFoundation.MetaProgression
             totalPortalEntries = 0; firstPortalRun = magicOreOpened = false;
             RefugeesAvailable = 2; SelectedPortalDifficulty = 1; SelectedPortalLocationId = "forest";
             Portals = new List<PortalSite>();
-            Load(); EnsureFixedPortals();
+            Load();
+            EnsureFixedPortals();
+            PortalProgression.MigrateLegacyAccess(Portals);
             Changed?.Invoke();
         }
         private void OnDestroy()
@@ -113,7 +117,7 @@ namespace GameFoundation.MetaProgression
         public static IReadOnlyList<PortalLocationDefinition> GetPortalLocations() =>
             (ProjectReferences.Instance != null ? ProjectReferences.Instance.portalLocations : Array.Empty<PortalLocationDefinition>())
                 .Where(item => item != null && !string.IsNullOrWhiteSpace(item.LocationId))
-                .OrderBy(item => item.Difficulty)
+                .OrderBy(item => item.RequiredPortalLevel)
                 .ToArray();
 
         public static PortalLocationDefinition GetPortalLocation(string locationId) =>
@@ -132,12 +136,17 @@ namespace GameFoundation.MetaProgression
             return true;
         }
 
+        public const int MinimumExpeditionResidents = 2;
+        public bool HasExpeditionResidents =>
+            GameFoundation.Base.CraftProduction.FreeResidents(ResourceCatalog.Find("Human")) >= MinimumExpeditionResidents;
+
         public bool Enter(PortalSite site)
         {
             if (GameFoundation.Base.ForestForagingService.IsPending) return false;
-            if (site == null || !Portals.Contains(site) || EnteredToday) return false;
+            if (site == null || !Portals.Contains(site) || EnteredToday || !HasExpeditionResidents) return false;
             PortalLocationDefinition location = GetPortalLocation(site.locationId);
             if (!PortalProgression.IsUnlocked(location)) return false;
+            PlayerPrefs.BeginRunCheckpoint();
             site.active = true;
             EnteredToday = true;
             firstPortalRun = totalPortalEntries == 0;
@@ -172,8 +181,10 @@ namespace GameFoundation.MetaProgression
             using var save = GameFoundation.Saves.SaveSlotPrefs.Batch();
             DayResourceLedger.EnterShelter();
             GameFoundation.Base.HousingDistrict.Produce();
+            GameFoundation.Base.CraftProduction.AdvanceDay();
             int starved = ConsumeFood();
             ApplyColdDeaths();
+            GameFoundation.Base.CraftProduction.ReconcileWorkers();
             MilitaryExperienceService.HealAll();
             UpdateCrowns(starved);
             DayResourceLedger.FinishDay(Day);
@@ -184,9 +195,10 @@ namespace GameFoundation.MetaProgression
             RefugeesAvailable = PlayerPrefs.GetInt("foundation.refugees.firstArrival", 0) == 0 ? 2 : UnityEngine.Random.Range(1, 4);
             Save();
             DayResourceLedger.StartNextDay(Day);
+            GameFoundation.Base.BuildingUpgradeService.NotifyChanged();
             Changed?.Invoke();
         }
-        public bool AdmitRefugee(){if(RefugeesAvailable<=0 || !GameFoundation.Base.BuildingUpgradeService.CanAdmitResident)return false;RefugeesAvailable--;Save();Changed?.Invoke();return true;}
+        public bool AdmitRefugee(){if(EnteredToday || RefugeesAvailable<=0 || !GameFoundation.Base.BuildingUpgradeService.CanAdmitResident)return false;RefugeesAvailable--;Save();Changed?.Invoke();return true;}
         public void EnsureFirstRefugees()
         {
             if (PlayerPrefs.GetInt("foundation.refugees.firstArrival", 0) != 0) return;
@@ -211,7 +223,8 @@ namespace GameFoundation.MetaProgression
                 berries == null ? 0 : resources.GetResourceAmount(berries) +
                     (includeProduction ? GameFoundation.Base.HousingDistrict.Forecast().Food : 0),
                 crowns == null ? 0 : resources.GetResourceAmount(crowns),
-                Find("Spearman") is ResourceType spearmen ? resources.GetResourceAmount(spearmen) : 0);
+                Find("Spearman") is ResourceType spearmen ? resources.GetResourceAmount(spearmen) : 0,
+                Find("Slinger") is ResourceType slingers ? resources.GetResourceAmount(slingers) : 0);
         }
 
         private int ConsumeFood()
@@ -275,14 +288,15 @@ namespace GameFoundation.MetaProgression
             int swordsmanCount = forecast.Swordsmen;
             int archerCount = forecast.Archers;
             int spearmanCount = forecast.Spearmen, spearmanDeaths = 0;
+            int slingerCount = forecast.Slingers, slingerDeaths = 0;
             int humanDeaths = 0;
             int swordsmanDeaths = 0;
             int archerDeaths = 0;
-            int deaths = Mathf.Min(requestedDeaths, humanCount + swordsmanCount + archerCount + spearmanCount);
+            int deaths = Mathf.Min(requestedDeaths, humanCount + swordsmanCount + archerCount + spearmanCount + slingerCount);
 
             for (int i = 0; i < deaths; i++)
             {
-                int roll = UnityEngine.Random.Range(0, humanCount + swordsmanCount + archerCount + spearmanCount);
+                int roll = UnityEngine.Random.Range(0, humanCount + swordsmanCount + archerCount + spearmanCount + slingerCount);
                 if (roll < humanCount)
                 {
                     humanCount--;
@@ -298,7 +312,9 @@ namespace GameFoundation.MetaProgression
                     archerCount--;
                     archerDeaths++;
                 }
-                else { spearmanCount--; spearmanDeaths++; }
+                else if (roll < humanCount + swordsmanCount + archerCount + spearmanCount)
+                { spearmanCount--; spearmanDeaths++; }
+                else { slingerCount--; slingerDeaths++; }
             }
 
             if (humanDeaths > 0) resources.TrySpendResource(humans, humanDeaths);
@@ -319,6 +335,11 @@ namespace GameFoundation.MetaProgression
                 resources.TrySpendResource(spearmen, spearmanDeaths);
                 if (spears != null) resources.AddResource(spears, spearmanDeaths);
                 for (int i=0;i<spearmanDeaths;i++) MilitaryExperienceService.RemoveStored(spearmen);
+            }
+            if (slingerDeaths > 0 && Find("Slinger") is ResourceType slingers)
+            {
+                resources.TrySpendResource(slingers, slingerDeaths);
+                for (int i = 0; i < slingerDeaths; i++) MilitaryExperienceService.RemoveStored(slingers);
             }
             return deaths;
         }
@@ -347,7 +368,7 @@ namespace GameFoundation.MetaProgression
         }
 
         private void Save(){PlayerPrefs.SetString(Key,JsonUtility.ToJson(new Data{magicOreOpened=magicOreOpened,totalPortalEntries=totalPortalEntries,firstPortalRun=firstPortalRun,day=Day,searched=SearchedToday,entered=EnteredToday,refugees=RefugeesAvailable,selectedDifficulty=SelectedPortalDifficulty,selectedLocationId=SelectedPortalLocationId,portals=Portals}));PlayerPrefs.Save();}
-        private void Load(){if(!PlayerPrefs.HasKey(Key))return;var json=PlayerPrefs.GetString(Key);var d=JsonUtility.FromJson<Data>(json);if(d==null)return;totalPortalEntries=json.Contains("\"totalPortalEntries\"")?d.totalPortalEntries:(d.day>1||d.entered?1:0);magicOreOpened=d.magicOreOpened;firstPortalRun=d.firstPortalRun;Day=Mathf.Max(1,d.day);SearchedToday=d.searched;EnteredToday=d.entered;RefugeesAvailable=json.Contains("\"refugees\"")?d.refugees:2;SelectedPortalDifficulty=Mathf.Clamp(d.selectedDifficulty<=0?1:d.selectedDifficulty,1,5);SelectedPortalLocationId=string.IsNullOrEmpty(d.selectedLocationId)?"forest":d.selectedLocationId;Portals=d.portals??new();}
+        private void Load(){if(!PlayerPrefs.HasKey(Key))return;var json=PlayerPrefs.GetString(Key);var d=JsonUtility.FromJson<Data>(json);if(d==null)return;totalPortalEntries=json.Contains("\"totalPortalEntries\"")?d.totalPortalEntries:(d.day>1||d.entered?1:0);magicOreOpened=d.magicOreOpened;firstPortalRun=d.firstPortalRun;Day=Mathf.Max(1,d.day);SearchedToday=d.searched;EnteredToday=d.entered;RefugeesAvailable=json.Contains("\"refugees\"")?d.refugees:2;SelectedPortalDifficulty=Mathf.Clamp(d.selectedDifficulty<=0?1:d.selectedDifficulty,1,MaxPortals);SelectedPortalLocationId=string.IsNullOrEmpty(d.selectedLocationId)?"forest":d.selectedLocationId;Portals=d.portals??new();}
         [Serializable] private class Data{public bool magicOreOpened;public int totalPortalEntries;public bool firstPortalRun;public int day=1;public bool searched,entered;public int refugees=2;public int selectedDifficulty=1;public string selectedLocationId="forest";public List<PortalSite> portals;}
     }
 }

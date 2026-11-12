@@ -127,7 +127,7 @@ namespace GameFoundation.Quests
                 SaveSlotPrefs.SetInt("foundation.quest." + quest.id + ".failed", 1);
                 if (quest.confiscateResourcesOnFailure)
                     foreach (var resource in resources.GetAllResourcesData().Keys)
-                        if (resource != null && resource != quest.penaltyResource && !quest.protectedResources.Contains(resource)) resources.SetResourceAmount(resource, 0);
+                        if (quest.CanConfiscate(resource)) resources.SetResourceAmount(resource, 0);
                 if (quest.penaltyResource != null && quest.penaltyAmount > 0) resources.AddResource(quest.penaltyResource, -quest.penaltyAmount);
                 SaveSlotPrefs.Save();
                 GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Провалено: ") + quest.title + (quest.confiscateResourcesOnFailure ? GameFoundation.Localization.GameText.Get(". Припасы конфискованы.") : ""), GameFoundation.UI.NotificationKind.Negative);

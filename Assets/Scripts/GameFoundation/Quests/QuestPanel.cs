@@ -72,28 +72,68 @@ namespace GameFoundation.Quests
         [SerializeField] private GameObject rewardsSection;
         [SerializeField] private LayoutElement rewardsViewport;
         [SerializeField] private List<QuestObjectiveRow> rewardRows = new();
-        private void ClaimReward()
+
+        internal QuestDefinition ReadyReward
         {
-            if (!CanClaimHere) return;
-            var quest = QuestProgress.Current(catalog, showParallelQuest);
+            get
+            {
+                var quest = QuestProgress.Current(catalog, showParallelQuest);
+                return CanClaimHere && !RoyalTributeService.IsRoyal(quest) &&
+                    QuestProgress.IsReadyToClaim(quest, GlobalResourceManager.Instance) ? quest : null;
+            }
+        }
+
+        internal static string ClaimLabel(QuestDefinition quest) => GameFoundation.Localization.GameText.Get(
+            quest.consumeRequirementsOnClaim ? "Сдать руду" :
+            quest.resourceRewards.Count == 0 && quest.unlockRewards.Count == 0 ? "Завершить задание" : "Забрать награду");
+
+        internal Button CreateRewardButton(RectTransform parent, QuestDefinition quest)
+        {
+            var button = Instantiate(claimButton, parent, false);
+            var rect = (RectTransform)button.transform;
+            var panelLayout = claimButton.transform.parent.GetComponent<VerticalLayoutGroup>();
+            var layout = claimButton.GetComponent<LayoutElement>();
+            float width = ((RectTransform)claimButton.transform.parent).rect.width;
+            rect.sizeDelta = new Vector2(width - (panelLayout?.padding.horizontal ?? 0), layout.preferredHeight);
+            var label = button.GetComponentInChildren<Text>(true);
+            label.text = ClaimLabel(quest);
+            if (completedStarSprite != null)
+            {
+                var effect = new GameObject("Available Reward Stars", typeof(RectTransform), typeof(CanvasRenderer), typeof(RisingLabelStars));
+                var effectRect = (RectTransform)effect.transform;
+                effectRect.SetParent(label.transform, false);
+                effectRect.anchorMin = effectRect.anchorMax = new Vector2(.5f, .5f);
+                effectRect.sizeDelta = new Vector2(label.preferredWidth, rect.sizeDelta.y);
+                var stars = effect.GetComponent<RisingLabelStars>();
+                var theme = Resources.Load<ButtonVisualTheme>("UI/ButtonVisualTheme");
+                stars.color = theme != null ? theme.positiveLabelColor : label.color;
+                stars.Configure(effectRect, completedStarSprite);
+                stars.Emit = true;
+            }
+            return button;
+        }
+
+        internal bool TryClaimReward(QuestDefinition quest, RectTransform source)
+        {
+            if (!CanClaimHere) return false;
             var canvas = GetComponentInParent<Canvas>()?.rootCanvas;
             var camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
-            var source = claimButton != null ? (RectTransform)claimButton.transform : (RectTransform)transform;
             var origin = RectTransformUtility.WorldToScreenPoint(camera, source.TransformPoint(source.rect.center));
             var newUnlocks = new List<ContentUnlockDefinition>();
             if (quest != null)
                 foreach (var unlock in quest.unlockRewards)
                     if (unlock != null && !ContentUnlocks.IsUnlocked(unlock)) newUnlocks.Add(unlock);
-            if (QuestProgress.TryClaim(quest, GlobalResourceManager.Instance))
+            bool claimed = QuestProgress.TryClaim(quest, GlobalResourceManager.Instance);
+            if (claimed)
             {
                 QuestRewardFlight.Play(canvas, origin, quest.resourceRewards);
                 QuestRewardFlight.PlayUnlocks(canvas, origin, newUnlocks);
             }
             Refresh();
+            return claimed;
         }
         private void OnEnable()
         {
-            if (claimButton != null) claimButton.onClick.AddListener(ClaimReward);
             GlobalResourceManager.OnResourceChanged += OnResourceChanged;
             QuestProgress.Changed += Refresh;
             GameFoundation.Base.BuildingUpgradeService.Changed += Refresh;
@@ -113,7 +153,6 @@ namespace GameFoundation.Quests
         private void OnDisable()
         {
             if (completedStars != null) completedStars.Emit = false;
-            if (claimButton != null) claimButton.onClick.RemoveListener(ClaimReward);
             GlobalResourceManager.OnResourceChanged -= OnResourceChanged;
             QuestProgress.Changed -= Refresh;
             GameFoundation.Base.BuildingUpgradeService.Changed -= Refresh;
@@ -126,17 +165,7 @@ namespace GameFoundation.Quests
         {
             if (objectives != null) objectives.gameObject.SetActive(false);
             if (description != null)
-            {
                 description.horizontalOverflow = HorizontalWrapMode.Wrap;
-                var layout = description.GetComponent<LayoutElement>();
-                if (layout != null)
-                {
-                    // Let Text report its full preferred height at the available width.
-                    layout.minHeight = -1;
-                    layout.preferredHeight = -1;
-                    layout.flexibleHeight = 0;
-                }
-            }
             if (status != null)
             {
                 status.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -157,6 +186,7 @@ namespace GameFoundation.Quests
             bool completed = QuestProgress.IsComplete(quest);
             title.text = GameFoundation.Localization.GameText.Get(quest.title);
             description.text = RoyalTributeService.Description(quest);
+            description.GetComponent<QuestReadingText>()?.FitLayoutToText();
             bool claimed = QuestProgress.IsClaimed(quest);
             bool ready = QuestProgress.IsReadyToClaim(quest, resources);
             RefreshCompletionTitle(completed || ready);
@@ -172,13 +202,7 @@ namespace GameFoundation.Quests
                 penaltyRow.PresentReward(quest.penaltyResource != null ? quest.penaltyResource.resourceIcon : null, "−" + quest.penaltyAmount, GameFoundation.Localization.GameText.Get("Штраф"));
                 penaltyRow.GetComponentInChildren<Text>().color = new Color(.95f,.4f,.4f);
             }
-            if (claimButton != null)
-            {
-                claimButton.gameObject.SetActive(CanClaimHere && ready && !RoyalTributeService.IsRoyal(quest)); claimButton.interactable = CanClaimHere && ready;
-                var label = claimButton.GetComponentInChildren<Text>(true);
-                if (label != null) label.text = quest.consumeRequirementsOnClaim ? GameFoundation.Localization.GameText.Get("Сдать руду") :
-                    GameFoundation.Localization.GameText.Get(quest.resourceRewards.Count == 0 && quest.unlockRewards.Count == 0 ? "Завершить задание" : "Забрать награду");
-            }
+            if (claimButton != null) claimButton.gameObject.SetActive(false);
             status.text = claimed ? GameFoundation.Localization.GameText.Get("Награда получена") : completed ? GameFoundation.Localization.GameText.Get("Задание выполнено") :
                 ready && quest.consumeRequirementsOnClaim ? GameFoundation.Localization.GameText.Get("Руда готова к сдаче") : string.IsNullOrEmpty(quest.inProgressStatus) ? GameFoundation.Localization.GameText.Get("Доставьте ресурсы в портал") : GameFoundation.Localization.GameText.Get(quest.inProgressStatus);
             if (RoyalTributeService.IsRoyal(quest) && quest.requirements.Count > 0)

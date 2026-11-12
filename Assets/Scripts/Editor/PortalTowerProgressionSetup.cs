@@ -129,7 +129,11 @@ public static class PortalTowerProgressionSetup
             if (t.name == "Close") { Object.DestroyImmediate(t.gameObject); continue; }
             var text = t.GetComponent<Text>(); if (text == null) continue;
             if (t.name == "Title") Localize(text, "portal_tower.title", "ПРОКАЧКА БАШНИ ПОРТАЛА");
-            if (t.name == "Unlock Hint") Localize(text, "portal_tower.mandatory", "Выберите улучшение, чтобы продолжить забег");
+            if (t.name == "Unlock Hint")
+            {
+                t.gameObject.SetActive(true);
+                Localize(text, "portal_tower.mandatory", "Выберите улучшение, чтобы продолжить забег");
+            }
             if (t.name == "Detail Caption") Localize(text, "portal_tower.upgrade", "УЛУЧШЕНИЕ БАШНИ");
         }
         foreach (var upgrade in balance.upgrades)

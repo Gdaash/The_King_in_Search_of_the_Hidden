@@ -16,10 +16,12 @@ namespace GameFoundation.MetaProgression
         public static bool IsDemoLocked(PortalLocationDefinition location) => DemoRestrictionsEnabled && location != null && location.LocationId != DemoLocationId;
         private const string LevelKey = "foundation.building.portal.upgradeLevel";
         private const string MigrationKey = "foundation.portal.upgradesMigrated";
+        private const string CityMigrationKey = "foundation.portal.cityAccessMigrated";
         internal static void ResetDestinationUpgrades()
         {
             SaveSlotPrefs.SetInt(LevelKey, 0);
             SaveSlotPrefs.SetInt(MigrationKey, 1);
+            SaveSlotPrefs.SetInt(CityMigrationKey, 1);
         }
         public static int Level => BuildingUpgradeService.Level(BuildingId);
         public static int MaxLevel => BuildingUpgradeService.Catalog?.Find(BuildingId)?.levels.Count ?? 0;
@@ -50,11 +52,23 @@ namespace GameFoundation.MetaProgression
 
         public static void MigrateLegacyAccess(IEnumerable<PortalSite> sites)
         {
-            if (SaveSlotPrefs.GetInt(MigrationKey, 0) != 0) return;
-            // Previously paid destinations remain accessible when an existing save is upgraded.
-            int level = sites.Where(s => s.active).Select(s => DayCycleService.GetPortalLocation(s.locationId)?.RequiredPortalLevel ?? 0)
-                .DefaultIfEmpty(0).Max();
-            SaveSlotPrefs.SetInt(LevelKey, Mathf.Clamp(Mathf.Max(Level, level), 0, MaxLevel));
+            bool migrateCity = SaveSlotPrefs.GetInt(CityMigrationKey, 0) == 0;
+            bool migrateLegacy = SaveSlotPrefs.GetInt(MigrationKey, 0) == 0;
+            if (!migrateCity && !migrateLegacy) return;
+
+            int level = Level;
+            if (migrateCity && level > 0) level++;
+            if (migrateLegacy)
+            {
+                // Previously paid destinations remain accessible when an existing save is upgraded.
+                int legacyLevel = sites.Where(s => s.active)
+                    .Select(s => DayCycleService.GetPortalLocation(s.locationId)?.RequiredPortalLevel ?? 0)
+                    .DefaultIfEmpty(0).Max();
+                level = Mathf.Max(level, legacyLevel);
+            }
+
+            SaveSlotPrefs.SetInt(LevelKey, Mathf.Clamp(level, 0, MaxLevel));
+            SaveSlotPrefs.SetInt(CityMigrationKey, 1);
             SaveSlotPrefs.SetInt(MigrationKey, 1);
             SaveSlotPrefs.Save();
         }

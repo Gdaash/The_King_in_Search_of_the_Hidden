@@ -14,6 +14,7 @@ namespace GameFoundation.MetaProgression
             public string enemyId;
             [Min(1)] public int amount = 1;
             public ResourceType resource;
+            [Min(0)] public int requiredPortalLevel;
         }
         public List<Entry> entries = new();
         public Entry Find(PortalTowerBalance.Weapon weapon) => entries.Find(e => e.weapon == weapon);

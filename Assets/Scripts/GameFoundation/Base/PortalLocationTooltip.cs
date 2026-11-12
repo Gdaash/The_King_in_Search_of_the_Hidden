@@ -87,7 +87,7 @@ namespace GameFoundation.Base
 
             for (int i = 0; dangerSkulls != null && i < dangerSkulls.Length; i++)
                 if (dangerSkulls[i] != null)
-                    dangerSkulls[i].gameObject.SetActive(i < current.Difficulty);
+                    dangerSkulls[i].gameObject.SetActive(i < current.DangerSkulls);
 
             for (int i = 0; resourceRows != null && i < resourceRows.Length; i++)
             {

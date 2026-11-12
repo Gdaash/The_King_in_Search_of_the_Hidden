@@ -101,6 +101,7 @@ public partial class AlarmSystem : MonoBehaviour
     public const float PassiveAlarmInterval = 5f;
     public const int MaximumEnemyLevel = 50;
     public const float AlarmPerEnemyLevel = 10f;
+    public int ActiveDangerLevel => _activatedThresholds.Count;
     public int EnemyLevel => LevelForAlarm(currentAlarm, maximumAlarm);
     public static int LevelForAlarm(float alarm, float maximum) => Mathf.Clamp(
         1 + Mathf.FloorToInt((Mathf.Max(0f, alarm - maximum) + .0001f) / AlarmPerEnemyLevel), 1, MaximumEnemyLevel);
@@ -174,6 +175,7 @@ public partial class AlarmSystem : MonoBehaviour
     public Color OrbColor => orbSettings != null && orbSettings.Image != null ? orbSettings.Image.color : Color.white;
     public Sprite SkullSprite => thresholdSkullSprite;
     public Sprite InactiveSkullSprite => inactiveThresholdSkullSprite;
+    public bool HasIncomingAlarm => _pendingAlarm > 0.001f;
 
     public int PreviewOrbCount(float amount, float reservedForAction = 0f)
     {
@@ -257,11 +259,15 @@ public partial class AlarmSystem : MonoBehaviour
         float start = PreviewStartAlarm(reservedForAction);
         float step = AcceptedPreviewAlarm(amount, reservedForAction) / count;
         float before = start + step * index;
-        float after = start + step * (index + 1);
+        return CrossesWaveThreshold(before, start + step * (index + 1));
+    }
+
+    private bool CrossesWaveThreshold(float before, float after)
+    {
         foreach (var threshold in thresholds)
             if (threshold != null && threshold.alarmValue > before && threshold.alarmValue <= after &&
                 !_activatedThresholds.Contains(threshold)) return true;
-        return LevelForAlarm(after, maximumAlarm) > LevelForAlarm(before, maximumAlarm);
+        return false;
     }
 
     private void OnDestroy()
@@ -335,6 +341,11 @@ public partial class AlarmSystem : MonoBehaviour
         foreach (GameObject warning in _activeSpawnWarnings)
             if (warning != null) WorldSpawnPool.Release(warning);
         _activeSpawnWarnings.Clear();
+        allyDeathNotifications.Clear();
+        if (allyDeathNotificationRoutine != null) StopCoroutine(allyDeathNotificationRoutine);
+        allyDeathNotificationRoutine = null;
+        if (activeAllyDeathNotification != null) Destroy(activeAllyDeathNotification.gameObject);
+        activeAllyDeathNotification = null;
         _dangerNotificationQueue.Clear();
         if (_dangerNotificationRoutine != null) StopCoroutine(_dangerNotificationRoutine);
         _dangerNotificationRoutine = null;
@@ -357,13 +368,18 @@ public partial class AlarmSystem : MonoBehaviour
         if (acceptedAmount <= 0f) return;
 
         int orbCount = OrbCount(acceptedAmount);
+        float startAlarm = currentAlarm + _pendingAlarm;
         _pendingAlarm += acceptedAmount;
         ApplyPreview(Mathf.Clamp01((currentAlarm + _pendingAlarm) / maximumAlarm));
 
         float amountPerOrb = acceptedAmount / orbCount;
         float targetFill = Mathf.Clamp01((currentAlarm + _pendingAlarm * 0.5f) / maximumAlarm);
         for (int i = 0; i < orbCount; i++)
-            StartCoroutine(FlyOrb(worldPosition, amountPerOrb, targetFill, alarmRevision));
+        {
+            bool reachesThreshold = CrossesWaveThreshold(startAlarm + amountPerOrb * i,
+                startAlarm + amountPerOrb * (i + 1));
+            StartCoroutine(FlyOrb(worldPosition, amountPerOrb, targetFill, alarmRevision, reachesThreshold));
+        }
     }
 
     /// <summary>Устанавливает абсолютное значение тревоги.</summary>
@@ -453,6 +469,35 @@ public partial class AlarmSystem : MonoBehaviour
         }
         _dangerNotificationRoutine = null;
         DangerNotificationsFinished?.Invoke();
+    }
+
+    private readonly Queue<Sprite> allyDeathNotifications = new();
+    private Coroutine allyDeathNotificationRoutine;
+    private DangerLevelNotificationView activeAllyDeathNotification;
+
+    public void ShowAllyDeathNotification(Sprite icon)
+    {
+        if (dangerLevelNotificationPrefab == null || !isActiveAndEnabled) return;
+        allyDeathNotifications.Enqueue(icon);
+        if (allyDeathNotificationRoutine == null)
+            allyDeathNotificationRoutine = StartCoroutine(PlayAllyDeathNotifications());
+    }
+
+    private IEnumerator PlayAllyDeathNotifications()
+    {
+        var energyBar = FindAnyObjectByType<GameFoundation.MetaProgression.PortalTowerExperienceBar>();
+        Transform parent = _canvas != null ? _canvas.transform : transform.parent;
+        while (allyDeathNotifications.Count > 0)
+        {
+            activeAllyDeathNotification = Instantiate(dangerLevelNotificationPrefab, parent, false);
+            activeAllyDeathNotification.name = "Ally death notification";
+            if (energyBar != null)
+                activeAllyDeathNotification.FollowBar((RectTransform)energyBar.transform, true, energyBar.TopCrystal);
+            yield return activeAllyDeathNotification.PlayAllyDeath(allyDeathNotifications.Dequeue(), () => _energyLightNotification);
+            if (activeAllyDeathNotification != null) Destroy(activeAllyDeathNotification.gameObject);
+            activeAllyDeathNotification = null;
+        }
+        allyDeathNotificationRoutine = null;
     }
 
     public void ShowEnergyLightNotification(int change, int lightCount, Sprite crystalIcon, RectTransform bar, RectTransform crystal)
@@ -677,7 +722,7 @@ public partial class AlarmSystem : MonoBehaviour
         if (previewImage != null) { if(fillImage!=null)previewImage.sprite=fillImage.sprite;previewImage.material=incomingFillMaterial;previewImage.color=Color.white;previewImage.fillAmount = value; }
     }
 
-    private IEnumerator FlyOrb(Vector3 worldPosition, float amount, float targetFill, int revision)
+    private IEnumerator FlyOrb(Vector3 worldPosition, float amount, float targetFill, int revision, bool reachesThreshold)
     {
         if (_canvasRect == null || fillImage == null)
         {
@@ -706,7 +751,12 @@ public partial class AlarmSystem : MonoBehaviour
             orbImage.color = Color.white;
         }
         orbImage.raycastTarget = false;
-        if (thresholdSkullSprite != null) orbImage.sprite = thresholdSkullSprite;
+        var skull = reachesThreshold ? thresholdSkullSprite : inactiveThresholdSkullSprite;
+        if (skull != null)
+        {
+            orbImage.sprite = skull;
+            orbImage.color = Color.white;
+        }
         RectTransform orbRect = orb.GetComponent<RectTransform>();
         orbRect.localScale = Vector3.one;
         float configuredSize = spawnedSettings != null ? spawnedSettings.Size : orbSize;

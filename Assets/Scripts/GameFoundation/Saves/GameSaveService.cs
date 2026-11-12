@@ -158,6 +158,19 @@ namespace GameFoundation.Saves
             Data(slot).unfinishedRunCheckpoint = null;
             Save(slot);
         }
+        internal static bool CancelRunCheckpoint(int slot)
+        {
+            if (WritesSuspended || !activeRuns.Contains(slot)) return false;
+            var baseline = Parse(Data(slot).unfinishedRunCheckpoint);
+            baseline.unfinishedRunCheckpoint = null;
+            Persist(slot, baseline);
+            UnityEngine.PlayerPrefs.Save();
+            LoadedSlots[slot] = baseline;
+            activeRuns.Remove(slot);
+            pendingSaves.Remove(slot);
+            GameFoundation.Bestiary.BestiaryService.ResetCache();
+            return true;
+        }
         internal static bool HasActiveRunCheckpoint(int slot) => activeRuns.Contains(slot);
         internal static void CommitArsenalUnlock(int slot, string spentResourceKey, int cost)
         {

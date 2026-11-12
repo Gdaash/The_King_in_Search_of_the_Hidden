@@ -26,7 +26,8 @@ public static class RoyalTributeSetup
         q.parallelQuest=true;q.deadlineDays=30;q.consumeRequirementsOnClaim=true;q.unlockRewardsOnCompletion=false;
         q.requirements=new(){new QuestDefinition.Requirement{resource=Resource("MagicOre"),amount=30,purpose="Руда для королевской казны"}};
         q.resourceRewards=new(){new QuestDefinition.ResourceReward{resource=Resource("Crown"),amount=10}};q.unlockRewards.Clear();
-        q.penaltyResource=Resource("Crown");q.penaltyAmount=30;q.confiscateResourcesOnFailure=true;q.protectedResources=new(){Resource("Human"),Resource("Archer"),Resource("Swordsman"),Resource("Cart")};EditorUtility.SetDirty(q);
+        q.penaltyResource=Resource("Crown");q.penaltyAmount=30;q.confiscateResourcesOnFailure=true;
+        q.protectedResources=new[]{Resource("Human"),Resource("Cart")}.Concat(Resources.LoadAll<ResourceType>("ResourceTypes").Where(resource=>resource.isMilitaryUnit)).ToList();EditorUtility.SetDirty(q);
         var catalog=AssetDatabase.LoadAssetAtPath<QuestCatalog>(QuestSetup.CatalogPath);if(!catalog.quests.Contains(q))catalog.quests=catalog.quests.Concat(new[]{q}).ToArray();EditorUtility.SetDirty(catalog);
         var go=new GameObject("00 Royal Tribute");var d=go.AddComponent<QuestDialogueDefinition>();d.id="scribe_royal_magic_tribute";d.speakerName="Королевский писарь";d.portrait=AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Ui/Dialogue/Royal Scribe.png");d.quest=q;
         d.lines=new[]{"Именем короля объявляю норму для земель портала: тридцать единиц магической руды в течение тридцати дней. Его Величество ожидает исправных поставок. Состояние ваших построек в расчёт не принимается.","За исполнение получите десять влияния. За просрочку будут изъяты припасы, материалы и оружие, а ваше влияние уменьшится на тридцать. Люди и телеги останутся в вашем распоряжении. Пока. Приступайте."};

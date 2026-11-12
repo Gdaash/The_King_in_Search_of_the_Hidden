@@ -36,6 +36,10 @@ namespace GameFoundation.MetaProgression
         private void Awake()
         {
             RegisterEngineers();
+            var slinger = ResourceCatalog.Find("Slinger");
+            var slingerPrefab = Resources.Load<GameObject>("Units/Slinger");
+            if (slinger != null && slingerPrefab != null && !additionalUnitTypes.Exists(unit => unit?.resource == slinger))
+                additionalUnitTypes.Add(new UnitControl { resource = slinger, prefab = slingerPrefab });
             foreach (var control in Controls) Bind(control);
         }
 

@@ -1,3 +1,4 @@
+using GameFoundation.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -14,6 +15,29 @@ namespace GameFoundation.MetaProgression
         public PortalTowerBalance.Weapon Weapon => weapon;
         private bool dragging;
         private int lastDragFrame = -1;
+        private PopupChoiceRowStyle rowStyle;
+        private PopupChoicePrice price;
+
+        internal void SetPurchase(PortalArsenalCatalog.Entry entry, bool unlocked)
+        {
+            bool showPrice = !unlocked && entry?.requirement == PortalArsenalCatalog.Requirement.Resource;
+            if (showPrice)
+                price ??= new PopupChoicePrice((RectTransform)button.transform, state.font, 20);
+            price?.Set(showPrice ? entry.resource : null, showPrice ? entry.amount : 0);
+            (state.text, state.color) = PopupChoiceRowStyle.PurchaseStatus(unlocked, entry == null ||
+                PortalProgression.Level < entry.requiredPortalLevel, PortalArsenalProgress.CanUnlock(entry));
+        }
+
+        internal void SetSelected(bool selected)
+        {
+            if (!popup.IsBaseArsenal)
+            {
+                feedback.Toggled = selected;
+                return;
+            }
+            rowStyle ??= new PopupChoiceRowStyle(button, (UnityEngine.UI.Image)button.targetGraphic);
+            rowStyle.SetSelected(selected);
+        }
         public void Bind(PortalArsenalPopup view, PortalTowerBalance.Weapon value)
         {
             popup = view; weapon = value;

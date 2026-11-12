@@ -146,9 +146,11 @@ public static class LaboratoryListSetup
         var close = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/UI/Popup Close Icon.prefab"), window);
         close.name = "Close"; var cr = (RectTransform)close.transform; cr.anchorMin = cr.anchorMax = cr.pivot = new(.5f, .5f); cr.anchoredPosition = new(630, 378); cr.localScale = Vector3.one;
         view.totalLabel = Text("Total Learned", window, "Изучено улучшений: 0 / " + table.entries.Count, 690, 32, -292, 299, 22); view.totalLabel.color = Gold;
-        var hint = Text("Unlock Hint", window, "Замок – нужно изучить улучшений", 690, 26, -292, 264, 18); hint.color = Muted; Localize(hint, "laboratory.lock_legend");
+        var hint = Text("Unlock Hint", window, "", 690, 26, -292, 264, 22);
+        hint.color = Muted;
+        hint.gameObject.SetActive(false);
         Image(Rect("Header Divider", window, 1260, 2, 0, 236), new Color(.35f, .30f, .39f));
-        var scroll = Rect("Upgrade List", window, 708, 598, -292, -78);
+        var scroll = Rect("Upgrade List", window, 708, 636, -292, -59);
         var scrollRect = scroll.gameObject.AddComponent<ScrollRect>(); view.scroll = scrollRect;
         scrollRect.horizontal = false; scrollRect.vertical = true; scrollRect.movementType = ScrollRect.MovementType.Clamped; scrollRect.scrollSensitivity = 42; scrollRect.inertia = true;
         var viewport = Rect("Viewport", scroll, 0, 0); Stretch(viewport, 0, 0, 18, 0);
@@ -157,7 +159,7 @@ public static class LaboratoryListSetup
         var layout = content.gameObject.AddComponent<VerticalLayoutGroup>(); layout.spacing = 8; layout.childControlHeight = layout.childControlWidth = true; layout.childForceExpandHeight = false;
         content.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         view.content = content; scrollRect.content = content; scrollRect.viewport = viewport;
-        var bar = Rect("Scrollbar", scroll, 8, 598, 350, 0); Image(bar, new Color(.14f, .11f, .17f));
+        var bar = Rect("Scrollbar", scroll, 8, 636, 350, 0); Image(bar, new Color(.14f, .11f, .17f));
         var handle = Rect("Handle", bar, 8, 100); Stretch(handle); var handleImage = Image(handle, new Color(.50f, .43f, .56f)); handleImage.raycastTarget = true;
         var scrollbar = bar.gameObject.AddComponent<Scrollbar>(); scrollbar.direction = Scrollbar.Direction.BottomToTop; scrollbar.handleRect = handle; scrollbar.targetGraphic = handleImage;
         scrollRect.verticalScrollbar = scrollbar; scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;

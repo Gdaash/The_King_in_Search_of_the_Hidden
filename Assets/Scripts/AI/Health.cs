@@ -38,6 +38,7 @@ public partial class Health : MonoBehaviour
     private float CurrentRegenDelay => (stats != null ? stats.TotalRegenDelay : 0f) / MilitaryExperience.Multiplier(this);
 
     public UnityEvent<float> OnHealthChanged;
+    internal event System.Action<Transform> Damaged;
     public UnityEvent OnDeath;
 
     private Vector3 hitBaseScale = Vector3.one;
@@ -162,14 +163,23 @@ public partial class Health : MonoBehaviour
         OnHealthChanged?.Invoke(_cur / MaxHealth);
     }
 
-    public void TakeDamage(float amount, DamageType presentation, Transform attacker = null)
+    public void TakeDamage(float amount, DamageType presentation, Transform attacker = null) =>
+        TakeDamage(amount, presentation, attacker, GameFoundation.Combat.CombatHitEffects.LightningJumpChance);
+
+    internal void TakeDamage(float amount, DamageType presentation, Transform attacker, float lightningJumpChance)
     {
         if (TowerDarkness.Blocks(attacker)) return;
         if (_dead || amount <= 0 || !isActiveAndEnabled) return;
         float final = CombatDamage.Calculate(amount, Armor);
         if (bestiaryIdentity != null) final *= GameFoundation.Bestiary.BestiaryService.DamageMultiplier(bestiaryIdentity);
+        float chainDamage = final;
+        var portal = GameFoundation.MetaProgression.PortalTowerProgression.FromAttack(attacker);
+        if (presentation == DamageType.Electric && portal != null)
+            final *= portal.RunMultiplier(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Lightning,
+                GameFoundation.MetaProgression.CombatUpgradeCatalog.Stat.FirstHit);
         ApplyResolvedDamage(final, attacker, Color.red);
-        if (final > 0 && (!_dead || presentation == DamageType.Electric)) ApplyHitEffect(presentation, final, attacker);
+        if (final > 0 && (!_dead || presentation == DamageType.Electric))
+            ApplyHitEffect(presentation, presentation == DamageType.Electric ? chainDamage : final, attacker, lightningJumpChance);
     }
 
     internal void TakeChainLightningDamage(float damage, Transform attacker)
@@ -198,6 +208,7 @@ public partial class Health : MonoBehaviour
         _cur = Mathf.Clamp(_cur - (final - shieldAbsorbed), 0, MaxHealth);
         _lastDamageTime = Time.time;
         TriggerFlash(flashColor);
+        if (_cur < previousHealth) Damaged?.Invoke(attacker);
         SpawnText(previousHealth - _cur + shieldAbsorbed, DamageType.Physical);
         OnHealthChanged?.Invoke(NormalizedHealth);
         var rangedAI = GetComponent<EnemyAI_Ranged>();

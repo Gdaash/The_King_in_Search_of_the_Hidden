@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
+using GameFoundation.UI;
 using System.Collections;
 
 [RequireComponent(typeof(CanvasGroup))]
@@ -8,6 +10,8 @@ public class TooltipManager : MonoBehaviour
     public static TooltipManager Instance;
 
     [SerializeField] private Text tooltipText; // Ссылка на текст внутри префаба
+    [SerializeField] private TMP_FontAsset tooltipFont;
+    [SerializeField, Min(0f)] private float wordSpacing = 14f;
     [SerializeField] private float fadeSpeed = 10f; // Скорость появления
     [SerializeField] private float distanceToTarget = 20f; // Отступ от элемента
     [SerializeField] private Vector2 textPadding = new Vector2(16f, 12f);
@@ -19,6 +23,12 @@ public class TooltipManager : MonoBehaviour
     private Coroutine _fadeRoutine;
     private RectTransform _currentTarget;
     private RectTransform _textRect;
+    private QuestReadingText readingText;
+    private Image _priceIcon, _secondPriceIcon;
+    private TMP_Text _secondPriceAmount;
+    private Canvas _priceCanvas;
+    private string _priceSuffix;
+    private bool _originalRichText;
     private bool _alwaysBelow;
     private string _sourceText, _displayedLanguage;
     private readonly Vector3[] _targetCorners = new Vector3[4];
@@ -34,6 +44,7 @@ public class TooltipManager : MonoBehaviour
         if (tooltipText != null)
         {
             _textRect = tooltipText.rectTransform;
+            _originalRichText = tooltipText.supportRichText;
             // The original prefab uses a large font on a scaled-down text object.
             // Normalize it so text measurements match the visible size.
             tooltipText.fontSize = Mathf.Max(1, Mathf.RoundToInt(tooltipText.fontSize * _textRect.localScale.x));
@@ -42,6 +53,12 @@ public class TooltipManager : MonoBehaviour
             tooltipText.horizontalOverflow = HorizontalWrapMode.Wrap;
             tooltipText.verticalOverflow = VerticalWrapMode.Overflow;
             tooltipText.raycastTarget = false;
+            if (tooltipFont != null)
+            {
+                QuestReadingText.Ensure(tooltipText, tooltipFont);
+                readingText = tooltipText.GetComponent<QuestReadingText>();
+                if (readingText != null) readingText.Display.wordSpacing = wordSpacing;
+            }
         }
 
         // Начальное состояние: невидим и не мешает кликам
@@ -55,28 +72,75 @@ public class TooltipManager : MonoBehaviour
         if (_canvasGroup.alpha > 0 && _currentTarget != null)
         {
             string language=GameFoundation.Localization.LocalizationService.Instance?.Language;
-            if(language!=_displayedLanguage&&tooltipText!=null){_displayedLanguage=language;tooltipText.text=GameFoundation.Localization.GameText.Get(_sourceText);ResizeToText();}
+            if(language!=_displayedLanguage&&tooltipText!=null){_displayedLanguage=language;tooltipText.text=GameFoundation.Localization.GameText.Get(_sourceText) + _priceSuffix;ResizeToText();}
             UpdatePosition();
         }
     }
 
     private void OnDestroy() { if (Instance == this) Instance = null; }
 
-    public void Show(string description, RectTransform target, bool alwaysBelow = false)
+    public void Show(string description, RectTransform target, bool alwaysBelow = false, Sprite priceIcon = null, int price = 0, bool priceAffordable = true,
+        Sprite secondPriceIcon = null, int secondPrice = 0, bool secondPriceAffordable = true)
     {
         _currentTarget = target;
         _alwaysBelow = alwaysBelow;
+        _priceSuffix = priceIcon == null ? string.Empty :
+            $"  <color=#{(priceAffordable ? "8CD97A" : "FC7D80")}>{price}</color>";
+        if (priceIcon != null)
+        {
+            if (_priceCanvas == null && !TryGetComponent(out _priceCanvas))
+                _priceCanvas = gameObject.AddComponent<Canvas>();
+            var targetCanvas = target.GetComponentInParent<Canvas>();
+            if (targetCanvas != null)
+            {
+                _priceCanvas.overrideSorting = true;
+                _priceCanvas.sortingLayerID = targetCanvas.rootCanvas.sortingLayerID;
+                _priceCanvas.sortingOrder = Mathf.Min(short.MaxValue, targetCanvas.rootCanvas.sortingOrder + 1);
+            }
+        }
+        else if (_priceCanvas != null) _priceCanvas.overrideSorting = false;
+        SetPriceIcon(ref _priceIcon, priceIcon);
+        SetPriceIcon(ref _secondPriceIcon, secondPriceIcon);
+        if (secondPriceIcon != null && _secondPriceAmount == null)
+        {
+            _secondPriceAmount = new GameObject("Tooltip second price", typeof(RectTransform), typeof(TextMeshProUGUI)).GetComponent<TMP_Text>();
+            _secondPriceAmount.transform.SetParent(transform, false);
+            _secondPriceAmount.font = readingText != null ? readingText.Display.font : tooltipFont;
+            _secondPriceAmount.fontSize = tooltipText.fontSize;
+            _secondPriceAmount.alignment = TextAlignmentOptions.Center;
+            _secondPriceAmount.raycastTarget = false;
+        }
+        if (_secondPriceAmount != null)
+        {
+            _secondPriceAmount.gameObject.SetActive(secondPriceIcon != null);
+            _secondPriceAmount.text = secondPrice.ToString();
+            _secondPriceAmount.color = secondPriceAffordable ? new Color32(140, 217, 122, 255) : new Color32(252, 125, 128, 255);
+        }
         transform.SetAsLastSibling();
         if (tooltipText != null)
         {
             _sourceText=GameFoundation.Localization.GameText.Source(description);
+            tooltipText.supportRichText = _originalRichText || priceIcon != null;
             _displayedLanguage=GameFoundation.Localization.LocalizationService.Instance?.Language;
-            tooltipText.text = GameFoundation.Localization.GameText.Get(_sourceText);
+            tooltipText.text = GameFoundation.Localization.GameText.Get(_sourceText) + _priceSuffix;
             ResizeToText();
         }
 
         UpdatePosition();
         Fade(1f);
+    }
+
+    private void SetPriceIcon(ref Image image, Sprite sprite)
+    {
+        if (sprite != null && image == null)
+        {
+            image = new GameObject("Tooltip price icon", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+            image.transform.SetParent(transform, false);
+            image.raycastTarget = false;
+        }
+        if (image == null) return;
+        image.gameObject.SetActive(sprite != null);
+        if (sprite != null) ResourceIconSizing.Apply(image, sprite);
     }
 
     private void ResizeToText()
@@ -85,19 +149,41 @@ public class TooltipManager : MonoBehaviour
         float scale = canvas != null ? canvas.rootCanvas.scaleFactor : 1f;
         scale = Mathf.Max(scale, 0.01f);
         float availableWidth = Screen.width / scale - 2f * screenMargin;
+        float iconWidth = _priceIcon != null && _priceIcon.gameObject.activeSelf ? _priceIcon.rectTransform.rect.width + 8f : 0f;
+        bool hasSecondPrice = _secondPriceIcon != null && _secondPriceIcon.gameObject.activeSelf;
+        float secondAmountWidth = hasSecondPrice ? Mathf.Ceil(_secondPriceAmount.preferredWidth) : 0;
+        float secondPriceWidth = hasSecondPrice ? 12 + secondAmountWidth + 8 + _secondPriceIcon.rectTransform.rect.width : 0;
+        float priceWidth = iconWidth + secondPriceWidth;
         float contentLimit = Mathf.Max(1f, Mathf.Min(maxWidth - 2f * textPadding.x,
-            availableWidth - 2f * textPadding.x));
+            availableWidth - 2f * textPadding.x) - priceWidth);
 
         tooltipText.horizontalOverflow = HorizontalWrapMode.Overflow;
-        float contentWidth = Mathf.Min(tooltipText.preferredWidth, contentLimit);
+        readingText?.Refresh();
+        var display = readingText != null ? readingText.Display : null;
+        float preferredWidth = display != null ? display.preferredWidth : tooltipText.preferredWidth;
+        float contentWidth = Mathf.Min(Mathf.Ceil(preferredWidth), contentLimit);
         tooltipText.horizontalOverflow = HorizontalWrapMode.Wrap;
         _textRect.anchorMin = _textRect.anchorMax = new Vector2(0.5f, 0.5f);
-        _textRect.anchoredPosition = Vector2.zero;
+        _textRect.anchoredPosition = new Vector2(-priceWidth * .5f, 0);
+        float priceStart = (contentWidth - priceWidth) * .5f;
+        if (iconWidth > 0)
+            _priceIcon.rectTransform.anchoredPosition = new Vector2(priceStart + 8f + _priceIcon.rectTransform.rect.width * .5f, 0);
+        if (hasSecondPrice)
+        {
+            float secondStart = priceStart + iconWidth + 12f;
+            _secondPriceAmount.rectTransform.sizeDelta = new Vector2(secondAmountWidth, tooltipText.fontSize * 1.5f);
+            _secondPriceAmount.rectTransform.anchoredPosition = new Vector2(secondStart + secondAmountWidth * .5f, 0);
+            _secondPriceIcon.rectTransform.anchoredPosition = new Vector2(secondStart + secondAmountWidth + 8f + _secondPriceIcon.rectTransform.rect.width * .5f, 0);
+        }
         _textRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, contentWidth);
-        float contentHeight = tooltipText.preferredHeight;
+        readingText?.Refresh();
+        float contentHeight = display != null
+            ? display.GetPreferredValues(display.text, contentWidth, float.PositiveInfinity).y
+            : tooltipText.preferredHeight;
         _textRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, contentHeight);
-        _rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, contentWidth + 2f * textPadding.x);
-        _rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, contentHeight + 2f * textPadding.y);
+        _rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, contentWidth + priceWidth + 2f * textPadding.x);
+        _rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(contentHeight, iconWidth > 0 ? _priceIcon.rectTransform.rect.height : 0,
+            hasSecondPrice ? _secondPriceIcon.rectTransform.rect.height : 0) + 2f * textPadding.y);
     }
 
     public void Hide()

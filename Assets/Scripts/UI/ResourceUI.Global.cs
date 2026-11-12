@@ -49,6 +49,7 @@ public partial class ResourceUI
         }
         GlobalResourceManager.OnResourceChanged += UpdateGlobalResource;
         GameFoundation.Base.BuildingUpgradeService.Changed += RefreshHousingCount;
+        GameFoundation.Base.CraftProduction.Changed += RefreshHousingCount;
         if (TooltipManager.Instance == null && globalTooltipPrefab != null)
         {
             var canvas = GetComponentInParent<Canvas>();
@@ -74,6 +75,14 @@ public partial class ResourceUI
             var connector = Resources.Load<Sprite>("UI/Resource Strip Connector");
             if (connector != null)
             {
+                const float humanWidth = 272f;
+                float extraWidth = Mathf.Max(0, humanWidth - human.rect.width);
+                if (extraWidth > 0 && human.Find("Count") is RectTransform count)
+                {
+                    human.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, humanWidth);
+                    count.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, count.rect.width + extraWidth);
+                    count.anchoredPosition += Vector2.right * (extraWidth * .5f);
+                }
                 const float connectorGap = 24f;
                 float edge = human.anchoredPosition.x + human.rect.width * (1f - human.pivot.x);
                 float shift = edge + connectorGap - firstResource.anchoredPosition.x;
@@ -184,6 +193,7 @@ public partial class ResourceUI
         }
         GlobalResourceManager.OnResourceChanged -= UpdateGlobalResource;
         GameFoundation.Base.BuildingUpgradeService.Changed -= RefreshHousingCount;
+        GameFoundation.Base.CraftProduction.Changed -= RefreshHousingCount;
         if (_waitForResources != null)
         {
             StopCoroutine(_waitForResources);
@@ -212,7 +222,7 @@ public partial class ResourceUI
     {
         var housing = GameFoundation.Base.BuildingUpgradeService.Catalog?.Find("housing");
         return housing != null && type == housing.capacityResource
-            ? $"{amount} / {GameFoundation.Base.BuildingUpgradeService.Capacity("housing")}"
+            ? $"{amount} / {GameFoundation.Base.BuildingUpgradeService.Capacity("housing")} ({GameFoundation.Base.CraftProduction.FreeResidents(type)})"
             : amount.ToString();
     }
 

@@ -72,7 +72,7 @@ namespace GameFoundation.Quests
                     {
                         if (quest.confiscateResourcesOnFailure)
                             foreach (var resource in resources.GetAllResourcesData().Keys)
-                                if (resource != null && resource != quest.penaltyResource && !quest.protectedResources.Contains(resource)) resources.SetResourceAmount(resource, 0);
+                                if (quest.CanConfiscate(resource)) resources.SetResourceAmount(resource, 0);
                         if (quest.penaltyResource != null && quest.penaltyAmount > 0) resources.AddResource(quest.penaltyResource, -quest.penaltyAmount);
                     }
                     var changes = new Changes();

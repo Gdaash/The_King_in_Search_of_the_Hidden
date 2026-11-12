@@ -26,7 +26,7 @@ namespace GameFoundation.Saves
         private void OnEnable(){language=LocalizationService.Instance;if(language!=null)language.LanguageChanged+=Refresh;CancelDelete();Refresh();}
         private void OnDisable(){if(language!=null)language.LanguageChanged-=Refresh;CancelDelete();}
         private void Update(){if(Input.GetKeyDown(KeyCode.Escape)){if(confirmation.activeSelf)CancelDelete();else Close();}}
-        public void Close(){CancelDelete();gameObject.SetActive(false);}
+        public void Close(){CancelDelete();GameFoundation.UI.PopupMotion.Hide(gameObject);}
         public void Refresh()
         {
             heading.text=Tr("menu.slots.title","Выберите сохранение");
@@ -63,8 +63,8 @@ namespace GameFoundation.Saves
             if(confirmation.activeSelf)confirmation.transform.SetAsLastSibling();
         }
         private static void Place(RectTransform rect,float top,float height){rect.anchorMin=rect.anchorMax=new Vector2(.5f,1);rect.pivot=new Vector2(.5f,1);rect.anchoredPosition=new Vector2(0,-top);rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,height);}
-        public void RequestDelete(int slot){if(slot<1||slot>3||!SaveSlotPrefs.SlotExists(slot))return;pendingSlot=slot;confirmation.SetActive(true);confirmation.transform.SetAsLastSibling();}
-        public void CancelDelete(){pendingSlot=0;if(confirmation!=null)confirmation.SetActive(false);}
+        public void RequestDelete(int slot){if(slot<1||slot>3||!SaveSlotPrefs.SlotExists(slot))return;pendingSlot=slot;confirmation.SetActive(true);confirmation.transform.SetAsLastSibling();GameFoundation.UI.PopupMotion.ShowDimmed(confirmation);}
+        public void CancelDelete(){pendingSlot=0;if(confirmation!=null){if(isActiveAndEnabled)GameFoundation.UI.PopupMotion.Hide(confirmation);else confirmation.SetActive(false);}}
         public void ConfirmDelete(){if(pendingSlot==0)return;if(SaveSlotPrefs.ClearSlot(pendingSlot)){CancelDelete();Refresh();}}
         internal static string Tr(string key,string fallback){string text=LocalizationService.Instance?.Get(key);return string.IsNullOrEmpty(text)||text==key?fallback:text;}
     }

@@ -13,6 +13,7 @@ public sealed class DayButtonHover : MonoBehaviour, IPointerEnterHandler, IPoint
     private RectTransform hitArea;
     private TMPro.TextMeshProUGUI hoverLabel;
     private NextDayReminder reminderView;
+    internal RectTransform Frame => frame;
     private readonly Vector3[] reminderCorners = new Vector3[4];
     private void Awake()
     {

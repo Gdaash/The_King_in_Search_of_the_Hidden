@@ -45,6 +45,8 @@ namespace GameFoundation.Base
         [SerializeField] private ResourceType magicOre;
         [SerializeField] private DayReportPopup dayReportPopup;
         private bool CanAdvanceDay => PlaytestSettings.TutorialsAndQuestsDisabled || BuildingUpgradeService.IsBuilt("housing");
+        private bool NextDayReady => CanAdvanceDay &&
+            (nextDayButton == null || !nextDayButton.TryGetComponent<NextDayReminder>(out var reminder) || !reminder.BlocksActivation);
         private EngineeringBureauRecruitment engineeringBureau;
         private PortalArsenalPopup baseArsenal;
         private bool daySubscribed;
@@ -128,13 +130,11 @@ namespace GameFoundation.Base
         }
         private void Refresh()
         {
-            if (warehouseButton != null)
-                warehouseButton.gameObject.SetActive(PlaytestSettings.TutorialsAndQuestsDisabled);
             bool canAdvanceDay = CanAdvanceDay;
             var dayBlock = nextDayPanel != null ? nextDayPanel : nextDayButton != null && nextDayButton.transform.parent.name == "Day Panel"
                 ? nextDayButton.transform.parent.gameObject : nextDayButton != null ? nextDayButton.gameObject : null;
             if (dayBlock != null) dayBlock.SetActive(canAdvanceDay);
-            if (nextDayButton != null) nextDayButton.interactable = canAdvanceDay;
+            if (nextDayButton != null) nextDayButton.interactable = NextDayReady;
             var day = DayCycleService.Instance;
             var oreAmount = GlobalResourceManager.Instance != null && magicOre != null
                 ? GlobalResourceManager.Instance.GetResourceAmount(magicOre) : 0;
@@ -236,9 +236,13 @@ namespace GameFoundation.Base
             if (!PortalProgression.IsUnlocked(DayCycleService.GetPortalLocation(site.locationId))) { Message(GameFoundation.Localization.GameText.Get("Улучшите портал для доступа к этой локации"), GameFoundation.UI.NotificationKind.Negative); return; }
             var router = FindAnyObjectByType<RunSceneRouter>();
             if (router == null || !router.CanEnterRun) return;
+            if (!day.EnteredToday && !day.HasExpeditionResidents)
+            {
+                Message(PortalPopupView.ExpeditionResidentsRequiredText, GameFoundation.UI.NotificationKind.Negative);
+                return;
+            }
             // Capture the shelter before Enter marks this day as already used.
-            GameFoundation.Saves.SaveSlotPrefs.BeginRunCheckpoint();
-            if (!day.Enter(site)) { GameFoundation.Saves.SaveSlotPrefs.CompleteRunCheckpoint(); Message(GameFoundation.Localization.GameText.Get("Сегодня уже был поход"), GameFoundation.UI.NotificationKind.Negative); return; }
+            if (!day.Enter(site)) { Message(GameFoundation.Localization.GameText.Get("Сегодня уже был поход"), GameFoundation.UI.NotificationKind.Negative); return; }
             router.EnterRun();
         }
         private void Message(string value, GameFoundation.UI.NotificationKind kind = GameFoundation.UI.NotificationKind.Normal)
@@ -250,7 +254,12 @@ namespace GameFoundation.Base
             var value = LocalizationService.Instance?.Get(key);
             return string.IsNullOrEmpty(value) || value == key ? fallback : value;
         }
-        private void Show(GameObject panel, bool visible) { if (panel) panel.SetActive(visible); }
+        private void Show(GameObject panel, bool visible)
+        {
+            if (panel == null) return;
+            if (visible) panel.SetActive(true);
+            else GameFoundation.UI.PopupMotion.Hide(panel);
+        }
         private void Bind(Button button, UnityEngine.Events.UnityAction action)
         {
             if (!button) return;
@@ -270,13 +279,27 @@ namespace GameFoundation.Base
         public void OpenBlacksmith() => Show(blacksmith, true);
         public void OpenMagicLibrary()
         {
+            if (!PortalArsenalPopup.IsOpen && !TryOpenArsenal()) Show(magicLibrary, true);
+        }
+        internal void OpenArsenalFromPortal(PortalPopupView portal)
+        {
+            if (portal == null || PortalArsenalPopup.IsOpen) return;
+            GameFoundation.UI.PopupMotion.Hide(portal.gameObject, () =>
+            {
+                if (portal == null) return;
+                void ReturnToPortal() { if (portal != null) portal.gameObject.SetActive(true); }
+                if (!TryOpenArsenal(ReturnToPortal)) ReturnToPortal();
+            });
+        }
+        private bool TryOpenArsenal(System.Action onClose = null)
+        {
             var balance = Resources.Load<PortalTowerBalance>("World/PortalTowerBalance");
             if (balance != null && balance.useSelectableArsenal && balance.useEnergyLoadout && balance.arsenalPopupPrefab != null)
             {
                 if (baseArsenal == null) baseArsenal = Instantiate(balance.arsenalPopupPrefab).GetComponent<PortalArsenalPopup>();
-                baseArsenal.OpenBase(balance);
+                return baseArsenal.OpenBase(balance, onClose);
             }
-            else Show(magicLibrary, true);
+            return false;
         }
         public void CloseMap() => Show(globalMap, false);
         public void CloseLaboratory() => Show(laboratory, false);
@@ -287,11 +310,11 @@ namespace GameFoundation.Base
         public void CloseBlacksmith() => Show(blacksmith, false);
         public void CloseMagicLibrary() { baseArsenal?.Close(); Show(magicLibrary, false); }
         private void OnDestroy() { if (baseArsenal != null) Destroy(baseArsenal.gameObject); }
-        public void NextDay() { if (PortalCloudTransition.IsLoading || !CanAdvanceDay || DayCycleService.Instance == null) return; RefreshForecasts(); Show(nextDayConfirmation, true); }
+        public void NextDay() { if (PortalCloudTransition.IsLoading || !NextDayReady || DayCycleService.Instance == null) return; RefreshForecasts(); Show(nextDayConfirmation, true); }
         public void CancelNextDay() { if (!ForestForagingService.IsPending) Show(nextDayConfirmation, false); }
         public void ConfirmNextDay()
         {
-            if (PortalCloudTransition.IsLoading || !CanAdvanceDay || ForestForagingService.IsPending || DayCycleService.Instance == null) return;
+            if (PortalCloudTransition.IsLoading || !NextDayReady || ForestForagingService.IsPending || DayCycleService.Instance == null) return;
             if (PortalCloudTransition.Cover(AdvanceDayUnderClouds)) Show(nextDayConfirmation, false);
         }
         private void AdvanceDayUnderClouds()
@@ -309,7 +332,6 @@ namespace GameFoundation.Base
             using var notification = GameFoundation.UI.GameNotifications.BeginAction();
             var purchase = cartWorkshop;
             if (purchase == null || !purchase.TryBuy()) { Message(GameFoundation.Localization.GameText.Get("Недостаточно дерева для телеги"), GameFoundation.UI.NotificationKind.Negative); return; }
-            Message(GameFoundation.Localization.GameText.Get("Телега изготовлена"), GameFoundation.UI.NotificationKind.Positive);
         }
         public void AdmitRefugee() { using var notification = GameFoundation.UI.GameNotifications.BeginAction(); if (GlobalResourceManager.Instance && human && DayCycleService.Instance?.AdmitRefugee() == true) { GlobalResourceManager.Instance.AddResource(human, 1); Message(GameFoundation.Localization.GameText.Get("Новый житель принят"), GameFoundation.UI.NotificationKind.Positive); GameFoundation.Audio.GameAudioController.PlayUI(GameFoundation.Audio.GameAudioCue.RefugeeAdmit, .65f); } }
     }

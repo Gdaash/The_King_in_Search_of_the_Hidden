@@ -47,6 +47,9 @@ namespace GameFoundation.Quests
         [Min(0)] public int penaltyAmount;
         public bool confiscateResourcesOnFailure;
         public List<ResourceType> protectedResources = new();
+
+        internal bool CanConfiscate(ResourceType resource) =>
+            resource != null && resource != penaltyResource && !resource.isMilitaryUnit && !protectedResources.Contains(resource);
         private void OnValidate()
         {
             if (string.IsNullOrWhiteSpace(id)) id = System.Guid.NewGuid().ToString("N");

@@ -31,6 +31,7 @@ namespace GameFoundation.MetaProgression
    float height=top+80;window.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,height);
    var buttonRect=Rect(window,"OK",new Vector2(280,48),new Vector2(0,-top-12));var image=buttonRect.gameObject.AddComponent<Image>();image.sprite=Resources.Load<GameFoundation.UI.ButtonVisualTheme>("UI/ButtonVisualTheme")?.textButtonSprite ?? buttonSprite;image.type=Image.Type.Sliced;okay=buttonRect.gameObject.AddComponent<Button>();okay.targetGraphic=image;okay.transition=Selectable.Transition.None;image.color=Color.white;buttonRect.gameObject.AddComponent<GameFoundation.UI.UnifiedButtonFeedback>();
    var label=Text(buttonRect,Tr("world.losses.ok","OK"),new Vector2(248,40),new Vector2(0,-4),24);buttonRect.gameObject.AddComponent<GameFoundation.UI.ActionButtonLabelColor>().Configure(label);okay.onClick.AddListener(Acknowledge);okay.gameObject.SetActive(false);
+   GameFoundation.UI.PopupMotion.Show(gameObject,window,backdrop);
    StartCoroutine(Reveal());
   }
   private static string Tr(string key,string fallback){var value=LocalizationService.Instance?.Get(key);return string.IsNullOrEmpty(value)||value==key?fallback:value;}
@@ -60,6 +61,6 @@ namespace GameFoundation.MetaProgression
    foreach(var icon in icons){icon.alpha=1;yield return new WaitForSecondsRealtime(interval);}
    okay.gameObject.SetActive(true);
   }
-  private void Acknowledge(){var callback=completed;completed=null;gameObject.SetActive(false);callback?.Invoke();}
+  private void Acknowledge(){var callback=completed;completed=null;GameFoundation.UI.PopupMotion.Hide(gameObject,callback);}
  }
 }

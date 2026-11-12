@@ -79,6 +79,7 @@ namespace GameFoundation.MetaProgression
         }
         private IEnumerator Travel(string scene, Action whenCovered)
         {
+            bool returningToBase = scene == "Base" && SceneManager.GetActiveScene().name == "World";
             yield return FadeDimmer(0, dimmerOpacity);
             yield return MoveClouds(0, 1, closeSeconds);
             // Present one fully covered frame before asset loading or scene activation can stall.
@@ -101,6 +102,8 @@ namespace GameFoundation.MetaProgression
             yield return FadeDimmer(dimmerOpacity, 0);
             RestoreNavigation();
             IsLoading = false; active = null;
+            if (returningToBase && operation != null && SceneManager.GetActiveScene().name == "Base")
+                FindAnyObjectByType<GameFoundation.Quests.QuestDialogueView>(FindObjectsInactive.Include)?.QueueRewards();
             Destroy(gameObject);
         }
         private IEnumerator FadeDimmer(float from, float to)

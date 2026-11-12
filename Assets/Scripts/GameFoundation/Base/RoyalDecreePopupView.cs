@@ -31,7 +31,7 @@ namespace GameFoundation.Base
                 row.gameObject.SetActive(row.decree != null && row.decree.IsAvailable);
         }
         public void Open() => gameObject.SetActive(true);
-        public void Close() { if (!ForestForagingService.IsPending) gameObject.SetActive(false); }
+        public void Close() { if (!ForestForagingService.IsPending) GameFoundation.UI.PopupMotion.Hide(gameObject); }
         public void ConfirmDisable(RoyalDecreeRow row)
         {
             selected = row;
@@ -41,7 +41,7 @@ namespace GameFoundation.Base
         public void CancelDisable() { selected = null; if(disableConfirmation)disableConfirmation.SetActive(false); }
         private void DisableSelected()
         {
-            if (selected != null && !ForestForagingService.IsPending) RoyalDecreeService.SetEnabled(selected.decree.id, false);
+            if (selected != null && CraftProduction.Morning && !ForestForagingService.IsPending) RoyalDecreeService.SetEnabled(selected.decree.id, false);
             CancelDisable();
         }
     }

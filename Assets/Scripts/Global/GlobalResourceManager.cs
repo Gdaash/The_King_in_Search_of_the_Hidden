@@ -120,9 +120,11 @@ public class GlobalResourceManager : MonoBehaviour
     {
         _resourceAmounts.Clear();
         AddOptionalResource("Engineer");
+        AddOptionalResource("Slinger");
         AddOptionalResource("Chicken");
         AddOptionalResource("Hide");
         AddOptionalResource("Leather");
+        AddOptionalResource("LeatherArmor");
         if (availableResources != null)
         {
             foreach (var res in availableResources)
@@ -177,39 +179,48 @@ public class GlobalResourceManager : MonoBehaviour
     }
 
     public bool TryExchangeResources(ResourceType inputA, int inputAAmount,
-        ResourceType inputB, int inputBAmount, ResourceType output, int outputAmount)
+        ResourceType inputB, int inputBAmount, ResourceType output, int outputAmount,
+        ResourceType inputC = null, int inputCAmount = 0)
     {
         if (inputA == null || inputB == null || output == null ||
-            inputAAmount < 0 || inputBAmount < 0 || outputAmount < 0)
+            inputAAmount < 0 || inputBAmount < 0 || inputCAmount < 0 || outputAmount < 0 ||
+            inputCAmount > 0 && inputC == null)
             return false;
 
-        int availableA = GetResourceAmount(inputA);
-        int availableB = inputA == inputB ? availableA : GetResourceAmount(inputB);
-        int requiredA = inputAAmount + (inputA == inputB ? inputBAmount : 0);
-        if (availableA < requiredA || (inputA != inputB && availableB < inputBAmount))
-            return false;
+        var costs = new Dictionary<ResourceType, int>();
+        AddAmount(costs, inputA, inputAAmount);
+        AddAmount(costs, inputB, inputBAmount);
+        if (inputCAmount > 0) AddAmount(costs, inputC, inputCAmount);
+        foreach (var cost in costs)
+            if (GetResourceAmount(cost.Key) < cost.Value) return false;
 
         using var save = PlayerPrefs.Batch();
-        // Record the boundary before mutating balances, as AddResource and TrySpendResource do.
-        DayResourceLedger.RecordResourceChange(inputA, -inputAAmount);
-        DayResourceLedger.RecordResourceChange(inputB, -inputBAmount);
+        var changes = new Dictionary<ResourceType, int>();
+        foreach (var cost in costs)
+        {
+            DayResourceLedger.RecordResourceChange(cost.Key, -cost.Value);
+            changes.Add(cost.Key, GetResourceAmount(cost.Key) - cost.Value);
+        }
         DayResourceLedger.RecordResourceChange(output, outputAmount);
-        SetResourceAmountWithoutSaving(inputA, availableA - requiredA);
-        if (inputA != inputB)
-            SetResourceAmountWithoutSaving(inputB, availableB - inputBAmount);
-        SetResourceAmountWithoutSaving(output, GetResourceAmount(output) + outputAmount);
+        changes[output] = (changes.TryGetValue(output, out int remaining) ? remaining : GetResourceAmount(output)) + outputAmount;
+        foreach (var change in changes)
+        {
+            _resourceAmounts[change.Key] = change.Value;
+            PlayerPrefs.SetInt(saveKeyPrefix + change.Key.Id, change.Value);
+        }
+        foreach (var change in changes)
+            OnResourceChanged?.Invoke(change.Key, GetResourceAmount(change.Key));
 
         PlayerPrefs.Save();
         RefreshDisplay();
         return true;
     }
 
-    private void SetResourceAmountWithoutSaving(ResourceType type, int amount)
+    private static void AddAmount(Dictionary<ResourceType, int> costs, ResourceType type, int amount)
     {
-        amount = Mathf.Max(0, amount);
-        _resourceAmounts[type] = amount;
-        PlayerPrefs.SetInt(saveKeyPrefix + type.Id, amount);
-        OnResourceChanged?.Invoke(type, amount);
+        if (amount == 0) return;
+        costs.TryGetValue(type, out int existing);
+        costs[type] = existing + amount;
     }
 
     private void SaveResource(ResourceType type)

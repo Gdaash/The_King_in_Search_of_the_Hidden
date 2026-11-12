@@ -169,10 +169,11 @@ namespace GameFoundation.MetaProgression
             for (int i = 0; i < energyTicks.Count; i++)
             {
                 int threshold = PortalEnergyRules.LightThreshold(progression.Balance, i, progression.CrystalEfficiencyRank);
-                energyTicks[i].gameObject.SetActive(i >= progression.PermanentLightCount - 1 && threshold <= progression.EnergyCapacity);
+                energyTicks[i].gameObject.SetActive(threshold <= progression.EnergyCapacity);
                 energyTicks[i].anchorMin = energyTicks[i].anchorMax = new Vector2((float)threshold / progression.EnergyCapacity,.5f);
                 energyTicks[i].anchoredPosition = Vector2.zero;
-                if (TopCrystal == null && energyTicks[i].gameObject.activeSelf) TopCrystal = energyCrystals[i].rectTransform;
+                if (TopCrystal == null && i >= progression.PermanentLightCount - 1 && energyTicks[i].gameObject.activeSelf)
+                    TopCrystal = energyCrystals[i].rectTransform;
                 energyCrystals[i].color = progression.Energy >= threshold ? Color.white : new Color(.4f,.36f,.46f);
             }
         }

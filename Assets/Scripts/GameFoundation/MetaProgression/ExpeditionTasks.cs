@@ -15,12 +15,12 @@ namespace GameFoundation.MetaProgression
         private static bool active;
 
         public static bool CoopBuilt => BuildingUpgradeService.IsBuilt(Coop);
-        public static bool TanneryBuilt => BuildingUpgradeService.IsBuilt(Tannery);
+        public static bool TanneryBuilt => BuildingUpgradeService.IsBuilt(CraftQuarterLayout.Tannery);
         public static int CoopCapacity => BuildingUpgradeService.Catalog?.Find(Coop) != null
             ? BuildingUpgradeService.Capacity(Coop) : 5;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void Reset() => active = false;
+        internal static void Reset() => active = false;
 
         public static void Begin()
         {

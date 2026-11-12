@@ -18,6 +18,7 @@ namespace GameFoundation.UI
         [SerializeField] private float minimumWidth = 120;
         public float Width => ((RectTransform)transform).rect.width;
 
+        private const float ScrollbarWidth = 8f;
         private ScrollRect scroll;
 
         private void Awake()
@@ -41,7 +42,7 @@ namespace GameFoundation.UI
             var bar = NewRect("Roster Scrollbar", transform);
             bar.anchorMin = new Vector2(1, 0);
             bar.anchorMax = Vector2.one;
-            bar.offsetMin = new Vector2(-12, padding.y);
+            bar.offsetMin = new Vector2(-4 - ScrollbarWidth, padding.y);
             bar.offsetMax = new Vector2(-4, -headerHeight);
             bar.gameObject.AddComponent<UnityEngine.UI.Image>().color = new Color(.14f, .11f, .17f);
             var slidingArea = NewRect("Sliding Area", bar);
@@ -63,6 +64,7 @@ namespace GameFoundation.UI
             scroll.scrollSensitivity = 42;
             scroll.verticalScrollbar = scrollbar;
             scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
+            bar.gameObject.SetActive(false);
         }
 
         private static RectTransform NewRect(string name, Transform parent)
@@ -89,7 +91,10 @@ namespace GameFoundation.UI
                 rect.anchoredPosition = new Vector2(0, -count * step);
                 count++;
             }
-            float width = count == 0 ? 0 : Mathf.Max(minimumWidth, cellSize.x + padding.x * 2);
+            float height = Mathf.Max(0, count * step - cellSpacing.y);
+            bool overflow = scroll != null && height > scroll.viewport.rect.height + .01f;
+            float scrollInset = overflow ? ScrollbarWidth : 0;
+            float width = count == 0 ? 0 : Mathf.Max(minimumWidth, cellSize.x + padding.x * 2) + scrollInset;
             if (!Mathf.Approximately(panel.rect.width, width))
                 panel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
             if (TryGetComponent<CanvasGroup>(out var visibility))
@@ -100,10 +105,10 @@ namespace GameFoundation.UI
             if (emptyLabel != null && count > 0 && emptyLabel.gameObject.activeSelf)
                 emptyLabel.gameObject.SetActive(false);
             if (scroll == null) return;
-            float height = Mathf.Max(0, count * step - cellSpacing.y);
+            scroll.viewport.offsetMax = new Vector2(-padding.x - scrollInset, -headerHeight);
             if (!Mathf.Approximately(content.rect.height, height))
                 content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
-            if (height <= scroll.viewport.rect.height && content.anchoredPosition != Vector2.zero)
+            if (!overflow && content.anchoredPosition != Vector2.zero)
             {
                 scroll.StopMovement();
                 content.anchoredPosition = Vector2.zero;

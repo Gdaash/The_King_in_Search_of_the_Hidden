@@ -31,6 +31,7 @@ public sealed class DangerLevelNotificationView : MonoBehaviour
     private readonly Vector3[] corners = new Vector3[4];
     private RectTransform followedBar, upperDecoration, rootCanvas;
     private bool aboveBar;
+    private Func<DangerLevelNotificationView> notificationBelow;
 
     public void FollowBar(RectTransform bar, bool above, RectTransform decoration = null)
     {
@@ -50,6 +51,9 @@ public sealed class DangerLevelNotificationView : MonoBehaviour
         float edge = BarEdge(followedBar);
         if (aboveBar && upperDecoration != null && upperDecoration.gameObject.activeInHierarchy)
             edge = Mathf.Max(edge, BarEdge(upperDecoration));
+        var lower = notificationBelow?.Invoke();
+        if (lower != null && lower.gameObject.activeInHierarchy)
+            edge = Mathf.Max(edge, BarEdge((RectTransform)lower.transform));
         var rect = (RectTransform)transform;
         float halfHeight = Mathf.Abs(rootCanvas.InverseTransformVector(rect.TransformVector(Vector3.up * rect.rect.height * .5f)).y);
         float y = edge + (aboveBar ? 1 : -1) * (gap + halfHeight);
@@ -109,6 +113,36 @@ public sealed class DangerLevelNotificationView : MonoBehaviour
     {
         yield return Animate();
         Destroy(gameObject);
+    }
+
+    public IEnumerator PlayAllyDeath(Sprite icon, Func<DangerLevelNotificationView> lowerNotice)
+    {
+        notificationBelow = lowerNotice;
+        EnsureSkulls(1);
+        if (skullContainer != null)
+        {
+            skullContainer.gameObject.SetActive(icon != null);
+            skullContainer.anchorMin = skullContainer.anchorMax = skullContainer.pivot = new Vector2(.5f, .5f);
+            skullContainer.anchoredPosition = new Vector2(0, -24);
+        }
+        if (skulls.Count > 0) ResourceIconSizing.Apply(skulls[0], icon);
+        if (titleText != null)
+        {
+            var rect = titleText.rectTransform;
+            rect.anchorMin = new Vector2(0, .5f);
+            rect.anchorMax = new Vector2(1, .5f);
+            rect.pivot = new Vector2(.5f, .5f);
+            rect.anchoredPosition = new Vector2(0, icon == null ? 0 : 25);
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 48);
+            titleText.enableAutoSizing = true;
+            titleText.fontSizeMin = 22;
+            titleText.fontSizeMax = titleText.fontSize;
+            titleText.text = GameText.Get("Пал в бою");
+        }
+        gameObject.SetActive(true);
+        yield return Fade(0f, 1f, .16f);
+        yield return new WaitForSecondsRealtime(1.2f);
+        yield return Fade(1f, 0f, .25f);
     }
 
     public IEnumerator Play(int level, int totalLevels)

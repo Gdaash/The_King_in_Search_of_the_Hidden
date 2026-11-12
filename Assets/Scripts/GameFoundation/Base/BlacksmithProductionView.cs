@@ -18,22 +18,52 @@ namespace GameFoundation.Base
             public Text inputAmountText;
             public Image outputIcon;
             public Text outputAmountText;
+            public ResourceType fuel;
+            public Text fuelAmountText;
         }
 
         [SerializeField] private RecipeView swordRecipe;
         [SerializeField] private RecipeView bowRecipe;
         [SerializeField] private RecipeView spearRecipe;
+        private RecipeView leatherArmorRecipe, tanneryRecipe, coalRecipe, ingotRecipe, ironArmorRecipe;
         [SerializeField] private Color enoughColor = new Color(0.55f, 0.85f, 0.35f);
         [SerializeField] private Color notEnoughColor = new Color(0.95f, 0.38f, 0.35f);
         [SerializeField] private Color stockColor = new Color(0.94f, 0.91f, 0.82f);
 
-        public bool CanProduceAny => CanProduce(swordRecipe) || CanProduce(bowRecipe) || CanProduce(spearRecipe);
+        public bool CanProduceAny => CanProduce(bowRecipe) || CanProduce(spearRecipe) ||
+            (transform.Find("Window/Recipes Scroll") == null || BuildingUpgradeService.IsBuilt(CraftQuarterLayout.Smithy)) && CanProduce(swordRecipe) ||
+            BuildingUpgradeService.CanBuildAnnex(CraftQuarterLayout.Smithy) ||
+            BuildingUpgradeService.CanBuildAnnex(CraftQuarterLayout.LeatherShop) ||
+            BuildingUpgradeService.CanBuildAnnex(CraftQuarterLayout.Tannery) ||
+            BuildingUpgradeService.CanBuildAnnex(CraftQuarterLayout.CharcoalPit) ||
+            CraftProduction.CanQueue(CraftProduction.LeatherShop, ResourceCatalog.Find("Leather"), 1) ||
+            CraftProduction.CanQueue(CraftProduction.Tannery, ResourceCatalog.Find("Hide"), 1) ||
+            CraftProduction.CanQueue(CraftProduction.CharcoalPit, ResourceCatalog.Find("Wood"), 1) ||
+            CraftProduction.CanQueue(CraftProduction.Smithy, ResourceCatalog.Find("IronOre"), 1, ResourceCatalog.Find("Coal"), 1) ||
+            CraftProduction.CanQueue(CraftProduction.Smithy, ResourceCatalog.Find("IronIngot"), 1);
 
         private void Awake()
         {
+            if (swordRecipe != null)
+            {
+                swordRecipe.input = ResourceCatalog.Find("IronIngot");
+                swordRecipe.inputAmount = 1;
+            }
             Bind(swordRecipe);
             Bind(bowRecipe);
             Bind(spearRecipe);
+        }
+
+        private void Start()
+        {
+            var window = transform.Find("Window") as RectTransform;
+            var content = window != null ? window.Find("Recipes Scroll/Viewport/Content") : null;
+            if (content != null &&
+                content.Find("Cart Recipe") is RectTransform cart &&
+                content.Find("Spear Recipe") is RectTransform spear &&
+                content.Find("Bow Recipe") is RectTransform bow &&
+                content.Find("Sword Recipe") is RectTransform sword)
+                gameObject.AddComponent<CraftQuarterLayout>().Build(window, new[] { cart, spear, bow, sword }, this);
         }
 
         private void OnEnable()
@@ -49,6 +79,52 @@ namespace GameFoundation.Base
             Unbind(swordRecipe);
             Unbind(bowRecipe);
             Unbind(spearRecipe);
+            Unbind(leatherArmorRecipe);
+            Unbind(tanneryRecipe);
+            Unbind(coalRecipe);
+            Unbind(ingotRecipe);
+            Unbind(ironArmorRecipe);
+        }
+
+        internal void BindLeatherArmor(RectTransform row) =>
+            leatherArmorRecipe = BindRecipe(row, "Leather", "LeatherArmor");
+
+        internal void BindTannery(RectTransform row) =>
+            tanneryRecipe = BindRecipe(row, "Hide", "Leather");
+
+        internal void BindForge(RectTransform coal, RectTransform ingot, RectTransform armor)
+        {
+            coalRecipe = BindRecipe(coal, "Wood", "Coal");
+            ingotRecipe = BindRecipe(ingot, "IronOre", "IronIngot");
+            ingotRecipe.fuel = ResourceCatalog.Find("Coal");
+            var button = ingotRecipe.produceButton;
+            var icon = Instantiate(ingotRecipe.inputIcon, button.transform);
+            ApplyIcon(icon, ingotRecipe.fuel);
+            var amount = ingotRecipe.fuelAmountText = Instantiate(ingotRecipe.inputAmountText, button.transform);
+            amount.text = "1";
+            var layout = button.GetComponent<GameFoundation.UI.PriceButtonLayout>();
+            layout.prices = new[] { ingotRecipe.inputIcon.rectTransform, ingotRecipe.inputAmountText.rectTransform,
+                icon.rectTransform, amount.rectTransform };
+            layout.Invalidate();
+            ironArmorRecipe = BindRecipe(armor, "IronIngot", "IronArmor");
+            ironArmorRecipe.inputAmount = 2;
+        }
+
+        private RecipeView BindRecipe(RectTransform row, string input, string output)
+        {
+            var button = row.Find("Produce").GetComponent<Button>();
+            var recipe = new RecipeView
+            {
+                input = ResourceCatalog.Find(input),
+                output = ResourceCatalog.Find(output),
+                produceButton = button,
+                inputIcon = button.transform.Find("Input Icon").GetComponent<Image>(),
+                inputAmountText = button.transform.Find("Input Amount").GetComponent<Text>(),
+                outputIcon = row.Find("Output Icon").GetComponent<Image>(),
+                outputAmountText = row.Find("Output Amount").GetComponent<Text>()
+            };
+            Bind(recipe);
+            return recipe;
         }
 
         private void Bind(RecipeView recipe)
@@ -65,18 +141,27 @@ namespace GameFoundation.Base
 
         private void Produce(RecipeView recipe)
         {
-            using var save = GameFoundation.Saves.SaveSlotPrefs.Batch();
-            using var notification = GameFoundation.UI.GameNotifications.BeginAction();
-            GlobalResourceManager manager = GlobalResourceManager.Instance;
-            if (manager == null || recipe?.input == null || recipe.output == null ||
-                !manager.TrySpendResource(recipe.input, recipe.inputAmount))
-                return;
-
-            manager.AddResource(recipe.output, recipe.outputAmount);
-            GameFoundation.UI.GameNotifications.Post(GameFoundation.Localization.GameText.Get("Оружие изготовлено"), GameFoundation.UI.NotificationKind.Positive, recipe.output.resourceIcon);
-            GameAudioController.PlayUI(GameAudioCue.ProductionComplete, 0.85f, 0.96f, 1.04f, 0.08f);
-            Refresh();
+            if (recipe?.input == null || recipe.output == null) return;
+            int quantity = BatchSize(recipe);
+            CraftProduction.Queue(WorkshopOf(recipe), recipe.input, recipe.inputAmount * quantity,
+                recipe.output, recipe.outputAmount * quantity, 1, recipe.fuel, recipe.fuel != null ? 1 : 0);
         }
+
+        private int BatchSize(RecipeView recipe)
+        {
+            if (recipe == tanneryRecipe)
+                return Mathf.Clamp(GlobalResourceManager.Instance?.GetResourceAmount(recipe.input) ?? 0, 1, 3);
+            return 1;
+        }
+
+        private int WorkshopOf(RecipeView recipe) =>
+            recipe == leatherArmorRecipe ? CraftProduction.LeatherShop :
+            recipe == tanneryRecipe ? CraftProduction.Tannery :
+            recipe == coalRecipe ? CraftProduction.CharcoalPit :
+            recipe == swordRecipe || recipe == ingotRecipe || recipe == ironArmorRecipe
+                ? CraftProduction.Smithy : CraftProduction.Carpentry;
+
+        internal void RefreshProduction() => Refresh();
 
         private void OnResourceChanged(ResourceType _, int __) => Refresh();
 
@@ -85,6 +170,11 @@ namespace GameFoundation.Base
             Refresh(swordRecipe);
             Refresh(bowRecipe);
             Refresh(spearRecipe);
+            Refresh(leatherArmorRecipe);
+            Refresh(tanneryRecipe);
+            Refresh(coalRecipe);
+            Refresh(ingotRecipe);
+            Refresh(ironArmorRecipe);
         }
 
         private void Refresh(RecipeView recipe)
@@ -95,27 +185,27 @@ namespace GameFoundation.Base
             bool canProduce = CanProduce(recipe);
 
             if (recipe.produceButton != null) recipe.produceButton.interactable = canProduce;
-            BaseDisabledButtonHint.Set(recipe.produceButton, BaseDisabledButtonHint.Reason.Resources);
+            BaseDisabledButtonHint.Set(recipe.produceButton, BaseDisabledButtonHint.Reason.Resources,
+                reasonText: CraftProduction.StartBlockReason(WorkshopOf(recipe)));
             if (recipe.inputAmountText != null)
             {
-                recipe.inputAmountText.text = recipe.inputAmount.ToString();
-                recipe.inputAmountText.color = canProduce ? enoughColor : notEnoughColor;
+                recipe.inputAmountText.text = (recipe.inputAmount * BatchSize(recipe)).ToString();
+                recipe.inputAmountText.color = manager != null && recipe.input != null &&
+                    manager.GetResourceAmount(recipe.input) >= recipe.inputAmount * BatchSize(recipe) ? enoughColor : notEnoughColor;
             }
             if (recipe.outputAmountText != null)
             {
                 recipe.outputAmountText.text = outputStock.ToString();
                 recipe.outputAmountText.color = stockColor;
             }
+            if (recipe.fuelAmountText != null)
+                recipe.fuelAmountText.color = manager != null && manager.GetResourceAmount(recipe.fuel) >= 1 ? enoughColor : notEnoughColor;
             ApplyIcon(recipe.inputIcon, recipe.input);
             ApplyIcon(recipe.outputIcon, recipe.output);
         }
 
-        private static bool CanProduce(RecipeView recipe)
-        {
-            GlobalResourceManager manager = GlobalResourceManager.Instance;
-            return manager != null && recipe != null && recipe.input != null && recipe.output != null &&
-                manager.GetResourceAmount(recipe.input) >= recipe.inputAmount;
-        }
+        private bool CanProduce(RecipeView recipe) => recipe?.output != null &&
+            CraftProduction.CanQueue(WorkshopOf(recipe), recipe.input, recipe.inputAmount * BatchSize(recipe), recipe.fuel, recipe.fuel != null ? 1 : 0);
 
         private static void ApplyIcon(Image image, ResourceType resource)
         {

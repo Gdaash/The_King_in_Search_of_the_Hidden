@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using GameFoundation.Localization;
 using GameFoundation.MetaProgression;
+using GameFoundation.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -26,6 +27,11 @@ namespace GameFoundation.Base
         public PortalLocationDefinition Selected { get; private set; }
         public bool expeditionLayout;
         private PortalExpeditionPanel expedition;
+        private Image accessOverlay;
+        private Button accessButton;
+        private PriceButtonLayout accessPrice;
+        private Image accessIconA, accessIconB;
+        private Text accessAmountA, accessAmountB;
         private Sprite activeExpeditionSkull, inactiveExpeditionSkull;
         internal void SetExpeditionSkulls(Sprite active, Sprite inactive)
         {
@@ -48,6 +54,7 @@ namespace GameFoundation.Base
             travelButton.onClick.AddListener(Travel);
             foreach (var row in locations) if (row != null) row.Bind(this);
             BuildingUpgradeService.Changed += Refresh;
+            CraftProduction.Changed += Refresh;
             Subscribe();
             Refresh();
         }
@@ -63,15 +70,16 @@ namespace GameFoundation.Base
             closeButton.onClick.RemoveListener(Close);
             travelButton.onClick.RemoveListener(Travel);
             BuildingUpgradeService.Changed -= Refresh;
+            CraftProduction.Changed -= Refresh;
             if (day != null) day.Changed -= Refresh;
             if (localization != null) localization.LanguageChanged -= Refresh;
             day = null; localization = null;
         }
         private void OnResourceChanged(ResourceType _, int __) => Refresh();
-        public void Close() => gameObject.SetActive(false);
+        public void Close() => PopupMotion.Hide(gameObject);
         public void Select(PortalLocationDefinition location)
         {
-            if (!PortalProgression.IsUnlocked(location) || !locations.Any(row => row != null && row.location == location)) return;
+            if (location == null || !locations.Any(row => row != null && row.location == location)) return;
             Selected = location;
             Refresh();
         }
@@ -82,9 +90,6 @@ namespace GameFoundation.Base
                 Selected = locations.FirstOrDefault(row => row != null && row.location != null && row.location.LocationId == DayCycleService.CurrentPortalLocationId)?.location
                     ?? locations.FirstOrDefault(row => row != null && row.location != null)?.location;
             if (Selected == null) return;
-            if (!PortalProgression.IsUnlocked(Selected))
-                Selected = locations.FirstOrDefault(row => row != null && PortalProgression.IsUnlocked(row.location))?.location;
-            if (Selected == null) return;
             foreach (var row in locations) if (row != null && row.location != null) row.Refresh(Selected);
             portalLevel.text = string.Format(Tr("base.portal.level", GameFoundation.Localization.GameText.Get("Уровень портала: {0} / {1}")), PortalProgression.Level, PortalProgression.MaxLevel);
             title.text = expeditionLayout ? PortalProgression.Name(Selected).ToUpperInvariant() : PortalProgression.Name(Selected);
@@ -93,7 +98,7 @@ namespace GameFoundation.Base
             {
                 var skull = dangerSkulls[i];
                 if (skull == null) continue;
-                bool active = i < Selected.Difficulty;
+                bool active = i < Selected.DangerSkulls;
                 if (activeExpeditionSkull == null) skull.gameObject.SetActive(active);
                 else
                 {
@@ -113,14 +118,107 @@ namespace GameFoundation.Base
                 row.abundance.color = PortalResourceAbundance.ColorFor(resource.abundanceKey);
             }
             bool unlocked = PortalProgression.IsUnlocked(Selected);
-            bool entered = DayCycleService.Instance != null && DayCycleService.Instance.EnteredToday;
-            travelButton.interactable = unlocked && !entered && DayCycleService.Instance != null;
-            BaseDisabledButtonHint.Set(travelButton, entered ? BaseDisabledButtonHint.Reason.TravelUsed : PortalProgression.IsDemoLocked(Selected) ? BaseDisabledButtonHint.Reason.Demo : BaseDisabledButtonHint.Reason.PortalLevel);
+            RefreshAccess(unlocked);
+            var service = DayCycleService.Instance;
+            bool entered = service?.EnteredToday == true;
+            bool hasResidents = service?.HasExpeditionResidents == true;
+            bool lacksResidents = unlocked && !entered && !hasResidents;
+            travelButton.interactable = unlocked && !entered && hasResidents;
+            BaseDisabledButtonHint.Set(travelButton, entered ? BaseDisabledButtonHint.Reason.TravelUsed :
+                PortalProgression.IsDemoLocked(Selected) ? BaseDisabledButtonHint.Reason.Demo : BaseDisabledButtonHint.Reason.PortalLevel,
+                reasonText: lacksResidents ? ExpeditionResidentsRequiredText : null);
             travelLabel.text = Tr("base.portal.depart", GameFoundation.Localization.GameText.Get("Отправиться"));
             status.text = entered ? Tr("base.portal.travel_used", "Сегодня вы уже пользовались порталом.") : !unlocked ? string.Format(Tr("base.portal.requires_level", GameFoundation.Localization.GameText.Get("Улучшите портал до ур. {0}")), Selected.RequiredPortalLevel) :
-                Tr("base.portal.travel_once", "Путешествовать через портал можно только один раз в день.");
-            status.color = unlocked && !entered ? readyColor : lockedColor;
+                lacksResidents ? ExpeditionResidentsRequiredText : Tr("base.portal.travel_once", "Путешествовать через портал можно только один раз в день.");
+            status.color = travelButton.interactable ? readyColor : lockedColor;
             expedition?.Refresh();
+        }
+
+        private void RefreshAccess(bool unlocked)
+        {
+            description.gameObject.SetActive(unlocked);
+            if (unlocked)
+            {
+                if (accessOverlay != null) accessOverlay.gameObject.SetActive(false);
+                return;
+            }
+            if (accessOverlay == null) CreateAccessOverlay();
+            accessOverlay.gameObject.SetActive(true);
+            var price = PortalProgression.AccessPrice(Selected);
+            bool demoLocked = PortalProgression.IsDemoLocked(Selected);
+            bool next = PortalProgression.IsNextDestination(Selected);
+            accessButton.interactable = !demoLocked && next && BuildingUpgradeService.CanUpgrade(PortalProgression.BuildingId);
+            BaseDisabledButtonHint.Set(accessButton, demoLocked ? BaseDisabledButtonHint.Reason.Demo :
+                next ? BaseDisabledButtonHint.Reason.Resources : BaseDisabledButtonHint.Reason.PortalLevel,
+                reasonText: !demoLocked && !next ? Tr("base.portal.previous_upgrade", "Требуется предыдущее улучшение") : null);
+            accessPrice.label.text = Tr("base.portal.upgrade_action", "Улучшить портал");
+            BuildingUpgradeButton.SetPrice(accessIconA, accessAmountA, price?.resourceA, price?.costA ?? 0);
+            BuildingUpgradeButton.SetPrice(accessIconB, accessAmountB, price?.resourceB, price?.costB ?? 0);
+            accessPrice.Refresh();
+        }
+
+        private void CreateAccessOverlay()
+        {
+            var detail = (RectTransform)title.transform.parent;
+            var theme = Resources.Load<ButtonVisualTheme>("UI/ButtonVisualTheme");
+            accessOverlay = new GameObject("Destination locked overlay", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+            var overlay = accessOverlay.rectTransform;
+            overlay.SetParent(detail, false);
+            overlay.anchorMin = Vector2.zero;
+            overlay.anchorMax = Vector2.one;
+            overlay.offsetMin = new Vector2(8, 8);
+            overlay.offsetMax = new Vector2(-8, -8);
+            accessOverlay.color = new Color(.07f, .055f, .08f, .16f);
+            accessOverlay.raycastTarget = false;
+
+            var visual = new GameObject("Upgrade portal", typeof(RectTransform), typeof(Image), typeof(Button));
+            var rect = (RectTransform)visual.transform;
+            rect.SetParent(overlay, false);
+            rect.anchorMin = new Vector2(0, .5f);
+            rect.anchorMax = new Vector2(1, .5f);
+            var descriptionRect = description.rectTransform;
+            rect.sizeDelta = new Vector2(descriptionRect.rect.width - detail.rect.width + 16, 64);
+            rect.anchoredPosition = new Vector2(0, descriptionRect.anchoredPosition.y + (descriptionRect.rect.height - rect.rect.height) * .5f);
+            var image = visual.GetComponent<Image>();
+            image.sprite = theme.textButtonSprite;
+            image.type = Image.Type.Sliced;
+            accessButton = visual.GetComponent<Button>();
+            accessButton.targetGraphic = image;
+            accessButton.transition = Selectable.Transition.None;
+            accessButton.onClick.AddListener(() =>
+            {
+                if (accessButton.IsInteractable() && PortalProgression.TryUnlockDestination(Selected))
+                    GameFoundation.Audio.GameAudioController.PlayUI(GameFoundation.Audio.GameAudioCue.BuildingComplete);
+            });
+            visual.AddComponent<UnifiedButtonFeedback>();
+            var label = AccessText(rect, "Label");
+            visual.AddComponent<ActionButtonLabelColor>().Configure(label);
+            accessIconA = AccessIcon(rect);
+            accessAmountA = AccessText(rect, "Amount");
+            accessIconB = AccessIcon(rect);
+            accessAmountB = AccessText(rect, "Amount");
+            accessPrice = visual.AddComponent<PriceButtonLayout>();
+            accessPrice.visual = rect;
+            accessPrice.label = label;
+            accessPrice.prices = new[] { accessIconA.rectTransform, accessAmountA.rectTransform, accessIconB.rectTransform, accessAmountB.rectTransform };
+        }
+
+        private Text AccessText(Transform parent, string name)
+        {
+            var label = new GameObject(name, typeof(RectTransform), typeof(Text)).GetComponent<Text>();
+            label.transform.SetParent(parent, false);
+            label.font = title.font;
+            label.raycastTarget = false;
+            QuestReadingText.Ensure(label);
+            return label;
+        }
+
+        private static Image AccessIcon(Transform parent)
+        {
+            var icon = new GameObject("Resource", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+            icon.transform.SetParent(parent, false);
+            icon.raycastTarget = false;
+            return icon;
         }
         public void Travel()
         {
@@ -132,6 +230,9 @@ namespace GameFoundation.Base
             if (service.Enter(site)) router.EnterRun();
             else Refresh();
         }
+        internal static string ExpeditionResidentsRequiredText =>
+            Tr("base.portal.minimum_residents", "Для вылазки необходимо два свободных человека.");
+
         public static string Tr(string key, string fallback)
         {
             var value = LocalizationService.Instance?.Get(key);

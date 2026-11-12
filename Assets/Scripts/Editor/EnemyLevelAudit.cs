@@ -37,7 +37,7 @@ public static class EnemyLevelAudit
         Check(alarm.EnemyLevel == 2 && events == before + 1, "incoming orb crosses overflow level once");
         var reservation = new GameObject("Reservation");
         alarm.ReserveActionAlarm(reservation, 9);
-        Check(alarm.PreviewOrbRaisesLevel(1, 0), "preview includes reserved actions above cap");
+        Check(!alarm.PreviewOrbRaisesLevel(1, 0), "overflow level without a new wave marker uses a grey skull");
         alarm.CancelActionAlarm(reservation);
         Check(!alarm.PreviewOrbRaisesLevel(1, 0), "cancellation removes reserved overflow");
         var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Units/OctopusRaider.prefab");

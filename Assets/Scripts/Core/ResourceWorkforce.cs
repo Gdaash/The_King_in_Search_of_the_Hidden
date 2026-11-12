@@ -88,7 +88,7 @@ public sealed class ResourceWorkforce : MonoBehaviour
         while (requester.ResidentHumanCount > 0)
         {
             var type = requester.RemoveResidentHuman();
-            GameFoundation.MetaProgression.WorldCasualties.WorkplaceDeath(type);
+            GameFoundation.MetaProgression.WorldCasualties.WorkplaceDeath(type, transform.position);
             if (type != null) GlobalResourceManager.Instance?.TrySpendResource(type, 1);
         }
         foreach (var worker in workers) if (worker != null) Destroy(worker.gameObject);

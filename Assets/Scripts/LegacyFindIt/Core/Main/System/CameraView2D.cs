@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class CameraView2D : MonoBehaviour
 {
@@ -68,7 +68,7 @@ public class CameraView2D : MonoBehaviour
     private void Update()
     {
         if (StopCameraFunc || _camera == null || GameFoundation.MetaProgression.PortalCloudTransition.IsLoading || GameFoundation.MetaProgression.FirstRunLightTutorial.BlocksInput ||
-            GameFoundation.MetaProgression.PortalTowerProgression.IsChoosingUpgrade)
+            GameFoundation.MetaProgression.PortalTowerProgression.IsChoosingUpgrade || GameFoundation.Base.BuildingConstructionEffect.BlocksInput)
         {
             rightPanPending = rightPanActive = false; IsPanning = false;
             return;

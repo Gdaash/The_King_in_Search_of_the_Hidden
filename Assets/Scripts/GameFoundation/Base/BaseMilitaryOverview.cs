@@ -48,7 +48,7 @@ namespace GameFoundation.Base
         {
             if (resource == null) return;
             if (resource == swordsmen?.resource || resource == archers?.resource ||
-                Array.IndexOf(additionalWarriors, resource) >= 0 || resource.Id == "Engineer")
+                Array.IndexOf(additionalWarriors, resource) >= 0 || resource.isMilitaryUnit)
                 needsRefresh = true;
         }
         private void LateUpdate()
@@ -70,9 +70,10 @@ namespace GameFoundation.Base
             AddWarriors(archers);
             foreach(var resource in additionalWarriors) AddWarriors(new MilitaryCount{resource=resource});
 
-            var engineer = ResourceCatalog.Find("Engineer");
-            if (engineer != null && Array.IndexOf(additionalWarriors, engineer) < 0)
-                AddWarriors(new MilitaryCount { resource = engineer });
+            foreach (var resource in ResourceCatalog.All)
+                if (resource.isMilitaryUnit && resource != swordsmen?.resource && resource != archers?.resource &&
+                    Array.IndexOf(additionalWarriors, resource) < 0)
+                    AddWarriors(new MilitaryCount { resource = resource });
 
             stale.Clear();
             foreach (var entry in items)

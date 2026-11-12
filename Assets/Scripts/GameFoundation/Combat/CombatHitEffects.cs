@@ -16,7 +16,7 @@ namespace GameFoundation.Combat
         public const float LightningJumpChance = .15f;
         public const int MaximumLightningJumps = 3;
         public const float LightningDamageFraction = .5f;
-        public static float NextLightningDamage(float damage) => damage * LightningDamageFraction;
+        public static float NextLightningDamage(float damage, float retention = LightningDamageFraction) => damage * retention;
         public const float ChillSeconds = 1.5f;
         public const float ChillFraction = .35f;
         public static bool Procs(float roll, float chance) => roll >= 0 && roll < chance;

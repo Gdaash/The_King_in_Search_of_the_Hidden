@@ -27,7 +27,7 @@ public class ArcherTower : MonoBehaviour
 
     // Свойства для получения данных из GlobalStats
     public float CurrentRange => PortalProgression != null
-        ? Mathf.Max(0, (PortalProgression.Balance.FindWeapon(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Bolts)?.range ?? 0) + (stats?.bonusAttackRange ?? 0) + PortalProgression.AddedRange(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Bolts))
+        ? PortalProgression.WeaponRange(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Bolts, stats?.bonusAttackRange ?? 0)
         : (GetComponent<Combatant>()?.RangeBeforeLevel ?? (stats != null ? stats.TotalAttackRange : defaultAttackRange));
     public float CurrentCooldownBase => PortalProgression != null
         ? PortalProgression.AttackInterval(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Bolts, stats?.bonusAttackSpeed ?? 0)
@@ -49,7 +49,7 @@ public class ArcherTower : MonoBehaviour
         if (_target != null && !_isAttacking && Time.time >= _nextAttackTime)
         {
             _isAttacking = true;
-            _nextAttackTime = Time.time + _currentCooldown;
+            _nextAttackTime = Time.time + (PortalProgression != null ? CurrentCooldownBase : _currentCooldown);
             OnAttack?.Invoke();
         }
     }

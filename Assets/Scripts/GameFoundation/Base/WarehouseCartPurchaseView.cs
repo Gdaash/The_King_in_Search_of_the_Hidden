@@ -34,14 +34,9 @@ namespace GameFoundation.Base
         [SerializeField] private Color buttonDisabledColor = new Color(0.42f, 0.39f, 0.43f);
 
         public int WoodCost => woodCost;
-        public bool CanBuyCart
-        {
-            get
-            {
-                GlobalResourceManager manager = GlobalResourceManager.Instance;
-                return manager != null && wood != null && cart != null && manager.GetResourceAmount(wood) >= woodCost;
-            }
-        }
+        public bool CanBuyCart => CraftProduction.CanQueue(CraftProduction.Carpentry, wood, woodCost);
+
+        public bool TryBuy() => CraftProduction.Queue(CraftProduction.Carpentry, wood, woodCost, cart, 1, 2);
 
         private void OnEnable()
         {
@@ -60,17 +55,7 @@ namespace GameFoundation.Base
                 Refresh();
         }
 
-        public bool TryBuy()
-        {
-            using var save = GameFoundation.Saves.SaveSlotPrefs.Batch();
-            GlobalResourceManager manager = GlobalResourceManager.Instance;
-            if (manager == null || wood == null || cart == null ||
-                !manager.TrySpendResource(wood, woodCost))
-                return false;
-
-            manager.AddResource(cart, 1);
-            return true;
-        }
+        internal void RefreshProduction() => Refresh();
 
         private void Refresh()
         {
@@ -79,7 +64,8 @@ namespace GameFoundation.Base
 
             ApplyPalette();
             if (buyButton != null) buyButton.interactable = canBuy;
-            BaseDisabledButtonHint.Set(buyButton, BaseDisabledButtonHint.Reason.Resources);
+            BaseDisabledButtonHint.Set(buyButton, BaseDisabledButtonHint.Reason.Resources,
+                reasonText: CraftProduction.StartBlockReason(CraftProduction.Carpentry));
             if (woodCostText != null)
             {
                 woodCostText.text = woodCost.ToString();

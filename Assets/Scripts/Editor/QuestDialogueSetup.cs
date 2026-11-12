@@ -32,7 +32,7 @@ public static class QuestDialogueSetup
             "Рыцарь, добро пожаловать в новые владения. Прежде всего нам нужно собрать припасы, чтобы пережить первую ночь.",
             "Отправляйся через портал в Тёмные земли. Добудь еду и стройматериалы: древесину и камень. Они помогут нам обустроить укрытие.");
         var d2 = Make("Assets/Prefabs/Quests/02 Two Archers.prefab", "pew_two_archers", archers, first,
-            "Припасы собраны, но владениям нужна защита. Построй кузницу и стрельбище, затем найми двух лучников. После этого мы сможем принять беженцев.");
+            "Стрельбище готово! Найми двух пращников, чтобы выставить первую стражу.");
         var root = new GameObject("Quest Dialogue", typeof(RectTransform)); var view = root.AddComponent<QuestDialogueView>();
         var window = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/UI/Dialogue/Royal Scribe Dialogue.prefab"), root.transform);
         window.name = "Dialogue Window";

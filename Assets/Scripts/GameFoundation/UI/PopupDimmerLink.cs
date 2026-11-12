@@ -7,9 +7,28 @@ namespace GameFoundation.UI
     {
         [SerializeField] private GameObject dimmer;
 
+        internal void Bind(GameObject background) => dimmer = background;
+
+        private CanvasGroup GetFadeGroup()
+        {
+            if (dimmer == null) return null;
+            return dimmer.TryGetComponent<CanvasGroup>(out var group) ? group : dimmer.AddComponent<CanvasGroup>();
+        }
+
         private void OnEnable()
         {
-            if (dimmer != null) dimmer.SetActive(true);
+            if (dimmer == null) return;
+            dimmer.SetActive(true);
+            var window = transform.Find("Window") as RectTransform;
+            if (window == null && transform.Find("Close") != null)
+                window = transform as RectTransform;
+            if (window != null)
+            {
+                var internalDimmer = window != transform
+                    ? transform.Find("Screen Dimmer")?.GetComponent<UnityEngine.UI.Graphic>()
+                    : null;
+                PopupMotion.Show(gameObject, window, internalDimmer, GetFadeGroup());
+            }
         }
 
         private void OnDisable()

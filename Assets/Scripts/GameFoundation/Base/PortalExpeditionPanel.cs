@@ -10,7 +10,8 @@ namespace GameFoundation.Base
 {
     internal sealed class PortalExpeditionPanel
     {
-        private const float ColumnWidth = 480f;
+        private const float ColumnWidth = 520f;
+        private const float ColumnContentTop = 218f;
         private static readonly string[] PartyIds = { "Human", "Cart" };
         private readonly List<(ResourceType type, TMP_Text name, TMP_Text count)> party = new();
         private readonly List<ResourceType> troopTypes = new();
@@ -28,7 +29,7 @@ namespace GameFoundation.Base
             var detail = (RectTransform)view.title.transform.parent;
             var window = (RectTransform)detail.parent;
             float detailScale = ColumnWidth / detail.rect.width;
-            const float leftWidth = ColumnWidth, detailWidth = ColumnWidth, rightWidth = ColumnWidth, gap = 24;
+            const float leftWidth = ColumnWidth + 48, detailWidth = ColumnWidth, rightWidth = ColumnWidth, gap = 24;
             float contentWidth = leftWidth + detailWidth + rightWidth + gap * 2;
             float width = contentWidth + 80;
             float left = -contentWidth * .5f + leftWidth * .5f;
@@ -38,17 +39,17 @@ namespace GameFoundation.Base
             if (window.Find("Travel Rule") is RectTransform travelRule) travelRule.gameObject.SetActive(false);
             var list = window.Find("Locations") as RectTransform;
             var caption = window.Find("Locations Caption")?.GetComponent<Text>();
-            var leftPanel = Rect("Location choice background", window, ColumnWidth, detail.rect.height, left, detail.anchoredPosition.y);
+            var leftPanel = Rect("Location choice background", window, leftWidth, detail.rect.height, left, detail.anchoredPosition.y);
             PanelBackground(leftPanel);
             leftPanel.SetSiblingIndex(0);
             if (list != null)
             {
-                Place(list, 432, 458, left, detail.anchoredPosition.y - 17);
+                Place(list, leftWidth - 48, 470, left, detail.anchoredPosition.y - 17);
                 for(int i=0;i<view.locations.Length;i++)
-                    Place((RectTransform)view.locations[i].transform,432,82,0,188-i*94);
+                    Place((RectTransform)view.locations[i].transform, leftWidth - 48, 76, 0, ColumnContentTop + 17 - 38 - i * 81);
             }
             if (caption != null)
-                Place(caption.rectTransform, ColumnWidth - 48, 36, left, detail.anchoredPosition.y + 248);
+                Place(caption.rectTransform, leftWidth - 48, 36, left, detail.anchoredPosition.y + 248);
             if (window.Find("Header Divider") is RectTransform divider)
                 divider.gameObject.SetActive(false);
             var close = (RectTransform)view.closeButton.transform;
@@ -77,7 +78,8 @@ namespace GameFoundation.Base
             view.title.color = titleColor;
             view.title.alignment=TextAnchor.MiddleLeft;
             Place(view.title.rectTransform, ColumnWidth - 48, 36, 0, 248);
-            Place(view.description.rectTransform,ColumnWidth-48,104,0,166);
+            view.description.alignment = TextAnchor.UpperLeft;
+            Place(view.description.rectTransform, ColumnWidth - 48, 104, 0, ColumnContentTop - 52);
             if (detail.Find("Danger Label")?.GetComponent<Text>() is Text dangerLabel)
             {
                 dangerLabel.fontSize = view.resourceRows[0].abundance.fontSize;
@@ -101,7 +103,7 @@ namespace GameFoundation.Base
             {
                 var type = ResourceCatalog.Find(PartyIds[i]);
                 if (type == null) continue;
-                var row = CreatePartyRow(panel, i, 197 - i * PartyRowHeight);
+                var row = CreatePartyRow(panel, i, ColumnContentTop - (i + .5f) * PartyRowHeight);
                 ResourceIconSizing.Apply(row.icon, type.resourceIcon);
                 party.Add((type, row.name, row.count));
             }
@@ -135,8 +137,7 @@ namespace GameFoundation.Base
                         if (!BuildingUpgradeService.IsBuilt(MagicTowerId)) return;
                         var baseUI = Object.FindFirstObjectByType<BaseUIController>();
                         if (baseUI == null) return;
-                        view.Close();
-                        baseUI.OpenMagicLibrary();
+                        baseUI.OpenArsenalFromPortal(view);
                     }, out configureLabel);
                 configureLoadout = configure.GetComponent<Button>();
                 BaseDisabledButtonHint.Set(configureLoadout, BaseDisabledButtonHint.Reason.MagicTower);
@@ -163,8 +164,9 @@ namespace GameFoundation.Base
             }
             foreach (var entry in party)
             {
-                int value = GlobalResourceManager.Instance != null ? GlobalResourceManager.Instance.GetResourceAmount(entry.type) : 0;
-                string name = entry.type.Id == "Human" ? PortalPopupView.Tr("expedition.peasants", "Крестьяне") : entry.type.DisplayName;
+                int value = entry.type.isHumanResource ? CraftProduction.FreeResidents(entry.type) :
+                    GlobalResourceManager.Instance != null ? GlobalResourceManager.Instance.GetResourceAmount(entry.type) : 0;
+                string name = entry.type.DisplayName;
                 entry.name.text = name;
                 entry.count.text = value.ToString();
             }
@@ -216,7 +218,7 @@ namespace GameFoundation.Base
         private static (RectTransform row, Image icon, TMP_Text name, TMP_Text count) CreatePartyRow(
             RectTransform parent, int index, float y)
         {
-            var row = Rect("Party resource", parent, 432, PartyRowHeight, 0, y);
+            var row = Rect("Party resource", parent, ColumnWidth - 48, PartyRowHeight, 0, y);
             var background = row.gameObject.AddComponent<Image>();
             background.color = index % 2 == 0 ? new Color(.17f, .14f, .195f) : new Color(.135f, .11f, .16f);
             background.raycastTarget = false;
@@ -229,9 +231,12 @@ namespace GameFoundation.Base
             return (row, icon, name, count);
         }
 
-        private static ScrollRect CreateTroopScroll(RectTransform panel)
+        private static ScrollRect CreateTroopScroll(RectTransform panel) =>
+            CreateVerticalScroll(panel, "Troop list", ColumnWidth - 48, TroopViewportHeight, -106);
+
+        internal static ScrollRect CreateVerticalScroll(RectTransform panel, string name, float width, float height, float y)
         {
-            var root = Rect("Troop list", panel, ColumnWidth - 48, TroopViewportHeight, 0, -106);
+            var root = Rect(name, panel, width, height, 0, y);
             var scroll = root.gameObject.AddComponent<ScrollRect>();
             scroll.horizontal = false;
             scroll.movementType = ScrollRect.MovementType.Clamped;
@@ -248,7 +253,7 @@ namespace GameFoundation.Base
             scroll.content = content;
             scroll.viewport = viewport;
 
-            var bar = Rect("Scrollbar", root, 8, TroopViewportHeight, (ColumnWidth - 48 - 8) * .5f, 0);
+            var bar = Rect("Scrollbar", root, 8, height, (width - 8) * .5f, 0);
             bar.gameObject.AddComponent<Image>().color = new Color(.14f, .11f, .17f);
             var track = Rect("Sliding area", bar, 0, 0, 0, 0);
             track.anchorMin = Vector2.zero;

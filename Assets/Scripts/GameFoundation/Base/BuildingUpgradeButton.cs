@@ -150,7 +150,7 @@ namespace GameFoundation.Base
             effectLabel.rectTransform.anchoredPosition = new Vector2(-panel.rect.width * .5f + padding + descriptionWidth * .5f, 0);
             layout.Refresh();
         }
-        private static void SetPrice(Image icon, Text amount, ResourceType resource, int cost)
+        internal static void SetPrice(Image icon, Text amount, ResourceType resource, int cost)
         {
             bool show = resource != null && cost > 0;
             icon.gameObject.SetActive(show); amount.gameObject.SetActive(show);
@@ -168,6 +168,8 @@ namespace GameFoundation.Base
         private string Effect(BuildingUpgradeCatalog.Building definition, BuildingUpgradeCatalog.Level next)
         {
             int capacity = BuildingUpgradeService.Capacity(buildingId);
+            if (buildingId == "archery_range" && BuildingUpgradeService.Level(buildingId) == 0)
+                return Tr("base.range.archers_upgrade", "Открывает лучников.");
             return definition.effect == BuildingUpgradeCatalog.UpgradeEffect.PortalAccess
                 ? string.Format(Tr("base.portal.upgrade_effect", GameText.Get("Открывает локацию: {0}\nДоступ сохраняется между походами.")), PortalProgression.DestinationsAt(BuildingUpgradeService.Level(buildingId) + 1))
                 : string.Format(Tr("base.upgrade.effect", GameText.Get("Дополнительные места: +{0}\nВместимость: {1} → {2}")), next.additionalCapacity, capacity, capacity + next.additionalCapacity);

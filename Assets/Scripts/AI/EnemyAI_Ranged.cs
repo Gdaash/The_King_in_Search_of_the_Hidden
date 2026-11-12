@@ -51,7 +51,7 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
     private bool tacticalRetreat;
     private float nextThreatCheck;
     private readonly System.Collections.Generic.List<Health> nearbyEnemies = new();
-    private bool IsFriendlyArcher => CompareTag("Player") && combat != null && combat.equipment == EquipmentKind.Bow;
+    private bool IsFriendlyRanged => CompareTag("Player") && combat != null;
     public bool IsTacticalRetreat => tacticalRetreat;
 
     public bool HasAssignedHomePoint => _hasAssignedHomePoint;
@@ -173,13 +173,13 @@ public class EnemyAI_Ranged : MonoBehaviour, IEnemyAI
 
     public void OnTakeDamage(Transform attacker)
     {
-        if (IsFriendlyArcher) retreatRequested = true;
+        if (IsFriendlyRanged) retreatRequested = true;
         if (attacker != null) { _target = attacker; _isAttacking = false; }
     }
 
     private bool UpdateTacticalRetreat()
     {
-        if (!IsFriendlyArcher) return false;
+        if (!IsFriendlyRanged) return false;
         ValidateOrFindHome();
         if (!_hasAssignedHomePoint && _homeTransform == null) return false;
         // Assigned formation slots are inside the military hex (or outside the portal footprint).

@@ -88,6 +88,7 @@ public static class EnemyBalanceSetup
         var waves=AssetDatabase.LoadAssetAtPath<AlarmDifficultyTable>("Assets/Resources/World/AlarmDifficultyTable.asset");
         foreach(var difficulty in waves.difficulties)for(int wave=0;wave<difficulty.thresholds.Count;wave++)
         {
+            if (difficulty.level == 1) continue;
             var entries=difficulty.thresholds[wave].enemies;
             // Retain authored weights for eligible types, add missing types and remove premature ones.
             for(int i=0;i<Order.Length;i++)

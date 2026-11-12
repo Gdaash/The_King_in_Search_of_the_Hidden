@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 using UnityEngine;
 
 namespace GameFoundation.Base
@@ -25,10 +27,20 @@ namespace GameFoundation.Base
         private float shakeElapsed;
         private float shakeSeed;
         private bool shaking;
+        private GameObject returnTo;
+        private readonly List<EventSystem> suspendedEvents = new();
+        private static BuildingConstructionEffect inputOwner;
+        internal static bool BlocksInput => inputOwner != null;
+        internal bool IsPlaying => isActiveAndEnabled && (shaking || particles.Count > 0);
 
-        public void Play()
+        public void Play() => Play(null);
+
+        internal void Play(GameObject popup)
         {
-            if (settings == null) return;
+            if (!isActiveAndEnabled || settings == null || !System.Array.Exists(
+                    buildingSprites ?? System.Array.Empty<SpriteRenderer>(),
+                    sprite => sprite != null && sprite.enabled && sprite.sprite != null && sprite.gameObject.activeInHierarchy))
+                return;
             ClearParticles();
             RestoreBuildingPose();
             shaking = false;
@@ -42,6 +54,18 @@ namespace GameFoundation.Base
                 foreach (var resource in constructionMaterials)
                     EmitFragments(resource, settings.FragmentsPerMaterial);
             for (int i = 0; i < settings.DustParticleCount; i++) EmitDust();
+            if (inputOwner != null) return;
+            inputOwner = this;
+            returnTo = popup;
+            foreach (var system in FindObjectsByType<EventSystem>(FindObjectsSortMode.None))
+            {
+                if (!system.enabled) continue;
+                system.SetSelectedGameObject(null);
+                system.enabled = false;
+                suspendedEvents.Add(system);
+            }
+            if (returnTo != null) returnTo.SetActive(false);
+            StartCoroutine(WaitForAnimation());
         }
 
         private void Update()
@@ -217,8 +241,27 @@ namespace GameFoundation.Base
             particles.Clear();
         }
 
+        private IEnumerator WaitForAnimation()
+        {
+            while (IsPlaying) yield return null;
+            var popup = returnTo;
+            ReleaseInput();
+            if (popup != null) popup.SetActive(true);
+        }
+
+        private void ReleaseInput()
+        {
+            if (inputOwner != this) return;
+            foreach (var system in suspendedEvents)
+                if (system != null) system.enabled = true;
+            suspendedEvents.Clear();
+            returnTo = null;
+            inputOwner = null;
+        }
+
         private void OnDisable()
         {
+            ReleaseInput();
             RestoreBuildingPose();
             shaking = false;
             ClearParticles();

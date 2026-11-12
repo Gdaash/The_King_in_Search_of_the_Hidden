@@ -8,6 +8,7 @@ namespace GameFoundation.MetaProgression
         private static readonly Dictionary<ResourceType,int> dead=new(), missing=new();
         private static readonly HashSet<int> deaths=new();
         private static bool active;
+        public static event System.Action<ResourceType, Vector3, float> AllyDied;
         public static IReadOnlyDictionary<ResourceType,int> Dead=>dead;
         public static IReadOnlyDictionary<ResourceType,int> Missing=>missing;
         public static bool HasLosses=>dead.Count>0||missing.Count>0;
@@ -17,12 +18,20 @@ namespace GameFoundation.MetaProgression
         {
             if(!active||type==null||unit==null||!deaths.Add(unit.GetEntityId().GetHashCode()))return;
             dead.TryGetValue(type,out int count);dead[type]=count+1;
+            SpriteRenderer body = unit.GetComponent<Health>()?.BodyRenderer;
+            if (body == null) body = unit.GetComponentInChildren<SpriteRenderer>();
+            AllyDied?.Invoke(type, unit.transform.position, body != null ? body.bounds.size.y : .5f);
         }
         public static void DidNotReturn(ResourceType type,int count)
         {if(!active||type==null||count<=0)return;missing.TryGetValue(type,out int before);missing[type]=before+count;}
         // Called only after a resident has been removed from its workplace, so each loss is settled once.
-        public static void WorkplaceDeath(ResourceType type)
-        {if(!active||type==null)return;dead.TryGetValue(type,out int before);dead[type]=before+1;}
+        public static void WorkplaceDeath(ResourceType type, Vector3 position)
+        {
+            if (!active || type == null) return;
+            dead.TryGetValue(type, out int before);
+            dead[type] = before + 1;
+            AllyDied?.Invoke(type, position, .5f);
+        }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void Reset(){Begin();End();}
     }

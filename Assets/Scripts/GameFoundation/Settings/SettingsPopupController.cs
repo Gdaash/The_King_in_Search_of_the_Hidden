@@ -190,7 +190,7 @@ namespace GameFoundation.Settings
         }
 
         public void Open() => gameObject.SetActive(true);
-        public void Close() => gameObject.SetActive(false);
+        public void Close() => GameFoundation.UI.PopupMotion.Hide(gameObject);
         private static void SetMaster(float value) => GameSettingsService.Instance?.SetMaster(value);
         private static void SetMusic(float value) => GameSettingsService.Instance?.SetMusic(value);
         private static void SetEffects(float value) => GameSettingsService.Instance?.SetEffects(value);

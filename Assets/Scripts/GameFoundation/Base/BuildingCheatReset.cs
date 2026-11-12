@@ -18,7 +18,6 @@ namespace GameFoundation.Base
                 case "housing":
                     HousingDistrict.ResetHouseCards();
                     ResetConstruction(ExpeditionTasks.Coop);
-                    ResetConstruction(ExpeditionTasks.Tannery);
                     ResetConstruction(HousingDistrict.Fields);
                     HousingDistrict.ResetCoopProduction();
                     break;
@@ -26,6 +25,12 @@ namespace GameFoundation.Base
                     HousingDistrict.ResetCoopProduction();
                     break;
                 case "blacksmith":
+                    ResetConstruction(CraftQuarterLayout.Smithy);
+                    ResetConstruction(ExpeditionTasks.Tannery);
+                    ResetConstruction(CraftQuarterLayout.Tannery);
+                    ResetConstruction(CraftQuarterLayout.LeatherShop);
+                    ResetConstruction(CraftQuarterLayout.CharcoalPit);
+                    CraftProduction.Reset();
                     EquipmentUpgrades.ResetBlacksmithUpgrades();
                     break;
                 case "laboratory":

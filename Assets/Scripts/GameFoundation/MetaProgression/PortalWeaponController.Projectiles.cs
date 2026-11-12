@@ -35,17 +35,18 @@ namespace GameFoundation.MetaProgression
             Vector3 direction = (target.transform.position - origin).normalized;
             int count = progression.Count(weapon);
             float speed = definition.projectileSpeedMultiplier * progression.Multiplier(weapon, PortalTowerBalance.Effect.ExpansionSpeed);
+            float spread = definition.spreadAngle * progression.Profile(weapon).Spread;
             for (int i = 0; i < count; i++)
             {
                 if (!progression.TrySpendShot(weapon)) break;
                 if (i == 0) progression.ReportReload(weapon, projectileTimes[weapon]);
                 // Extra pellets stay inside the same narrow fan; zero-spread orbs fly in parallel.
-                float angle = count <= 1 ? 0 : definition.spreadAngle * (i / (float)(count - 1) - .5f);
+                float angle = count <= 1 ? 0 : spread * (i / (float)(count - 1) - .5f);
                 Vector3 shotDirection = Quaternion.Euler(0, 0, angle) * direction;
                 Vector3 offset = definition.spreadAngle > 0 ? Vector3.zero : new Vector3(-direction.y, direction.x) * ((i - (count - 1) * .5f) * .14f);
                 var root = Instantiate(definition.projectilePrefab, origin + offset, Quaternion.identity);
                 UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root, tower.gameObject.scene);
-                root.transform.localScale *= definition.projectileScale;
+                root.transform.localScale *= definition.projectileScale * progression.Multiplier(weapon, PortalTowerBalance.Effect.Area);
                 if (root.TryGetComponent<EnemyProjectile>(out var projectile))
                 {
                     float lifetime = (Range(weapon) + Vector2.Distance(origin, tower.transform.position) + 1) / Mathf.Max(.01f, projectile.BaseSpeed * speed);

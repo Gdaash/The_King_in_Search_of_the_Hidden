@@ -1,25 +1,22 @@
 using GameFoundation.MetaProgression;
+using GameFoundation.UI;
+using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace GameFoundation.Base
 {
-    public sealed class PortalLocationRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler
+    public sealed class PortalLocationRow : MonoBehaviour
     {
         public PortalLocationDefinition location;
         public Button button;
         public Image surface, border, selection, lockIcon;
         public Text title, status;
         public GameObject demoOverlay;
-        public Color selectedColor = new(.74f, .64f, .42f);
-        public Color normalColor = new(.35f, .30f, .39f);
         private PortalPopupView owner;
-        private bool hovering;
-        private bool selected;
-        private GameFoundation.UI.PriceButtonLayout priceLayout;
-        private readonly Image[] priceIcons = new Image[2];
-        private readonly Text[] priceAmounts = new Text[2];
+        private PopupChoiceRowStyle rowStyle;
+        private PopupChoicePrice priceA, priceB;
+        private Text requiredUpgrades;
 
         private void OnEnable()
         {
@@ -27,95 +24,69 @@ namespace GameFoundation.Base
             button.onClick.AddListener(Choose);
         }
         public void Bind(PortalPopupView view) => owner = view;
-        private void Choose()
-        {
-            if (owner == null) return;
-            if (PortalProgression.IsUnlocked(location) || PortalProgression.TryUnlockDestination(location))
-                owner.Select(location);
-        }
-        public void OnSelect(BaseEventData _) => owner?.Select(location);
-        public void OnPointerEnter(PointerEventData _) { hovering = true; UpdateColor(); }
-        public void OnPointerExit(PointerEventData _) { hovering = false; UpdateColor(); }
-        private void OnDisable() { button.onClick.RemoveListener(Choose); hovering = false; }
+        private void Choose() => owner?.Select(location);
+        private void OnDisable() => button.onClick.RemoveListener(Choose);
 
         public void Refresh(PortalLocationDefinition current)
         {
-            selected = current == location;
+            // Locked destinations remain selectable so their requirements can be inspected.
+            button.interactable = true;
+            if (rowStyle == null)
+            {
+                surface.enabled = false;
+                if (selection != null) selection.enabled = false;
+                status.fontSize = 22;
+                title.fontSize = Mathf.Max(22, title.fontSize - 1);
+                rowStyle = new PopupChoiceRowStyle(button, border);
+                ConfigureDetails();
+            }
             bool unlocked = PortalProgression.IsUnlocked(location);
             bool next = PortalProgression.IsNextDestination(location);
             bool affordable = next && BuildingUpgradeService.CanUpgrade(PortalProgression.BuildingId);
             title.text = PortalProgression.Name(location);
             title.color = unlocked || next ? new Color(.94f, .91f, .82f) : new Color(.68f, .63f, .72f);
-            status.text = unlocked ? PortalPopupView.Tr("base.portal.available", "Доступно") : PortalPopupView.Tr("base.portal.unlock_location", "Открыть");
-            status.color = unlocked || affordable ? new Color(.58f, .77f, .52f) : new Color(.68f, .63f, .72f);
-            if (lockIcon != null) lockIcon.enabled = !unlocked && !next;
-            if (selection != null) selection.enabled = false;
-            button.interactable = unlocked || affordable;
-            BaseDisabledButtonHint.Set(button, next ? BaseDisabledButtonHint.Reason.Resources : BaseDisabledButtonHint.Reason.PortalLevel);
-            if (demoOverlay != null) demoOverlay.SetActive(false);
+            (status.text, status.color) = PopupChoiceRowStyle.PurchaseStatus(unlocked, !next, affordable, portal: true);
+            if (lockIcon != null) lockIcon.enabled = !unlocked;
+            requiredUpgrades.gameObject.SetActive(!unlocked);
+            requiredUpgrades.text = Mathf.Max(0, location.RequiredPortalLevel - PortalProgression.Level - 1).ToString();
             var price = unlocked ? null : PortalProgression.AccessPrice(location);
-            EnsurePriceLayout();
-            SetPrice(0, price?.resourceA, price?.costA ?? 0);
-            SetPrice(1, price?.resourceB, price?.costB ?? 0);
-            priceLayout.Refresh();
-            UpdateColor();
+            priceA.Set(price?.resourceA, price?.costA ?? 0);
+            priceB.Set(price?.resourceB, price?.costB ?? 0);
+            float rightInset = price == null ? 18 : 174;
+            PopupChoiceRowStyle.PlaceCaptions(title, status, 64, rightInset, rightInset);
+            if (button.TryGetComponent<BaseDisabledButtonHint>(out var hint)) hint.enabled = false;
+            if (demoOverlay != null) demoOverlay.SetActive(false);
+            rowStyle.SetSelected(current == location);
         }
 
-        private void EnsurePriceLayout()
+        private void ConfigureDetails()
         {
-            if (priceLayout != null) return;
+            var root = (RectTransform)button.transform;
+            var font = Resources.Load<TMP_FontAsset>("Fonts/Pixellari Reading UI");
+            priceA = new PopupChoicePrice(root, font, 98);
+            priceB = new PopupChoicePrice(root, font, 18);
             if (lockIcon != null)
             {
-                var lockRect = lockIcon.rectTransform;
-                lockRect.anchorMin = lockRect.anchorMax = new Vector2(1, .5f);
-                lockRect.pivot = new Vector2(.5f, .5f);
-                lockRect.anchoredPosition = new Vector2(-31, 20);
+                lockIcon.sprite = Resources.Load<ButtonVisualTheme>("UI/ButtonVisualTheme").lockIconSprite;
+                ResourceIconSizing.Apply(lockIcon, lockIcon.sprite);
+                PlaceLeft(lockIcon.rectTransform, 34, 12);
             }
-            var line = new GameObject("Access price", typeof(RectTransform)).GetComponent<RectTransform>();
-            line.SetParent(transform, false);
-            line.anchorMin = new Vector2(0, .5f);
-            line.anchorMax = new Vector2(1, .5f);
-            line.sizeDelta = new Vector2(0, 46);
-            line.anchoredPosition = new Vector2(0, -15);
-            status.transform.SetParent(line, false);
-            priceLayout = gameObject.AddComponent<GameFoundation.UI.PriceButtonLayout>();
-            priceLayout.visual = line;
-            priceLayout.label = status;
-            priceLayout.prices = new RectTransform[4];
-            for (int i = 0; i < priceIcons.Length; i++)
-            {
-                var icon = new GameObject("Resource", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
-                icon.transform.SetParent(line, false);
-                icon.raycastTarget = false;
-                priceIcons[i] = icon;
-                var amount = new GameObject("Amount", typeof(RectTransform), typeof(Text)).GetComponent<Text>();
-                amount.transform.SetParent(line, false);
-                amount.font = status.font;
-                amount.raycastTarget = false;
-                GameFoundation.UI.QuestReadingText.Ensure(amount);
-                priceAmounts[i] = amount;
-                priceLayout.prices[2 * i] = icon.rectTransform;
-                priceLayout.prices[2 * i + 1] = amount.rectTransform;
-            }
+            requiredUpgrades = new GameObject("Previous upgrades", typeof(RectTransform), typeof(Text)).GetComponent<Text>();
+            requiredUpgrades.transform.SetParent(root, false);
+            requiredUpgrades.rectTransform.sizeDelta = new Vector2(38, 24);
+            PlaceLeft(requiredUpgrades.rectTransform, 34, -16);
+            requiredUpgrades.font = status.font;
+            requiredUpgrades.fontSize = 22;
+            requiredUpgrades.alignment = TextAnchor.MiddleCenter;
+            requiredUpgrades.raycastTarget = false;
+            QuestReadingText.Ensure(requiredUpgrades, font);
         }
 
-        private void SetPrice(int index, ResourceType resource, int cost)
+        private static void PlaceLeft(RectTransform rect, float x, float y)
         {
-            var icon = priceIcons[index];
-            var amount = priceAmounts[index];
-            bool visible = resource != null && cost > 0;
-            icon.enabled = amount.enabled = visible;
-            if (!visible) return;
-            ResourceIconSizing.Apply(icon, resource.resourceIcon);
-            amount.text = cost.ToString();
-            bool enough = GlobalResourceManager.Instance != null && GlobalResourceManager.Instance.GetResourceAmount(resource) >= cost;
-            amount.color = enough ? new Color(.55f, .85f, .47f) : new Color(1f, .35f, .36f);
-        }
-
-        private void UpdateColor()
-        {
-            border.color = selected ? selectedColor : hovering ? Color.Lerp(normalColor, selectedColor, .5f) : normalColor;
-            surface.color = selected || hovering ? new Color(.20f, .16f, .24f) : new Color(.14f, .115f, .17f);
+            rect.anchorMin = rect.anchorMax = new Vector2(0, .5f);
+            rect.pivot = Vector2.one * .5f;
+            rect.anchoredPosition = new Vector2(x, y);
         }
     }
 }

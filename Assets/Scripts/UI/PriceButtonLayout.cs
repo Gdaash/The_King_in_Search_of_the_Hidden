@@ -12,6 +12,9 @@ namespace GameFoundation.UI
         public RectTransform[] prices;
         public float minimumAmountWidth = 24;
         public float iconAmountGap = 6;
+        public float horizontalPadding = 20;
+        public float priceGroupGap = 14;
+        public float labelGap = 16;
         private int previousHash;
         private void OnEnable()
         {
@@ -38,7 +41,7 @@ namespace GameFoundation.UI
                     (item.TryGetComponent<Text>(out var t) ? t.text.GetHashCode() : item.sizeDelta.GetHashCode());
             if (hash == previousHash) return;
             previousHash = hash;
-            float right = visual.rect.width * .5f - 20;
+            float right = visual.rect.width * .5f - horizontalPadding;
             for (int i = prices.Length - 1; i >= 0; i--)
             {
                 var item = prices[i];
@@ -59,10 +62,10 @@ namespace GameFoundation.UI
                     icon.preserveAspect = true;
                 }
                 Place(item, width, height, right - width * .5f);
-                right -= width + (i % 2 == 0 ? 14 : iconAmountGap);
+                right -= width + (i % 2 == 0 ? priceGroupGap : iconAmountGap);
             }
-            float left = -visual.rect.width * .5f + 20;
-            float labelWidth = Mathf.Max(40, right - 16 - left);
+            float left = -visual.rect.width * .5f + horizontalPadding;
+            float labelWidth = Mathf.Max(40, right - labelGap - left);
             Place(label.rectTransform, labelWidth, visual.rect.height - 12, left + labelWidth * .5f);
             label.alignment = TextAnchor.MiddleLeft;
             label.fontSize = 22;

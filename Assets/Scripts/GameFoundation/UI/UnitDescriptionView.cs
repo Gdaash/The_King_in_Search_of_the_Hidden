@@ -66,6 +66,7 @@ namespace GameFoundation.UI
         private float visibleRowsHeight;
         private float authoredBottomInset = -1;
         [SerializeField] private bool fitHeightToContent = true;
+        internal void UseFixedHeight() => fitHeightToContent = false;
         public UnitDescriptionDefinition Definition => definition;
 
         public Sprite StatIcon(UnitStat stat)

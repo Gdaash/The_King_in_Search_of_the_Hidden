@@ -30,7 +30,7 @@ namespace GameFoundation.MetaProgression
                 _ => 0
             };
         }
-        public static bool CanUnlock(PortalArsenalCatalog.Entry entry) => entry != null && !IsUnlocked(entry.weapon) && Progress(entry) >= entry.amount;
+        public static bool CanUnlock(PortalArsenalCatalog.Entry entry) => GameFoundation.Base.CraftProduction.Morning && entry != null && !IsUnlocked(entry.weapon) && PortalProgression.Level >= entry.requiredPortalLevel && Progress(entry) >= entry.amount;
         public static bool TryUnlock(PortalArsenalCatalog.Entry entry)
         {
             if (!CanUnlock(entry)) return false;

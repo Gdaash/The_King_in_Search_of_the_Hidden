@@ -51,7 +51,7 @@ namespace GameFoundation.MetaProgression
             effectMaterial=new Material(Shader.Find("Sprites/Default"));
         }
         private PortalTowerBalance.WeaponDefinition Def(PortalTowerBalance.Weapon w) => progression.Balance.FindWeapon(w);
-        private float Range(PortalTowerBalance.Weapon w) => Mathf.Max(0,Def(w).range+(tower.GetStats()?.bonusAttackRange??0)+progression.AddedRange(w));
+        private float Range(PortalTowerBalance.Weapon w) => progression.WeaponRange(w, tower.GetStats()?.bonusAttackRange ?? 0);
         private float Radius(PortalTowerBalance.Weapon w) => Def(w).radius*progression.Multiplier(w,PortalTowerBalance.Effect.Area);
         private float Damage(PortalTowerBalance.Weapon w) => (Def(w).damage+(tower.GetStats()?.UnifiedBonusDamage??0))*progression.WeaponDamageMultiplier(w);
         private float Cooldown(PortalTowerBalance.Weapon w) => progression.AttackInterval(w,tower.GetStats()?.bonusAttackSpeed??0);
@@ -67,13 +67,23 @@ namespace GameFoundation.MetaProgression
             UpdatePortalProjectiles();
             if(progression.HasWeapon(PortalTowerBalance.Weapon.Beam)) UpdateBeam();
             else {if(beam!=null)beam.transform.root.gameObject.SetActive(false);ClearLightTrails();}
-            if(progression.HasWeapon(PortalTowerBalance.Weapon.Rings) && Time.time>=ringTime)
+            if(progression.HasWeapon(PortalTowerBalance.Weapon.Rings) && Time.time>=ringTime &&
+                (!progression.UsesEnergyLoadout || HasEnemyInRange(PortalTowerBalance.Weapon.Rings)))
             {
                 ringTime=Time.time+Cooldown(PortalTowerBalance.Weapon.Rings);
                 StartCoroutine(RingVolley());
             }
             if(progression.HasWeapon(PortalTowerBalance.Weapon.Lightning) && Time.time>=lightningTime)
                 LightningVolley();
+        }
+        private bool HasEnemyInRange(PortalTowerBalance.Weapon weapon)
+        {
+            float range = Range(weapon);
+            Vector2 center = tower.transform.position;
+            foreach (var enemy in enemies)
+                if (Enemy(enemy) && ((Vector2)enemy.transform.position - center).sqrMagnitude <= range * range)
+                    return true;
+            return false;
         }
         private bool Enemy(Health h) => !TowerDarkness.Blocks(tower!=null?tower.transform:null) && h!=null && h.isActiveAndEnabled && !h.IsDead && h.CompareTag("Enemy1");
         private void UpdateBeam()
@@ -251,7 +261,7 @@ namespace GameFoundation.MetaProgression
                 if (i == 0) progression.ReportReload(w, lightningTime);
                 int index=Random.Range(0,candidates.Count);var h=candidates[index];candidates.RemoveAt(index);
                 Vector3 end=h.HitEffectPosition;
-                h.TakeDamage(Damage(w),Def(w).damageType,tower.transform);
+                h.TakeDamage(Damage(w), Def(w).damageType, tower.transform, progression.Profile(w).ChainChance);
                 CombatImpactBurst.Spawn(end,DamagePalette.Electric);
                 GameAudioController.PlayAt(GameAudioCue.MagicAttack,end);
                 StartCoroutine(Lightning(h,end));

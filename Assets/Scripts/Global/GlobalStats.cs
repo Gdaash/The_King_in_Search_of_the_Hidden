@@ -96,7 +96,7 @@ public class GlobalStats : ScriptableObject
         return UpgradeTable.entries.All(e => e.GroupId != entry.GroupId || e.level >= entry.level || HasUpgrade(e.id));
     }
 
-    public bool CanPurchaseUpgrade(ScientificUpgradeTable.Entry entry) => entry != null && !HasUpgrade(entry.id) &&
+    public bool CanPurchaseUpgrade(ScientificUpgradeTable.Entry entry) => GameFoundation.Base.CraftProduction.Morning && entry != null && !HasUpgrade(entry.id) &&
         IsUpgradeUnlocked(entry) && (entry.cost <= 0 || (entry.costResource != null && GlobalResourceManager.Instance != null &&
         GlobalResourceManager.Instance.GetResourceAmount(entry.costResource) >= entry.cost));
 

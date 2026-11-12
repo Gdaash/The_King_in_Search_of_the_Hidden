@@ -17,7 +17,9 @@ public static class FirstRunLightTutorialSetup
         var table=AssetDatabase.LoadAssetAtPath<LocalizationTable>("Assets/Resources/Localization/Base Localization.asset");
         var item=table.entries.FirstOrDefault(e=>e.key=="world.tutorial.carriers");
         if(item==null){item=new LocalizationTable.Entry{key="world.tutorial.carriers"};table.entries.Add(item);}
-        item.values=new(){FirstRunLightTutorial.CarrierInstruction,"There's our first haul! The carriers will bring their carts and take it to the portal. They collect supplies only on lit ground – they won't find anything in the dark. Let's wait until at least two units of resources reach the portal."};
+        while (item.values.Count < 2) item.values.Add("");
+        item.values[0] = FirstRunLightTutorial.CarrierInstruction;
+        item.values[1] = "There's our first haul! The carriers will bring their carts and take it to the portal. They collect supplies only on lit ground – they won't find anything in the dark. Wait for the first supplies to arrive.";
         EditorUtility.SetDirty(table);AssetDatabase.SaveAssets();
     }
     public const string Path = "Assets/Prefabs/UI/Dialogue/First Run Light Tutorial.prefab";
@@ -111,21 +113,25 @@ public static class FirstRunLightTutorialSetup
         entry.values = new(){"Переведи луч на соседний гекс. Подхвати его <size=64><sprite=0></size> и укажи, куда двигаться дальше – пора разведать ещё немного земли.","Guide the beam to a neighbouring hex. Take hold of it <size=64><sprite=0></size> and lead it onward. Time to scout a little farther."};
         foreach(var translation in new[]{
             new[]{"world.tutorial.activate_light","Включи свет у башни портала. Посмотрим, что Тёмные земли приберегли для нас сегодня.","Light the portal tower. Let's see what the Dark Lands have in store for us today."},
-            new[]{"world.tutorial.scouting","Этот луч – наши глаза в Тёмных землях. Куда он доберётся, там и узнаем, что нас ждёт. Хорошая разведка сбережёт немало жизней.","That beam is our eyes in the Dark Lands. Wherever it reaches, we'll learn what awaits us. A little scouting can save a great many lives."},
+            new[]{"world.tutorial.scouting",FirstRunLightTutorial.ScoutInstruction,"That beam is our eyes in the Dark Lands. You'll only see what it lights up. A little scouting can save a great many lives."},
             new[]{"world.tutorial.any_key","Продолжим","Let's continue"}})
         {
             var item=table.entries.FirstOrDefault(e=>e.key==translation[0]);
             if(item==null){item=new LocalizationTable.Entry{key=translation[0]};table.entries.Add(item);}
-            item.values=new(){translation[1],translation[2]};
+            while (item.values.Count < 2) item.values.Add("");
+            item.values[0] = translation[1];
+            item.values[1] = translation[2];
         }
         foreach(var translation in new[]{
             new[]{"world.tutorial.drag_neighbor","Переведи луч на соседний гекс. Подхвати его <size=64><sprite=0></size> и укажи, куда двигаться дальше – пора разведать ещё немного земли.","Guide the beam to a neighbouring hex. Take hold of it <size=64><sprite=0></size> and lead it onward. Time to scout a little farther."},
             new[]{"world.tutorial.workers","Люди трудятся только там, где светло. Хочешь добыть дерево, камень или еду – направь луч на нужный участок. В темноту я бы и сам без нужды не полез!","Our people can only work in the light. Need timber, stone or food? Guide the beam to the right patch of ground. I wouldn't venture into that darkness without good reason either!"},
-            new[]{"world.tutorial.supplies","Отлично, теперь дело пойдёт! Добудь еду для наших семерых и дерево для домов. На сытый желудок даже Тёмные земли кажутся чуть приветливее.","Splendid, now we're getting somewhere! Gather food for our seven settlers and timber for their homes. Even the Dark Lands look a little friendlier on a full stomach."}})
+            new[]{"world.tutorial.supplies",FirstRunLightTutorial.SuppliesInstruction,"Splendid, now we're getting somewhere! Gather food for our settlers and timber for their homes. Even the Dark Lands look a little friendlier on a full stomach."}})
         {
             var item=table.entries.FirstOrDefault(e=>e.key==translation[0]);
             if(item==null){item=new LocalizationTable.Entry{key=translation[0]};table.entries.Add(item);}
-            item.values=new(){translation[1],translation[2]};
+            while (item.values.Count < 2) item.values.Add("");
+            item.values[0] = translation[1];
+            item.values[1] = translation[2];
         }
         EditorUtility.SetDirty(table); AssetDatabase.SaveAssets();
         UpdateCarrierLocalization();

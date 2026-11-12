@@ -119,9 +119,7 @@ public class OrderManager : MonoBehaviour
 
     public static int CountHumansAtPortal(ResourceType humanType)
     {
-        return Mathf.Max(0, (GlobalResourceManager.Instance != null
-            ? GlobalResourceManager.Instance.GetResourceAmount(humanType)
-            : 0) - CountHumansAwayFromPortal(humanType));
+        return Mathf.Max(0, GameFoundation.Base.CraftProduction.FreeResidents(humanType) - CountHumansAwayFromPortal(humanType));
     }
 
     public void CancelDeliveries(ResourceRequester requester)

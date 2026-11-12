@@ -22,6 +22,426 @@ MonoBehaviour:
   - es-ES
   - pt-BR
   entries:
+  - key: base.craft_quarter.armor
+    values:
+    - "\u041a\u043e\u0436\u0430\u043d\u044b\u0439 \u0434\u043e\u0441\u043f\u0435\u0445"
+    - "Leather armor"
+    - "Armure de cuir"
+    - "\u76ae\u7532"
+    - "Armatura di cuoio"
+    - "Lederr\u00fcstung"
+    - "Armadura de cuero"
+    - "Armadura de couro"
+  - key: base.craft_quarter.craft_armor
+    values:
+    - "\u0421\u0434\u0435\u043b\u0430\u0442\u044c \u0434\u043e\u0441\u043f\u0435\u0445"
+    - "Craft armor"
+    - "Fabriquer"
+    - "\u5236\u4f5c\u76ae\u7532"
+    - "Crea armatura"
+    - "R\u00fcstung fertigen"
+    - "Crear armadura"
+    - "Fazer armadura"
+  - key: base.craft_quarter.queue
+    values:
+    - "\u041e\u0447\u0435\u0440\u0435\u0434\u044c \u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0441\u0442\u0432\u0430"
+    - "Production queue"
+    - "File de production"
+    - "\u751f\u4ea7\u961f\u5217"
+    - "Coda di produzione"
+    - "Produktionswarteschlange"
+    - "Cola de producci\u00f3n"
+    - "Fila de produ\u00e7\u00e3o"
+  - key: base.craft_quarter.assign
+    values:
+    - "\u041d\u0430\u0437\u043d\u0430\u0447\u0438\u0442\u044c \u0440\u0430\u0431\u043e\u0442\u043d\u0438\u043a\u0430"
+    - "Assign worker"
+    - "Affecter"
+    - "\u5206\u914d\u5de5\u4eba"
+    - "Assegna operaio"
+    - "Arbeiter zuweisen"
+    - "Asignar trabajador"
+    - "Designar trabalhador"
+  - key: base.craft_quarter.unassign
+    values:
+    - "\u0421\u043d\u044f\u0442\u044c \u0440\u0430\u0431\u043e\u0442\u043d\u0438\u043a\u0430"
+    - "Remove worker"
+    - "Retirer"
+    - "\u64a4\u56de\u5de5\u4eba"
+    - "Rimuovi operaio"
+    - "Arbeiter abziehen"
+    - "Retirar trabajador"
+    - "Remover trabalhador"
+  - key: base.craft_quarter.idle_worker
+    values:
+    - "\u0420\u0430\u0431\u043e\u0442\u043d\u0438\u043a \u043d\u0430\u0437\u043d\u0430\u0447\u0435\u043d. \u0417\u0430\u043a\u0430\u0437\u043e\u0432 \u043d\u0435\u0442."
+    - "Worker assigned. No orders."
+    - "Ouvrier affect\u00e9. Aucun ordre."
+    - "\u5df2\u5206\u914d\u5de5\u4eba\u3002\u6ca1\u6709\u8ba2\u5355\u3002"
+    - "Operaio assegnato. Nessun ordine."
+    - "Arbeiter zugewiesen. Keine Auftr\u00e4ge."
+    - "Trabajador asignado. Sin pedidos."
+    - "Trabalhador designado. Sem pedidos."
+  - key: base.craft_quarter.no_worker
+    values:
+    - "\u0420\u0430\u0431\u043e\u0447\u0438\u0439 \u043d\u0435 \u043d\u0430\u0437\u043d\u0430\u0447\u0435\u043d"
+    - "No worker assigned"
+    - "Aucun ouvrier affect\u00e9"
+    - "\u672a\u5206\u914d\u5de5\u4eba"
+    - "Nessun operaio assegnato"
+    - "Kein Arbeiter zugewiesen"
+    - "Sin trabajador asignado"
+    - "Sem trabalhador designado"
+  - key: base.craft_quarter.paused
+    values:
+    - "\u041f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0441\u0442\u0432\u043e \u043e\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d\u043e"
+    - "Production paused"
+    - "Production arr\u00eat\u00e9e"
+    - "\u751f\u4ea7\u5df2\u6682\u505c"
+    - "Produzione in pausa"
+    - "Produktion pausiert"
+    - "Producci\u00f3n detenida"
+    - "Produ\u00e7\u00e3o pausada"
+  - key: base.craft_quarter.working
+    values:
+    - "\u0412 \u0440\u0430\u0431\u043e\u0442\u0435. \u041e\u0441\u0442\u0430\u043b\u043e\u0441\u044c \u0434\u043d\u0435\u0439: {0}"
+    - "In progress. Days left: {0}"
+    - "En cours. Jours restants : {0}"
+    - "\u751f\u4ea7\u4e2d\u3002\u5269\u4f59 {0} \u5929"
+    - "In corso. Giorni rimasti: {0}"
+    - "In Arbeit. Resttage: {0}"
+    - "En curso. D\u00edas restantes: {0}"
+    - "Em andamento. Dias restantes: {0}"
+  - key: base.craft_quarter.morning
+    values:
+    - "\u0414\u043e\u0441\u0442\u0443\u043f\u043d\u043e \u0443\u0442\u0440\u043e\u043c"
+    - "Available in the morning"
+    - "Disponible le matin"
+    - "\u65e9\u6668\u53ef\u7528"
+    - "Disponibile al mattino"
+    - "Morgens verf\u00fcgbar"
+    - "Disponible por la ma\u00f1ana"
+    - "Dispon\u00edvel pela manh\u00e3"
+  - key: base.craft_quarter.ready
+    values:
+    - "\u0417\u0430\u043a\u0430\u0437 \u0433\u043e\u0442\u043e\u0432"
+    - "Order complete"
+    - "Commande termin\u00e9e"
+    - "\u8ba2\u5355\u5b8c\u6210"
+    - "Ordine completato"
+    - "Auftrag fertig"
+    - "Pedido terminado"
+    - "Pedido conclu\u00eddo"
+  - key: base.craft_quarter.queued
+    values:
+    - "\u0417\u0430\u043a\u0430\u0437 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d \u0432 \u043e\u0447\u0435\u0440\u0435\u0434\u044c"
+    - "Order queued"
+    - "Commande en attente"
+    - "\u8ba2\u5355\u5df2\u52a0\u5165\u961f\u5217"
+    - "Ordine in coda"
+    - "Auftrag eingereiht"
+    - "Pedido en cola"
+    - "Pedido na fila"
+  - key: base.craft_quarter.one_day
+    values:
+    - "1 \u0434\u0435\u043d\u044c"
+    - "1 day"
+    - "1 jour"
+    - "1 \u5929"
+    - "1 giorno"
+    - "1 Tag"
+    - "1 d\u00eda"
+    - "1 dia"
+  - key: base.craft_quarter.two_days
+    values:
+    - "2 \u0434\u043d\u044f"
+    - "2 days"
+    - "2 jours"
+    - "2 \u5929"
+    - "2 giorni"
+    - "2 Tage"
+    - "2 d\u00edas"
+    - "2 dias"
+  - key: base.craft_quarter.spears
+    values:
+    - "\u0421\u0434\u0435\u043b\u0430\u0442\u044c \u00d72"
+    - "Craft \u00d72"
+    - "Fabriquer \u00d72"
+    - "\u5236\u4f5c \u00d72"
+    - "Crea \u00d72"
+    - "Fertigen \u00d72"
+    - "Crear \u00d72"
+    - "Fazer \u00d72"
+  - key: base.craft_quarter.tan
+    values:
+    - "\u0412\u044b\u0434\u0435\u043b\u0430\u0442\u044c \u043a\u043e\u0436\u0443"
+    - "Tan hides"
+    - "Tanner les peaux"
+    - "\u97a3\u5236\u76ae\u9769"
+    - "Concia le pelli"
+    - "H\u00e4ute gerben"
+    - "Curtir pieles"
+    - "Curtir peles"
+  - key: base.craft_quarter.leatherworks
+    values:
+    - "\u041a\u043e\u0436\u0435\u0432\u0435\u043d\u043d\u0430\u044f \u043c\u0430\u0441\u0442\u0435\u0440\u0441\u043a\u0430\u044f"
+    - "Leatherworks"
+    - "Atelier du cuir"
+    - "\u5236\u9769\u5de5\u574a"
+    - "Bottega del cuoio"
+    - "Lederwerkstatt"
+    - "Taller de cuero"
+    - "Oficina de couro"
+  - key: base.craft_quarter.coal_recipe
+    values:
+    - "\u0421\u0434\u0435\u043b\u0430\u0442\u044c \u0443\u0433\u043e\u043b\u044c"
+    - "Make charcoal"
+    - "Faire du charbon"
+    - "\u5236\u6728\u70ad"
+    - "Fai carbone"
+    - "Kohle herstellen"
+    - "Hacer carb\u00f3n"
+    - "Fazer carv\u00e3o"
+  - key: base.craft_quarter.iron_ingot
+    values:
+    - "\u0416\u0435\u043b\u0435\u0437\u043d\u044b\u0439 \u0441\u043b\u0438\u0442\u043e\u043a"
+    - "Iron ingot"
+    - "Lingot de fer"
+    - "\u94c1\u952d"
+    - "Lingotto di ferro"
+    - "Eisenbarren"
+    - "Lingote de hierro"
+    - "Lingote de ferro"
+  - key: base.craft_quarter.smelt
+    values:
+    - "\u0412\u044b\u043f\u043b\u0430\u0432\u0438\u0442\u044c"
+    - "Smelt"
+    - "Fondre"
+    - "\u51b6\u70bc"
+    - "Fondi"
+    - "Schmelzen"
+    - "Fundir"
+    - "Fundir"
+  - key: base.craft_quarter.iron_armor
+    values:
+    - "\u0416\u0435\u043b\u0435\u0437\u043d\u0430\u044f \u0431\u0440\u043e\u043d\u044f"
+    - "Iron armor"
+    - "Armure de fer"
+    - "\u94c1\u7532"
+    - "Armatura di ferro"
+    - "Eisenr\u00fcstung"
+    - "Armadura de hierro"
+    - "Armadura de ferro"
+  - key: base.craft_quarter.forge_armor
+    values:
+    - "\u0421\u043a\u043e\u0432\u0430\u0442\u044c \u0431\u0440\u043e\u043d\u044e"
+    - "Forge armor"
+    - "Forger"
+    - "\u953b\u9020\u94c1\u7532"
+    - "Forgia armatura"
+    - "R\u00fcstung schmieden"
+    - "Forjar armadura"
+    - "Forjar armadura"
+  - key: base.craft_quarter.charcoal_pit
+    values:
+    - "\u042f\u043c\u0430 \u0443\u0433\u043b\u0435\u0436\u043e\u0433\u0430"
+    - "Charcoal pit"
+    - "Fosse \u00e0 charbon"
+    - "\u70ad\u7a91"
+    - "Fossa da carbone"
+    - "K\u00f6hlergrube"
+    - "Fosa carbonera"
+    - "Fosso de carv\u00e3o"
+  - key: base.craft_quarter.production
+    values:
+    - "\u041f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0441\u0442\u0432\u043e"
+    - "Production"
+    - "Production"
+    - "\u751f\u4ea7"
+    - "Produzione"
+    - "Produktion"
+    - "Producci\u00f3n"
+    - "Produ\u00e7\u00e3o"
+  - key: base.craft_quarter.busy
+    values:
+    - "\u0417\u0430\u043d\u044f\u0442\u043e"
+    - "Assigned"
+    - "Affect\u00e9s"
+    - "\u5df2\u5206\u914d"
+    - "Assegnati"
+    - "Zugewiesen"
+    - "Asignados"
+    - "Designados"
+  - key: base.craft_quarter.workshop_busy
+    values:
+    - "\u041c\u0430\u0441\u0442\u0435\u0440\u0441\u043a\u0430\u044f \u0437\u0430\u043d\u044f\u0442\u0430"
+    - "Workshop busy"
+    - "Atelier occup\u00e9"
+    - "\u5de5\u574a\u6b63\u5fd9"
+    - "Bottega occupata"
+    - "Werkstatt besch\u00e4ftigt"
+    - "Taller ocupado"
+    - "Oficina ocupada"
+  - key: base.craft_quarter.started_today
+    values:
+    - "\u0421\u0435\u0433\u043e\u0434\u043d\u044f \u0437\u0430\u043a\u0430\u0437 \u0443\u0436\u0435 \u0437\u0430\u043f\u0443\u0441\u043a\u0430\u043b\u0438"
+    - "An order was started today"
+    - "Une commande a d\u00e9j\u00e0 \u00e9t\u00e9 lanc\u00e9e"
+    - "\u4eca\u5929\u5df2\u542f\u52a8\u8fc7\u8ba2\u5355"
+    - "Ordine gi\u00e0 avviato oggi"
+    - "Heute bereits einen Auftrag gestartet"
+    - "Ya se inici\u00f3 un pedido hoy"
+    - "J\u00e1 foi iniciado um pedido hoje"
+  - key: base.craft_quarter.started
+    values:
+    - "\u041f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0441\u0442\u0432\u043e \u043d\u0430\u0447\u0430\u043b\u043e\u0441\u044c"
+    - "Production started"
+    - "Production lanc\u00e9e"
+    - "\u751f\u4ea7\u5df2\u5f00\u59cb"
+    - "Produzione avviata"
+    - "Produktion gestartet"
+    - "Producci\u00f3n iniciada"
+    - "Produ\u00e7\u00e3o iniciada"
+  - key: base.craft_quarter.not_built
+    values:
+    - "\u041d\u0435 \u043f\u043e\u0441\u0442\u0440\u043e\u0435\u043d\u043e"
+    - "Not built"
+    - "Non construit"
+    - "\u672a\u5efa\u9020"
+    - "Non costruito"
+    - "Nicht gebaut"
+    - "Sin construir"
+    - "N\u00e3o constru\u00edda"
+  - key: base.craft_quarter.idle
+    values:
+    - "\u0421\u0432\u043e\u0431\u043e\u0434\u043d\u0430"
+    - "Idle"
+    - "Disponible"
+    - "\u7a7a\u95f2"
+    - "Libera"
+    - "Frei"
+    - "Libre"
+    - "Livre"
+  - key: base.craft_quarter.await_worker
+    values:
+    - "\u041e\u0436\u0438\u0434\u0430\u0435\u0442 \u0440\u0430\u0431\u043e\u0442\u043d\u0438\u043a\u0430"
+    - "Waiting for worker"
+    - "En attente d'un ouvrier"
+    - "\u7b49\u5f85\u5de5\u4eba"
+    - "In attesa di un operaio"
+    - "Wartet auf Arbeiter"
+    - "Espera a un trabajador"
+    - "Aguardando trabalhador"
+  - key: base.craft_quarter.time_left
+    values:
+    - "\u0421\u0440\u043e\u043a \u0438\u0437\u0433\u043e\u0442\u043e\u0432\u043b\u0435\u043d\u0438\u044f: {0} \u0434\u043d."
+    - "Production time: {0} d"
+    - "Dur\u00e9e : {0} j"
+    - "\u751f\u4ea7\u65f6\u95f4\uff1a{0} \u5929"
+    - "Tempo: {0} g"
+    - "Fertig in: {0} T"
+    - "Fabricaci\u00f3n: {0} d"
+    - "Fabrica\u00e7\u00e3o: {0} d"
+  - key: base.craft_quarter.no_free_workers
+    values:
+    - "\u041d\u0435\u0442 \u0441\u0432\u043e\u0431\u043e\u0434\u043d\u044b\u0445 \u043b\u044e\u0434\u0435\u0439 \u0434\u043b\u044f \u044d\u0442\u043e\u0439 \u0440\u0430\u0431\u043e\u0442\u044b"
+    - "No free people for this job"
+    - "Personne de libre pour ce travail"
+    - "\u6ca1\u6709\u7a7a\u95f2\u4eba\u5458\u53ef\u4ee5\u5de5\u4f5c"
+    - "Nessuna persona libera per questo lavoro"
+    - "Keine freien Leute f\u00fcr diese Arbeit"
+    - "No hay personas libres para este trabajo"
+    - "N\u00e3o h\u00e1 pessoas livres para este trabalho"
+  - key: base.craft_quarter.remaining_time
+    values:
+    - "\u041e\u0441\u0442\u0430\u043b\u043e\u0441\u044c \u0432\u0440\u0435\u043c\u0435\u043d\u0438: {0} \u0434\u043d."
+    - "Time left: {0} d"
+    - "Temps restant : {0} j"
+    - "\u5269\u4f59\u65f6\u95f4\uff1a{0} \u5929"
+    - "Tempo rimasto: {0} g"
+    - "Verbleibend: {0} T"
+    - "Quedan {0} d\u00edas"
+    - "Restam {0} dias"
+  - key: base.craft_quarter.title
+    values:
+    - "\u0420\u0435\u043c\u0435\u0441\u043b\u0435\u043d\u043d\u044b\u0439 \u043a\u0432\u0430\u0440\u0442\u0430\u043b"
+    - "Craftsmen's Quarter"
+    - "Quartier des artisans"
+    - "\u5de5\u5320\u533a"
+    - "Quartiere degli artigiani"
+    - "Handwerkerviertel"
+    - "Barrio artesanal"
+    - "Bairro dos Artes\u00e3os"
+  - key: base.craft_quarter.workshops
+    values:
+    - "\u041c\u0430\u0441\u0442\u0435\u0440\u0441\u043a\u0438\u0435"
+    - "Workshops"
+    - "Ateliers"
+    - "\u5de5\u574a"
+    - "Botteghe"
+    - "Werkst\u00e4tten"
+    - "Talleres"
+    - "Oficinas"
+  - key: base.craft_quarter.carpentry
+    values:
+    - "\u0421\u0442\u043e\u043b\u044f\u0440\u043d\u044b\u0439 \u0446\u0435\u0445"
+    - "Carpentry"
+    - "Menuiserie"
+    - "\u6728\u5de5\u574a"
+    - "Falegnameria"
+    - "Tischlerei"
+    - "Carpinter\u00eda"
+    - "Carpintaria"
+  - key: base.craft_quarter.smithy
+    values:
+    - "\u041a\u0443\u0437\u043d\u0438\u0446\u0430"
+    - "Smithy"
+    - "Forge"
+    - "\u94c1\u5320\u94fa"
+    - "Fucina"
+    - "Schmiede"
+    - "Herrer\u00eda"
+    - "Ferraria"
+  - key: base.craft_quarter.tannery
+    values:
+    - "\u0414\u0443\u0431\u0438\u043b\u044c\u043d\u044f"
+    - "Tannery"
+    - "Tannerie"
+    - "\u5236\u9769\u574a"
+    - "Conceria"
+    - "Gerberei"
+    - "Curtidur\u00eda"
+    - "Curtume"
+  - key: base.craft_quarter.leather_shop
+    values:
+    - "\u041c\u0430\u0441\u0442\u0435\u0440\u0441\u043a\u0430\u044f \u043a\u043e\u0436\u0435\u0432\u043d\u0438\u043a\u0430"
+    - "Leather workshop"
+    - "Atelier du cuir"
+    - "\u76ae\u7532\u5de5\u574a"
+    - "Bottega del cuoio"
+    - "Lederwerkstatt"
+    - "Taller de cuero"
+    - "Oficina de couro"
+  - key: base.craft_quarter.tannery_info
+    values:
+    - "\u0412\u044b\u0434\u0435\u043b\u044b\u0432\u0430\u0435\u0442 \u043a\u043e\u0436\u0443 \u0438\u0437 \u043a\u0430\u0431\u0430\u043d\u044c\u0438\u0445 \u0448\u043a\u0443\u0440."
+    - "Tans boar hides into leather."
+    - "Tanne les peaux de sanglier."
+    - "\u5c06\u91ce\u732a\u76ae\u97a3\u5236\u6210\u76ae\u9769\u3002"
+    - "Concia le pelli di cinghiale."
+    - "Gerbt Wildschweinh\u00e4ute zu Leder."
+    - "Curte pieles de jabal\u00ed para obtener cuero."
+    - "Curte peles de javali para obter couro."
+  - key: base.craft_quarter.leather_info
+    values:
+    - "\u0418\u0437 \u0432\u044b\u0434\u0435\u043b\u0430\u043d\u043d\u043e\u0439 \u043a\u043e\u0436\u0438 \u0434\u0435\u043b\u0430\u0435\u0442 \u043a\u043e\u0436\u0430\u043d\u044b\u0435 \u0434\u043e\u0441\u043f\u0435\u0445\u0438."
+    - "Makes leather armor from tanned hides."
+    - "Fabrique des armures en cuir."
+    - "\u7528\u76ae\u9769\u5236\u4f5c\u76ae\u7532\u3002"
+    - "Fabbrica armature in cuoio."
+    - "Fertigt Lederr\u00fcstungen aus gegerbtem Leder."
+    - "Fabrica armaduras con cuero curtido."
+    - "Faz armaduras de couro com peles curtidas."
   - key: base.base_panel.title
     values:
     - "\u0423\u041A\u0420\u042B\u0422\u0418\u0415"
@@ -981,6 +1401,46 @@ MonoBehaviour:
     - "Sie k\xF6nnen nur einmal pro Tag durch ein Portal reisen."
     - "Puedes viajar a trav\xE9s de un portal solo una vez al d\xEDa."
     - "Voc\xEA pode viajar atrav\xE9s de um portal apenas uma vez por dia."
+  - key: base.portal.can_upgrade
+    values:
+    - "\u041c\u043e\u0436\u043d\u043e \u0443\u043b\u0443\u0447\u0448\u0438\u0442\u044c"
+    - "Ready to upgrade"
+    - "Pr\u00eat \u00e0 am\u00e9liorer"
+    - "\u53ef\u4ee5\u5347\u7ea7"
+    - "Pronto da migliorare"
+    - "Bereit zum Upgrade"
+    - "Se puede mejorar"
+    - "Pode melhorar"
+  - key: base.portal.previous_upgrade
+    values:
+    - "\u0422\u0440\u0435\u0431\u0443\u0435\u0442\u0441\u044f \u043f\u0440\u0435\u0434\u044b\u0434\u0443\u0449\u0435\u0435 \u0443\u043b\u0443\u0447\u0448\u0435\u043d\u0438\u0435"
+    - "Previous upgrade required"
+    - "Am\u00e9lioration pr\u00e9c\u00e9dente requise"
+    - "\u9700\u8981\u5148\u5b8c\u6210\u4e0a\u4e00\u7ea7\u5347\u7ea7"
+    - "\u00c8 richiesto il miglioramento precedente"
+    - "Vorheriges Upgrade erforderlich"
+    - "Se requiere la mejora anterior"
+    - "\u00c9 necess\u00e1ria a melhoria anterior"
+  - key: base.portal.upgrade_action
+    values:
+    - "\u0423\u043b\u0443\u0447\u0448\u0438\u0442\u044c \u043f\u043e\u0440\u0442\u0430\u043b"
+    - "Upgrade portal"
+    - "Am\u00e9liorer le portail"
+    - "\u5347\u7ea7\u4f20\u9001\u95e8"
+    - "Potenzia il portale"
+    - "Portal ausbauen"
+    - "Mejorar el portal"
+    - "Melhorar o portal"
+  - key: base.portal.minimum_residents
+    values:
+    - "\u0414\u043b\u044f \u0432\u044b\u043b\u0430\u0437\u043a\u0438 \u043d\u0435\u043e\u0431\u0445\u043e\u0434\u0438\u043c\u043e \u0434\u0432\u0430 \u0441\u0432\u043e\u0431\u043e\u0434\u043d\u044b\u0445 \u0447\u0435\u043b\u043e\u0432\u0435\u043a\u0430."
+    - "You need two available people for an expedition."
+    - "Il faut deux personnes disponibles pour partir."
+    - "\u8fdc\u5f81\u9700\u8981\u4e24\u540d\u7a7a\u95f2\u5c45\u6c11\u3002"
+    - "Servono due persone libere per la spedizione."
+    - "F\u00fcr einen Ausflug sind zwei freie Personen n\u00f6tig."
+    - "Necesitas dos personas libres para la expedici\u00f3n."
+    - "S\u00e3o necess\u00e1rias duas pessoas livres para a expedi\u00e7\u00e3o."
   - key: base.portal.travel_used
     values:
     - "\u0421\u0435\u0433\u043E\u0434\u043D\u044F \u0432\u044B \u0443\u0436\u0435
@@ -1065,6 +1525,16 @@ MonoBehaviour:
     - 'Wenn Sie einen neuen Tag beginnen:'
     - "Si comienzas un nuevo d\xEDa:"
     - "Se voc\xEA come\xE7ar um novo dia:"
+  - key: world.ally_fell_in_battle
+    values:
+    - "\u041f\u0430\u043b \u0432 \u0431\u043e\u044e"
+    - "Fell in battle"
+    - "Tomb\u00e9 au combat"
+    - "\u6218\u6b7b"
+    - "Caduto in battaglia"
+    - "Im Kampf gefallen"
+    - "Ca\u00eddo en combate"
+    - "Caiu em combate"
   - key: world.energy.light_on
     values:
     - "\u0412\u043a\u043b\u044e\u0447\u0438\u043b\u0441\u044f \u0435\u0449\u0451 \u043e\u0434\u0438\u043d \u043b\u0443\u0447"
@@ -1105,6 +1575,226 @@ MonoBehaviour:
     - "Deaktivierte Lichtstrahlen: {0}"
     - "Rayos desactivados: {0}"
     - "Feixes desativados: {0}"
+  - key: world.upgrade_crystal.green
+    values:
+    - "\u0417\u0435\u043b\u0451\u043d\u044b\u0439 \u043a\u0440\u0438\u0441\u0442\u0430\u043b\u043b"
+    - "Green Crystal"
+    - "Cristal vert"
+    - "\u7eff\u8272\u6c34\u6676"
+    - "Cristallo verde"
+    - "Gr\u00fcner Kristall"
+    - "Cristal verde"
+    - "Cristal verde"
+  - key: world.upgrade_crystal.blue
+    values:
+    - "\u0421\u0438\u043d\u0438\u0439 \u043a\u0440\u0438\u0441\u0442\u0430\u043b\u043b"
+    - "Blue Crystal"
+    - "Cristal bleu"
+    - "\u84dd\u8272\u6c34\u6676"
+    - "Cristallo blu"
+    - "Blauer Kristall"
+    - "Cristal azul"
+    - "Cristal azul"
+  - key: world.upgrade_crystal.purple
+    values:
+    - "\u0424\u0438\u043e\u043b\u0435\u0442\u043e\u0432\u044b\u0439 \u043a\u0440\u0438\u0441\u0442\u0430\u043b\u043b"
+    - "Purple Crystal"
+    - "Cristal violet"
+    - "\u7d2b\u8272\u6c34\u6676"
+    - "Cristallo viola"
+    - "Violetter Kristall"
+    - "Cristal violeta"
+    - "Cristal roxo"
+  - key: world.upgrade_crystal.pending
+    values:
+    - "\u0414\u043b\u044f \u044d\u0442\u043e\u0433\u043e \u043a\u0440\u0438\u0441\u0442\u0430\u043b\u043b\u0430 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0443\u043b\u0443\u0447\u0448\u0435\u043d\u0438\u0439."
+    - "There are no upgrades for this crystal yet."
+    - "Aucune am\u00e9lioration disponible pour ce cristal."
+    - "\u6b64\u6c34\u6676\u6682\u65e0\u53ef\u7528\u5347\u7ea7\u3002"
+    - "Non ci sono ancora potenziamenti per questo cristallo."
+    - "F\u00fcr diesen Kristall sind noch keine Verbesserungen verf\u00fcgbar."
+    - "A\u00fan no hay mejoras para este cristal."
+    - "Ainda n\u00e3o h\u00e1 melhorias para este cristal."
+  - key: world.upgrade_crystal.decline
+    values:
+    - "\u041e\u0442\u043a\u0430\u0437\u0430\u0442\u044c\u0441\u044f"
+    - "Decline"
+    - "Refuser"
+    - "\u653e\u5f03"
+    - "Rifiuta"
+    - "Ablehnen"
+    - "Rechazar"
+    - "Recusar"
+  - key: world.upgrade_crystal.choose
+    values:
+    - "\u0412\u044b\u0431\u0440\u0430\u0442\u044c"
+    - "Choose"
+    - "Choisir"
+    - "\u9009\u62e9"
+    - "Scegli"
+    - "W\u00e4hlen"
+    - "Elegir"
+    - "Escolher"
+  - key: world.upgrade_crystal.choose_hint
+    values:
+    - "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0443\u0441\u0438\u043b\u0435\u043d\u0438\u0435 \u043d\u0430 \u044d\u0442\u0443 \u0432\u044b\u043b\u0430\u0437\u043a\u0443"
+    - "Choose an upgrade for this run"
+    - "Choisissez une am\u00e9lioration pour cette exp\u00e9dition"
+    - "\u4e3a\u672c\u6b21\u8fdc\u5f81\u9009\u62e9\u5347\u7ea7"
+    - "Scegli un potenziamento per questa spedizione"
+    - "W\u00e4hle eine Verbesserung f\u00fcr diesen Einsatz"
+    - "Elige una mejora para esta expedici\u00f3n"
+    - "Escolha uma melhoria para esta expedi\u00e7\u00e3o"
+  - key: world.upgrade_stat.Damage
+    values:
+    - "\u0423\u0440\u043e\u043d"
+    - "Damage"
+    - "D\u00e9g\u00e2ts"
+    - "\u4f24\u5bb3"
+    - "Danni"
+    - "Schaden"
+    - "Da\u00f1o"
+    - "Dano"
+  - key: world.upgrade_stat.Interval
+    values:
+    - "\u0418\u043d\u0442\u0435\u0440\u0432\u0430\u043b \u0430\u0442\u0430\u043a"
+    - "Attack interval"
+    - "Intervalle d'attaque"
+    - "\u653b\u51fb\u95f4\u9694"
+    - "Intervallo d'attacco"
+    - "Angriffsintervall"
+    - "Intervalo de ataque"
+    - "Intervalo de ataque"
+  - key: world.upgrade_stat.Area
+    values:
+    - "\u0420\u0430\u0434\u0438\u0443\u0441 \u043e\u0431\u043b\u0430\u0441\u0442\u0438"
+    - "Area radius"
+    - "Rayon de zone"
+    - "\u533a\u57df\u534a\u5f84"
+    - "Raggio dell'area"
+    - "Fl\u00e4chenradius"
+    - "Radio de \u00e1rea"
+    - "Raio da \u00e1rea"
+  - key: world.upgrade_stat.Range
+    values:
+    - "\u0414\u0430\u043b\u044c\u043d\u043e\u0441\u0442\u044c"
+    - "Range"
+    - "Port\u00e9e"
+    - "\u5c04\u7a0b"
+    - "Portata"
+    - "Reichweite"
+    - "Alcance"
+    - "Alcance"
+  - key: world.upgrade_stat.Duration
+    values:
+    - "\u0414\u043b\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c \u0437\u043e\u043d\u044b"
+    - "Zone duration"
+    - "Dur\u00e9e de la zone"
+    - "\u533a\u57df\u6301\u7eed\u65f6\u95f4"
+    - "Durata della zona"
+    - "Zonendauer"
+    - "Duraci\u00f3n de zona"
+    - "Dura\u00e7\u00e3o da \u00e1rea"
+  - key: world.upgrade_stat.Speed
+    values:
+    - "\u0421\u043a\u043e\u0440\u043e\u0441\u0442\u044c \u0441\u043d\u0430\u0440\u044f\u0434\u0430"
+    - "Projectile speed"
+    - "Vitesse du projectile"
+    - "\u5f39\u4f53\u901f\u5ea6"
+    - "Velocit\u00e0 del proiettile"
+    - "Geschosstempo"
+    - "Velocidad del proyectil"
+    - "Velocidade do proj\u00e9til"
+  - key: world.upgrade_stat.Energy
+    values:
+    - "\u042d\u043d\u0435\u0440\u0433\u0438\u044f \u0437\u0430 \u043f\u0440\u0438\u043c\u0435\u043d\u0435\u043d\u0438\u0435"
+    - "Energy per use"
+    - "\u00c9nergie par usage"
+    - "\u6bcf\u6b21\u4f7f\u7528\u8017\u80fd"
+    - "Energia per uso"
+    - "Energie pro Einsatz"
+    - "Energ\u00eda por uso"
+    - "Energia por uso"
+  - key: world.upgrade_stat.Projectiles
+    values:
+    - "\u0421\u043d\u0430\u0440\u044f\u0434\u044b \u0437\u0430 \u0430\u0442\u0430\u043a\u0443"
+    - "Projectiles per attack"
+    - "Projectiles par attaque"
+    - "\u6bcf\u6b21\u653b\u51fb\u5f39\u4f53\u6570"
+    - "Proiettili per attacco"
+    - "Geschosse pro Angriff"
+    - "Proyectiles por ataque"
+    - "Proj\u00e9teis por ataque"
+  - key: world.upgrade_stat.Control
+    values:
+    - "\u0414\u043b\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c \u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044f"
+    - "Control duration"
+    - "Dur\u00e9e du contr\u00f4le"
+    - "\u63a7\u5236\u6301\u7eed\u65f6\u95f4"
+    - "Durata del controllo"
+    - "Kontrolldauer"
+    - "Duraci\u00f3n del control"
+    - "Dura\u00e7\u00e3o do controle"
+  - key: world.upgrade_stat.Chain
+    values:
+    - "\u0413\u0430\u0440\u0430\u043d\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0439 \u043f\u0435\u0440\u0435\u0441\u043a\u043e\u043a"
+    - "Guaranteed jump"
+    - "Rebond garanti"
+    - "\u5fc5\u5b9a\u5f39\u8df3"
+    - "Rimbalzo garantito"
+    - "Garantierter Sprung"
+    - "Salto garantizado"
+    - "Salto garantido"
+  - key: world.upgrade_stat.FirstHit
+    values:
+    - "\u0423\u0440\u043e\u043d \u043f\u0435\u0440\u0432\u043e\u0433\u043e \u043f\u043e\u043f\u0430\u0434\u0430\u043d\u0438\u044f"
+    - "First hit damage"
+    - "D\u00e9g\u00e2ts du premier impact"
+    - "\u9996\u6b21\u547d\u4e2d\u4f24\u5bb3"
+    - "Danni del primo colpo"
+    - "Schaden beim ersten Treffer"
+    - "Da\u00f1o del primer impacto"
+    - "Dano do primeiro acerto"
+  - key: world.upgrade_stat.Support
+    values:
+    - "\u041b\u0435\u0447\u0435\u043d\u0438\u0435 \u0438 \u0449\u0438\u0442"
+    - "Healing and shield"
+    - "Soin et bouclier"
+    - "\u6cbb\u7597\u548c\u62a4\u76fe"
+    - "Cura e scudo"
+    - "Heilung und Schild"
+    - "Curaci\u00f3n y escudo"
+    - "Cura e escudo"
+  - key: world.upgrade_stat.Armor
+    values:
+    - "\u0411\u0440\u043e\u043d\u044f \u0432 \u043f\u043e\u043b\u0435"
+    - "Armor in field"
+    - "Armure dans le champ"
+    - "\u573a\u5185\u62a4\u7532"
+    - "Armatura nel campo"
+    - "R\u00fcstung im Feld"
+    - "Armadura en el campo"
+    - "Armadura no campo"
+  - key: world.upgrade_stat.Drain
+    values:
+    - "\u042d\u043d\u0435\u0440\u0433\u0438\u044f \u0432 \u0441\u0435\u043a\u0443\u043d\u0434\u0443"
+    - "Energy per second"
+    - "\u00c9nergie par seconde"
+    - "\u6bcf\u79d2\u8017\u80fd"
+    - "Energia al secondo"
+    - "Energie pro Sekunde"
+    - "Energ\u00eda por segundo"
+    - "Energia por segundo"
+  - key: world.upgrade_stat.Tick
+    values:
+    - "\u0418\u043d\u0442\u0435\u0440\u0432\u0430\u043b \u0443\u0440\u043e\u043d\u0430"
+    - "Damage interval"
+    - "Intervalle de d\u00e9g\u00e2ts"
+    - "\u4f24\u5bb3\u95f4\u9694"
+    - "Intervallo dei danni"
+    - "Schadensintervall"
+    - "Intervalo de da\u00f1o"
+    - "Intervalo de dano"
   - key: world.danger_level_notification.title
     values:
     - "\u0423\u0440\u043E\u0432\u0435\u043D\u044C \u043E\u043F\u0430\u0441\u043D\u043E\u0441\u0442\u0438:
@@ -1118,14 +1808,14 @@ MonoBehaviour:
     - "N\xEDvel de perigo: {0}"
   - key: resource.Swordsman.name
     values:
-    - "\u041C\u0435\u0447\u043D\u0438\u043A\u0438"
-    - Swordsmen
-    - "\xC9p\xE9istes"
-    - "\u5251\u5BA2"
-    - Spadaccini
-    - "Schwertk\xE4mpfer"
-    - espadachines
-    - Espadachins
+    - "Рыцари"
+    - "Knights"
+    - "Chevaliers"
+    - "骑士"
+    - "Cavalieri"
+    - "Ritter"
+    - "Caballeros"
+    - "Cavaleiros"
   - key: resource.Archer.name
     values:
     - "\u041B\u0443\u0447\u043D\u0438\u043A\u0438"
@@ -1289,26 +1979,24 @@ MonoBehaviour:
     - Transforma moradores com espadas em espadachins.
   - key: base.building.archery_range.description
     values:
-    - "\u041F\u043E\u0437\u0432\u043E\u043B\u044F\u0435\u0442 \u0432\u043E\u043E\u0440\u0443\u0436\u0430\u0442\u044C
-      \u0436\u0438\u0442\u0435\u043B\u0435\u0439 \u043B\u0443\u043A\u0430\u043C\u0438
-      \u0438 \u0441\u043E\u0437\u0434\u0430\u0432\u0430\u0442\u044C \u043B\u0443\u0447\u043D\u0438\u043A\u043E\u0432."
-    - Turns residents with bows into archers.
-    - "Transforme les r\xE9sidents avec des arcs en archers."
-    - "\u5C06\u6301\u6709\u5F13\u7BAD\u7684\u5C45\u6C11\u53D8\u6210\u5F13\u7BAD\u624B\u3002"
-    - Trasforma i residenti con gli archi in arcieri.
-    - "Verwandelt Bewohner mit B\xF6gen in Bogensch\xFCtzen."
-    - Convierte a los residentes con arcos en arqueros.
-    - Transforma moradores com arcos em arqueiros.
+    - "\u041e\u0431\u0443\u0447\u0430\u0435\u0442 \u043a\u0440\u0435\u0441\u0442\u044c\u044f\u043d \u043d\u0430 \u043f\u0440\u0430\u0449\u043d\u0438\u043a\u043e\u0432. \u041f\u043e\u0441\u043b\u0435 \u0443\u043b\u0443\u0447\u0448\u0435\u043d\u0438\u044f \u043c\u043e\u0436\u043d\u043e \u043d\u0430\u043d\u0438\u043c\u0430\u0442\u044c \u043b\u0443\u0447\u043d\u0438\u043a\u043e\u0432."
+    - "Trains peasants as slingers. Upgrade it to recruit archers."
+    - "Forme les paysans au m\u00e9tier de frondeur. Am\u00e9liorez-le pour recruter des archers."
+    - "\u5c06\u519c\u6c11\u8bad\u7ec3\u6210\u6295\u77f3\u5175\u3002\u5347\u7ea7\u540e\u53ef\u62db\u52df\u5f13\u7bad\u624b\u3002"
+    - "Addestra i contadini come frombolieri. Potenzialo per reclutare arcieri."
+    - "Bildet Bauern zu Schleuderern aus. Ein Ausbau schaltet Bogensch\u00fctzen frei."
+    - "Entrena a campesinos como honderos. Mej\u00f3ralo para reclutar arqueros."
+    - "Treina camponeses como fundeiros. Melhore-o para recrutar arqueiros."
   - key: base.base_panel.blacksmith.label
     values:
-    - "\u041A\u0443\u0437\u043D\u0438\u0446\u0430"
-    - Blacksmith
-    - Forgeron
-    - "\u94C1\u5320"
-    - Fabbro
-    - Schmied
-    - herrero
-    - Ferreiro
+    - "\u0420\u0435\u043c\u0435\u0441\u043b\u0435\u043d\u043d\u044b\u0439 \u043a\u0432\u0430\u0440\u0442\u0430\u043b"
+    - "Craft Quarter"
+    - "Quartier des artisans"
+    - "\u5de5\u5320\u533a"
+    - "Quartiere artigiano"
+    - "Handwerkerviertel"
+    - "Barrio artesanal"
+    - "Bairro dos artes\u00e3os"
   - key: base.blacksmith_popup.title
     values:
     - "\u041A\u0423\u0417\u041D\u0418\u0426\u0410"
@@ -1463,6 +2151,26 @@ MonoBehaviour:
     - "Dichte W\xE4lder voller Wild."
     - Bosques densos repletos de caza.
     - "Florestas densas repletas de ca\xE7a."
+  - key: base.portal.location.ruined_city.name
+    values:
+    - "\u0420\u0443\u0438\u043d\u044b"
+    - "Ruins"
+    - "Ruines"
+    - "\u5e9f\u589f"
+    - "Rovine"
+    - "Ruinen"
+    - "Ruinas"
+    - "Ru\u00ednas"
+  - key: base.portal.location.ruined_city.description
+    values:
+    - "\u0421\u0440\u0435\u0434\u0438 \u0440\u0443\u0438\u043d \u043c\u043e\u0436\u043d\u043e \u0434\u043e\u0431\u044b\u0442\u044c \u0434\u0440\u0435\u0432\u0435\u0441\u0438\u043d\u0443 \u0438 \u043a\u0430\u043c\u0435\u043d\u044c. \u0418\u0437\u0440\u0435\u0434\u043a\u0430 \u043f\u043e\u043f\u0430\u0434\u0430\u044e\u0442\u0441\u044f \u0436\u0435\u043b\u0435\u0437\u043e \u0438 \u043c\u0430\u0433\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u0440\u0443\u0434\u0430."
+    - "Salvage wood and stone from the ruins. Iron and magical ore are rare."
+    - "R\u00e9cup\u00e9rez du bois et de la pierre dans les ruines. Le fer et le minerai magique sont rares."
+    - "\u53ef\u4ee5\u4ece\u5e9f\u589f\u4e2d\u56de\u6536\u6728\u6750\u548c\u77f3\u6599\u3002\u94c1\u548c\u9b54\u6cd5\u77ff\u77f3\u5f88\u5c11\u89c1\u3002"
+    - "Recupera legno e pietra dalle rovine. Ferro e minerale magico sono rari."
+    - "Berge Holz und Stein aus den Ruinen. Eisen und magisches Erz sind selten."
+    - "Recupera madera y piedra de las ruinas. El hierro y el mineral m\u00e1gico son escasos."
+    - "Recupere madeira e pedra das ru\u00ednas. Ferro e min\u00e9rio m\u00e1gico s\u00e3o raros."
   - key: base.portal.location.mountains.name
     values:
     - "\u0413\u043E\u0440\u044B"
@@ -1879,14 +2587,14 @@ MonoBehaviour:
     - Comida a cada novo dia
   - key: unit.swordsman.title
     values:
-    - "\u041C\u0435\u0447\u043D\u0438\u043A"
-    - Swordsman
-    - "\xC9p\xE9iste"
-    - "\u5251\u5BA2"
-    - Spadaccino
-    - "Schwertk\xE4mpfer"
-    - "espadach\xEDn"
-    - Espadachim
+    - "Рыцарь"
+    - "Knight"
+    - "Chevalier"
+    - "骑士"
+    - "Cavaliere"
+    - "Ritter"
+    - "Caballero"
+    - "Cavaleiro"
   - key: unit.archer.title
     values:
     - "\u041B\u0443\u0447\u043D\u0438\u043A"
@@ -7130,16 +7838,14 @@ MonoBehaviour:
     - Sair para o menu principal?
   - key: menu.exit.warning
     values:
-    - "\u0412\u0441\u0435 \u043B\u044E\u0434\u0438, \u043E\u0441\u0442\u0430\u0432\u0448\u0438\u0435\u0441\u044F
-      \u0432 \u043F\u043E\u0440\u0442\u0430\u043B\u0435, \u043F\u043E\u0433\u0438\u0431\u043D\u0443\u0442.
-      \u041F\u0440\u043E\u0434\u043E\u043B\u0436\u0438\u0442\u044C?"
-    - Everyone left in the portal will die. Continue?
-    - Tous ceux qui restent dans le portail mourront. Continuer?
-    - "\u7559\u5728\u4F20\u9001\u95E8\u5185\u7684\u6240\u6709\u4EBA\u90FD\u4F1A\u6B7B\u53BB\u3002\u7EE7\u7EED\uFF1F"
-    - Tutti quelli rimasti nel portale moriranno. Continuare?
-    - Jeder, der im Portal verbleibt, wird sterben. Weitermachen?
-    - "Todos los que queden en el portal morir\xE1n. \xBFContinuar?"
-    - "Todos que ficarem no portal morrer\xE3o. Continuar?"
+    - "\u041F\u0440\u043E\u0433\u0440\u0435\u0441\u0441 \u0432\u044B\u043B\u0430\u0437\u043A\u0438 \u043D\u0435 \u0441\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u0441\u044F. \u041F\u0440\u043E\u0434\u043E\u043B\u0436\u0438\u0442\u044C?"
+    - "Expedition progress will be lost. Continue?"
+    - "La progression de l\u2019exp\u00E9dition sera perdue. Continuer ?"
+    - "\u672C\u6B21\u8FDC\u5F81\u7684\u8FDB\u5EA6\u5C06\u4E0D\u4F1A\u4FDD\u5B58\u3002\u7EE7\u7EED\u5417\uFF1F"
+    - "I progressi della spedizione andranno persi. Continuare?"
+    - "Der Fortschritt des Einsatzes geht verloren. Fortfahren?"
+    - "Se perder\u00E1 el progreso de la expedici\u00F3n. \u00BFContinuar?"
+    - "O progresso da expedi\u00E7\u00E3o ser\u00E1 perdido. Continuar?"
   - key: menu.exit.confirm
     values:
     - "\u0412\u044B\u0439\u0442\u0438"
@@ -7203,29 +7909,14 @@ MonoBehaviour:
     - Ilumine a torre do portal. Vamos ver o que as Terras Negras nos reservam hoje.
   - key: world.tutorial.scouting
     values:
-    - "\u042D\u0442\u043E\u0442 \u043B\u0443\u0447 \u2013 \u043D\u0430\u0448\u0438
-      \u0433\u043B\u0430\u0437\u0430 \u0432 \u0422\u0451\u043C\u043D\u044B\u0445
-      \u0437\u0435\u043C\u043B\u044F\u0445. \u041A\u0443\u0434\u0430 \u043E\u043D
-      \u0434\u043E\u0431\u0435\u0440\u0451\u0442\u0441\u044F, \u0442\u0430\u043C
-      \u0438 \u0443\u0437\u043D\u0430\u0435\u043C, \u0447\u0442\u043E \u043D\u0430\u0441
-      \u0436\u0434\u0451\u0442. \u0425\u043E\u0440\u043E\u0448\u0430\u044F \u0440\u0430\u0437\u0432\u0435\u0434\u043A\u0430
-      \u0441\u0431\u0435\u0440\u0435\u0436\u0451\u0442 \u043D\u0435\u043C\u0430\u043B\u043E
-      \u0436\u0438\u0437\u043D\u0435\u0439."
-    - That beam is our eyes in the Dark Lands. Wherever it reaches, we'll learn what
-      awaits us. A little scouting can save a great many lives.
-    - "Ce rayon, ce sont nos yeux dans les Terres Sombres. O\xF9 qu\u2019il atteigne,
-      nous saurons ce qui nous attend. Un peu de reconnaissance peut sauver un grand
-      nombre de vies."
-    - "\u90A3\u675F\u5149\u675F\u5C31\u662F\u6211\u4EEC\u5728\u9ED1\u6697\u4E4B\u5730\u7684\u773C\u775B\u3002\u65E0\u8BBA\u5B83\u5230\u8FBE\u54EA\u91CC\uFF0C\u6211\u4EEC\u90FD\u4F1A\u77E5\u9053\u7B49\u5F85\u7740\u6211\u4EEC\u7684\u662F\u4EC0\u4E48\u3002\u4E00\u70B9\u70B9\u4FA6\u5BDF\u5C31\u53EF\u4EE5\u633D\u6551\u5F88\u591A\u4EBA\u7684\u751F\u547D\u3002"
-    - "Quel raggio sono i nostri occhi nelle Terre Oscure. Ovunque arriver\xE0, scopriremo
-      cosa ci aspetta. Un po\u2019 di scouting pu\xF2 salvare moltissime vite."
-    - Dieser Strahl ist unser Auge in den Dunklen Landen. Wo auch immer es hinkommt,
-      wir werden erfahren, was uns erwartet. Ein wenig Erkundung kann sehr viele
-      Leben retten.
-    - "Ese rayo son nuestros ojos en las Tierras Oscuras. All\xE1 donde llegue, aprenderemos
-      lo que nos espera. Un poco de exploraci\xF3n puede salvar muchas vidas."
-    - "Esse raio s\xE3o nossos olhos nas Terras Sombrias. Aonde quer que chegue,
-      saberemos o que nos espera. Um pouco de reconhecimento pode salvar muitas vidas."
+    - "Этот луч – наши глаза в Тёмных землях. Ты увидишь лишь то, что освещает луч. Хорошая разведка сбережёт немало жизней."
+    - "That beam is our eyes in the Dark Lands. You'll only see what it lights up. A little scouting can save a great many lives."
+    - "Ce rayon est nos yeux dans les Terres Sombres. Tu ne verras que ce qu’il éclaire. Un peu de reconnaissance peut sauver bien des vies."
+    - "这束光就是我们在黑暗之地的眼睛。你只能看见它照亮的地方。好好侦察能救下不少人。"
+    - "Quel raggio è i nostri occhi nelle Terre Oscure. Vedrai solo ciò che illumina. Una buona ricognizione può salvare molte vite."
+    - "Dieser Strahl ist unser Auge in den Dunklen Landen. Du siehst nur, was er beleuchtet. Gute Erkundung kann viele Leben retten."
+    - "Ese rayo es nuestros ojos en las Tierras Oscuras. Solo verás lo que ilumine. Una buena exploración puede salvar muchas vidas."
+    - "Esse raio é nossos olhos nas Terras Sombrias. Você só verá o que ele iluminar. Um bom reconhecimento pode salvar muitas vidas."
   - key: world.tutorial.any_key
     values:
     - "\u041F\u0440\u043E\u0434\u043E\u043B\u0436\u0438\u043C"
@@ -7291,32 +7982,14 @@ MonoBehaviour:
       naquela escurid\xE3o sem um bom motivo!"
   - key: world.tutorial.supplies
     values:
-    - "\u041E\u0442\u043B\u0438\u0447\u043D\u043E, \u0442\u0435\u043F\u0435\u0440\u044C
-      \u0434\u0435\u043B\u043E \u043F\u043E\u0439\u0434\u0451\u0442! \u0414\u043E\u0431\u0443\u0434\u044C
-      \u0435\u0434\u0443 \u0434\u043B\u044F \u043D\u0430\u0448\u0438\u0445 \u0441\u0435\u043C\u0435\u0440\u044B\u0445
-      \u0438 \u0434\u0435\u0440\u0435\u0432\u043E \u0434\u043B\u044F \u0434\u043E\u043C\u043E\u0432.
-      \u041D\u0430 \u0441\u044B\u0442\u044B\u0439 \u0436\u0435\u043B\u0443\u0434\u043E\u043A
-      \u0434\u0430\u0436\u0435 \u0422\u0451\u043C\u043D\u044B\u0435 \u0437\u0435\u043C\u043B\u0438
-      \u043A\u0430\u0436\u0443\u0442\u0441\u044F \u0447\u0443\u0442\u044C \u043F\u0440\u0438\u0432\u0435\u0442\u043B\u0438\u0432\u0435\u0435."
-    - Splendid, now we're getting somewhere! Gather food for our seven settlers and
-      timber for their homes. Even the Dark Lands look a little friendlier on a full
-      stomach.
-    - "Magnifique, maintenant on arrive \xE0 quelque chose ! Rassemblez de la nourriture
-      pour nos sept colons et du bois pour leurs maisons. M\xEAme les Terres Sombres
-      semblent un peu plus conviviales avec le ventre plein."
-    - "\u592A\u68D2\u4E86\uFF0C\u73B0\u5728\u6211\u4EEC\u5DF2\u7ECF\u5230\u8FBE\u76EE\u7684\u5730\u4E86\uFF01\u4E3A\u6211\u4EEC\u7684\u4E03\u540D\u5B9A\u5C45\u8005\u6536\u96C6\u98DF\u7269\u5E76\u4E3A\u4ED6\u4EEC\u7684\u623F\u5C4B\u6536\u96C6\u6728\u6750\u3002\u5373\u4F7F\u662F\u9ED1\u6697\u4E4B\u5730\u5728\u5403\u9971\u7684\u60C5\u51B5\u4E0B\u4E5F\u4F1A\u663E\u5F97\u66F4\u52A0\u53CB\u597D\u4E00\u4E9B\u3002"
-    - "Splendido, ora stiamo arrivando da qualche parte! Raccogli cibo per i nostri
-      sette coloni e legname per le loro case. Anche le Terre Oscure sembrano un
-      po' pi\xF9 amichevoli a stomaco pieno."
-    - "Gro\xDFartig, jetzt sind wir am Ziel! Sammeln Sie Nahrung f\xFCr unsere sieben
-      Siedler und Holz f\xFCr ihre H\xE4user. Sogar die Dunklen Lande sehen mit vollem
-      Magen etwas freundlicher aus."
-    - "\xA1Espl\xE9ndido, ahora estamos llegando a alguna parte! Re\xFAne comida
-      para nuestros siete colonos y madera para sus hogares. Incluso las Tierras
-      Oscuras parecen un poco m\xE1s amigables con el est\xF3mago lleno."
-    - "Espl\xEAndido, agora estamos chegando a algum lugar! Re\xFAna comida para
-      nossos sete colonos e madeira para suas casas. At\xE9 as Terras Negras parecem
-      um pouco mais amig\xE1veis \u200B\u200Bcom o est\xF4mago cheio."
+    - "Отлично, теперь дело пойдёт! Добудь еду для наших поселенцев и дерево для их домов. На сытый желудок даже Тёмные земли кажутся чуть приветливее."
+    - "Splendid, now we're getting somewhere! Gather food for our settlers and timber for their homes. Even the Dark Lands look a little friendlier on a full stomach."
+    - "Parfait, les choses avancent ! Récolte de la nourriture pour nos colons et du bois pour leurs maisons. Même les Terres Sombres semblent plus accueillantes le ventre plein."
+    - "好，这下有进展了！为我们的定居者采集食物，再给他们的房子找些木材。肚子填饱了，连黑暗之地都显得亲切些。"
+    - "Splendido, ora sì che ci siamo! Raccogli cibo per i nostri coloni e legna per le loro case. A stomaco pieno, persino le Terre Oscure sembrano più accoglienti."
+    - "Prima, jetzt geht es voran! Sammle Nahrung für unsere Siedler und Holz für ihre Häuser. Mit vollem Magen wirken selbst die Dunklen Lande etwas freundlicher."
+    - "¡Estupendo, ahora sí que avanzamos! Recoge comida para nuestros colonos y madera para sus casas. Hasta las Tierras Oscuras parecen más amables con el estómago lleno."
+    - "Ótimo, agora vai! Junte comida para nossos colonos e madeira para as casas deles. Até as Terras Sombrias parecem mais acolhedoras de barriga cheia."
   - key: tutorial.housing.624
     values:
     - "\u0415\u0434\u0430 \u0438 \u043A\u0440\u044B\u0448\u0430 \u043D\u0430\u0434
@@ -7330,53 +8003,14 @@ MonoBehaviour:
     - Comida e um telhado em cima
   - key: tutorial.housing.625
     values:
-    - "\u0421\u0435\u043C\u0435\u0440\u044B\u043C \u043F\u043E\u0441\u0435\u043B\u0435\u043D\u0446\u0430\u043C
-      \u043D\u0443\u0436\u043D\u044B \u0443\u0436\u0438\u043D \u0438 \u0442\u0451\u043F\u043B\u044B\u0439
-      \u043D\u043E\u0447\u043B\u0435\u0433. \u0414\u043E\u0431\u0443\u0434\u044C
-      \u0441\u0435\u043C\u044C \u043F\u043E\u0440\u0446\u0438\u0439 \u0435\u0434\u044B
-      \u0438 \u043F\u044F\u0442\u044C \u0441\u0432\u044F\u0437\u043E\u043A \u0434\u0435\u0440\u0435\u0432\u0430
-      \u0432 \u0422\u0451\u043C\u043D\u044B\u0445 \u0437\u0435\u043C\u043B\u044F\u0445.
-      \u0421 \u044D\u0442\u0438\u043C\u0438 \u043F\u0440\u0438\u043F\u0430\u0441\u0430\u043C\u0438
-      \u0421\u0442\u0430\u0439\u043A \u041F\u044C\u044E \u043F\u043E\u043C\u043E\u0436\u0435\u0442
-      \u043D\u0430\u0447\u0430\u0442\u044C \u0441\u0442\u0440\u043E\u0438\u0442\u0435\u043B\u044C\u0441\u0442\u0432\u043E
-      \u0436\u0438\u043B\u043E\u0433\u043E \u043A\u0432\u0430\u0440\u0442\u0430\u043B\u0430.
-      \u041D\u0435 \u043E\u0441\u0442\u0430\u0432\u043B\u044F\u0439 \u043B\u044E\u0434\u0435\u0439
-      \u0431\u0435\u0437 \u043A\u0440\u044B\u0448\u0438 \u043A \u043D\u043E\u0447\u0438:
-      \u0443 \u043A\u0430\u0436\u0434\u043E\u0433\u043E \u0431\u0435\u0437\u0434\u043E\u043C\u043D\u043E\u0433\u043E
-      \u043E\u0434\u0438\u043D \u0448\u0430\u043D\u0441 \u0438\u0437 \u0434\u0432\u0443\u0445
-      \u043F\u043E\u0433\u0438\u0431\u043D\u0443\u0442\u044C \u043E\u0442 \u0445\u043E\u043B\u043E\u0434\u0430."
-    - 'Seven settlers need supper and a warm place to sleep. Bring back seven portions
-      of food and five bundles of wood from the Dark Lands. With these supplies,
-      Stike Pew can help you begin building the housing quarter. Give everyone a
-      roof before nightfall: each unhoused settler has a one-in-two chance of freezing
-      to death.'
-    - "Sept colons ont besoin d'un souper et d'un endroit chaud pour dormir. Rapportez
-      sept portions de nourriture et cinq fagots de bois des Terres Sombres. Avec
-      ces fournitures, Stike Pew peut vous aider \xE0 commencer la construction du
-      quartier d'habitation. Donnez \xE0 chacun un toit avant la nuit : chaque colon
-      sans logement a une chance sur deux de mourir de froid."
-    - "\u4E03\u4E2A\u5B9A\u5C45\u8005\u9700\u8981\u665A\u9910\u548C\u4E00\u4E2A\u6E29\u6696\u7684\u5730\u65B9\u7761\u89C9\u3002\u4ECE\u9ED1\u6697\u4E4B\u5730\u5E26\u56DE\u4E03\u4EFD\u98DF\u7269\u548C\u4E94\u6346\u6728\u6750\u3002\u6709\u4E86\u8FD9\u4E9B\u7269\u8D44\uFF0CStike
-      Pew \u53EF\u4EE5\u5E2E\u52A9\u60A8\u5F00\u59CB\u5EFA\u9020\u4F4F\u5B85\u533A\u3002\u5728\u591C\u5E55\u964D\u4E34\u4E4B\u524D\u4E3A\u6BCF\u4E2A\u4EBA\u63D0\u4F9B\u4E00\u4E2A\u6816\u8EAB\u4E4B\u6240\uFF1A\u6BCF\u4E2A\u65E0\u5BB6\u53EF\u5F52\u7684\u5B9A\u5C45\u8005\u90FD\u6709\u4E8C\u5206\u4E4B\u4E00\u7684\u673A\u4F1A\u88AB\u51BB\u6B7B\u3002"
-    - "Sette coloni hanno bisogno di cena e di un posto caldo dove dormire. Riporta
-      sette porzioni di cibo e cinque fasci di legna dalle Terre Oscure. Con queste
-      forniture, Stike Pew pu\xF2 aiutarti a iniziare a costruire il quartiere residenziale.
-      Date a tutti un tetto prima che cali la notte: ogni colono senza casa ha una
-      possibilit\xE0 su due di morire congelato."
-    - "Sieben Siedler brauchen Abendessen und einen warmen Schlafplatz. Bringt sieben
-      Portionen Essen und f\xFCnf B\xFCndel Holz aus den Dunklen Landen zur\xFCck.
-      Mit diesen Materialien kann Stike Pew Ihnen helfen, mit dem Bau des Wohnviertels
-      zu beginnen. Geben Sie allen vor Einbruch der Dunkelheit ein Dach: Die Wahrscheinlichkeit,
-      dass jeder unbewohnte Siedler erfriert, liegt bei eins zu zwei."
-    - "Siete colonos necesitan cenar y un lugar c\xE1lido para dormir. Trae siete
-      porciones de comida y cinco fardos de madera de las Tierras Oscuras. Con estos
-      suministros, Stike Pew puede ayudarle a comenzar a construir el barrio de viviendas.
-      Ofrezca a todos un techo antes del anochecer: cada colono sin vivienda tiene
-      una probabilidad entre dos de morir congelado."
-    - "Sete colonos precisam de jantar e de um lugar quente para dormir. Traga sete
-      por\xE7\xF5es de comida e cinco feixes de madeira das Terras Sombrias. Com
-      esses suprimentos, Stike Pew pode ajud\xE1-lo a come\xE7ar a construir o bairro
-      residencial. D\xEA a todos um teto antes do anoitecer: cada colono sem casa
-      tem uma chance em duas de morrer congelado."
+    - "Семерым поселенцам нужны ужин и тёплый ночлег. Добудь семь порций еды и пять связок дерева в Тёмных землях. С этими припасами Стайк Пью поможет начать строительство жилого квартала. До ночи нужна крыша. У бездомного шансы выжить на улице – 50 на 50."
+    - "Seven settlers need supper and a warm place to sleep. Bring back seven portions of food and five bundles of wood from the Dark Lands. With these supplies, Stike Pew can help you begin building the housing quarter. Get everyone under a roof before nightfall. Anyone sleeping outside has a fifty-fifty chance of surviving."
+    - "Sept colons ont besoin d'un souper et d'un endroit chaud pour dormir. Rapportez sept portions de nourriture et cinq fagots de bois des Terres Sombres. Avec ces fournitures, Stike Pew peut vous aider à commencer la construction du quartier d'habitation. Mets tout le monde à l’abri avant la nuit. Qui dort dehors a une chance sur deux de survivre."
+    - "七个定居者需要晚餐和一个温暖的地方睡觉。从黑暗之地带回七份食物和五捆木材。有了这些物资，Stike Pew 可以帮助您开始建造住宅区。天黑前要给大家找个住处。露宿街头的人只有一半的机会活下来。"
+    - "Sette coloni hanno bisogno di cena e di un posto caldo dove dormire. Riporta sette porzioni di cibo e cinque fasci di legna dalle Terre Oscure. Con queste forniture, Stike Pew può aiutarti a iniziare a costruire il quartiere residenziale. Dai a tutti un tetto prima di notte. Chi dorme all’aperto ha una possibilità su due di sopravvivere."
+    - "Sieben Siedler brauchen Abendessen und einen warmen Schlafplatz. Bringt sieben Portionen Essen und fünf Bündel Holz aus den Dunklen Landen zurück. Mit diesen Materialien kann Stike Pew Ihnen helfen, mit dem Bau des Wohnviertels zu beginnen. Sorg vor Einbruch der Nacht für ein Dach über jedem Kopf. Wer draußen schläft, hat eine Überlebenschance von 50 zu 50."
+    - "Siete colonos necesitan cenar y un lugar cálido para dormir. Trae siete porciones de comida y cinco fardos de madera de las Tierras Oscuras. Con estos suministros, Stike Pew puede ayudarle a comenzar a construir el barrio de viviendas. Da un techo a todos antes del anochecer. Quien duerma a la intemperie tiene un cincuenta por ciento de posibilidades de sobrevivir."
+    - "Sete colonos precisam de jantar e de um lugar quente para dormir. Traga sete porções de comida e cinco feixes de madeira das Terras Sombrias. Com esses suprimentos, Stike Pew pode ajudá-lo a começar a construir o bairro residencial. Dê um teto a todos antes do anoitecer. Quem dormir ao relento tem cinquenta por cento de chance de sobreviver."
   - key: tutorial.housing.626
     values:
     - "\u0414\u043E\u0431\u0443\u0434\u044C \u0441\u0435\u043C\u044C \u043F\u043E\u0440\u0446\u0438\u0439
@@ -7497,69 +8131,24 @@ MonoBehaviour:
     - "Constru\xE7\xE3o de forja"
   - key: tutorial.housing.635
     values:
-    - "\u0425\u0435\u0439, \u0434\u043E\u0431\u0440\u043E \u043F\u043E\u0436\u0430\u043B\u043E\u0432\u0430\u0442\u044C
-      \u0432 \u0437\u0435\u043C\u043B\u0438 \u043F\u043E\u0440\u0442\u0430\u043B\u0430!
-      \u0417\u043D\u0430\u0447\u0438\u0442, \u0442\u044B \u043D\u0430\u0448 \u043D\u043E\u0432\u044B\u0439
-      \u0432\u043B\u0430\u0434\u0435\u043B\u0435\u0446? \u042F \u0421\u0442\u0430\u0439\u043A
-      \u041F\u044C\u044E. \u0411\u0443\u0434\u0443 \u043F\u043E\u043C\u043E\u0433\u0430\u0442\u044C
-      \u0442\u0435\u0431\u0435 \u0432\u043E\u0441\u0441\u0442\u0430\u043D\u0430\u0432\u043B\u0438\u0432\u0430\u0442\u044C
-      \u0437\u0434\u0435\u0448\u043D\u0435\u0435 \u0445\u043E\u0437\u044F\u0439\u0441\u0442\u0432\u043E.
-      \u0420\u0430\u0431\u043E\u0442\u044B \u0445\u0432\u0430\u0442\u0430\u0435\u0442,
-      \u0437\u0430\u0442\u043E \u043D\u0430 \u043D\u0435\u0434\u043E\u0441\u0442\u0430\u0442\u043E\u043A
-      \u0441\u0432\u0435\u0436\u0435\u0433\u043E \u0432\u043E\u0437\u0434\u0443\u0445\u0430
-      \u043D\u0438\u043A\u0442\u043E \u043D\u0435 \u0436\u0430\u043B\u0443\u0435\u0442\u0441\u044F!"
-    - Hey, welcome to the Portal Lands! So, you must be our new lord? I'm Stike Pew.
-      I'll help you get this place back on its feet. Plenty of work ahead, but at
-      least nobody complains about a lack of fresh air!
-    - "H\xE9, bienvenue sur les terres du portail\_! Alors, tu dois \xEAtre notre
-      nouveau seigneur ? Je m'appelle Stike Pew. Je vais vous aider \xE0 remettre
-      cet endroit sur pied. Il y a beaucoup de travail \xE0 faire, mais au moins
-      personne ne se plaint du manque d'air frais !"
-    - "\u563F\uFF0C\u6B22\u8FCE\u6765\u5230\u4F20\u9001\u95E8\u4E4B\u5730\uFF01\u90A3\u4E48\uFF0C\u4F60\u4E00\u5B9A\u662F\u6211\u4EEC\u7684\u65B0\u4E3B\u4EBA\u5427\uFF1F\u6211\u662FStike
-      Pew\u3002\u6211\u4F1A\u5E2E\u52A9\u4F60\u8BA9\u8FD9\u4E2A\u5730\u65B9\u91CD\u65B0\u7AD9\u7A33\u811A\u8DDF\u3002\u524D\u9762\u8FD8\u6709\u5F88\u591A\u5DE5\u4F5C\u8981\u505A\uFF0C\u4F46\u81F3\u5C11\u6CA1\u6709\u4EBA\u62B1\u6028\u7F3A\u4E4F\u65B0\u9C9C\u7A7A\u6C14\uFF01"
-    - "Ehi, benvenuto nelle Terre del Portale! Quindi devi essere tu il nostro nuovo
-      lord? Sono Stike Pew. Ti aiuter\xF2 a rimettere in piedi questo posto. C'\xE8
-      tanto lavoro da fare, ma almeno nessuno si lamenta della mancanza d'aria fresca!"
-    - "Hey, willkommen in den Portallanden! Sie m\xFCssen also unser neuer Herr sein?
-      Ich bin Stike Pew. Ich helfe Ihnen, diesen Ort wieder auf die Beine zu stellen.
-      Es liegt noch viel Arbeit vor uns, aber zumindest beschwert sich niemand \xFCber
-      mangelnde Frischluft!"
-    - "\xA1Oye, bienvenido a Portal Lands! Entonces, \xBFt\xFA debes ser nuestro
-      nuevo se\xF1or? Soy Stike Pew. Te ayudar\xE9 a recuperar este lugar. Queda
-      mucho trabajo por delante, \xA1pero al menos nadie se queja de la falta de
-      aire fresco!"
-    - "Ei, bem-vindo ao Portal Lands! Ent\xE3o, voc\xEA deve ser nosso novo senhor?
-      Eu sou Stike Pew. Eu ajudo-te a recuperar este lugar. Muito trabalho pela frente,
-      mas pelo menos ningu\xE9m reclama da falta de ar puro!"
+    - "Привет! Добро пожаловать в земли портала! Значит, ты наш новый владелец? Я Стайк Пью. Буду помогать тебе восстанавливать здешнее хозяйство. Работы хватает, зато на недостаток свежего воздуха никто не жалуется!"
+    - "Hey, welcome to the Portal Lands! So, you must be our new lord? I'm Stike Pew. I'll help you get this place back on its feet. Plenty of work ahead, but at least nobody complains about a lack of fresh air!"
+    - "Hé, bienvenue sur les terres du portail ! Alors, tu dois être notre nouveau seigneur ? Je m'appelle Stike Pew. Je vais vous aider à remettre cet endroit sur pied. Il y a beaucoup de travail à faire, mais au moins personne ne se plaint du manque d'air frais !"
+    - "嘿，欢迎来到传送门之地！那么，你一定是我们的新主人吧？我是Stike Pew。我会帮助你让这个地方重新站稳脚跟。前面还有很多工作要做，但至少没有人抱怨缺乏新鲜空气！"
+    - "Ehi, benvenuto nelle Terre del Portale! Quindi devi essere tu il nostro nuovo lord? Sono Stike Pew. Ti aiuterò a rimettere in piedi questo posto. C'è tanto lavoro da fare, ma almeno nessuno si lamenta della mancanza d'aria fresca!"
+    - "Hey, willkommen in den Portallanden! Sie müssen also unser neuer Herr sein? Ich bin Stike Pew. Ich helfe Ihnen, diesen Ort wieder auf die Beine zu stellen. Es liegt noch viel Arbeit vor uns, aber zumindest beschwert sich niemand über mangelnde Frischluft!"
+    - "¡Oye, bienvenido a Portal Lands! Entonces, ¿tú debes ser nuestro nuevo señor? Soy Stike Pew. Te ayudaré a recuperar este lugar. Queda mucho trabajo por delante, ¡pero al menos nadie se queja de la falta de aire fresco!"
+    - "Ei, bem-vindo ao Portal Lands! Então, você deve ser nosso novo senhor? Eu sou Stike Pew. Eu ajudo-te a recuperar este lugar. Muito trabalho pela frente, mas pelo menos ninguém reclama da falta de ar puro!"
   - key: tutorial.housing.636
     values:
-    - "\u041D\u0443 \u0432\u043E\u0442, \u043F\u0435\u0440\u0432\u0430\u044F \u043D\u043E\u0447\u044C
-      \u043F\u043E\u0434 \u043A\u0440\u044B\u0448\u0435\u0439! \u0423\u0436\u0435
-      \u043F\u043E\u0445\u043E\u0436\u0435 \u043D\u0430 \u0445\u043E\u0437\u044F\u0439\u0441\u0442\u0432\u043E,
-      \u0430 \u043D\u0435 \u043D\u0430 \u043F\u0440\u0438\u0432\u0430\u043B. \u0422\u0435\u043F\u0435\u0440\u044C
-      \u043F\u043E\u0437\u0430\u0431\u043E\u0442\u0438\u043C\u0441\u044F \u043E \u0441\u0442\u0440\u0430\u0436\u0435:
-      \u0432 \u0422\u0451\u043C\u043D\u044B\u0445 \u0437\u0435\u043C\u043B\u044F\u0445
-      \u043D\u0435 \u0432\u0441\u0435 \u0440\u0430\u0434\u044B \u0441\u043E\u0441\u0435\u0434\u044F\u043C."
-    - There we are, our first night under a roof! Beginning to look like a settlement
-      rather than a campsite. Time to think about a guard. Not everything in the
-      Dark Lands welcomes neighbours.
-    - "Et voil\xE0, notre premi\xE8re nuit sous un toit ! Cela commence \xE0 ressembler
-      \xE0 une colonie plut\xF4t qu'\xE0 un camping. Il est temps de penser \xE0
-      un gardien. Dans les Terres Sombres, tout n\u2019est pas accueillant pour les
-      voisins."
-    - "\u5C31\u8FD9\u6837\uFF0C\u6211\u4EEC\u5728\u5C4B\u9876\u4E0B\u7684\u7B2C\u4E00\u4E2A\u591C\u665A\uFF01\u5F00\u59CB\u770B\u8D77\u6765\u50CF\u4E00\u4E2A\u5B9A\u5C45\u70B9\u800C\u4E0D\u662F\u9732\u8425\u5730\u3002\u662F\u65F6\u5019\u8003\u8651\u4E00\u200B\u200B\u4E0B\u5B88\u536B\u4E86\u3002\u5E76\u975E\u9ED1\u6697\u4E4B\u5730\u7684\u6240\u6709\u4E8B\u7269\u90FD\u6B22\u8FCE\u90BB\u5C45\u3002"
-    - "Eccoci qua, la nostra prima notte sotto un tetto! Comincia a sembrare un insediamento
-      piuttosto che un campeggio. \xC8 ora di pensare a una guardia. Non tutto nelle
-      Terre Oscure accoglie i vicini."
-    - "Da sind wir, unsere erste Nacht unter einem Dach! Es sieht eher wie eine Siedlung
-      als wie ein Campingplatz aus. Zeit, \xFCber eine Wache nachzudenken. Nicht
-      alles in den Dunklen Landen hei\xDFt Nachbarn willkommen."
-    - "\xA1Ah\xED estamos, nuestra primera noche bajo techo! Empezando a parecer
-      m\xE1s un asentamiento que un campamento. Es hora de pensar en un guardia.
-      No todo en las Tierras Oscuras da la bienvenida a los vecinos."
-    - "L\xE1 estamos n\xF3s, nossa primeira noite sob um teto! Come\xE7ando a parecer
-      mais um assentamento do que um acampamento. \xC9 hora de pensar em um guarda.
-      Nem tudo nas Dark Lands acolhe bem os vizinhos."
+    - "Ну вот, первая ночь позади. Уже похоже на хозяйство, а не на привал. Теперь позаботимся о страже."
+    - "The first night is behind us. This is starting to look like a settlement rather than a campsite. Now let's see to the guard."
+    - "La première nuit est passée. Ça commence à ressembler à un village plutôt qu’à un bivouac. Occupons-nous de la garde."
+    - "第一晚过去了。这里总算有点聚居地的样子，不像临时营地了。接下来该安排守卫了。"
+    - "La prima notte è passata. Comincia a sembrare un insediamento, più che un accampamento. Ora pensiamo alla guardia."
+    - "Die erste Nacht ist vorbei. Langsam sieht es hier nach einer Siedlung aus, nicht mehr nach einem Lagerplatz. Jetzt kümmern wir uns um die Wache."
+    - "Ya pasó la primera noche. Esto empieza a parecer un asentamiento más que un campamento. Ahora ocupémonos de la guardia."
+    - "A primeira noite passou. Isso já parece um povoado, mais do que um acampamento. Agora vamos cuidar da guarda."
   - key: tutorial.housing.637
     values:
     - "\u0412\u043E\u0442 \u044D\u0442\u043E \u0434\u0435\u0440\u0435\u0432\u043E!
@@ -8368,221 +8957,114 @@ MonoBehaviour:
       precisam chegar aos nossos armaz\xE9ns."
   - key: quest.archery_materials.title
     values:
-    - "\u0414\u0435\u0440\u0435\u0432\u043E \u0434\u043B\u044F \u0441\u0442\u0440\u0435\u043B\u044C\u0431\u0438\u0449\u0430"
-    - Timber for the archery range
-    - "Bois pour le stand de tir \xE0 l'arc"
-    - "\u5C04\u7BAD\u573A\u7528\u6728\u6750"
-    - Legname per il poligono di tiro con l'arco
-    - "Holz f\xFCr den Bogenschie\xDFplatz"
-    - Madera para el campo de tiro con arco.
-    - Madeira para o campo de tiro com arco
+    - "Дерево для военного квартала"
+    - "Wood for the Military Quarter"
+    - "Bois pour le quartier militaire"
+    - "军事区所需木材"
+    - "Legna per il quartiere militare"
+    - "Holz für das Militärviertel"
+    - "Madera para el barrio militar"
+    - "Madeira para o bairro militar"
   - key: quest.archery_materials.description
     values:
-    - "\u041A\u0440\u044B\u0448\u0430 \u043D\u0430\u0434 \u0433\u043E\u043B\u043E\u0432\u043E\u0439
-      \u0443\u0436\u0435 \u0435\u0441\u0442\u044C. \u0422\u0435\u043F\u0435\u0440\u044C
-      \u043B\u044E\u0434\u044F\u043C \u043D\u0443\u0436\u043D\u043E \u0443\u0447\u0438\u0442\u044C\u0441\u044F
-      \u0437\u0430\u0449\u0438\u0449\u0430\u0442\u044C \u0437\u0435\u043C\u043B\u0438
-      \u043F\u043E\u0440\u0442\u0430\u043B\u0430. \u041F\u0440\u0438\u043D\u0435\u0441\u0438
-      \u0434\u0435\u0441\u044F\u0442\u044C \u0441\u0432\u044F\u0437\u043E\u043A \u0434\u0435\u0440\u0435\u0432\u0430
-      \u0434\u043B\u044F \u0441\u0442\u0440\u0435\u043B\u044C\u0431\u0438\u0449\u0430,
-      \u0438 \u0421\u0442\u0430\u0439\u043A \u041F\u044C\u044E \u043F\u043E\u0434\u0433\u043E\u0442\u043E\u0432\u0438\u0442
-      \u0432\u0441\u0451 \u0434\u043B\u044F \u0435\u0433\u043E \u0441\u0442\u0440\u043E\u0438\u0442\u0435\u043B\u044C\u0441\u0442\u0432\u0430."
-    - Our people have a roof. Now they must learn to defend the Portal Lands. Bring
-      ten bundles of wood for an archery range, and Stike Pew will prepare everything
-      needed to build it.
-    - "Notre peuple a un toit. Ils doivent maintenant apprendre \xE0 d\xE9fendre
-      les terres du portail. Apportez dix fagots de bois pour un stand de tir \xE0
-      l'arc et Stike Pew pr\xE9parera tout le n\xE9cessaire pour le construire."
-    - "\u6211\u4EEC\u7684\u4EBA\u6C11\u6709\u5C4B\u9876\u3002\u73B0\u5728\u4ED6\u4EEC\u5FC5\u987B\u5B66\u4F1A\u4FDD\u536B\u4F20\u9001\u95E8\u4E4B\u5730\u3002\u643A\u5E26\u5341\u6346\u7528\u4E8E\u5C04\u7BAD\u573A\u7684\u6728\u6750\uFF0CStike
-      Pew \u4F1A\u51C6\u5907\u5EFA\u9020\u5C04\u7BAD\u573A\u6240\u9700\u7684\u4E00\u5207\u3002"
-    - "La nostra gente ha un tetto. Ora devono imparare a difendere le Terre dei
-      Portali. Porta dieci fasci di legno per un poligono di tiro con l'arco e Stike
-      Pew preparer\xE0 tutto il necessario per costruirlo."
-    - "Unsere Leute haben ein Dach. Jetzt m\xFCssen sie lernen, die Portall\xE4nder
-      zu verteidigen. Bringen Sie zehn B\xFCndel Holz f\xFCr eine Bogenschie\xDFanlage
-      mit, und Stike Pew bereitet alles vor, was Sie f\xFCr den Bau ben\xF6tigen."
-    - "Nuestra gente tiene un techo. Ahora deben aprender a defender las Tierras
-      del Portal. Traiga diez haces de madera para un campo de tiro con arco y Stike
-      Pew preparar\xE1 todo lo necesario para construirlo."
-    - "Nosso povo tem um teto. Agora eles devem aprender a defender as Portal Lands.
-      Traga dez feixes de madeira para um campo de tiro com arco e Stike Pew preparar\xE1
-      tudo o que for necess\xE1rio para constru\xED-lo."
+    - "Принеси десять связок дерева для военного квартала."
+    - "Bring ten bundles of wood for the Military Quarter."
+    - "Apporte dix fagots pour le quartier militaire."
+    - "为军事区带来十捆木材。"
+    - "Porta dieci fasci di legna per il quartiere militare."
+    - "Bring zehn Bündel Holz für das Militärviertel."
+    - "Trae diez haces de madera para el barrio militar."
+    - "Traga dez feixes de madeira para o bairro militar."
   - key: quest.archery_materials.status
     values:
-    - "\u041F\u0440\u0438\u043D\u0435\u0441\u0438 \u0434\u0435\u0441\u044F\u0442\u044C
-      \u0441\u0432\u044F\u0437\u043E\u043A \u0434\u0435\u0440\u0435\u0432\u0430 \u0434\u043B\u044F
-      \u0441\u0442\u0440\u0435\u043B\u044C\u0431\u0438\u0449\u0430"
-    - Bring ten bundles of wood for the archery range
-    - "Apportez dix fagots de bois pour le stand de tir \xE0 l'arc"
-    - "\u4E3A\u5C04\u7BAD\u573A\u5E26\u5341\u6346\u6728\u5934"
-    - Porta dieci fasci di legna per il poligono di tiro con l'arco
-    - "Bringen Sie zehn B\xFCndel Holz f\xFCr den Bogenschie\xDFplatz mit"
-    - Trae diez haces de madera para el campo de tiro con arco.
-    - Traga dez feixes de madeira para o campo de tiro com arco
+    - "Принеси десять связок дерева для военного квартала."
+    - "Bring ten bundles of wood for the Military Quarter."
+    - "Apporte dix fagots pour le quartier militaire."
+    - "为军事区带来十捆木材。"
+    - "Porta dieci fasci di legna per il quartiere militare."
+    - "Bring zehn Bündel Holz für das Militärviertel."
+    - "Trae diez haces de madera para el barrio militar."
+    - "Traga dez feixes de madeira para o bairro militar."
   - key: quest.archery_materials.purpose
     values:
-    - "\u0414\u0435\u0440\u0435\u0432\u043E \u0434\u043B\u044F \u0441\u0442\u0440\u0435\u043B\u044C\u0431\u0438\u0449\u0430"
-    - Timber for the archery range
-    - "Bois pour le stand de tir \xE0 l'arc"
-    - "\u5C04\u7BAD\u573A\u7528\u6728\u6750"
-    - Legname per il poligono di tiro con l'arco
-    - "Holz f\xFCr den Bogenschie\xDFplatz"
-    - Madera para el campo de tiro con arco.
-    - Madeira para o campo de tiro com arco
+    - "Дерево для военного квартала"
+    - "Wood for the Military Quarter"
+    - "Bois pour le quartier militaire"
+    - "军事区所需木材"
+    - "Legna per il quartiere militare"
+    - "Holz für das Militärviertel"
+    - "Madera para el barrio militar"
+    - "Madeira para o bairro militar"
   - key: quest.build_range.title
     values:
-    - "\u041F\u043E\u0441\u0442\u0440\u043E\u0439 \u0441\u0442\u0440\u0435\u043B\u044C\u0431\u0438\u0449\u0435"
-    - Build the archery range
-    - "Construire le stand de tir \xE0 l'arc"
-    - "\u5EFA\u9020\u5C04\u7BAD\u573A"
-    - Costruisci il poligono di tiro con l'arco
-    - "Bauen Sie die Bogenschie\xDFanlage"
-    - Construye el campo de tiro con arco.
-    - Construa o campo de tiro com arco
+    - "Построй военный квартал"
+    - "Build the Military Quarter"
+    - "Construis le quartier militaire"
+    - "建造军事区"
+    - "Costruisci il quartiere militare"
+    - "Baue das Militärviertel"
+    - "Construye el barrio militar"
+    - "Construa o bairro militar"
   - key: quest.build_range.description
     values:
-    - "\u041F\u043E\u0441\u0442\u0430\u0432\u044C \u0441\u0442\u0440\u0435\u043B\u044C\u0431\u0438\u0449\u0435
-      \u0438\u0437 \u0434\u0435\u0441\u044F\u0442\u0438 \u0441\u0432\u044F\u0437\u043E\u043A
-      \u0434\u0435\u0440\u0435\u0432\u0430. \u0421\u0442\u0430\u0439\u043A \u041F\u044C\u044E
-      \u043F\u0440\u0438\u0431\u0435\u0440\u0451\u0433 \u0434\u0432\u0430 \u043B\u0443\u043A\u0430
-      \u0434\u043B\u044F \u043F\u0435\u0440\u0432\u044B\u0445 \u0437\u0430\u0449\u0438\u0442\u043D\u0438\u043A\u043E\u0432
-      \u0438 \u043E\u0442\u0434\u0430\u0441\u0442 \u0438\u0445, \u043A\u043E\u0433\u0434\u0430
-      \u043F\u043B\u043E\u0449\u0430\u0434\u043A\u0430 \u0431\u0443\u0434\u0435\u0442
-      \u0433\u043E\u0442\u043E\u0432\u0430."
-    - Build the archery range with ten bundles of wood. Stike Pew has set aside two
-      bows for our first defenders and will hand them over when the range is ready.
-    - "Construisez le stand de tir \xE0 l\u2019arc avec dix fagots de bois. Stike
-      Pew has set aside two bows for our first defenders and will hand them over
-      when the range is ready."
-    - "\u7528\u5341\u6346\u6728\u5934\u5EFA\u9020\u5C04\u7BAD\u573A\u3002 Stike Pew
-      \u4E3A\u6211\u4EEC\u7684\u7B2C\u4E00\u6279\u9632\u5B88\u8005\u7559\u51FA\u4E86\u4E24\u628A\u5F13\uFF0C\u5F85\u5C04\u7A0B\u51C6\u5907\u597D\u540E\u5C31\u4F1A\u5C06\u5B83\u4EEC\u79FB\u4EA4\u3002"
-    - "Costruisci il poligono di tiro con l'arco con dieci fasci di legno. Stike
-      Pew ha riservato due archi per i nostri primi difensori e li consegner\xE0
-      quando il tiro sar\xE0 pronto."
-    - "Bauen Sie die Bogenschie\xDFanlage mit zehn Holzb\xFCndeln. Stike Pew hat
-      zwei B\xF6gen f\xFCr unsere ersten Verteidiger reserviert und wird sie \xFCbergeben,
-      wenn der Schie\xDFstand fertig ist."
-    - "Construye el campo de tiro con arco con diez haces de madera. Stike Pew ha
-      reservado dos arcos para nuestros primeros defensores y se los entregar\xE1
-      cuando el campo de tiro est\xE9 listo."
-    - "Construa o campo de tiro com arco com dez feixes de madeira. Stike Pew reservou
-      dois arcos para nossos primeiros defensores e os entregar\xE1 quando o alcance
-      estiver pronto."
+    - "Построй военный квартал на карте базы за 12 дерева. Казарма откроется сразу."
+    - "Build the Military Quarter on the base map for 12 wood. Its barracks opens immediately."
+    - "Construis le quartier militaire sur la carte de la base pour 12 bois. La caserne ouvre aussitôt."
+    - "在基地地图上花费12木材建造军事区，兵营将立即开放。"
+    - "Costruisci il quartiere militare sulla mappa della base per 12 legna. La caserma apre subito."
+    - "Baue das Militärviertel auf der Basiskarte für 12 Holz. Die Kaserne öffnet sofort."
+    - "Construye el barrio militar en el mapa de la base por 12 de madera. El cuartel se abre enseguida."
+    - "Construa o bairro militar no mapa da base por 12 de madeira. O quartel abre imediatamente."
   - key: quest.build_range.purpose
     values:
-    - "\u0413\u043E\u0442\u043E\u0432\u043E\u0435 \u0441\u0442\u0440\u0435\u043B\u044C\u0431\u0438\u0449\u0435"
-    - A completed archery range
-    - A completed archery range
-    - "\u5B8C\u6574\u7684\u5C04\u7BAD\u573A"
-    - Un poligono di tiro con l'arco completo
-    - "Eine fertiggestellte Bogenschie\xDFanlage"
-    - Un campo de tiro con arco completo
-    - Um campo de tiro com arco completo
+    - "Готовый военный квартал"
+    - "A completed Military Quarter"
+    - "Quartier militaire construit"
+    - "已建成的军事区"
+    - "Quartiere militare costruito"
+    - "Fertiges Militärviertel"
+    - "Barrio militar construido"
+    - "Bairro militar construído"
   - key: quest.recruit_archers.new_description
     values:
-    - "\u0414\u0432\u0430 \u043B\u0443\u043A\u0430 \u0431\u0435\u0437 \u0434\u0435\u043B\u0430
-      \u043D\u0435 \u0437\u0430\u0449\u0438\u0442\u044F\u0442 \u0434\u0430\u0436\u0435
-      \u043A\u0430\u043F\u0443\u0441\u0442\u043D\u0443\u044E \u0433\u0440\u044F\u0434\u043A\u0443.
-      \u041D\u0430\u0439\u043C\u0438 \u0434\u0432\u0443\u0445 \u043B\u0443\u0447\u043D\u0438\u043A\u043E\u0432
-      \u0432 \u0441\u0442\u0440\u0435\u043B\u044C\u0431\u0438\u0449\u0435. \u0421
-      \u043F\u0435\u0440\u0432\u043E\u0439 \u0441\u0442\u0440\u0430\u0436\u0435\u0439
-      \u043C\u043E\u0436\u043D\u043E \u0431\u0443\u0434\u0435\u0442 \u0432\u0437\u044F\u0442\u044C\u0441\u044F
-      \u0437\u0430 \u043A\u0443\u0437\u043D\u0438\u0446\u0443 \u0438 \u0443\u0441\u0442\u0440\u043E\u0438\u0442\u044C
-      \u043B\u0430\u0433\u0435\u0440\u044C \u0434\u043B\u044F \u0431\u0435\u0436\u0435\u043D\u0446\u0435\u0432."
-    - Two idle bows cannot guard so much as a cabbage patch. Recruit two archers
-      at the range. With our first watch in place, we can turn to a blacksmith and
-      a camp for refugees.
-    - Deux arcs inactifs ne peuvent pas garder un champ de choux. Recrutez deux archers
-      au stand. With our first watch in place, we can turn to a blacksmith and a
-      camp for refugees.
-    - "\u4E24\u628A\u95F2\u7F6E\u7684\u5F13\u4E0D\u80FD\u4FDD\u62A4\u4E00\u7247\u5377\u5FC3\u83DC\u5730\u3002\u5728\u9776\u573A\u62DB\u52DF\u4E24\u540D\u5F13\u7BAD\u624B\u3002\u6709\u4E86\u7B2C\u4E00\u5757\u624B\u8868\uFF0C\u6211\u4EEC\u5C31\u53EF\u4EE5\u53BB\u627E\u94C1\u5320\u548C\u96BE\u6C11\u8425\u4E86\u3002"
-    - Due archi inattivi non possono proteggere nemmeno un campo di cavoli. Recluta
-      due arcieri al poligono. Con il nostro primo orologio a posto, possiamo rivolgerci
-      a un fabbro e a un campo per profughi.
-    - "Zwei m\xFC\xDFige B\xF6gen k\xF6nnen nicht einmal ein Kohlfeld besch\xFCtzen.
-      Rekrutiere zwei Bogensch\xFCtzen am Schie\xDFstand. Mit unserer ersten Wache
-      k\xF6nnen wir uns an einen Schmied und ein Fl\xFCchtlingslager wenden."
-    - Dos arcos inactivos no pueden proteger ni siquiera un huerto de coles. Recluta
-      a dos arqueros en el campo de tiro. Con nuestra primera guardia en marcha,
-      podemos recurrir a un herrero y a un campamento para refugiados.
-    - "Dois arcos ociosos n\xE3o podem proteger tanto quanto um canteiro de repolho.
-      Recrute dois arqueiros no estande. Com a nossa primeira vigil\xE2ncia instalada,
-      podemos recorrer a um ferreiro e a um campo de refugiados."
+    - "Открой военный квартал, выбери \"Казарма\" и \"Пращники\". Нажми \"Вооружить\" дважды. Для каждого пращника нужен один свободный житель."
+    - "Open the Military Quarter, select Barracks and Slingers, then press Arm twice. Each slinger needs one free resident."
+    - "Ouvre le quartier militaire, choisis la caserne puis les frondeurs et appuie deux fois sur Armer. Il faut un habitant libre par frondeur."
+    - "打开军事区，选择兵营和投石兵，然后按两次武装。每名投石兵需要一位空闲居民。"
+    - "Apri il quartiere militare, seleziona la caserma e i frombolieri, quindi premi Arma due volte. Serve un abitante libero per fromboliere."
+    - "Öffne das Militärviertel, wähle Kaserne und Schleuderer und klicke zweimal auf Bewaffnen. Jeder Schleuderer braucht einen freien Einwohner."
+    - "Abre el barrio militar, selecciona el cuartel y los honderos y pulsa Armar dos veces. Cada hondero necesita un habitante libre."
+    - "Abra o bairro militar, selecione o quartel e os fundeiros e pressione Armar duas vezes. Cada fundeiro precisa de um morador livre."
   - key: quest.archery_materials.dialogue
     values:
-    - "\u041D\u0443 \u0432\u043E\u0442, \u043F\u0435\u0440\u0432\u0430\u044F \u043D\u043E\u0447\u044C
-      \u043F\u043E\u0434 \u043A\u0440\u044B\u0448\u0435\u0439! \u0423\u0436\u0435
-      \u043F\u043E\u0445\u043E\u0436\u0435 \u043D\u0430 \u0445\u043E\u0437\u044F\u0439\u0441\u0442\u0432\u043E,
-      \u0430 \u043D\u0435 \u043D\u0430 \u043F\u0440\u0438\u0432\u0430\u043B. \u0422\u0435\u043F\u0435\u0440\u044C
-      \u043F\u043E\u0437\u0430\u0431\u043E\u0442\u0438\u043C\u0441\u044F \u043E \u0441\u0442\u0440\u0430\u0436\u0435:
-      \u0432 \u0422\u0451\u043C\u043D\u044B\u0445 \u0437\u0435\u043C\u043B\u044F\u0445
-      \u043D\u0435 \u0432\u0441\u0435 \u0440\u0430\u0434\u044B \u0441\u043E\u0441\u0435\u0434\u044F\u043C."
-    - There we are, our first night under a roof! Beginning to look like a settlement
-      rather than a campsite. Time to think about a guard. Not everything in the
-      Dark Lands welcomes neighbours.
-    - "Et voil\xE0, notre premi\xE8re nuit sous un toit ! Cela commence \xE0 ressembler
-      \xE0 une colonie plut\xF4t qu'\xE0 un camping. Il est temps de penser \xE0
-      un gardien. Dans les Terres Sombres, tout n\u2019est pas accueillant pour les
-      voisins."
-    - "\u5C31\u8FD9\u6837\uFF0C\u6211\u4EEC\u5728\u5C4B\u9876\u4E0B\u7684\u7B2C\u4E00\u4E2A\u591C\u665A\uFF01\u5F00\u59CB\u770B\u8D77\u6765\u50CF\u4E00\u4E2A\u5B9A\u5C45\u70B9\u800C\u4E0D\u662F\u9732\u8425\u5730\u3002\u662F\u65F6\u5019\u8003\u8651\u4E00\u200B\u200B\u4E0B\u5B88\u536B\u4E86\u3002\u5E76\u975E\u9ED1\u6697\u4E4B\u5730\u7684\u6240\u6709\u4E8B\u7269\u90FD\u6B22\u8FCE\u90BB\u5C45\u3002"
-    - "Eccoci qua, la nostra prima notte sotto un tetto! Comincia a sembrare un insediamento
-      piuttosto che un campeggio. \xC8 ora di pensare a una guardia. Non tutto nelle
-      Terre Oscure accoglie i vicini."
-    - "Da sind wir, unsere erste Nacht unter einem Dach! Es sieht eher wie eine Siedlung
-      als wie ein Campingplatz aus. Zeit, \xFCber eine Wache nachzudenken. Nicht
-      alles in den Dunklen Landen hei\xDFt Nachbarn willkommen."
-    - "\xA1Ah\xED estamos, nuestra primera noche bajo techo! Empezando a parecer
-      m\xE1s un asentamiento que un campamento. Es hora de pensar en un guardia.
-      No todo en las Tierras Oscuras da la bienvenida a los vecinos."
-    - "L\xE1 estamos n\xF3s, nossa primeira noite sob um teto! Come\xE7ando a parecer
-      mais um assentamento do que um acampamento. \xC9 hora de pensar em um guarda.
-      Nem tudo nas Dark Lands acolhe bem os vizinhos."
+    - "Ну вот, первая ночь позади. Уже похоже на хозяйство, а не на привал. Теперь позаботимся о страже."
+    - "The first night is behind us. This is starting to look like a settlement rather than a campsite. Now let's see to the guard."
+    - "La première nuit est passée. Ça commence à ressembler à un village plutôt qu’à un bivouac. Occupons-nous de la garde."
+    - "第一晚过去了。这里总算有点聚居地的样子，不像临时营地了。接下来该安排守卫了。"
+    - "La prima notte è passata. Comincia a sembrare un insediamento, più che un accampamento. Ora pensiamo alla guardia."
+    - "Die erste Nacht ist vorbei. Langsam sieht es hier nach einer Siedlung aus, nicht mehr nach einem Lagerplatz. Jetzt kümmern wir uns um die Wache."
+    - "Ya pasó la primera noche. Esto empieza a parecer un asentamiento más que un campamento. Ahora ocupémonos de la guardia."
+    - "A primeira noite passou. Isso já parece um povoado, mais do que um acampamento. Agora vamos cuidar da guarda."
   - key: quest.build_range.dialogue
     values:
-    - "\u0412\u043E\u0442 \u044D\u0442\u043E \u0434\u0435\u0440\u0435\u0432\u043E!
-      \u0418\u0437 \u0442\u0430\u043A\u043E\u0433\u043E \u0432\u044B\u0439\u0434\u0435\u0442
-      \u0441\u043B\u0430\u0432\u043D\u043E\u0435 \u0441\u0442\u0440\u0435\u043B\u044C\u0431\u0438\u0449\u0435.
-      \u0412\u0441\u0451 \u0434\u043B\u044F \u0441\u0442\u0440\u043E\u0438\u0442\u0435\u043B\u044C\u0441\u0442\u0432\u0430
-      \u0433\u043E\u0442\u043E\u0432\u043E, \u043E\u0441\u0442\u0430\u043B\u043E\u0441\u044C
-      \u0432\u0437\u044F\u0442\u044C\u0441\u044F \u0437\u0430 \u0434\u0435\u043B\u043E."
-    - Now that's good timber! It'll make a fine archery range. Everything is ready
-      for building; we just need to get to work.
-    - "Voil\xE0 du bon bois\_! Cela fera un bon stand de tir \xE0 l'arc. Tout est
-      pr\xEAt \xE0 construire ; nous devons juste nous mettre au travail."
-    - "\u73B0\u5728\u8FD9\u5C31\u662F\u597D\u6728\u6750\u4E86\uFF01\u5B83\u5C06\u6210\u4E3A\u4E00\u4E2A\u5F88\u597D\u7684\u5C04\u7BAD\u573A\u3002\u4E00\u5207\u51C6\u5907\u5C31\u7EEA\uFF0C\u53EF\u4EE5\u5EFA\u9020\u4E86\uFF1B\u6211\u4EEC\u53EA\u9700\u8981\u5F00\u59CB\u5DE5\u4F5C\u3002"
-    - "Questo \xE8 buon legname! Sar\xE0 un ottimo tiro con l'arco. Tutto \xE8 pronto
-      per la costruzione; dobbiamo solo metterci al lavoro."
-    - "Das ist gutes Holz! Es wird ein toller Bogenschie\xDFplatz sein. Alles ist
-      baubereit; wir m\xFCssen uns einfach an die Arbeit machen."
-    - "\xA1Esa s\xED que es buena madera! Ser\xE1 un buen campo de tiro con arco.
-      Todo est\xE1 listo para construir; s\xF3lo tenemos que ponernos a trabajar."
-    - "Essa \xE9 uma boa madeira! Ser\xE1 um \xF3timo campo de tiro com arco. Est\xE1
-      tudo pronto para constru\xE7\xE3o; s\xF3 precisamos come\xE7ar a trabalhar."
+    - "Из этого дерева выйдет славная казарма. Всё готово, осталось взяться за дело."
+    - "This timber will make a fine barracks. Everything is ready to get to work."
+    - "Ce bois fera une belle caserne. Tout est prêt pour commencer."
+    - "这些木材能建一座好兵营。万事俱备，可以开工了。"
+    - "Questo legname sarà perfetto per la caserma. È tutto pronto per iniziare."
+    - "Aus diesem Holz wird eine gute Kaserne. Alles ist bereit, wir können anfangen."
+    - "Con esta madera haremos un buen cuartel. Todo está listo para empezar."
+    - "Esta madeira vai dar um bom quartel. Está tudo pronto para começar."
   - key: quest.recruit_archers.new_dialogue
     values:
-    - "\u0421\u0442\u0440\u0435\u043B\u044C\u0431\u0438\u0449\u0435 \u0433\u043E\u0442\u043E\u0432\u043E!
-      \u0414\u0435\u0440\u0436\u0438 \u043E\u0431\u0435\u0449\u0430\u043D\u043D\u044B\u0435
-      \u0434\u0432\u0430 \u043B\u0443\u043A\u0430. \u041D\u0435 \u043D\u043E\u0432\u044B\u0435,
-      \u0437\u0430\u0442\u043E \u0442\u0435\u0442\u0438\u0432\u044B \u043A\u0440\u0435\u043F\u043A\u0438\u0435.
-      \u0418 \u0441\u0442\u0440\u0435\u043B\u044F\u044E\u0442 \u043E\u043D\u0438
-      \u0432\u0441\u0451 \u0435\u0449\u0451 \u0432 \u0442\u0443 \u0441\u0442\u043E\u0440\u043E\u043D\u0443,
-      \u043A\u0443\u0434\u0430 \u0446\u0435\u043B\u0438\u0448\u044C\u0441\u044F."
-    - The range is ready! Here are the two bows I promised. Not new, but the strings
-      are sound. And they still shoot in the direction you aim.
-    - "La gamme est pr\xEAte ! Voici les deux arcs que j'ai promis. Pas neuf, mais
-      les cordes sont saines. Et ils tirent toujours dans la direction que vous visez."
-    - "\u8303\u56F4\u5DF2\u7ECF\u51C6\u5907\u597D\u4E86\uFF01\u8FD9\u662F\u6211\u7B54\u5E94\u8FC7\u7684\u4E24\u4E2A\u97A0\u8EAC\u3002\u4E0D\u662F\u65B0\u7684\uFF0C\u4F46\u5F26\u662F\u5065\u5168\u7684\u3002\u4ED6\u4EEC\u4ECD\u7136\u671D\u4F60\u7784\u51C6\u7684\u65B9\u5411\u5C04\u51FB\u3002"
-    - "La gamma \xE8 pronta! Ecco i due fiocchi che avevo promesso. Non \xE8 nuovo,
-      ma le corde sono sane. E sparano ancora nella direzione in cui miri."
-    - "Das Sortiment ist fertig! Hier sind die beiden B\xF6gen, die ich versprochen
-      habe. Nicht neu, aber die Saiten sind solide. Und sie schie\xDFen immer noch
-      in die Richtung, in die Sie zielen."
-    - "\xA1La gama est\xE1 lista! Aqu\xED est\xE1n los dos arcos que promet\xED.
-      No es nuevo, pero las cuerdas est\xE1n en buen estado. Y todav\xEDa disparan
-      en la direcci\xF3n a la que apuntas."
-    - "A gama est\xE1 pronta! Aqui est\xE3o os dois arcos que prometi. N\xE3o \xE9
-      novo, mas as cordas s\xE3o s\xF3lidas. E eles ainda atiram na dire\xE7\xE3o
-      que voc\xEA mira."
+    - "Казарма готова! Начнём с пращников – они смогут прикрывать наших людей издалека."
+    - "The barracks are ready! Start with slingers. They can cover our people from afar."
+    - "La caserne est prête ! Commençons par les frondeurs. Ils couvriront les nôtres à distance."
+    - "兵营建好了！先训练投石兵，他们能从远处掩护我们的人。"
+    - "La caserma è pronta! Cominciamo dai frombolieri. Possono coprirci da lontano."
+    - "Die Kaserne ist fertig! Fangen wir mit Schleuderern an. Sie geben unseren Leuten aus der Ferne Deckung."
+    - "¡El cuartel está listo! Empecemos con honderos. Pueden cubrir a los nuestros desde lejos."
+    - "O quartel está pronto! Vamos começar com fundeiros. Eles podem proteger os nossos de longe."
   - key: tutorial.crystals.world_intro
     values:
     - "\u0410 \u0442\u0435\u043F\u0435\u0440\u044C \u043C\u0430\u043B\u0435\u043D\u044C\u043A\u0438\u0439
@@ -8686,83 +9168,44 @@ MonoBehaviour:
       de ningu\xE9m. Eu n\xE3o vou te segurar novamente."
   - key: quest.blacksmith_build.title
     values:
-    - "\u041F\u043E\u0441\u0442\u0440\u043E\u0439 \u043A\u0443\u0437\u043D\u0438\u0446\u0443"
-    - Build the blacksmith
-    - Construisez le forgeron
-    - "\u5EFA\u9020\u94C1\u5320"
-    - Costruisci il fabbro
-    - Baue den Schmied
-    - construir el herrero
-    - Construa o ferreiro
+    - "Построй ремесленный квартал"
+    - "Build the Craft Quarter"
+    - "Construis le quartier des artisans"
+    - "建造工匠区"
+    - "Costruisci il quartiere artigiano"
+    - "Baue das Handwerkerviertel"
+    - "Construye el barrio artesanal"
+    - "Construa o bairro dos artesãos"
   - key: quest.blacksmith_build.description
     values:
-    - "\u0417\u0430\u0449\u0438\u0442\u043D\u0438\u043A\u043E\u0432 \u0441\u0442\u0430\u043D\u0435\u0442
-      \u0431\u043E\u043B\u044C\u0448\u0435, \u0438 \u043A\u0430\u0436\u0434\u043E\u043C\u0443
-      \u043F\u043E\u043D\u0430\u0434\u043E\u0431\u0438\u0442\u0441\u044F \u043E\u0440\u0443\u0436\u0438\u0435.
-      \u041F\u043E\u0441\u0442\u0440\u043E\u0439 \u043A\u0443\u0437\u043D\u0438\u0446\u0443.
-      \u0421\u0442\u0430\u0439\u043A \u041F\u044C\u044E \u043F\u0440\u0438\u0433\u043E\u0442\u043E\u0432\u0438\u0442
-      \u0434\u0432\u0435 \u0442\u0435\u043B\u0435\u0433\u0438 \u0434\u043B\u044F
-      \u043D\u043E\u0441\u0438\u043B\u044C\u0449\u0438\u043A\u043E\u0432 \u0438 \u043F\u043E\u043C\u043E\u0436\u0435\u0442
-      \u043D\u0430\u043B\u0430\u0434\u0438\u0442\u044C \u043D\u0430\u0443\u0447\u043D\u0443\u044E
-      \u043B\u0430\u0431\u043E\u0440\u0430\u0442\u043E\u0440\u0438\u044E."
-    - Our guard will grow, and every defender will need a weapon. Build the blacksmith.
-      Stike Pew will provide two carts for the porters and help establish a scientific
-      laboratory.
-    - "Notre garde grandira et chaque d\xE9fenseur aura besoin d'une arme. Construisez
-      le forgeron. Stike Pew fournira deux chariots pour les porteurs et contribuera
-      \xE0 la cr\xE9ation d'un laboratoire scientifique."
-    - "\u6211\u4EEC\u7684\u540E\u536B\u4F1A\u6210\u957F\uFF0C\u6BCF\u4E2A\u9632\u5B88\u8005\u90FD\u9700\u8981\u4E00\u4EF6\u6B66\u5668\u3002\u5EFA\u9020\u94C1\u5320\u3002
-      Stike Pew \u5C06\u4E3A\u642C\u8FD0\u5DE5\u63D0\u4F9B\u4E24\u8F86\u63A8\u8F66\uFF0C\u5E76\u5E2E\u52A9\u5EFA\u7ACB\u4E00\u4E2A\u79D1\u5B66\u5B9E\u9A8C\u5BA4\u3002"
-    - "La nostra guardia aumenter\xE0 e ogni difensore avr\xE0 bisogno di un'arma.
-      Costruisci il fabbro. Stike Pew fornir\xE0 due carri per i facchini e aiuter\xE0
-      a creare un laboratorio scientifico."
-    - "Unsere Wache wird wachsen und jeder Verteidiger wird eine Waffe brauchen.
-      Baue den Schmied. Stike Pew wird zwei Wagen f\xFCr die Tr\xE4ger bereitstellen
-      und beim Aufbau eines wissenschaftlichen Labors helfen."
-    - "Nuestra guardia crecer\xE1 y cada defensor necesitar\xE1 un arma. Construye
-      el herrero. Stike Pew proporcionar\xE1 dos carros para los porteadores y ayudar\xE1
-      a establecer un laboratorio cient\xEDfico."
-    - "Nossa guarda aumentar\xE1 e todo defensor precisar\xE1 de uma arma. Construa
-      o ferreiro. Stike Pew fornecer\xE1 dois carrinhos para os carregadores e ajudar\xE1
-      a estabelecer um laborat\xF3rio cient\xEDfico."
+    - "Защитникам понадобится оружие. Построй ремесленный квартал. В столярном цехе можно делать копья, луки и телеги. За постройку Стайк Пью даст две телеги и откроет строительство научной лаборатории и лагеря беженцев."
+    - "Build the Craft Quarter. The carpentry workshop makes spears, bows and carts. Pew will give you two carts and unlock the Science Laboratory and Refugee Camp."
+    - "Construis le quartier des artisans. La menuiserie fabrique des lances, des arcs et des chariots. Pew te donnera deux chariots et débloquera le laboratoire et le camp de réfugiés."
+    - "建造工匠区。木工作坊能制作长矛、弓和手推车。皮尤会给你两辆手推车，并解锁实验室和难民营。"
+    - "Costruisci il quartiere artigiano. La falegnameria produce lance, archi e carri. Pew ti darà due carri e sbloccherà il laboratorio e il campo profughi."
+    - "Baue das Handwerkerviertel. Die Schreinerei stellt Speere, Bögen und Karren her. Pew gibt dir zwei Karren und schaltet Labor und Flüchtlingslager frei."
+    - "Construye el barrio artesanal. La carpintería fabrica lanzas, arcos y carros. Pew te dará dos carros y desbloqueará el laboratorio y el campamento de refugiados."
+    - "Construa o bairro dos artesãos. A carpintaria faz lanças, arcos e carroças. Pew dará duas carroças e desbloqueará o laboratório e o campo de refugiados."
   - key: quest.blacksmith_build.purpose
     values:
-    - "\u041A\u0443\u0437\u043D\u0438\u0446\u0430 \u0434\u043B\u044F \u0437\u0430\u0449\u0438\u0442\u043D\u0438\u043A\u043E\u0432"
-    - A forge for our defenders
-    - "Une forge pour nos d\xE9fenseurs"
-    - "\u6211\u4EEC\u7684\u9632\u5FA1\u8005\u7684\u7194\u7089"
-    - Una fucina per i nostri difensori
-    - "Eine Schmiede f\xFCr unsere Verteidiger"
-    - Una fragua para nuestros defensores
-    - Uma forja para nossos defensores
+    - "Ремесленный квартал"
+    - "Craft Quarter"
+    - "Quartier des artisans"
+    - "工匠区"
+    - "Quartiere artigiano"
+    - "Handwerkerviertel"
+    - "Barrio artesanal"
+    - "Bairro dos artesãos"
   - key: quest.blacksmith_build.dialogue
     values:
-    - "\u0414\u0432\u0430 \u043B\u0443\u0447\u043D\u0438\u043A\u0430 \u043D\u0430
-      \u0441\u0442\u0440\u0430\u0436\u0435 \u2013 \u0443\u0436\u0435 \u0441\u043F\u043E\u043A\u043E\u0439\u043D\u0435\u0435.
-      \u0422\u043E\u043B\u044C\u043A\u043E \u043D\u0430 \u0441\u0442\u0430\u0440\u044B\u0445
-      \u043B\u0443\u043A\u0430\u0445 \u0434\u0430\u043B\u0435\u043A\u043E \u043D\u0435
-      \u0443\u0435\u0434\u0435\u0448\u044C. \u041D\u0430\u0448\u0438\u043C \u043B\u044E\u0434\u044F\u043C
-      \u043F\u043E\u043D\u0430\u0434\u043E\u0431\u0438\u0442\u0441\u044F \u0441\u0432\u043E\u0451
-      \u043E\u0440\u0443\u0436\u0438\u0435, \u0430 \u0434\u043B\u044F \u043D\u0435\u0433\u043E
-      \u2013 \u043A\u0443\u0437\u043D\u0438\u0446\u0430."
-    - Two archers on watch. That's a comfort. But old bows will only take us so far.
-      Our people need weapons of their own, and that means a blacksmith.
-    - "Deux archers de garde. C'est un r\xE9confort. Mais les vieux arcs ne nous
-      m\xE8neront pas loin. Notre peuple a besoin de ses propres armes, et cela signifie
-      un forgeron."
-    - "\u4E24\u540D\u5F13\u7BAD\u624B\u5728\u503C\u73ED\u3002\u8FD9\u662F\u4E00\u79CD\u5B89\u6170\u3002\u4F46\u65E7\u5F13\u53EA\u80FD\u5E26\u6211\u4EEC\u5230\u76EE\u524D\u4E3A\u6B62\u3002\u6211\u4EEC\u7684\u4EBA\u6C11\u9700\u8981\u81EA\u5DF1\u7684\u6B66\u5668\uFF0C\u8FD9\u610F\u5473\u7740\u94C1\u5320\u3002"
-    - "Due arcieri di guardia. Questo \xE8 un conforto. Ma i vecchi archi non ci
-      porteranno cos\xEC lontano. La nostra gente ha bisogno di armi proprie, e questo
-      significa un fabbro."
-    - "Zwei Bogensch\xFCtzen auf Wache. Das ist ein Trost. Aber alte B\xF6gen werden
-      uns nicht weit bringen. Unser Volk braucht eigene Waffen, und das bedeutet
-      einen Schmied."
-    - "Dos arqueros de guardia. Eso es un consuelo. Pero los viejos arcos s\xF3lo
-      nos llevar\xE1n hasta cierto punto. Nuestro pueblo necesita sus propias armas,
-      y eso significa un herrero."
-    - "Dois arqueiros de guarda. Isso \xE9 um conforto. Mas os velhos arcos s\xF3
-      nos levar\xE3o at\xE9 certo ponto. Nosso povo precisa de armas pr\xF3prias,
-      e isso significa um ferreiro."
+    - "Первые защитники уже на посту. Построй ремесленный квартал – в столярном цехе сможем делать своё оружие."
+    - "Our first defenders are on watch. Build the Craft Quarter so we can make our own weapons in the carpentry workshop."
+    - "Nos premiers défenseurs sont de garde. Construis le quartier des artisans pour fabriquer nos armes à la menuiserie."
+    - "第一批守卫已经就位。建造工匠区，我们就能在木工作坊制作武器了。"
+    - "I primi difensori sono di guardia. Costruisci il quartiere artigiano per fabbricare le armi in falegnameria."
+    - "Die ersten Verteidiger halten Wache. Baue das Handwerkerviertel, damit wir unsere Waffen in der Schreinerei herstellen können."
+    - "Los primeros defensores están de guardia. Construye el barrio artesanal para fabricar armas en la carpintería."
+    - "Os primeiros defensores estão de guarda. Construa o bairro dos artesãos para fazermos armas na carpintaria."
   - key: unit.enemy.skeletonslime.title
     values:
     - "\u0421\u043A\u0435\u043B\u0435\u0442-\u0441\u043B\u0438\u0437\u044C"
@@ -8987,36 +9430,14 @@ MonoBehaviour:
     - Um lugar para mirar
   - key: narrative.dialogue.pew_first_supplies.1
     values:
-    - "\u0421 \u0442\u043E\u0431\u043E\u0439 \u043F\u0440\u0438\u0431\u044B\u043B\u0438
-      \u0441\u0435\u043C\u0435\u0440\u043E \u043F\u043E\u0441\u0435\u043B\u0435\u043D\u0446\u0435\u0432.
-      \u041B\u044E\u0434\u0438 \u0445\u043E\u0440\u043E\u0448\u0438\u0435, \u0442\u043E\u043B\u044C\u043A\u043E
-      \u0441 \u0434\u043E\u0440\u043E\u0433\u0438 \u043F\u0440\u043E\u0433\u043E\u043B\u043E\u0434\u0430\u043B\u0438\u0441\u044C.
-      \u041D\u0430 \u0432\u0441\u0435\u0445 \u043D\u0443\u0436\u043D\u043E \u0441\u0435\u043C\u044C
-      \u043F\u043E\u0440\u0446\u0438\u0439 \u0435\u0434\u044B. \u0414\u0430 \u0438
-      \u043D\u043E\u0447\u0435\u0432\u0430\u0442\u044C \u043F\u043E\u0434 \u043E\u0442\u043A\u0440\u044B\u0442\u044B\u043C
-      \u043D\u0435\u0431\u043E\u043C \u0438\u043C \u043D\u0435 \u0433\u043E\u0434\u0438\u0442\u0441\u044F
-      \u2013 \u043F\u043E\u043D\u0430\u0434\u043E\u0431\u0438\u0442\u0441\u044F \u0436\u0438\u043B\u043E\u0439
-      \u043A\u0432\u0430\u0440\u0442\u0430\u043B."
-    - "Seven settlers have arrived with you. Good folk, just hungry after the journey.
-      Seven portions of food should feed the lot. And sleeping under the stars won't
-      do \u2013 they'll need a housing quarter."
-    - "Sept colons sont arriv\xE9s avec vous. Des braves gens qui ont juste faim
-      apr\xE8s le voyage. Sept portions de nourriture devraient nourrir tout le monde.
-      Et dormir \xE0 la belle \xE9toile ne suffira pas \u2013 ils auront besoin d'un
-      quartier d'habitation."
-    - "\u4E03\u540D\u5B9A\u5C45\u8005\u5DF2\u4E0E\u60A8\u4E00\u8D77\u62B5\u8FBE\u3002\u597D\u4EBA\uFF0C\u65C5\u9014\u7ED3\u675F\u540E\u53EA\u662F\u997F\u4E86\u3002\u4E03\u4EFD\u98DF\u7269\u5E94\u8BE5\u8DB3\u4EE5\u5582\u9971\u8FD9\u7FA4\u4EBA\u3002\u7761\u5728\u661F\u7A7A\u4E0B\u662F\u4E0D\u884C\u7684\u2013\u2013\u4ED6\u4EEC\u9700\u8981\u4E00\u4E2A\u4F4F\u5B85\u533A\u3002"
-    - 'Sette coloni sono arrivati con te. Brava gente, ho solo fame dopo il viaggio.
-      Sette porzioni di cibo dovrebbero nutrire il lotto. E dormire sotto le stelle
-      non va bene: avranno bisogno di un quartiere residenziale.'
-    - "Sieben Siedler sind mit Ihnen angekommen. Gute Leute, einfach hungrig nach
-      der Reise. Sieben Portionen Futter sollten die Menge ern\xE4hren. Und unter
-      den Sternen zu schlafen reicht nicht aus \u2013 sie brauchen ein Wohnquartier."
-    - "Siete colonos han llegado contigo. Buena gente, s\xF3lo tengo hambre despu\xE9s
-      del viaje. Siete porciones de comida deber\xEDan alimentar a todos. Y dormir
-      bajo las estrellas no es suficiente: necesitar\xE1n un alojamiento."
-    - "Sete colonos chegaram com voc\xEA. Boa gente, s\xF3 com fome depois da viagem.
-      Sete por\xE7\xF5es de comida devem alimentar todo o grupo. E dormir sob as
-      estrelas n\xE3o vai funcionar \u2013 eles precisar\xE3o de um alojamento."
+    - "С тобой прибыли семеро поселенцев. Люди хорошие, только с дороги проголодались. На всех нужно семь порций еды. И крыша над головой нужна, хоть какая-нибудь. Пора строить жилой квартал."
+    - "Seven settlers arrived with you. Good folk, just hungry after the journey. Seven portions of food should feed them all. They'll need some sort of roof over their heads, too. Time to build a housing quarter."
+    - "Sept colons sont arrivés avec toi. De braves gens, qui ont faim après le voyage. Sept portions suffiront à nourrir tout le monde. Il leur faut aussi un toit, même sommaire. Il est temps de bâtir un quartier d’habitation."
+    - "有七名定居者跟你一起来了。都是好人，只是一路走来饿坏了。七份食物就够大家吃了。他们还得有个遮风挡雨的地方，简陋些也行。该建住宅区了。"
+    - "Sono arrivati con te sette coloni. Brava gente, solo affamata dopo il viaggio. Sette porzioni sfameranno tutti. Serve anche un tetto sopra la testa, anche alla buona. È ora di costruire un quartiere residenziale."
+    - "Sieben Siedler sind mit dir angekommen. Gute Leute, nur hungrig nach der Reise. Sieben Portionen reichen für alle. Ein Dach über dem Kopf brauchen sie auch, selbst wenn es nur ein einfaches ist. Zeit für ein Wohnviertel."
+    - "Han llegado siete colonos contigo. Buena gente, solo tienen hambre después del viaje. Siete raciones bastarán para todos. También necesitan un techo, por sencillo que sea. Ya toca construir un barrio de viviendas."
+    - "Sete colonos chegaram com você. Gente boa, só estão com fome depois da viagem. Sete porções dão para todo mundo. Eles também precisam de um teto, por mais simples que seja. É hora de construir um bairro residencial."
   - key: narrative.dialogue.pew_first_supplies.2
     values:
     - "\u0417\u0430 \u043F\u043E\u0440\u0442\u0430\u043B\u043E\u043C \u043B\u0435\u0436\u0430\u0442
@@ -9063,28 +9484,14 @@ MonoBehaviour:
       vamos alimentar o nosso povo e colocar um teto sobre suas cabe\xE7as."
   - key: narrative.dialogue.pew_smithy_two_bows.1
     values:
-    - "\u041F\u043E\u0441\u0442\u0440\u043E\u0439 \u0441\u0442\u0440\u0435\u043B\u044C\u0431\u0438\u0449\u0435
-      \u0438\u0437 \u0434\u0435\u0441\u044F\u0442\u0438 \u0441\u0432\u044F\u0437\u043E\u043A.
-      \u0410 \u044F \u043F\u0440\u0438\u0431\u0435\u0440\u0451\u0433 \u0434\u043B\u044F
-      \u0442\u0435\u0431\u044F \u0434\u0432\u0430 \u043B\u0443\u043A\u0430 \u2013
-      \u043E\u0442\u0434\u0430\u043C, \u043A\u0430\u043A \u0442\u043E\u043B\u044C\u043A\u043E
-      \u0431\u0443\u0434\u0435\u0442 \u0433\u0434\u0435 \u0443\u0447\u0438\u0442\u044C
-      \u043B\u0443\u0447\u043D\u0438\u043A\u043E\u0432."
-    - Build the range with ten bundles. I've set aside two bows for you. They're
-      yours as soon as we have somewhere to train our archers.
-    - "Construisez la gamme avec dix lots. Je vous ai r\xE9serv\xE9 deux arcs. Ils
-      seront \xE0 vous d\xE8s que nous aurons un endroit pour entra\xEEner nos archers."
-    - "\u7528\u5341\u4E2A\u6346\u7ED1\u5305\u6784\u5EFA\u8BE5\u7CFB\u5217\u3002\u6211\u5DF2\u7ECF\u4E3A\u4F60\u7559\u4E86\u4E24\u4E2A\u5F13\u3002\u4E00\u65E6\u6211\u4EEC\u627E\u5230\u8BAD\u7EC3\u5F13\u7BAD\u624B\u7684\u5730\u65B9\uFF0C\u5B83\u4EEC\u5C31\u5C5E\u4E8E\u4F60\u4E86\u3002"
-    - Amplia la gamma con dieci bundle. Ho messo da parte due fiocchi per te. Saranno
-      tuoi non appena avremo un posto dove addestrare i nostri arcieri.
-    - "Bauen Sie das Sortiment mit zehn Bundles auf. Ich habe zwei B\xF6gen f\xFCr
-      dich beiseite gelegt. Sie geh\xF6ren Ihnen, sobald wir einen Ort haben, an
-      dem wir unsere Bogensch\xFCtzen ausbilden k\xF6nnen."
-    - "Construye la gama con diez paquetes. He reservado dos reverencias para ti.
-      Ser\xE1n tuyos tan pronto como tengamos un lugar donde entrenar a nuestros
-      arqueros."
-    - "Construa a linha com dez pacotes. Separei dois arcos para voc\xEA. Eles ser\xE3o
-      seus assim que tivermos um lugar para treinar nossos arqueiros."
+    - "\u041f\u043e\u0441\u0442\u0440\u043e\u0439 \u0441\u0442\u0440\u0435\u043b\u044c\u0431\u0438\u0449\u0435 \u0437\u0430 \u0434\u0435\u0441\u044f\u0442\u044c \u0434\u0440\u0435\u0432\u0435\u0441\u0438\u043d\u044b. \u041f\u0440\u0430\u0449\u043d\u0438\u043a\u0438 \u0441\u043c\u043e\u0433\u0443\u0442 \u043d\u0430\u0447\u0430\u0442\u044c \u043e\u0431\u0443\u0447\u0435\u043d\u0438\u0435, \u043a\u0430\u043a \u0442\u043e\u043b\u044c\u043a\u043e \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u0431\u0443\u0434\u0435\u0442 \u0433\u043e\u0442\u043e\u0432\u0430."
+    - "Build the range for ten wood. The slingers can start training as soon as it is ready."
+    - "Construisez le champ de tir pour dix bois. Les frondeurs pourront s\u2019entra\u00eener d\u00e8s qu\u2019il sera pr\u00eat."
+    - "\u7528\u5341\u4efd\u6728\u6750\u5efa\u9020\u5c04\u51fb\u573a\u3002\u5efa\u597d\u540e\u5373\u53ef\u8bad\u7ec3\u6295\u77f3\u5175\u3002"
+    - "Costruisci il campo di tiro con dieci unit\u00e0 di legno. I frombolieri potranno addestrarsi appena sar\u00e0 pronto."
+    - "Baue den Schie\u00dfplatz f\u00fcr zehn Holz. Sobald er fertig ist, k\u00f6nnen die Schleuderer trainieren."
+    - "Construye el campo de tiro por diez unidades de madera. Los honderos podr\u00e1n entrenar en cuanto est\u00e9 listo."
+    - "Construa o campo de tiro por dez unidades de madeira. Os fundeiros poder\u00e3o treinar assim que ficar pronto."
   - key: narrative.dialogue.pew_smithy_materials.1
     values:
     - "\u041F\u0440\u0438\u043D\u0435\u0441\u0438 \u0434\u0435\u0441\u044F\u0442\u044C
@@ -9113,33 +9520,14 @@ MonoBehaviour:
       das janelas."
   - key: narrative.dialogue.pew_two_archers.1
     values:
-    - "\u041D\u0430\u0439\u043C\u0438 \u0434\u0432\u0443\u0445 \u043B\u0443\u0447\u043D\u0438\u043A\u043E\u0432,
-      \u043F\u0443\u0441\u0442\u044C \u043F\u0440\u0438\u0432\u044B\u043A\u0430\u044E\u0442
-      \u0441\u0442\u043E\u044F\u0442\u044C \u043D\u0430 \u0441\u0442\u0440\u0430\u0436\u0435.
-      \u041A\u043E\u0433\u0434\u0430 \u043F\u043E\u044F\u0432\u0438\u0442\u0441\u044F
-      \u0437\u0430\u0449\u0438\u0442\u0430, \u0432\u043E\u0437\u044C\u043C\u0451\u043C\u0441\u044F
-      \u0437\u0430 \u043A\u0443\u0437\u043D\u0438\u0446\u0443 \u0438 \u0443\u0441\u0442\u0440\u043E\u0438\u043C
-      \u043B\u0430\u0433\u0435\u0440\u044C \u0434\u043B\u044F \u0442\u0435\u0445,
-      \u043A\u0442\u043E \u0438\u0449\u0435\u0442 \u0431\u0435\u0437\u043E\u043F\u0430\u0441\u043D\u043E\u0435
-      \u043C\u0435\u0441\u0442\u043E."
-    - Recruit two archers and let them settle into watch duty. Once we have a guard,
-      we can build a blacksmith and make a camp for folk seeking somewhere safe.
-    - "Recrutez deux archers et laissez-les s\u2019installer au poste de garde. Une
-      fois que nous aurons un garde, nous pourrons construire un forgeron et cr\xE9er
-      un camp pour les gens qui cherchent un endroit s\xFBr."
-    - "\u62DB\u52DF\u4E24\u540D\u5F13\u7BAD\u624B\u5E76\u8BA9\u4ED6\u4EEC\u8D1F\u8D23\u503C\u73ED\u3002\u4E00\u65E6\u6211\u4EEC\u6709\u4E86\u5B88\u536B\uFF0C\u6211\u4EEC\u5C31\u53EF\u4EE5\u5EFA\u9020\u4E00\u4E2A\u94C1\u5320\uFF0C\u5E76\u4E3A\u5BFB\u627E\u5B89\u5168\u5730\u65B9\u7684\u4EBA\u4EEC\u5EFA\u7ACB\u4E00\u4E2A\u8425\u5730\u3002"
-    - Recluta due arcieri e lascia che si sistemino in servizio di guardia. Una volta
-      che avremo una guardia, potremo costruire un fabbro e allestire un accampamento
-      per le persone che cercano un posto sicuro.
-    - "Rekrutieren Sie zwei Bogensch\xFCtzen und lassen Sie sie den Wachdienst \xFCbernehmen.
-      Sobald wir eine Wache haben, k\xF6nnen wir eine Schmiede bauen und ein Lager
-      f\xFCr Leute errichten, die einen sicheren Ort suchen."
-    - "Recluta a dos arqueros y d\xE9jalos que se instalen en la guardia. Una vez
-      que tengamos un guardia, podemos construir un herrero y acampar para la gente
-      que busca un lugar seguro."
-    - Recrute dois arqueiros e deixe-os ficar de guarda. Assim que tivermos um guarda,
-      poderemos construir um ferreiro e montar um acampamento para quem procura um
-      lugar seguro.
+    - "\u041d\u0430\u0439\u043c\u0438 \u0434\u0432\u0443\u0445 \u043f\u0440\u0430\u0449\u043d\u0438\u043a\u043e\u0432 \u043d\u0430 \u0441\u0442\u0440\u0435\u043b\u044c\u0431\u0438\u0449\u0435. \u0414\u043b\u044f \u043a\u0430\u0436\u0434\u043e\u0433\u043e \u043d\u0443\u0436\u0435\u043d \u043e\u0434\u0438\u043d \u043a\u0440\u0435\u0441\u0442\u044c\u044f\u043d\u0438\u043d."
+    - "Train two slingers at the range. Each requires one peasant."
+    - "Formez deux frondeurs au champ de tir. Chacun n\u00e9cessite un paysan."
+    - "\u5728\u5c04\u51fb\u573a\u8bad\u7ec3\u4e24\u540d\u6295\u77f3\u5175\u3002\u6bcf\u540d\u6295\u77f3\u5175\u9700\u8981\u4e00\u540d\u519c\u6c11\u3002"
+    - "Addestra due frombolieri al campo di tiro. Serve un contadino per ciascuno."
+    - "Bilde am Schie\u00dfplatz zwei Schleuderer aus. F\u00fcr jeden brauchst du einen Bauern."
+    - "Entrena a dos honderos en el campo de tiro. Cada uno necesita un campesino."
+    - "Treine dois fundeiros no campo de tiro. Cada um precisa de um campon\u00eas."
   - key: narrative.dialogue.pew_build_blacksmith.1
     values:
     - "\u041F\u043E\u0441\u0442\u0440\u043E\u0439 \u0435\u0451, \u0430 \u044F \u0440\u0430\u0437\u0434\u043E\u0431\u0443\u0434\u0443
@@ -9492,43 +9880,14 @@ MonoBehaviour:
       imediatamente ap\xF3s a liquida\xE7\xE3o."
   - key: world.tutorial.carriers
     values:
-    - "\u0412\u043E\u0442 \u0438 \u043F\u0435\u0440\u0432\u0430\u044F \u0434\u043E\u0431\u044B\u0447\u0430!
-      \u041D\u043E\u0441\u0438\u043B\u044C\u0449\u0438\u043A\u0438 \u043F\u043E\u0434\u043A\u0430\u0442\u044F\u0442
-      \u0442\u0435\u043B\u0435\u0433\u0438 \u0438 \u043E\u0442\u0432\u0435\u0437\u0443\u0442
-      \u0435\u0451 \u0432 \u043F\u043E\u0440\u0442\u0430\u043B. \u041E\u043D\u0438
-      \u0441\u043E\u0431\u0438\u0440\u0430\u044E\u0442 \u043F\u0440\u0438\u043F\u0430\u0441\u044B
-      \u0442\u043E\u043B\u044C\u043A\u043E \u043D\u0430 \u043E\u0441\u0432\u0435\u0449\u0451\u043D\u043D\u043E\u0439
-      \u0437\u0435\u043C\u043B\u0435 \u2013 \u0432 \u0442\u0435\u043C\u043D\u043E\u0442\u0435
-      \u043D\u0438\u0447\u0435\u0433\u043E \u043D\u0435 \u043D\u0430\u0439\u0434\u0443\u0442.
-      \u0414\u043E\u0436\u0434\u0451\u043C\u0441\u044F, \u043F\u043E\u043A\u0430
-      \u0432 \u043F\u043E\u0440\u0442\u0430\u043B \u043F\u0440\u0438\u0432\u0435\u0437\u0443\u0442
-      \u0445\u043E\u0442\u044F \u0431\u044B \u0434\u0432\u0435 \u0435\u0434\u0438\u043D\u0438\u0446\u044B
-      \u0434\u043E\u0431\u044B\u0447\u0438."
-    - "There's our first haul! The carriers will bring their carts and take it to
-      the portal. They collect supplies only on lit ground \u2013 they won't find
-      anything in the dark. Let's wait until at least two units of resources reach
-      the portal."
-    - "Voil\xE0 notre premier transport ! Les transporteurs apporteront leurs chariots
-      et les am\xE8neront au portail. Ils ne collectent leurs provisions que sur
-      un sol \xE9clair\xE9 : ils ne trouveront rien dans le noir. Attendons qu'au
-      moins deux unit\xE9s de ressources atteignent le portail."
-    - "\u6211\u4EEC\u7684\u7B2C\u4E00\u6279\u8D27\u6765\u4E86\uFF01\u627F\u8FD0\u4EBA\u5C06\u5E26\u7740\u4ED6\u4EEC\u7684\u63A8\u8F66\u5E76\u5C06\u5176\u5E26\u5230\u95E8\u6237\u3002\u4ED6\u4EEC\u53EA\u5728\u6709\u5149\u7684\u5730\u9762\u4E0A\u6536\u96C6\u7269\u8D44\u2013\u2013\u4ED6\u4EEC\u5728\u9ED1\u6697\u4E2D\u627E\u4E0D\u5230\u4EFB\u4F55\u4E1C\u897F\u3002\u8BA9\u6211\u4EEC\u7B49\u5F85\u81F3\u5C11\u4E24\u4E2A\u8D44\u6E90\u5355\u4F4D\u5230\u8FBE\u95E8\u6237\u3002"
-    - "Ecco il nostro primo bottino! I trasportatori porteranno i loro carri e li
-      porteranno al portale. Raccolgono provviste solo su terreno illuminato: al
-      buio non troveranno nulla. Aspettiamo che almeno due unit\xE0 di risorse raggiungano
-      il portale."
-    - "Da ist unser erster Fang! Die Spediteure bringen ihre Karren und bringen sie
-      zum Portal. Vorr\xE4te sammeln sie nur auf beleuchtetem Boden \u2013 im Dunkeln
-      finden sie nichts. Warten wir, bis mindestens zwei Ressourceneinheiten das
-      Portal erreichen."
-    - "\xA1Ah\xED est\xE1 nuestro primer bot\xEDn! Los transportistas traer\xE1n
-      sus carritos y lo llevar\xE1n al portal. S\xF3lo recogen suministros en terrenos
-      iluminados; en la oscuridad no encuentran nada. Esperemos hasta que al menos
-      dos unidades de recursos lleguen al portal."
-    - "A\xED est\xE1 o nosso primeiro lance! Os transportadores trar\xE3o seus carrinhos
-      e levar\xE3o at\xE9 o portal. Eles coletam suprimentos apenas em terreno iluminado
-      \u2013 n\xE3o encontrar\xE3o nada no escuro. Vamos esperar at\xE9 que pelo
-      menos duas unidades de recursos cheguem ao portal."
+    - "Вот и первая добыча! Носильщики подкатят телеги и отвезут её в портал. Они собирают припасы только на освещённой земле – в темноте ничего не найдут. Подожди, пока доставят первые ресурсы."
+    - "There's our first haul! The carriers will bring their carts and take it to the portal. They collect supplies only on lit ground – they won't find anything in the dark. Wait for the first supplies to arrive."
+    - "Voilà notre première récolte ! Les porteurs l’emporteront au portail avec leurs charrettes. Ils ne ramassent les provisions qu’en terrain éclairé. Dans le noir, ils ne trouveront rien. Attends les premières livraisons."
+    - "第一批收获来了！搬运工会推着车把它运到传送门。他们只在有光的地方收集物资，黑暗中可什么都找不到。等等第一批物资送到吧。"
+    - "Ecco il primo raccolto! I portatori lo porteranno al portale con i loro carri. Raccolgono provviste solo nelle zone illuminate. Al buio non troveranno nulla. Aspetta le prime consegne."
+    - "Da ist unsere erste Ausbeute! Die Träger bringen sie mit ihren Karren zum Portal. Sie sammeln Vorräte nur auf beleuchtetem Boden. Im Dunkeln finden sie nichts. Warte auf die ersten Lieferungen."
+    - "¡Ahí está la primera cosecha! Los porteadores la llevarán al portal en sus carros. Solo recogen suministros en terreno iluminado. En la oscuridad no encontrarán nada. Espera a que llegue la primera entrega."
+    - "Aí está a primeira colheita! Os carregadores vão levá-la ao portal nas carroças. Eles só juntam suprimentos em terreno iluminado. No escuro, não vão achar nada. Espere as primeiras entregas."
   - key: skill.science.crystal_abundance.description
     values:
     - "\u041F\u043E\u0432\u044B\u0448\u0430\u0435\u0442 \u043D\u0430 1 \u043C\u0438\u043D\u0438\u043C\u0443\u043C
@@ -10277,52 +10636,14 @@ MonoBehaviour:
     - 
   - key: world.military.intro
     values:
-    - "\u041E\u0442\u043A\u0440\u044B\u0442\u044B\u0439 \u0433\u0435\u043A\u0441
-      \u0432 \u043B\u0443\u0447\u0435 \u0441\u0432\u0435\u0442\u0430 \u043C\u043E\u0436\u043D\u043E
-      \u043F\u0435\u0440\u0435\u0432\u0435\u0441\u0442\u0438 \u0432 \u0432\u043E\u0435\u043D\u043D\u044B\u0439
-      \u0440\u0435\u0436\u0438\u043C. \u0412\u043C\u0435\u0441\u0442\u043E \u0440\u0430\u0431\u043E\u0442\u043D\u0438\u043A\u043E\u0432
-      \u0438 \u043D\u043E\u0441\u0438\u043B\u044C\u0449\u0438\u043A\u043E\u0432 \u0435\u0433\u043E
-      \u0437\u0430\u0439\u043C\u0443\u0442 \u0432\u043E\u0438\u043D\u044B: \u043B\u0443\u0447\u043D\u0438\u043A\u0438
-      \u0432\u0441\u0442\u0430\u043D\u0443\u0442 \u0432 \u0446\u0435\u043D\u0442\u0440\u0435,
-      \u0430 \u043C\u0435\u0447\u043D\u0438\u043A\u0438 \u043F\u0440\u0438\u043A\u0440\u043E\u044E\u0442
-      \u0438\u0445 \u0441\u043D\u0430\u0440\u0443\u0436\u0438. \u0415\u0441\u043B\u0438
-      \u0432\u043E\u0435\u043D\u043D\u044B\u0445 \u0433\u0435\u043A\u0441\u043E\u0432
-      \u043D\u0435\u0441\u043A\u043E\u043B\u044C\u043A\u043E, \u0432\u043E\u0439\u0441\u043A\u0430
-      \u0440\u0430\u0437\u0434\u0435\u043B\u044F\u0442\u0441\u044F \u043C\u0435\u0436\u0434\u0443
-      \u043D\u0438\u043C\u0438. \u041F\u043E\u0432\u0442\u043E\u0440\u043D\u043E\u0435
-      \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u0432\u0435\u0440\u043D\u0451\u0442
-      \u0433\u0435\u043A\u0441 \u043A \u0434\u043E\u0431\u044B\u0447\u0435 \u0438
-      \u0441\u0431\u043E\u0440\u0443."
-    - 'An explored hex under a light beam can be switched to military mode. Warriors
-      replace the workers and carriers: archers stand in the centre, with swordsmen
-      protecting them on the outside. With several military hexes, troops split between
-      them. Switching back restores mining and gathering.'
-    - "Un hexagone explor\xE9 \xE9clair\xE9 peut passer en mode militaire. Les guerriers
-      remplacent les travailleurs et les porteurs : les archers se placent au centre,
-      prot\xE9g\xE9s par les \xE9p\xE9istes autour. Les troupes se r\xE9partissent
-      entre les hexagones militaires. Revenir au mode civil r\xE9tablit la production
-      et la collecte."
-    - "\u5149\u675F\u7167\u4EAE\u7684\u5DF2\u63A2\u7D22\u5730\u5757\u53EF\u4EE5\u5207\u6362\u4E3A\u519B\u4E8B\u6A21\u5F0F\u3002\u6218\u58EB\u5C06\u63A5\u66FF\u5DE5\u4EBA\u548C\u642C\u8FD0\u5DE5\uFF1A\u5F13\u7BAD\u624B\u7AD9\u5728\u4E2D\u592E\uFF0C\u5251\u58EB\u5728\u5916\u56F4\u4FDD\u62A4\u4ED6\u4EEC\u3002\u82E5\u6709\u591A\u4E2A\u519B\u4E8B\u5730\u5757\uFF0C\u90E8\u961F\u4F1A\u5728\u5B83\u4EEC\u4E4B\u95F4\u5206\u914D\u3002\u518D\u6B21\u5207\u6362\u5373\u53EF\u6062\u590D\u91C7\u96C6\u548C\u642C\u8FD0\u3002"
-    - "Un esagono esplorato illuminato pu\xF2 passare alla modalit\xE0 militare.
-      I guerrieri sostituiscono lavoratori e trasportatori: gli arcieri stanno al
-      centro, protetti dagli spadaccini all\u2019esterno. Le truppe si dividono tra
-      gli esagoni militari. Tornando alla modalit\xE0 civile riprendono estrazione
-      e raccolta."
-    - "Ein erkundetes Hexfeld im Lichtstrahl kann in den Milit\xE4rmodus wechseln.
-      Krieger ersetzen Arbeiter und Tr\xE4ger: Bogensch\xFCtzen stehen in der Mitte,
-      Schwertk\xE4mpfer sch\xFCtzen sie au\xDFen. Bei mehreren Milit\xE4rfeldern
-      teilen sich die Truppen auf. Erneutes Umschalten stellt Abbau und Sammeln wieder
-      her."
-    - "Un hex\xE1gono explorado e iluminado puede pasar al modo militar. Los guerreros
-      sustituyen a trabajadores y porteadores: los arqueros se colocan en el centro
-      y los espadachines los protegen por fuera. Las tropas se reparten entre los
-      hex\xE1gonos militares. Al volver al modo civil se reanudan la extracci\xF3n
-      y la recogida."
-    - "Um hex\xE1gono explorado e iluminado pode mudar para o modo militar. Os guerreiros
-      substituem trabalhadores e carregadores: os arqueiros ficam no centro e os
-      espadachins os protegem por fora. As tropas se dividem entre os hex\xE1gonos
-      militares. Mudar de volta restaura a extra\xE7\xE3o e a coleta."
-    - 
+    - "\u041e\u0442\u043a\u0440\u044b\u0442\u044b\u0439 \u0433\u0435\u043a\u0441 \u0432 \u043b\u0443\u0447\u0435 \u0441\u0432\u0435\u0442\u0430 \u043c\u043e\u0436\u043d\u043e \u043f\u0435\u0440\u0435\u0432\u0435\u0441\u0442\u0438 \u0432 \u0432\u043e\u0435\u043d\u043d\u044b\u0439 \u0440\u0435\u0436\u0438\u043c. \u0415\u0433\u043e \u0437\u0430\u0439\u043c\u0443\u0442 \u0432\u043e\u0438\u043d\u044b: \u043f\u0440\u0430\u0449\u043d\u0438\u043a\u0438 \u0438 \u0434\u0440\u0443\u0433\u0438\u0435 \u0431\u043e\u0439\u0446\u044b \u0434\u0430\u043b\u044c\u043d\u0435\u0433\u043e \u0431\u043e\u044f \u0432\u0441\u0442\u0430\u043d\u0443\u0442 \u0432 \u0446\u0435\u043d\u0442\u0440\u0435, \u0430 \u0431\u043e\u0439\u0446\u044b \u0431\u043b\u0438\u0436\u043d\u0435\u0433\u043e \u0431\u043e\u044f \u043f\u0440\u0438\u043a\u0440\u043e\u044e\u0442 \u0438\u0445 \u0441\u043d\u0430\u0440\u0443\u0436\u0438. \u0415\u0441\u043b\u0438 \u0432\u043e\u0435\u043d\u043d\u044b\u0445 \u0433\u0435\u043a\u0441\u043e\u0432 \u043d\u0435\u0441\u043a\u043e\u043b\u044c\u043a\u043e, \u0432\u043e\u0439\u0441\u043a\u0430 \u0440\u0430\u0437\u0434\u0435\u043b\u044f\u0442\u0441\u044f \u043c\u0435\u0436\u0434\u0443 \u043d\u0438\u043c\u0438. \u041f\u043e\u0432\u0442\u043e\u0440\u043d\u043e\u0435 \u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u0432\u0435\u0440\u043d\u0451\u0442 \u0433\u0435\u043a\u0441 \u043a \u0434\u043e\u0431\u044b\u0447\u0435 \u0438 \u0441\u0431\u043e\u0440\u0443."
+    - "You can switch an explored hex under a beam to military mode. Slingers and other ranged fighters take the centre, with melee fighters guarding them from the outside. Troops split between military hexes. Switch the mode again to resume gathering."
+    - "Vous pouvez passer en mode militaire une case explor\u00e9e sous un faisceau. Les frondeurs et autres combattants \u00e0 distance se placent au centre, prot\u00e9g\u00e9s par les combattants de m\u00eal\u00e9e. Les troupes se r\u00e9partissent entre les cases militaires. Changez de mode pour reprendre la collecte."
+    - "\u53ef\u4ee5\u5c06\u5149\u675f\u7167\u4eae\u7684\u5df2\u63a2\u7d22\u5730\u5757\u5207\u6362\u4e3a\u519b\u4e8b\u6a21\u5f0f\u3002\u6295\u77f3\u5175\u7b49\u8fdc\u7a0b\u5355\u4f4d\u5728\u4e2d\u592e\uff0c\u8fd1\u6218\u5355\u4f4d\u5728\u5916\u56f4\u4fdd\u62a4\u4ed6\u4eec\u3002\u90e8\u961f\u4f1a\u5206\u914d\u5230\u5404\u519b\u4e8b\u5730\u5757\u3002\u518d\u6b21\u5207\u6362\u5373\u53ef\u6062\u590d\u91c7\u96c6\u3002"
+    - "Puoi passare in modalit\u00e0 militare un esagono esplorato sotto un raggio. I frombolieri e le altre unit\u00e0 a distanza stanno al centro, protetti all\u2019esterno dalle unit\u00e0 da mischia. Le truppe si dividono tra gli esagoni militari. Cambia di nuovo modalit\u00e0 per riprendere la raccolta."
+    - "Ein erkundetes Hexfeld unter einem Lichtstrahl kann in den Milit\u00e4rmodus wechseln. Schleuderer und andere Fernk\u00e4mpfer stehen in der Mitte. Nahk\u00e4mpfer sch\u00fctzen sie von au\u00dfen. Truppen verteilen sich auf die Milit\u00e4rfelder. Wechsle den Modus erneut, um wieder Ressourcen zu sammeln."
+    - "Puedes poner en modo militar un hex\u00e1gono explorado bajo un haz. Los honderos y otros combatientes a distancia ocupan el centro, protegidos desde fuera por los combatientes cuerpo a cuerpo. Las tropas se reparten entre los hex\u00e1gonos militares. Cambia de modo otra vez para reanudar la recolecci\u00f3n."
+    - "Voc\u00ea pode mudar um hex\u00e1gono explorado sob um feixe para o modo militar. Fundeiros e outros combatentes \u00e0 dist\u00e2ncia ficam no centro, protegidos por combatentes corpo a corpo. As tropas se dividem entre os hex\u00e1gonos militares. Mude o modo novamente para retomar a coleta."
   - key: world.military.practice
     values:
     - "\u0410 \u0442\u0435\u043F\u0435\u0440\u044C \u043D\u0430\u0436\u043C\u0438
@@ -10399,41 +10720,106 @@ MonoBehaviour:
     - "Mover c\xE1mara: {0}"
     - "Mover c\xE2mera: {0}"
     - 
+  - key: world.tutorial.alarm_intro
+    values:
+    - "Когда ты ведёшь разведку, тревога <sprite name=\"AlarmGray\"> в туманных землях нарастает. А когда наши люди добывают ресурсы, она растёт ещё быстрее. Нашумим как следует – монстры придут узнать, кто тут хозяйничает. <sprite name=\"AlarmRed\">"
+    - "When you scout, alarm <sprite name=\"AlarmGray\"> rises across these foggy lands. It rises even faster when our people gather resources. Make enough noise and the monsters will come see who's making themselves at home. <sprite name=\"AlarmRed\">"
+    - "Quand tu pars en reconnaissance, l’alerte <sprite name=\"AlarmGray\"> monte dans ces terres brumeuses. Elle monte encore plus vite quand nos gens récoltent des ressources. Si on fait assez de bruit, les monstres viendront voir qui se croit chez lui. <sprite name=\"AlarmRed\">"
+    - "你出去侦察时，这片迷雾笼罩的土地会越来越警觉。我们的人采集资源时，警戒 <sprite name=\"AlarmGray\">还会上升得更快。动静够大，怪物就会来看看是谁把这里当成了自己家。 <sprite name=\"AlarmRed\">"
+    - "Quando vai in ricognizione, l’allarme <sprite name=\"AlarmGray\"> cresce in queste terre nebbiose. Sale ancora più in fretta quando la nostra gente raccoglie risorse. Se facciamo abbastanza rumore, i mostri verranno a vedere chi si crede a casa sua. <sprite name=\"AlarmRed\">"
+    - "Wenn du auf Erkundung gehst, steigt der Alarm <sprite name=\"AlarmGray\"> in diesen nebligen Landen. Er steigt noch schneller, wenn unsere Leute Rohstoffe sammeln. Machen wir genug Lärm, kommen die Monster nachsehen, wer es sich hier gemütlich macht. <sprite name=\"AlarmRed\">"
+    - "Cuando sales a explorar, sube la alarma <sprite name=\"AlarmGray\"> en estas tierras brumosas. Sube aún más deprisa cuando nuestra gente recoge recursos. Si hacemos suficiente ruido, los monstruos vendrán a ver quién se cree en su casa. <sprite name=\"AlarmRed\">"
+    - "Quando você sai para explorar, o alerta <sprite name=\"AlarmGray\"> aumenta nestas terras cobertas de névoa. Ele aumenta ainda mais depressa quando nosso povo coleta recursos. Se fizermos barulho suficiente, os monstros virão ver quem está se sentindo em casa. <sprite name=\"AlarmRed\">"
+  - key: world.tutorial.incoming_wave
+    values:
+    - "Тёмные земли нас услышали. Жди гостей – здешние обычно здороваются зубами!"
+    - "The Dark Lands heard us. Expect company – around here, they usually say hello with their teeth!"
+    - "Les Terres sombres nous ont entendus. Attends-toi à de la visite – par ici, on dit bonjour avec les dents !"
+    - "黑暗之地听到我们的动静了。准备迎客吧，这儿的家伙通常用牙齿打招呼！"
+    - "Le Terre Oscure ci hanno sentiti. Aspettati visite – da queste parti di solito si saluta con i denti!"
+    - "Die Dunklen Lande haben uns gehört. Rechne mit Besuch – hier sagt man gewöhnlich mit den Zähnen Hallo!"
+    - "Las Tierras Oscuras nos han oído. Espera visita – por aquí suelen saludar con los dientes."
+    - "As Terras Sombrias nos ouviram. Espere visitas – por aqui, o pessoal costuma cumprimentar com os dentes!"
   - key: world.tutorial.return_options
     values:
-    - "\u041C\u043E\u043D\u0441\u0442\u0440\u044B \u0443\u0441\u043B\u044B\u0448\u0430\u043B\u0438
-      \u043D\u0430\u0448\u0438\u0445 \u0440\u0430\u0431\u043E\u0447\u0438\u0445!
-      \u0422\u0435\u043F\u0435\u0440\u044C \u0442\u044B \u043C\u043E\u0436\u0435\u0448\u044C
-      \u0432\u0435\u0440\u043D\u0443\u0442\u044C\u0441\u044F \u0434\u043E\u043C\u043E\u0439
-      \u0438\u043B\u0438 \u043F\u043E\u043F\u0440\u043E\u0431\u043E\u0432\u0430\u0442\u044C
-      \u0434\u043E\u0431\u044B\u0442\u044C \u0435\u0449\u0451 \u043D\u0435\u043C\u043D\u043E\u0433\u043E
-      \u0440\u0435\u0441\u0443\u0440\u0441\u043E\u0432. \u0422\u043E\u043B\u044C\u043A\u043E
-      \u0441\u043B\u0435\u0434\u0438 \u0437\u0430 \u043B\u044E\u0434\u044C\u043C\u0438
-      \u0438 \u0431\u0430\u0448\u043D\u0435\u0439 \u2013 \u043D\u0435 \u0441\u0442\u043E\u0438\u0442
-      \u0440\u0438\u0441\u043A\u043E\u0432\u0430\u0442\u044C \u0432\u0441\u0435\u043C
-      \u0440\u0430\u0434\u0438 \u043B\u0438\u0448\u043D\u0435\u0439 \u043E\u0445\u0430\u043F\u043A\u0438
-      \u0434\u0440\u043E\u0432."
-    - "The monsters heard our workers! You can return home now or try to gather a
-      few more resources. Just keep an eye on your people and the tower \u2013 an
-      extra bundle of wood is not worth losing everything."
-    - "Les monstres ont entendu nos travailleurs ! Tu peux rentrer ou tenter de r\xE9colter
-      encore quelques ressources. Surveille tes gens et la tour \u2013 une poign\xE9e
-      de bois ne vaut pas le risque de tout perdre."
-    - "\u602A\u7269\u542C\u5230\u4E86\u6211\u4EEC\u5DE5\u4EBA\u7684\u58F0\u97F3\uFF01\u73B0\u5728\u4F60\u53EF\u4EE5\u56DE\u5BB6\uFF0C\u4E5F\u53EF\u4EE5\u8BD5\u7740\u518D\u91C7\u96C6\u4E00\u4E9B\u8D44\u6E90\u3002\u6CE8\u610F\u4FDD\u62A4\u6751\u6C11\u548C\u9AD8\u5854
-      \u2013 \u522B\u4E3A\u591A\u6346\u6728\u67F4\u8D54\u4E0A\u4E00\u5207\u3002"
-    - "I mostri hanno sentito i nostri lavoratori! Puoi tornare a casa oppure provare
-      a raccogliere ancora qualche risorsa. Tieni d\u2019occhio la gente e la torre
-      \u2013 un fascio di legna in pi\xF9 non vale il rischio di perdere tutto."
-    - "Die Monster haben unsere Arbeiter geh\xF6rt! Du kannst jetzt heimkehren oder
-      noch ein paar Ressourcen sammeln. Achte auf deine Leute und den Turm \u2013
-      f\xFCr ein B\xFCndel Holz mehr lohnt es sich nicht, alles zu riskieren."
-    - "\xA1Los monstruos han o\xEDdo a nuestros trabajadores! Puedes volver a casa
-      o intentar recoger algunos recursos m\xE1s. Vigila a tu gente y la torre \u2013
-      un poco m\xE1s de le\xF1a no merece arriesgarlo todo."
-    - "Os monstros ouviram nossos trabalhadores! Voc\xEA pode voltar para casa ou
-      tentar coletar mais alguns recursos. Fique de olho nas pessoas e na torre \u2013
-      um pouco mais de lenha n\xE3o vale o risco de perder tudo."
-    - 
+    - "Можешь вернуться домой через портал или остаться и добыть ещё немного припасов. Если останешься, следи за людьми и башней – лишняя охапка дров не стоит того, чтобы рисковать всеми."
+    - "You can head home through the portal or stay and gather a few more supplies. If you stay, watch your people and the tower – another bundle of firewood isn't worth risking everyone."
+    - "Tu peux rentrer par le portail ou rester pour récolter encore quelques provisions. Si tu restes, surveille tes gens et la tour – quelques bûches de plus ne valent pas qu’on risque la vie de tous."
+    - "你可以穿过传送门回家，也可以留下再采集一些物资。如果留下，记得照看村民和高塔，别为多捆柴火让大家冒险。"
+    - "Puoi tornare a casa dal portale o restare a raccogliere altre provviste. Se resti, tieni d’occhio la tua gente e la torre – un fascio di legna in più non vale la vita di tutti."
+    - "Du kannst durchs Portal heimkehren oder bleiben und noch Vorräte sammeln. Wenn du bleibst, behalte deine Leute und den Turm im Auge – ein Bündel Brennholz ist es nicht wert, alle zu gefährden."
+    - "Puedes volver a casa por el portal o quedarte a recoger más provisiones. Si te quedas, vigila a tu gente y la torre – un poco más de leña no vale la pena si pones a todos en peligro."
+    - "Você pode voltar para casa pelo portal ou ficar e juntar mais alguns suprimentos. Se ficar, cuide das pessoas e da torre – um feixe a mais de lenha não vale o risco para todos."
+  - key: world.tutorial.energy_crystal
+    values:
+    - "Это кристаллы. Они дают энергию нашей башне. Соберёшь достаточно – зажжётся второй луч. С ним разведка и работа пойдут быстрее."
+    - "Those are crystals. They power our tower. Gather enough and a second beam will light up. That'll make scouting and work go faster."
+    - "Ce sont des cristaux. Ils alimentent notre tour. Réunis-en assez et un deuxième rayon s’allumera. La reconnaissance et le travail iront plus vite."
+    - "这些是水晶，能给我们的塔供能。收集得够多，第二束光就会亮起。这样侦察和干活都能更快。"
+    - "Sono cristalli. Danno energia alla nostra torre. Raccogline abbastanza e si accenderà un secondo raggio. Ricognizione e lavoro andranno più in fretta."
+    - "Das sind Kristalle. Sie versorgen unseren Turm mit Energie. Sammle genug davon, dann leuchtet ein zweiter Strahl. Damit gehen Erkundung und Arbeit schneller."
+    - "Son cristales. Dan energía a nuestra torre. Reúne los suficientes y se encenderá un segundo haz. Así podremos explorar y trabajar más rápido."
+    - "São cristais. Eles dão energia à nossa torre. Junte o bastante e um segundo feixe vai se acender. Com ele, a exploração e o trabalho vão mais depressa."
+  - key: world.tutorial.energy_depleted
+    values:
+    - "Энергия закончилась. Башня пока не может атаковать врагов. Заряди её кристаллами, и она снова сможет защищать нас."
+    - "We're out of energy. The tower can't attack for now. Recharge it with crystals and it can defend us again."
+    - "Nous n’avons plus d’énergie. Pour l’instant, la tour ne peut plus attaquer. Recharge-la avec des cristaux et elle pourra de nouveau nous défendre."
+    - "能量用光了。塔暂时没法攻击敌人。用水晶给它补充能量，它就能继续保护我们。"
+    - "L’energia è finita. Per ora la torre non può attaccare. Ricaricala con i cristalli e potrà difenderci di nuovo."
+    - "Die Energie ist aufgebraucht. Der Turm kann vorerst nicht angreifen. Lade ihn mit Kristallen auf, dann kann er uns wieder verteidigen."
+    - "Se acabó la energía. Por ahora la torre no puede atacar. Recárgala con cristales y podrá volver a defendernos."
+    - "A energia acabou. Por enquanto, a torre não pode atacar. Recarregue-a com cristais e ela poderá nos defender de novo."
+  - key: world.tutorial.second_beam
+    values:
+    - "Зажёгся второй луч! Теперь одним можно разведывать новые земли, а вторым освещать место, где работают люди."
+    - "The second beam is lit! Use one to scout new lands and the other to light the ground where our people work."
+    - "Le deuxième rayon s’est allumé ! Tu peux en utiliser un pour explorer de nouvelles terres et l’autre pour éclairer les endroits où travaillent nos gens."
+    - "第二束光亮起来了！现在可以用一束光侦察新的地方，用另一束照亮大家干活的地方。"
+    - "Si è acceso il secondo raggio! Ora puoi usarne uno per esplorare nuove terre e l’altro per illuminare il luogo in cui lavora la nostra gente."
+    - "Der zweite Strahl leuchtet! Jetzt kannst du mit einem neue Gebiete erkunden und mit dem anderen den Arbeitsplatz unserer Leute beleuchten."
+    - "¡Se ha encendido el segundo haz! Ahora puedes usar uno para explorar nuevas tierras y el otro para iluminar el lugar donde trabaja nuestra gente."
+    - "O segundo feixe se acendeu! Agora você pode usar um para explorar novas terras e o outro para iluminar onde nosso povo trabalha."
+  - key: world.tutorial.second_beam_lost
+    values:
+    - "Второй луч погас – энергии на него больше не хватает. Принеси ещё кристаллов, и он снова зажжётся."
+    - "The second beam went out. We don't have enough energy to keep it lit. Bring more crystals and it will light up again."
+    - "Le deuxième rayon s’est éteint. Il nous manque de l’énergie pour le maintenir allumé. Rapporte des cristaux et il se rallumera."
+    - "第二束光熄灭了，能量不够了。再带些水晶来，它就会重新亮起。"
+    - "Il secondo raggio si è spento. Non abbiamo più abbastanza energia per tenerlo acceso. Porta altri cristalli e si riaccenderà."
+    - "Der zweite Strahl ist erloschen. Uns fehlt die Energie, um ihn am Leuchten zu halten. Bring mehr Kristalle, dann leuchtet er wieder."
+    - "El segundo haz se ha apagado. Nos falta energía para mantenerlo encendido. Trae más cristales y volverá a encenderse."
+    - "O segundo feixe se apagou. Falta energia para mantê-lo aceso. Traga mais cristais e ele vai se acender de novo."
+  - key: world.tutorial.weapon_defense
+    values:
+    - "Башня помогает нам разведать местность и освещает людям места работы. А ещё она может нас защитить. Пора показать это нашим гостям!"
+    - "The tower helps us scout and lights the ground where our people work. It can defend us, too. Time to show our guests!"
+    - "La tour nous aide à explorer et éclaire les endroits où travaillent nos gens. Elle peut aussi nous défendre. Il est temps de le montrer à nos invités !"
+    - "这座塔能帮我们侦察，也能照亮大家干活的地方。它还能保护我们。该让客人见识一下了！"
+    - "La torre ci aiuta a esplorare e illumina i luoghi in cui lavora la nostra gente. Può anche difenderci. È ora di mostrarlo ai nostri ospiti!"
+    - "Der Turm hilft bei der Erkundung und beleuchtet die Orte, an denen unsere Leute arbeiten. Er kann uns auch verteidigen. Zeit, das unseren Gästen zu zeigen!"
+    - "La torre nos ayuda a explorar e ilumina los lugares donde trabaja nuestra gente. También puede defendernos. ¡Es hora de demostrárselo a nuestros invitados!"
+    - "A torre ajuda a explorar e ilumina os lugares onde nosso povo trabalha. Ela também pode nos defender. Hora de mostrar isso às nossas visitas!"
+  - key: world.tutorial.weapon_select
+    values:
+    - "Пока оружие выключено. Нажми 2 или выбери вторую ячейку, чтобы вооружить башню. Тогда она начнёт стрелять по врагам."
+    - "The weapon is off for now. Press 2 or click the second slot to arm the tower. Then it can fire at enemies."
+    - "L’arme est désactivée pour l’instant. Appuie sur 2 ou clique sur le deuxième emplacement pour armer la tour. Elle pourra alors tirer sur les ennemis."
+    - "武器现在是关闭的。按 2 键或点击第二个栏位，让塔装上武器。这样它就能朝敌人开火。"
+    - "Per ora l’arma è disattivata. Premi 2 o fai clic sul secondo slot per armare la torre. Così potrà sparare ai nemici."
+    - "Die Waffe ist noch aus. Drücke 2 oder klicke auf den zweiten Platz, um den Turm zu bewaffnen. Dann kann er auf Feinde schießen."
+    - "El arma está desactivada. Pulsa 2 o haz clic en la segunda ranura para armar la torre. Así podrá disparar a los enemigos."
+    - "A arma está desligada por enquanto. Pressione 2 ou clique no segundo espaço para armar a torre. Assim ela poderá atirar nos inimigos."
+  - key: world.tutorial.weapon_energy
+    values:
+    - "Каждый выстрел тратит энергию. Когда она закончится, один луч останется, а башня перестанет стрелять. Принеси ещё кристаллов, и она снова сможет отбиваться."
+    - "Every shot uses energy. If it runs out, one beam will stay lit, but the tower will stop firing. Bring more crystals and it can fight again."
+    - "Chaque tir consomme de l’énergie. Quand elle s’épuise, un rayon reste allumé, mais la tour cesse de tirer. Rapporte des cristaux et elle pourra se défendre à nouveau."
+    - "每次开火都会消耗能量。能量耗尽时，还会留下一束光，但塔会停止射击。再带些水晶来，它就能继续战斗。"
+    - "Ogni colpo consuma energia. Quando finisce, resterà acceso un raggio, ma la torre smetterà di sparare. Porta altri cristalli e potrà difendersi di nuovo."
+    - "Jeder Schuss kostet Energie. Geht sie aus, bleibt ein Strahl an, aber der Turm hört auf zu schießen. Bring mehr Kristalle, dann kann er sich wieder wehren."
+    - "Cada disparo gasta energía. Si se agota, quedará un haz encendido, pero la torre dejará de disparar. Trae más cristales y podrá volver a defenderse."
+    - "Cada disparo gasta energia. Quando ela acaba, um feixe continua aceso, mas a torre para de atirar. Traga mais cristais para ela voltar a se defender."
   - key: world.tutorial.second_light
     values:
     - "\u0427\u0442\u043E\u0431\u044B \u0440\u0430\u0431\u043E\u0442\u0430 \u0448\u043B\u0430
@@ -12023,26 +12409,36 @@ MonoBehaviour:
     - Energie pro Schuss
     - "Energ\xEDa por disparo"
     - Energia por disparo
+  - key: arsenal.slots.buy
+    values:
+    - "\u041a\u0443\u043f\u0438\u0442\u044c \u044f\u0447\u0435\u0439\u043a\u0443"
+    - "Buy slot"
+    - "Acheter un emplacement"
+    - "\u8d2d\u4e70\u680f\u4f4d"
+    - "Acquista slot"
+    - "Platz kaufen"
+    - "Comprar ranura"
+    - "Comprar espa\u00e7o"
+  - key: arsenal.slots.locked
+    values:
+    - "\u0417\u0430\u0431\u043b\u043e\u043a\u0438\u0440\u043e\u0432\u0430\u043d\u043e"
+    - "Locked"
+    - "Verrouill\u00e9"
+    - "\u5df2\u9501\u5b9a"
+    - "Bloccato"
+    - "Gesperrt"
+    - "Bloqueado"
+    - "Bloqueado"
   - key: arsenal.slots.instructions
     values:
-    - "\u041F\u0435\u0440\u0435\u0442\u0430\u0449\u0438\u0442\u0435 \u043E\u0442\u043A\u0440\u044B\u0442\u043E\u0435
-      \u043E\u0440\u0443\u0436\u0438\u0435 \u0432 \u0441\u043B\u043E\u0442 \u0438\u043B\u0438
-      \u0432\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0435\u0433\u043E \u0438
-      \u043D\u0430\u0436\u043C\u0438\u0442\u0435 2\u20135. \u0421\u043B\u043E\u0442
-      1 \u0432\u044B\u043A\u043B\u044E\u0447\u0430\u0435\u0442 \u043E\u0440\u0443\u0436\u0438\u0435."
-    - "Drag an unlocked weapon into a slot, or select it and press 2\u20135. Slot
-      1 turns weapons off."
-    - "Glissez une arme d\xE9bloqu\xE9e dans un emplacement, ou s\xE9lectionnez-la
-      et appuyez sur 2\u20135. Le 1 d\xE9sactive les armes."
-    - "\u5C06\u5DF2\u89E3\u9501\u6B66\u5668\u62D6\u5165\u680F\u4F4D\uFF0C\u6216\u9009\u4E2D\u6B66\u5668\u540E\u63092\u20135\u3002\u680F\u4F4D1\u5173\u95ED\u6B66\u5668\u3002"
-    - "Trascina un\u2019arma sbloccata in uno slot, oppure selezionala e premi 2\u20135.
-      Lo slot 1 disattiva le armi."
-    - "Ziehe eine freigeschaltete Waffe in einen Platz oder w\xE4hle sie und dr\xFCcke
-      2\u20135. Platz 1 schaltet die Waffen aus."
-    - "Arrastra un arma desbloqueada a una casilla, o selecci\xF3nala y pulsa 2\u20135.
-      La casilla 1 desactiva las armas."
-    - "Arraste uma arma desbloqueada para um espa\xE7o, ou selecione-a e pressione
-      2\u20135. O espa\xE7o 1 desativa as armas."
+    - "\u041f\u0435\u0440\u0435\u0442\u0430\u0449\u0438\u0442\u0435 \u043e\u0440\u0443\u0436\u0438\u0435 \u0432 \u044f\u0447\u0435\u0439\u043a\u0443 \u0438\u043b\u0438 \u043d\u0430\u0436\u043c\u0438\u0442\u0435 \u0435\u0451 \u043d\u043e\u043c\u0435\u0440. \u041a\u043b\u0430\u0432\u0438\u0448\u0430 1 \u0432\u044b\u043a\u043b\u044e\u0447\u0430\u0435\u0442 \u043e\u0440\u0443\u0436\u0438\u0435."
+    - "Drag a weapon to a slot or press its number. Key 1 turns weapons off."
+    - "Glissez l\u2019arme dans une case ou tapez son num\u00e9ro. La touche 1 d\u00e9sactive les armes."
+    - "\u5c06\u6b66\u5668\u62d6\u5165\u680f\u4f4d\uff0c\u6216\u6309\u5bf9\u5e94\u6570\u5b57\u952e\u3002\u6309 1 \u5173\u95ed\u6b66\u5668\u3002"
+    - "Trascina l\u2019arma in uno slot o premi il suo numero. Il tasto 1 disattiva le armi."
+    - "Ziehe die Waffe auf einen Platz oder dr\u00fccke dessen Nummer. Taste 1 schaltet Waffen aus."
+    - "Arrastra el arma a una ranura o pulsa su n\u00famero. La tecla 1 desactiva las armas."
+    - "Arraste a arma a um espa\u00e7o ou pressione seu n\u00famero. A tecla 1 desativa as armas."
   - key: arsenal.slots.battle
     values:
     - "\u041E\u0440\u0443\u0436\u0438\u0435 1\u20135 \xB7 \u0421\u043A\u043E\u0440\u043E\u0441\u0442\u044C
@@ -12120,49 +12516,14 @@ MonoBehaviour:
     - "1 cristal = {0} pontos de energia"
   - key: arsenal.energy.tutorial
     values:
-    - "\u0410\u0440\u0441\u0435\u043D\u0430\u043B \u043D\u0430\u0445\u043E\u0434\u0438\u0442\u0441\u044F
-      \u0432 \u043C\u0430\u0433\u0438\u0447\u0435\u0441\u043A\u043E\u0439 \u0431\u0430\u0448\u043D\u0435
-      \u043D\u0430 \u0431\u0430\u0437\u0435. \u041D\u0430\u0437\u043D\u0430\u0447\u044C
-      \u043E\u0440\u0443\u0436\u0438\u0435 \u0432 \u0441\u043B\u043E\u0442\u044B
-      \u043F\u0435\u0440\u0435\u0434 \u0432\u044B\u043B\u0430\u0437\u043A\u043E\u0439,
-      \u0430 \u0432 \u0431\u043E\u044E \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0430\u0439
-      \u0435\u0433\u043E \u043A\u043B\u0430\u0432\u0438\u0448\u0430\u043C\u0438 2\u20135.
-      \u041A\u043B\u0430\u0432\u0438\u0448\u0430 1 \u0432\u044B\u043A\u043B\u044E\u0447\u0430\u0435\u0442
-      \u043E\u0440\u0443\u0436\u0438\u0435. \u041A\u0440\u0438\u0441\u0442\u0430\u043B\u043B\u044B
-      \u0434\u0430\u044E\u0442 \u044D\u043D\u0435\u0440\u0433\u0438\u044E \u0434\u043B\u044F
-      \u0432\u044B\u0441\u0442\u0440\u0435\u043B\u043E\u0432 \u0438 \u0434\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u044B\u0445
-      \u0440\u0430\u0431\u043E\u0447\u0438\u0445 \u043B\u0443\u0447\u0435\u0439.
-      \u0415\u0441\u043B\u0438 \u044D\u043D\u0435\u0440\u0433\u0438\u0438 \u0441\u0442\u0430\u043D\u0435\u0442
-      \u043C\u0435\u043D\u044C\u0448\u0435 \u043E\u0442\u043C\u0435\u0442\u043A\u0438,
-      \u0434\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u044B\u0439
-      \u043B\u0443\u0447 \u043F\u043E\u0433\u0430\u0441\u043D\u0435\u0442."
-    - "The arsenal is in the Magic Tower at the base. Assign weapons to slots before
-      an expedition, then switch between them with 2\u20135 in combat. Press 1 to
-      turn weapons off. Crystals supply energy for shots and extra work beams. If
-      energy falls below a marker, the extra beam switches off."
-    - "L\u2019arsenal se trouve dans la tour magique de la base. Assigne tes armes
-      avant l\u2019exp\xE9dition, puis change d\u2019arme avec 2\u20135 en combat.
-      Le 1 d\xE9sactive les armes. Les cristaux alimentent les tirs et les rayons
-      de travail suppl\xE9mentaires. Sous un seuil d\u2019\xE9nergie, le rayon correspondant
-      s\u2019\xE9teint."
-    - "\u6B66\u5668\u5E93\u4F4D\u4E8E\u57FA\u5730\u7684\u9B54\u6CD5\u5854\u3002\u8FDC\u5F81\u524D\u5206\u914D\u6B66\u5668\uFF0C\u6218\u6597\u4E2D\u63092\u20135\u5207\u6362\uFF0C\u63091\u5173\u95ED\u6B66\u5668\u3002\u6C34\u6676\u4E3A\u5C04\u51FB\u548C\u989D\u5916\u5DE5\u4F5C\u5149\u675F\u63D0\u4F9B\u80FD\u91CF\u3002\u5F53\u80FD\u91CF\u4F4E\u4E8E\u6807\u8BB0\u65F6\uFF0C\u5BF9\u5E94\u7684\u989D\u5916\u5149\u675F\u4F1A\u7184\u706D\u3002"
-    - "L\u2019arsenale si trova nella torre magica alla base. Assegna le armi prima
-      della spedizione e cambiale con 2\u20135 in battaglia. Premi 1 per disattivarle.
-      I cristalli alimentano i colpi e i raggi di lavoro aggiuntivi. Se l\u2019energia
-      scende sotto una tacca, il raggio aggiuntivo si spegne."
-    - "Das Arsenal ist im Magieturm der Basis. Weise vor der Expedition Waffen zu
-      und wechsle im Kampf mit 2\u20135. Mit 1 schaltest du sie aus. Kristalle liefern
-      Energie f\xFCr Sch\xFCsse und zus\xE4tzliche Arbeitsstrahlen. Sinkt die Energie
-      unter eine Markierung, erlischt der zus\xE4tzliche Strahl."
-    - "El arsenal est\xE1 en la torre m\xE1gica de la base. Asigna armas antes de
-      la expedici\xF3n y c\xE1mbialas con 2\u20135 en combate. Pulsa 1 para desactivarlas.
-      Los cristales dan energ\xEDa para disparos y rayos de trabajo adicionales.
-      Si la energ\xEDa baja de una marca, el rayo adicional se apaga."
-    - "O arsenal fica na torre m\xE1gica da base. Atribua armas antes da expedi\xE7\xE3o
-      e alterne entre elas com 2\u20135 em combate. Pressione 1 para desativ\xE1-las.
-      Os cristais fornecem energia para disparos e raios de trabalho extras. Se a
-      energia cair abaixo de uma marca, o raio extra se apaga."
-
+    - "\u0410\u0440\u0441\u0435\u043d\u0430\u043b \u043d\u0430\u0445\u043e\u0434\u0438\u0442\u0441\u044f \u0432 \u043c\u0430\u0433\u0438\u0447\u0435\u0441\u043a\u043e\u0439 \u0431\u0430\u0448\u043d\u0435 \u043d\u0430 \u0431\u0430\u0437\u0435. \u041d\u0430\u0437\u043d\u0430\u0447\u044c \u043e\u0440\u0443\u0436\u0438\u0435 \u0432 \u044f\u0447\u0435\u0439\u043a\u0438 \u043f\u0435\u0440\u0435\u0434 \u0432\u044b\u043b\u0430\u0437\u043a\u043e\u0439, \u0430 \u0432 \u0431\u043e\u044e \u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u0439 \u0435\u0433\u043e \u043a\u043b\u0430\u0432\u0438\u0448\u0430\u043c\u0438 \u0441 \u043d\u043e\u043c\u0435\u0440\u0430\u043c\u0438 \u044f\u0447\u0435\u0435\u043a. \u041a\u043b\u0430\u0432\u0438\u0448\u0430 1 \u0432\u044b\u043a\u043b\u044e\u0447\u0430\u0435\u0442 \u043e\u0440\u0443\u0436\u0438\u0435. \u041a\u0440\u0438\u0441\u0442\u0430\u043b\u043b\u044b \u0434\u0430\u044e\u0442 \u044d\u043d\u0435\u0440\u0433\u0438\u044e \u0434\u043b\u044f \u0432\u044b\u0441\u0442\u0440\u0435\u043b\u043e\u0432 \u0438 \u0434\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0445 \u0440\u0430\u0431\u043e\u0447\u0438\u0445 \u043b\u0443\u0447\u0435\u0439. \u0415\u0441\u043b\u0438 \u044d\u043d\u0435\u0440\u0433\u0438\u0438 \u0441\u0442\u0430\u043d\u0435\u0442 \u043c\u0435\u043d\u044c\u0448\u0435 \u043e\u0442\u043c\u0435\u0442\u043a\u0438, \u0434\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0439 \u043b\u0443\u0447 \u043f\u043e\u0433\u0430\u0441\u043d\u0435\u0442."
+    - "The arsenal is in the Magic Tower at the base. Assign weapons to slots before an expedition. In battle, press the slot number to switch weapons. Key 1 turns weapons off. Crystals power shots and additional work beams. When energy drops below a mark, the extra beam goes out."
+    - "L\u2019arsenal se trouve dans la tour magique de la base. Assigne les armes aux emplacements avant l\u2019exp\u00e9dition. En combat, appuie sur le num\u00e9ro de l\u2019emplacement pour changer d\u2019arme. La touche 1 d\u00e9sactive les armes. Les cristaux alimentent les tirs et les rayons de travail suppl\u00e9mentaires. Sous le seuil d\u2019\u00e9nergie, le rayon suppl\u00e9mentaire s\u2019\u00e9teint."
+    - "\u6b66\u5668\u5e93\u5728\u57fa\u5730\u7684\u9b54\u6cd5\u5854\u91cc\u3002\u51fa\u5f81\u524d\u628a\u6b66\u5668\u653e\u5165\u680f\u4f4d\uff0c\u6218\u6597\u4e2d\u6309\u5bf9\u5e94\u7684\u6570\u5b57\u952e\u5207\u6362\u6b66\u5668\u3002\u6309 1 \u5173\u95ed\u6b66\u5668\u3002\u6c34\u6676\u4e3a\u5c04\u51fb\u548c\u989d\u5916\u5de5\u4f5c\u5149\u675f\u63d0\u4f9b\u80fd\u91cf\u3002\u80fd\u91cf\u4f4e\u4e8e\u6807\u8bb0\u65f6\uff0c\u989d\u5916\u5149\u675f\u4f1a\u7184\u706d\u3002"
+    - "L\u2019arsenale si trova nella torre magica della base. Assegna le armi agli slot prima della spedizione. In battaglia, premi il numero dello slot per cambiare arma. Il tasto 1 disattiva le armi. I cristalli alimentano i colpi e i raggi di lavoro aggiuntivi. Quando l\u2019energia scende sotto la soglia, il raggio aggiuntivo si spegne."
+    - "Das Arsenal befindet sich im Magieturm der Basis. Weise Waffen vor der Expedition ihren Pl\u00e4tzen zu. Im Kampf wechselst du mit der Nummer des Platzes die Waffe. Taste 1 schaltet die Waffen aus. Kristalle liefern Energie f\u00fcr Sch\u00fcsse und zus\u00e4tzliche Arbeitsstrahlen. F\u00e4llt die Energie unter die Markierung, erlischt der zus\u00e4tzliche Strahl."
+    - "El arsenal est\u00e1 en la torre m\u00e1gica de la base. Asigna armas a las ranuras antes de la expedici\u00f3n. En combate, pulsa el n\u00famero de la ranura para cambiar de arma. La tecla 1 desactiva las armas. Los cristales alimentan los disparos y los haces de trabajo adicionales. Si la energ\u00eda cae por debajo de la marca, el haz adicional se apaga."
+    - "O arsenal fica na torre m\u00e1gica da base. Atribua armas aos espa\u00e7os antes da expedi\u00e7\u00e3o. Em combate, pressione o n\u00famero do espa\u00e7o para trocar de arma. A tecla 1 desativa as armas. Os cristais alimentam os disparos e os feixes de trabalho adicionais. Se a energia ficar abaixo da marca, o feixe adicional se apaga."
   - key: base.district.capacity
     values:
     - "\u041c\u0435\u0441\u0442\u0430 \u0434\u043b\u044f \u0436\u0438\u0442\u0435\u043b\u0435\u0439: {0} / {1}"
@@ -12423,3 +12784,493 @@ MonoBehaviour:
     - "Freischalten"
     - "Desbloquear"
     - "Desbloquear"
+  - key: base.barracks
+    values:
+    - "\u041a\u0430\u0437\u0430\u0440\u043c\u0430"
+    - "Barracks"
+    - "Caserne"
+    - "\u5175\u8425"
+    - "Caserma"
+    - "Kaserne"
+    - "Cuartel"
+    - "Quartel"
+  - key: base.range.slingers
+    values:
+    - "\u041f\u0440\u0430\u0449\u043d\u0438\u043a\u0438"
+    - "Slingers"
+    - "Frondeurs"
+    - "\u6295\u77f3\u5175"
+    - "Frombolieri"
+    - "Schleuderer"
+    - "Honderos"
+    - "Fundeiros"
+  - key: base.range.archers
+    values:
+    - "\u041b\u0443\u0447\u043d\u0438\u043a\u0438"
+    - "Archers"
+    - "Archers"
+    - "\u5f13\u7bad\u624b"
+    - "Arcieri"
+    - "Bogensch\u00fctzen"
+    - "Arqueros"
+    - "Arqueiros"
+  - key: base.disabled.archeryrange
+    values:
+    - "\u0423\u043b\u0443\u0447\u0448\u0438\u0442\u0435 \u0441\u0442\u0440\u0435\u043b\u044c\u0431\u0438\u0449\u0435"
+    - "Upgrade the range"
+    - "Am\u00e9liorez le champ de tir"
+    - "\u5347\u7ea7\u5c04\u51fb\u573a"
+    - "Potenzia il campo di tiro"
+    - "Verbessere den Schie\u00dfplatz"
+    - "Mejora el campo de tiro"
+    - "Melhore o campo de tiro"
+  - key: unit.slinger.title
+    values:
+    - "\u041f\u0440\u0430\u0449\u043d\u0438\u043a"
+    - "Slinger"
+    - "Frondeur"
+    - "\u6295\u77f3\u5175"
+    - "Fromboliere"
+    - "Schleuderer"
+    - "Hondero"
+    - "Fundeiro"
+  - key: unit.slinger.description
+    values:
+    - "\u0411\u043e\u0435\u0446 \u0434\u0430\u043b\u044c\u043d\u0435\u0433\u043e \u0431\u043e\u044f. \u041f\u0440\u0430\u0449\u0430 \u0431\u044c\u0451\u0442 \u0441\u043b\u0430\u0431\u043e \u0438 \u043c\u0435\u0434\u043b\u0435\u043d\u043d\u043e."
+    - "A ranged fighter with a slow, low-damage sling."
+    - "Un combattant \u00e0 distance dot\u00e9 d\u2019une fronde lente et peu puissante."
+    - "\u8fdc\u7a0b\u6218\u58eb\uff0c\u6295\u77f3\u901f\u5ea6\u6162\u4e14\u4f24\u5bb3\u4f4e\u3002"
+    - "Un combattente a distanza con una fionda lenta e poco potente."
+    - "Ein Fernk\u00e4mpfer mit einer langsamen, schwachen Schleuder."
+    - "Un combatiente a distancia con una honda lenta y poco potente."
+    - "Um combatente \u00e0 dist\u00e2ncia com uma funda lenta e pouco potente."
+  - key: resource.Slinger.name
+    values:
+    - "\u041f\u0440\u0430\u0449\u043d\u0438\u043a\u0438"
+    - "Slingers"
+    - "Frondeurs"
+    - "\u6295\u77f3\u5175"
+    - "Frombolieri"
+    - "Schleuderer"
+    - "Honderos"
+    - "Fundeiros"
+  - key: base.barracks.title
+    values:
+    - "\u041a\u0410\u0417\u0410\u0420\u041c\u0410"
+    - "BARRACKS"
+    - "CASERNE"
+    - "\u5175\u8425"
+    - "CASERMA"
+    - "KASERNE"
+    - "CUARTEL"
+    - "QUARTEL"
+  - key: base.range.archers_upgrade
+    values:
+    - "\u041e\u0442\u043a\u0440\u044b\u0432\u0430\u0435\u0442 \u043b\u0443\u0447\u043d\u0438\u043a\u043e\u0432."
+    - "Unlocks archers."
+    - "D\u00e9bloque les archers."
+    - "\u89e3\u9501\u5f13\u7bad\u624b\u3002"
+    - "Sblocca gli arcieri."
+    - "Schaltet Bogensch\u00fctzen frei."
+    - "Desbloquea arqueros."
+    - "Desbloqueia arqueiros."
+  - key: unit.training.release_slinger_hint
+    values:
+    - "\u041f\u0440\u0438 \u0440\u0430\u0441\u0444\u043e\u0440\u043c\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0438 \u043f\u0440\u0430\u0449\u043d\u0438\u043a \u0441\u043d\u043e\u0432\u0430 \u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u0441\u044f \u043a\u0440\u0435\u0441\u0442\u044c\u044f\u043d\u0438\u043d\u043e\u043c."
+    - "Dismissing a slinger returns one peasant."
+    - "Renvoyer un frondeur rend un paysan."
+    - "\u89e3\u6563\u6295\u77f3\u5175\u540e\u8fd4\u8fd8\u4e00\u540d\u519c\u6c11\u3002"
+    - "Congedare un fromboliere restituisce un contadino."
+    - "Beim Entlassen wird der Schleuderer wieder zum Bauern."
+    - "Al licenciar a un hondero recuperas un campesino."
+    - "Dispensar um fundeiro devolve um campon\u00eas."
+  - key: quest.recruit_slingers.status
+    values:
+    - "\u041d\u0430\u0439\u043c\u0438 \u0434\u0432\u0443\u0445 \u043f\u0440\u0430\u0449\u043d\u0438\u043a\u043e\u0432"
+    - "Train two slingers"
+    - "Formez deux frondeurs"
+    - "\u8bad\u7ec3\u4e24\u540d\u6295\u77f3\u5175"
+    - "Addestra due frombolieri"
+    - "Bilde zwei Schleuderer aus"
+    - "Entrena a dos honderos"
+    - "Treine dois fundeiros"
+  - key: quest.recruit_slingers.purpose
+    values:
+    - "\u0414\u0432\u0430 \u043f\u0440\u0430\u0449\u043d\u0438\u043a\u0430 \u043d\u0430 \u0441\u0442\u0440\u0430\u0436\u0435"
+    - "Two slingers on watch"
+    - "Deux frondeurs de garde"
+    - "\u4e24\u540d\u6295\u77f3\u5175\u5b88\u536b"
+    - "Due frombolieri di guardia"
+    - "Zwei Schleuderer auf Wache"
+    - "Dos honderos de guardia"
+    - "Dois fundeiros de guarda"
+  - key: narrative.dialogue.pew_two_archers.0
+    values:
+    - "\u0421\u0442\u0440\u0435\u043b\u044c\u0431\u0438\u0449\u0435 \u0433\u043e\u0442\u043e\u0432\u043e! \u041d\u0430\u043c \u043f\u043e\u0440\u0430 \u0432\u044b\u0441\u0442\u0430\u0432\u0438\u0442\u044c \u0441\u0442\u0440\u0430\u0436\u0443. \u041d\u0430\u0447\u043d\u0451\u043c \u0441 \u043f\u0440\u0430\u0449\u043d\u0438\u043a\u043e\u0432 \u2013 \u043e\u043d\u0438 \u0441\u043c\u043e\u0433\u0443\u0442 \u043f\u0440\u0438\u043a\u0440\u044b\u0432\u0430\u0442\u044c \u0440\u0430\u0431\u043e\u0442\u043d\u0438\u043a\u043e\u0432 \u0438\u0437\u0434\u0430\u043b\u0435\u043a\u0430."
+    - "The range is ready! Time to post a guard. Let\u2019s start with slingers. They can cover our workers from a distance."
+    - "Le champ de tir est pr\u00eat ! Il est temps de monter la garde. Commen\u00e7ons par les frondeurs, qui couvriront nos ouvriers \u00e0 distance."
+    - "\u5c04\u51fb\u573a\u5efa\u597d\u4e86\uff01\u8be5\u6d3e\u4eba\u7ad9\u5c97\u4e86\u3002\u5148\u8bad\u7ec3\u6295\u77f3\u5175\uff0c\u4ed6\u4eec\u80fd\u4ece\u8fdc\u5904\u63a9\u62a4\u5de5\u4eba\u3002"
+    - "Il campo di tiro \u00e8 pronto! \u00c8 ora di mettere una guardia. Cominciamo dai frombolieri, che possono coprire i nostri lavoratori da lontano."
+    - "Der Schie\u00dfplatz ist fertig! Zeit, eine Wache aufzustellen. Fangen wir mit Schleuderern an. Sie k\u00f6nnen unsere Arbeiter aus der Ferne decken."
+    - "\u00a1El campo de tiro est\u00e1 listo! Es hora de montar guardia. Empecemos con honderos. Pueden cubrir a los trabajadores desde lejos."
+    - "O campo de tiro est\u00e1 pronto! \u00c9 hora de montar guarda. Vamos come\u00e7ar com fundeiros, que podem proteger os trabalhadores \u00e0 dist\u00e2ncia."
+  - key: narrative.dialogue.pew_build_blacksmith.0
+    values:
+    - "\u041f\u0435\u0440\u0432\u044b\u0435 \u0437\u0430\u0449\u0438\u0442\u043d\u0438\u043a\u0438 \u0443\u0436\u0435 \u043d\u0430 \u043f\u043e\u0441\u0442\u0443. \u0422\u0435\u043f\u0435\u0440\u044c \u043d\u0430\u043c \u043d\u0443\u0436\u043d\u0430 \u043a\u0443\u0437\u043d\u0438\u0446\u0430, \u0447\u0442\u043e\u0431\u044b \u0434\u0435\u043b\u0430\u0442\u044c \u0441\u0432\u043e\u0451 \u043e\u0440\u0443\u0436\u0438\u0435."
+    - "Our first defenders are on watch. Now we need a forge to make our own weapons."
+    - "Nos premiers d\u00e9fenseurs montent la garde. Il nous faut une forge pour fabriquer nos armes."
+    - "\u9996\u6279\u5b88\u536b\u5df2\u7ecf\u4e0a\u5c97\u3002\u73b0\u5728\u6211\u4eec\u9700\u8981\u94c1\u5320\u94fa\u6765\u5236\u4f5c\u81ea\u5df1\u7684\u6b66\u5668\u3002"
+    - "I nostri primi difensori sono di guardia. Ora serve una fucina per fabbricare le nostre armi."
+    - "Unsere ersten Verteidiger halten Wache. Jetzt brauchen wir eine Schmiede f\u00fcr eigene Waffen."
+    - "Nuestros primeros defensores ya hacen guardia. Ahora necesitamos una forja para fabricar nuestras armas."
+    - "Nossos primeiros defensores est\u00e3o de guarda. Agora precisamos de uma forja para fabricar nossas armas."
+  - key: base.building.barracks.description
+    values:
+    - "\u0417\u0434\u0435\u0441\u044c \u043a\u0440\u0435\u0441\u0442\u044c\u044f\u043d\u0435 \u0441 \u043a\u043e\u043f\u044c\u044f\u043c\u0438 \u0441\u0442\u0430\u043d\u043e\u0432\u044f\u0442\u0441\u044f \u043a\u043e\u043f\u0435\u0439\u0449\u0438\u043a\u0430\u043c\u0438."
+    - "Train peasants with spears as spearmen."
+    - "Formez des paysans \u00e9quip\u00e9s de lances en lanciers."
+    - "\u5c06\u6301\u77db\u7684\u519c\u6c11\u8bad\u7ec3\u6210\u957f\u77db\u5175\u3002"
+    - "Addestra i contadini con lance per farne lancieri."
+    - "Bilde Bauern mit Speeren zu Speertr\u00e4gern aus."
+    - "Entrena a campesinos con lanzas para convertirlos en lanceros."
+    - "Treine camponeses com lan\u00e7as para se tornarem lanceiros."
+  - key: quest.recruit_slingers.title
+    values:
+    - "\u041f\u0435\u0440\u0432\u044b\u0435 \u043f\u0440\u0430\u0449\u043d\u0438\u043a\u0438"
+    - "First Slingers"
+    - "Les premiers frondeurs"
+    - "\u9996\u6279\u6295\u77f3\u5175"
+    - "I primi frombolieri"
+    - "Die ersten Schleuderer"
+    - "Los primeros honderos"
+    - "Os primeiros fundeiros"
+  - key: laboratory.group.science.weapon_slots
+    values:
+    - "\u042f\u0447\u0435\u0439\u043a\u0438 \u043e\u0440\u0443\u0436\u0438\u044f"
+    - "Weapon slots"
+    - "Emplacements d\u2019armes"
+    - "\u6b66\u5668\u680f\u4f4d"
+    - "Slot arma"
+    - "Waffenpl\u00e4tze"
+    - "Ranuras de armas"
+    - "Espa\u00e7os de armas"
+  - key: skill.science.weapon_slots.1.description
+    values:
+    - "\u0414\u043e\u0431\u0430\u0432\u043b\u044f\u0435\u0442 \u043e\u0434\u043d\u0443 \u044f\u0447\u0435\u0439\u043a\u0443 \u0434\u043b\u044f \u043e\u0440\u0443\u0436\u0438\u044f \u0432 \u0432\u044b\u043b\u0430\u0437\u043a\u0435. \u0412\u0441\u0435\u0433\u043e \u044f\u0447\u0435\u0435\u043a \u2013 4, \u0432\u043a\u043b\u044e\u0447\u0430\u044f \u043e\u0442\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u043e\u0440\u0443\u0436\u0438\u044f."
+    - "Adds one expedition weapon slot. Total slots \u2013 4, including the off slot."
+    - "Ajoute un emplacement d\u2019arme en exp\u00e9dition. Total \u2013 4, d\u00e9sactivation comprise."
+    - "\u589e\u52a0\u4e00\u4e2a\u51fa\u5f81\u6b66\u5668\u680f\u4f4d\u3002\u5171 4 \u4e2a\u680f\u4f4d\uff0c\u5305\u542b\u5173\u95ed\u6b66\u5668\u7684\u680f\u4f4d\u3002"
+    - "Aggiunge uno slot arma per le spedizioni. Totale \u2013 4, incluso lo slot di disattivazione."
+    - "F\u00fcgt einen Waffenplatz f\u00fcr Expeditionen hinzu. Insgesamt 4 Pl\u00e4tze, einschlie\u00dflich des Platzes zum Abschalten."
+    - "A\u00f1ade una ranura de arma para las expediciones. Total \u2013 4, incluida la ranura de desactivaci\u00f3n."
+    - "Adiciona um espa\u00e7o de arma para expedi\u00e7\u00f5es. Total \u2013 4, incluindo o espa\u00e7o para desativar as armas."
+  - key: skill.science.weapon_slots.2.description
+    values:
+    - "\u0414\u043e\u0431\u0430\u0432\u043b\u044f\u0435\u0442 \u043e\u0434\u043d\u0443 \u044f\u0447\u0435\u0439\u043a\u0443 \u0434\u043b\u044f \u043e\u0440\u0443\u0436\u0438\u044f \u0432 \u0432\u044b\u043b\u0430\u0437\u043a\u0435. \u0412\u0441\u0435\u0433\u043e \u044f\u0447\u0435\u0435\u043a \u2013 5, \u0432\u043a\u043b\u044e\u0447\u0430\u044f \u043e\u0442\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u043e\u0440\u0443\u0436\u0438\u044f."
+    - "Adds one expedition weapon slot. Total slots \u2013 5, including the off slot."
+    - "Ajoute un emplacement d\u2019arme en exp\u00e9dition. Total \u2013 5, d\u00e9sactivation comprise."
+    - "\u589e\u52a0\u4e00\u4e2a\u51fa\u5f81\u6b66\u5668\u680f\u4f4d\u3002\u5171 5 \u4e2a\u680f\u4f4d\uff0c\u5305\u542b\u5173\u95ed\u6b66\u5668\u7684\u680f\u4f4d\u3002"
+    - "Aggiunge uno slot arma per le spedizioni. Totale \u2013 5, incluso lo slot di disattivazione."
+    - "F\u00fcgt einen Waffenplatz f\u00fcr Expeditionen hinzu. Insgesamt 5 Pl\u00e4tze, einschlie\u00dflich des Platzes zum Abschalten."
+    - "A\u00f1ade una ranura de arma para las expediciones. Total \u2013 5, incluida la ranura de desactivaci\u00f3n."
+    - "Adiciona um espa\u00e7o de arma para expedi\u00e7\u00f5es. Total \u2013 5, incluindo o espa\u00e7o para desativar as armas."
+  - key: skill.science.weapon_slots.3.description
+    values:
+    - "\u0414\u043e\u0431\u0430\u0432\u043b\u044f\u0435\u0442 \u043e\u0434\u043d\u0443 \u044f\u0447\u0435\u0439\u043a\u0443 \u0434\u043b\u044f \u043e\u0440\u0443\u0436\u0438\u044f \u0432 \u0432\u044b\u043b\u0430\u0437\u043a\u0435. \u0412\u0441\u0435\u0433\u043e \u044f\u0447\u0435\u0435\u043a \u2013 6, \u0432\u043a\u043b\u044e\u0447\u0430\u044f \u043e\u0442\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u043e\u0440\u0443\u0436\u0438\u044f."
+    - "Adds one expedition weapon slot. Total slots \u2013 6, including the off slot."
+    - "Ajoute un emplacement d\u2019arme en exp\u00e9dition. Total \u2013 6, d\u00e9sactivation comprise."
+    - "\u589e\u52a0\u4e00\u4e2a\u51fa\u5f81\u6b66\u5668\u680f\u4f4d\u3002\u5171 6 \u4e2a\u680f\u4f4d\uff0c\u5305\u542b\u5173\u95ed\u6b66\u5668\u7684\u680f\u4f4d\u3002"
+    - "Aggiunge uno slot arma per le spedizioni. Totale \u2013 6, incluso lo slot di disattivazione."
+    - "F\u00fcgt einen Waffenplatz f\u00fcr Expeditionen hinzu. Insgesamt 6 Pl\u00e4tze, einschlie\u00dflich des Platzes zum Abschalten."
+    - "A\u00f1ade una ranura de arma para las expediciones. Total \u2013 6, incluida la ranura de desactivaci\u00f3n."
+    - "Adiciona um espa\u00e7o de arma para expedi\u00e7\u00f5es. Total \u2013 6, incluindo o espa\u00e7o para desativar as armas."
+  - key: skill.science.weapon_slots.4.description
+    values:
+    - "\u0414\u043e\u0431\u0430\u0432\u043b\u044f\u0435\u0442 \u043e\u0434\u043d\u0443 \u044f\u0447\u0435\u0439\u043a\u0443 \u0434\u043b\u044f \u043e\u0440\u0443\u0436\u0438\u044f \u0432 \u0432\u044b\u043b\u0430\u0437\u043a\u0435. \u0412\u0441\u0435\u0433\u043e \u044f\u0447\u0435\u0435\u043a \u2013 7, \u0432\u043a\u043b\u044e\u0447\u0430\u044f \u043e\u0442\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u043e\u0440\u0443\u0436\u0438\u044f."
+    - "Adds one expedition weapon slot. Total slots \u2013 7, including the off slot."
+    - "Ajoute un emplacement d\u2019arme en exp\u00e9dition. Total \u2013 7, d\u00e9sactivation comprise."
+    - "\u589e\u52a0\u4e00\u4e2a\u51fa\u5f81\u6b66\u5668\u680f\u4f4d\u3002\u5171 7 \u4e2a\u680f\u4f4d\uff0c\u5305\u542b\u5173\u95ed\u6b66\u5668\u7684\u680f\u4f4d\u3002"
+    - "Aggiunge uno slot arma per le spedizioni. Totale \u2013 7, incluso lo slot di disattivazione."
+    - "F\u00fcgt einen Waffenplatz f\u00fcr Expeditionen hinzu. Insgesamt 7 Pl\u00e4tze, einschlie\u00dflich des Platzes zum Abschalten."
+    - "A\u00f1ade una ranura de arma para las expediciones. Total \u2013 7, incluida la ranura de desactivaci\u00f3n."
+    - "Adiciona um espa\u00e7o de arma para expedi\u00e7\u00f5es. Total \u2013 7, incluindo o espa\u00e7o para desativar as armas."
+  - key: arsenal.mode.economical
+    values:
+    - "\u042d\u043a\u043e\u043d\u043e\u043c\u043d\u044b\u0439"
+    - "Economy"
+    - "\u00c9conomique"
+    - "\u8282\u80fd"
+    - "Economico"
+    - "Sparsam"
+    - "Econ\u00f3mico"
+    - "Econ\u00f4mico"
+  - key: arsenal.mode.balanced
+    values:
+    - "\u041e\u043f\u0442\u0438\u043c\u0430\u043b\u044c\u043d\u044b\u0439"
+    - "Balanced"
+    - "\u00c9quilibr\u00e9"
+    - "\u5747\u8861"
+    - "Bilanciato"
+    - "Ausgewogen"
+    - "Equilibrado"
+    - "Equilibrado"
+  - key: arsenal.mode.overcharged
+    values:
+    - "\u0423\u0441\u0438\u043b\u0435\u043d\u043d\u044b\u0439"
+    - "Overcharged"
+    - "Renforc\u00e9"
+    - "\u5f3a\u5316"
+    - "Potenziato"
+    - "Verst\u00e4rkt"
+    - "Potenciado"
+    - "Refor\u00e7ado"
+  - key: arsenal.mode.apply
+    values:
+    - "\u0412\u044b\u0431\u0440\u0430\u0442\u044c"
+    - "Select"
+    - "Choisir"
+    - "\u9009\u62e9"
+    - "Seleziona"
+    - "Ausw\u00e4hlen"
+    - "Elegir"
+    - "Escolher"
+  - key: arsenal.stat.energyPerMinute
+    values:
+    - "\u042d\u043d\u0435\u0440\u0433\u0438\u044f \u0432 \u043c\u0438\u043d\u0443\u0442\u0443"
+    - "Energy per minute"
+    - "\u00c9nergie par minute"
+    - "\u6bcf\u5206\u949f\u80fd\u91cf"
+    - "Energia al minuto"
+    - "Energie pro Minute"
+    - "Energ\u00eda por minuto"
+    - "Energia por minuto"
+  - key: arsenal.energy.tutorial.slots
+    values:
+    - "\u0422\u0435\u043f\u0435\u0440\u044c \u0431\u0430\u0448\u043d\u044f \u043c\u043e\u0436\u0435\u0442 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u044c \u043e\u0440\u0443\u0436\u0438\u0435. \u0412 \u0431\u043e\u044e \u043d\u0430\u0436\u043c\u0438 \u043d\u0430 \u044f\u0447\u0435\u0439\u043a\u0443 \u0438\u043b\u0438 \u0435\u0451 \u0446\u0438\u0444\u0440\u0443 \u043d\u0430 \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u0435. \u042f\u0447\u0435\u0439\u043a\u0430 1 \u0432\u0441\u0435\u0433\u0434\u0430 \u0432\u044b\u043a\u043b\u044e\u0447\u0430\u0435\u0442 \u043e\u0440\u0443\u0436\u0438\u0435. \u042f\u0447\u0435\u0439\u043a\u0438 2, 3 \u0438 \u0434\u0430\u043b\u044c\u0448\u0435 \u0432\u043a\u043b\u044e\u0447\u0430\u044e\u0442 \u043d\u0430\u0437\u043d\u0430\u0447\u0435\u043d\u043d\u043e\u0435 \u0432 \u043d\u0438\u0445 \u043e\u0440\u0443\u0436\u0438\u0435. \u041d\u0430\u0441\u0442\u0440\u043e\u0438\u0442\u044c \u0438\u0445 \u043c\u043e\u0436\u043d\u043e \u0432 \u043c\u0430\u0433\u0438\u0447\u0435\u0441\u043a\u043e\u0439 \u0431\u0430\u0448\u043d\u0435 \u043d\u0430 \u0431\u0430\u0437\u0435."
+    - "The tower can now use weapons. In battle, click a slot or press its number. Slot 1 always turns weapons off. Slots 2, 3 and beyond equip their assigned weapons. Set up your slots in the Magic Tower at the base."
+    - "La tour peut maintenant utiliser des armes. En combat, clique sur un emplacement ou appuie sur son num\u00e9ro. L\u2019emplacement 1 d\u00e9sactive toujours les armes. Les emplacements 2, 3 et suivants activent les armes assign\u00e9es. Configure-les dans la tour magique de la base."
+    - "\u5854\u73b0\u5728\u53ef\u4ee5\u4f7f\u7528\u6b66\u5668\u4e86\u3002\u6218\u6597\u4e2d\u70b9\u51fb\u680f\u4f4d\u6216\u6309\u5bf9\u5e94\u7684\u6570\u5b57\u952e\u30021 \u53f7\u680f\u4f4d\u59cb\u7ec8\u5173\u95ed\u6b66\u5668\u30022\u30013 \u53f7\u53ca\u4e4b\u540e\u7684\u680f\u4f4d\u542f\u7528\u5404\u81ea\u914d\u7f6e\u7684\u6b66\u5668\u3002\u53ef\u4ee5\u5728\u57fa\u5730\u7684\u9b54\u6cd5\u5854\u914d\u7f6e\u680f\u4f4d\u3002"
+    - "Ora la torre pu\u00f2 usare le armi. In battaglia, fai clic su uno slot o premi il tasto corrispondente. Lo slot 1 disattiva sempre le armi. Gli slot dal 2 in poi attivano le armi assegnate. Configura gli slot nella torre magica della base."
+    - "Der Turm kann jetzt Waffen einsetzen. Klicke im Kampf auf einen Platz oder dr\u00fccke die passende Zifferntaste. Platz 1 schaltet die Waffen immer aus. Ab Platz 2 wird die jeweils zugewiesene Waffe aktiviert. Die Pl\u00e4tze richtest du im Magieturm der Basis ein."
+    - "La torre ya puede usar armas. En combate, haz clic en una ranura o pulsa su n\u00famero. La ranura 1 siempre desactiva las armas. Las ranuras a partir de la 2 activan el arma asignada. Puedes configurarlas en la torre m\u00e1gica de la base."
+    - "A torre j\u00e1 pode usar armas. Em combate, clique em um espa\u00e7o ou pressione o n\u00famero correspondente. O espa\u00e7o 1 sempre desativa as armas. A partir do espa\u00e7o 2, cada espa\u00e7o ativa a arma atribu\u00edda. Configure os espa\u00e7os na torre m\u00e1gica da base."
+  - key: arsenal.energy.tutorial.spending
+    values:
+    - "\u041e\u0440\u0443\u0436\u0438\u0435 \u0442\u0440\u0430\u0442\u0438\u0442 \u044d\u043d\u0435\u0440\u0433\u0438\u044e. \u0420\u0430\u0441\u0445\u043e\u0434 \u0437\u0430\u0432\u0438\u0441\u0438\u0442 \u043e\u0442 \u043e\u0440\u0443\u0436\u0438\u044f \u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u043f\u0440\u043e\u0444\u0438\u043b\u044f. \u0421\u043e\u0431\u0438\u0440\u0430\u0439 \u043a\u0440\u0438\u0441\u0442\u0430\u043b\u043b\u044b, \u0447\u0442\u043e\u0431\u044b \u043f\u043e\u043f\u043e\u043b\u043d\u044f\u0442\u044c \u0437\u0430\u043f\u0430\u0441. \u0415\u0441\u043b\u0438 \u044d\u043d\u0435\u0440\u0433\u0438\u0438 \u043d\u0435 \u0445\u0432\u0430\u0442\u0438\u0442, \u043e\u0440\u0443\u0436\u0438\u0435 \u043e\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u0441\u044f. \u0415\u0441\u043b\u0438 \u0437\u0430\u043f\u0430\u0441 \u0443\u043f\u0430\u0434\u0451\u0442 \u043d\u0438\u0436\u0435 \u043e\u0442\u043c\u0435\u0442\u043a\u0438 \u043d\u0430 \u0448\u043a\u0430\u043b\u0435, \u0434\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0439 \u0440\u0430\u0431\u043e\u0447\u0438\u0439 \u043b\u0443\u0447 \u043f\u043e\u0433\u0430\u0441\u043d\u0435\u0442."
+    - "Weapons spend energy. The cost depends on the weapon and its selected profile. Collect crystals to replenish your energy. Weapons stop when you cannot afford to use them. If energy drops below a mark on the gauge, the extra work beam goes out."
+    - "Les armes consomment de l\u2019\u00e9nergie. Le co\u00fbt d\u00e9pend de l\u2019arme et du profil choisi. Ramasse des cristaux pour recharger la r\u00e9serve. Si l\u2019\u00e9nergie manque, l\u2019arme s\u2019arr\u00eate. Si la r\u00e9serve passe sous un rep\u00e8re de la jauge, le rayon de travail suppl\u00e9mentaire s\u2019\u00e9teint."
+    - "\u6b66\u5668\u4f1a\u6d88\u8017\u80fd\u91cf\uff0c\u6d88\u8017\u91cf\u53d6\u51b3\u4e8e\u6b66\u5668\u548c\u6240\u9009\u914d\u7f6e\u3002\u6536\u96c6\u6c34\u6676\u53ef\u4ee5\u8865\u5145\u80fd\u91cf\u3002\u80fd\u91cf\u4e0d\u8db3\u65f6\uff0c\u6b66\u5668\u4f1a\u505c\u6b62\u8fd0\u4f5c\u3002\u80fd\u91cf\u4f4e\u4e8e\u8fdb\u5ea6\u6761\u4e0a\u7684\u6807\u8bb0\u65f6\uff0c\u989d\u5916\u5de5\u4f5c\u5149\u675f\u4f1a\u7184\u706d\u3002"
+    - "Le armi consumano energia. Il costo dipende dall\u2019arma e dal profilo scelto. Raccogli cristalli per ricaricare la riserva. Se l\u2019energia non basta, l\u2019arma si ferma. Se la riserva scende sotto una tacca, il raggio di lavoro aggiuntivo si spegne."
+    - "Waffen verbrauchen Energie. Der Verbrauch h\u00e4ngt von der Waffe und dem gew\u00e4hlten Profil ab. Sammle Kristalle, um den Vorrat aufzuf\u00fcllen. Bei zu wenig Energie setzt die Waffe aus. F\u00e4llt die Energie unter eine Markierung, erlischt der zus\u00e4tzliche Arbeitsstrahl."
+    - "Las armas gastan energ\u00eda. El coste depende del arma y del perfil elegido. Recoge cristales para recargar la reserva. Si no queda suficiente energ\u00eda, el arma se detiene. Si la reserva cae por debajo de una marca del indicador, se apaga el haz de trabajo adicional."
+    - "As armas gastam energia. O custo depende da arma e do perfil escolhido. Colete cristais para repor a reserva. Se faltar energia, a arma para. Se a reserva cair abaixo de uma marca na barra, o feixe de trabalho adicional se apaga."
+  - key: arsenal.energy.tutorial.off
+    values:
+    - "\u0422\u0435\u043f\u0435\u0440\u044c \u0431\u0430\u0448\u043d\u044f \u043c\u043e\u0436\u0435\u0442 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u044c \u043e\u0440\u0443\u0436\u0438\u0435. \u041d\u0430\u0436\u043c\u0438 \u043d\u0430 \u043f\u043e\u0434\u0441\u0432\u0435\u0447\u0435\u043d\u043d\u0443\u044e \u044f\u0447\u0435\u0439\u043a\u0443 1 \u0438\u043b\u0438 \u043a\u043b\u0430\u0432\u0438\u0448\u0443 1, \u0447\u0442\u043e\u0431\u044b \u0432\u044b\u043a\u043b\u044e\u0447\u0438\u0442\u044c \u043e\u0440\u0443\u0436\u0438\u0435."
+    - "The tower can now use weapons. Click the highlighted slot 1 or press 1 to turn weapons off."
+    - "La tour peut maintenant utiliser des armes. Clique sur l\u2019emplacement 1 en surbrillance ou appuie sur 1 pour les d\u00e9sactiver."
+    - "\u5854\u73b0\u5728\u53ef\u4ee5\u4f7f\u7528\u6b66\u5668\u4e86\u3002\u70b9\u51fb\u9ad8\u4eae\u7684 1 \u53f7\u680f\u4f4d\u6216\u6309 1 \u952e\u5173\u95ed\u6b66\u5668\u3002"
+    - "Ora la torre pu\u00f2 usare le armi. Fai clic sullo slot 1 evidenziato o premi 1 per disattivarle."
+    - "Der Turm kann jetzt Waffen einsetzen. Klicke auf den markierten Platz 1 oder dr\u00fccke 1, um die Waffen auszuschalten."
+    - "La torre ya puede usar armas. Haz clic en la ranura 1 resaltada o pulsa 1 para desactivarlas."
+    - "A torre j\u00e1 pode usar armas. Clique no espa\u00e7o 1 destacado ou pressione 1 para desativ\u00e1-las."
+  - key: arsenal.energy.tutorial.on
+    values:
+    - "\u0422\u0435\u043f\u0435\u0440\u044c \u043d\u0430\u0436\u043c\u0438 \u043d\u0430 \u044f\u0447\u0435\u0439\u043a\u0443 2 \u0438\u043b\u0438 \u043a\u043b\u0430\u0432\u0438\u0448\u0443 2, \u0447\u0442\u043e\u0431\u044b \u0441\u043d\u043e\u0432\u0430 \u0432\u043a\u043b\u044e\u0447\u0438\u0442\u044c \u043e\u0440\u0443\u0436\u0438\u0435. \u0422\u0430\u043a \u0436\u0435 \u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u0439\u0441\u044f \u043d\u0430 \u044f\u0447\u0435\u0439\u043a\u0443 3 \u0438 \u0434\u0430\u043b\u044c\u0448\u0435. \u041e\u0440\u0443\u0436\u0438\u0435 \u043d\u0430\u0437\u043d\u0430\u0447\u0430\u0435\u0442\u0441\u044f \u0432 \u043c\u0430\u0433\u0438\u0447\u0435\u0441\u043a\u043e\u0439 \u0431\u0430\u0448\u043d\u0435 \u043d\u0430 \u0431\u0430\u0437\u0435."
+    - "Now click slot 2 or press 2 to turn weapons back on. Switch to slot 3 and beyond the same way. Assign weapons in the Magic Tower at the base."
+    - "Clique maintenant sur l\u2019emplacement 2 ou appuie sur 2 pour r\u00e9activer l\u2019arme. Les emplacements 3 et suivants fonctionnent de la m\u00eame fa\u00e7on. Assigne les armes dans la tour magique de la base."
+    - "\u70b9\u51fb 2 \u53f7\u680f\u4f4d\u6216\u6309 2 \u952e\u91cd\u65b0\u542f\u7528\u6b66\u5668\u30023 \u53f7\u53ca\u4e4b\u540e\u7684\u680f\u4f4d\u4e5f\u53ef\u7528\u540c\u6837\u7684\u65b9\u5f0f\u5207\u6362\u3002\u4f60\u53ef\u4ee5\u5728\u57fa\u5730\u7684\u9b54\u6cd5\u5854\u914d\u7f6e\u6b66\u5668\u3002"
+    - "Ora fai clic sullo slot 2 o premi 2 per riattivare l\u2019arma. Gli slot dal 3 in poi funzionano allo stesso modo. Assegna le armi nella torre magica della base."
+    - "Klicke nun auf Platz 2 oder dr\u00fccke 2, um die Waffe wieder einzuschalten. Ab Platz 3 funktioniert es genauso. Waffen weist du im Magieturm der Basis zu."
+    - "Ahora haz clic en la ranura 2 o pulsa 2 para volver a activar el arma. Las ranuras a partir de la 3 funcionan igual. Asigna armas en la torre m\u00e1gica de la base."
+    - "Agora clique no espa\u00e7o 2 ou pressione 2 para reativar a arma. A partir do espa\u00e7o 3, a troca funciona do mesmo jeito. Atribua armas na torre m\u00e1gica da base."
+  - key: world.upgrade_stat.ChainChance
+    values:
+    - "\u0428\u0430\u043d\u0441 \u043f\u0435\u0440\u0435\u0441\u043a\u043e\u043a\u0430"
+    - "Jump chance"
+    - "Chance de rebond"
+    - "\u8df3\u8dc3\u6982\u7387"
+    - "Probabilit\u00e0 di rimbalzo"
+    - "Sprungchance"
+    - "Probabilidad de salto"
+    - "Chance de salto"
+  - key: world.upgrade_stat.ChainRetention
+    values:
+    - "\u0423\u0440\u043e\u043d \u043f\u0435\u0440\u0435\u0441\u043a\u043e\u043a\u0430"
+    - "Jump damage retained"
+    - "D\u00e9g\u00e2ts conserv\u00e9s"
+    - "\u8df3\u8dc3\u4f24\u5bb3\u4fdd\u7559"
+    - "Danni mantenuti"
+    - "Schaden je Sprung"
+    - "Da\u00f1o conservado"
+    - "Dano mantido"
+  - key: world.upgrade_stat.ChainLimit
+    values:
+    - "\u041c\u0430\u043a\u0441. \u043f\u0435\u0440\u0435\u0441\u043a\u043e\u043a\u043e\u0432"
+    - "Max jumps"
+    - "Rebonds max."
+    - "\u6700\u5927\u8df3\u8dc3\u6b21\u6570"
+    - "Rimbalzi max"
+    - "Max. Spr\u00fcnge"
+    - "Saltos m\u00e1x."
+    - "Saltos m\u00e1x."
+  - key: world.upgrade_stat.percentage_points
+    values:
+    - " \u043f. \u043f."
+    - " pp"
+    - " pts"
+    - " \u4e2a\u767e\u5206\u70b9"
+    - " p.p."
+    - " PP"
+    - " p. p."
+    - " p.p."
+  - key: world.upgrade_crystal.incompatible
+    values:
+    - "\u041d\u0435\u0442 \u043f\u043e\u0434\u0445\u043e\u0434\u044f\u0449\u0435\u0433\u043e \u043e\u0440\u0443\u0436\u0438\u044f \u0432 \u043d\u0430\u0431\u043e\u0440\u0435"
+    - "No compatible weapon equipped"
+    - "Aucune arme compatible \u00e9quip\u00e9e"
+    - "\u5df2\u88c5\u5907\u6b66\u5668\u5747\u4e0d\u9002\u7528"
+    - "Nessuna arma compatibile"
+    - "Keine passende Waffe ausger\u00fcstet"
+    - "Sin armas compatibles equipadas"
+    - "Sem arma compat\u00edvel equipada"
+  - key: base.military_district.title
+    values:
+    - "\u0412\u043e\u0435\u043d\u043d\u044b\u0439 \u043a\u0432\u0430\u0440\u0442\u0430\u043b"
+    - "Military Quarter"
+    - "Quartier militaire"
+    - "\u519b\u4e8b\u533a"
+    - "Quartiere militare"
+    - "Milit\u00e4rviertel"
+    - "Barrio militar"
+    - "Bairro militar"
+  - key: base.military_district.buildings
+    values:
+    - "\u0417\u0434\u0430\u043d\u0438\u044f"
+    - "Buildings"
+    - "B\u00e2timents"
+    - "\u5efa\u7b51"
+    - "Edifici"
+    - "Geb\u00e4ude"
+    - "Edificios"
+    - "Edif\u00edcios"
+  - key: base.military_district.barracks
+    values:
+    - "\u041a\u0430\u0437\u0430\u0440\u043c\u0430"
+    - "Barracks"
+    - "Caserne"
+    - "\u5175\u8425"
+    - "Caserma"
+    - "Kaserne"
+    - "Cuartel"
+    - "Quartel"
+  - key: base.choice.can_build
+    values:
+    - "\u041c\u043e\u0436\u043d\u043e \u043f\u043e\u0441\u0442\u0440\u043e\u0438\u0442\u044c"
+    - "Can build"
+    - "Construction possible"
+    - "\u53ef\u5efa\u9020"
+    - "Costruibile"
+    - "Kann gebaut werden"
+    - "Se puede construir"
+    - "Pode construir"
+  - key: base.barracks.spearmen
+    values:
+    - "Копейщики"
+    - "Spearmen"
+    - "Lanciers"
+    - "长矛兵"
+    - "Lancieri"
+    - "Speerträger"
+    - "Lanceros"
+    - "Lanceiros"
+  - key: base.range.crossbowmen
+    values:
+    - "Арбалетчики"
+    - "Crossbowmen"
+    - "Arbalétriers"
+    - "弩手"
+    - "Balestrieri"
+    - "Armbrustschützen"
+    - "Ballesteros"
+    - "Besteiros"
+  - key: quest.archery_materials.wood_dialogue
+    values:
+    - "Принеси десять связок дерева для военного квартала. Я присмотрю подходящее место. А то учиться стрелять между домами – верный способ остаться без окон."
+    - "Bring ten bundles of wood for the Military Quarter. I’ll find a good spot. Learning to shoot between houses is a sure way to lose your windows."
+    - "Apporte dix fagots pour le quartier militaire. Je trouverai un bon endroit. Apprendre à tirer entre les maisons, c’est le meilleur moyen de perdre ses fenêtres."
+    - "为军事区带来十捆木材。我会找个好地方。在房屋之间练习射击，窗户肯定保不住。"
+    - "Porta dieci fasci di legna per il quartiere militare. Troverò il posto giusto. Imparare a tirare tra le case è il modo migliore per rompere le finestre."
+    - "Bring zehn Bündel Holz für das Militärviertel. Ich suche einen guten Platz. Wer zwischen Häusern schießen übt, hat bald keine Fenster mehr."
+    - "Trae diez haces de madera para el barrio militar. Buscaré un buen sitio. Aprender a disparar entre casas es una forma segura de quedarse sin ventanas."
+    - "Traga dez feixes de madeira para o bairro militar. Vou achar um bom lugar. Aprender a atirar entre casas é um jeito certeiro de ficar sem janelas."
+  - key: quest.blacksmith_build.reward_dialogue
+    values:
+    - "Я раздобуду две телеги для носильщиков. Потом устроим научную лабораторию. Голова ведь тоже полезный инструмент – особенно если молотком по ней не стучать."
+    - "I’ll find two carts for the porters. Then we’ll set up a Science Laboratory. Your head is a useful tool too, especially if you don’t hit it with a hammer."
+    - "Je trouverai deux chariots pour les porteurs. Ensuite, nous installerons un laboratoire. La tête aussi est un outil utile, surtout si on ne tape pas dessus au marteau."
+    - "我会为搬运工找两辆手推车。之后我们再建实验室。脑袋也是好工具，前提是别拿锤子敲它。"
+    - "Troverò due carri per i portatori. Poi allestiremo un laboratorio. Anche la testa è uno strumento utile, soprattutto se non ci batti sopra col martello."
+    - "Ich besorge zwei Karren für die Träger. Danach richten wir ein Labor ein. Der Kopf ist auch ein nützliches Werkzeug, solange man nicht mit dem Hammer draufhaut."
+    - "Conseguiré dos carros para los porteadores. Luego montaremos un laboratorio. La cabeza también es una herramienta útil, sobre todo si no le das con un martillo."
+    - "Vou arranjar duas carroças para os carregadores. Depois montaremos um laboratório. A cabeça também é uma ferramenta útil, principalmente se você não bater nela com um martelo."
+  - key: base.garrison.title
+    values:
+    - "Гарнизон"
+    - "Garrison"
+    - "Garnison"
+    - "驻军"
+    - "Guarnigione"
+    - "Garnison"
+    - "Guarnición"
+    - "Guarnição"
+  - key: base.garrison.full
+    values:
+    - "Гарнизон заполнен"
+    - "Garrison is full"
+    - "La garnison est pleine"
+    - "驻军已满"
+    - "Guarnigione al completo"
+    - "Garnison ist voll"
+    - "La guarnición está llena"
+    - "Guarnição lotada"
+  - key: base.garrison.capacity
+    values:
+    - "Количество мест: {0} / {1}"
+    - "Slots: {0} / {1}"
+    - "Places : {0} / {1}"
+    - "床位：{0} / {1}"
+    - "Posti: {0} / {1}"
+    - "Plätze: {0} / {1}"
+    - "Plazas: {0} / {1}"
+    - "Vagas: {0} / {1}"
+  - key: base.fort.knights
+    values:
+    - "Рыцари"
+    - "Knights"
+    - "Chevaliers"
+    - "骑士"
+    - "Cavalieri"
+    - "Ritter"
+    - "Caballeros"
+    - "Cavaleiros"
+  - key: base.fort.speed
+    values:
+    - "Скорость"
+    - "Speed"
+    - "Vitesse"
+    - "速度"
+    - "Velocità"
+    - "Tempo"
+    - "Velocidad"
+    - "Velocidade"
+  - key: unit.training.hired
+    values:
+    - "Нанято:"
+    - "Recruited:"
+    - "Recrutés :"
+    - "已招募："
+    - "Reclutati:"
+    - "Rekrutiert:"
+    - "Reclutados:"
+    - "Recrutados:"

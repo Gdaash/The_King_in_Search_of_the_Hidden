@@ -27,6 +27,7 @@ namespace GameFoundation.Quests
         private bool presenting;
         private GameObject presentationOverlay;
         private QuestPanel presentationDestination;
+        private Coroutine rewardPresentation;
         [Header("Печать по словам")]
         [SerializeField, Min(.02f)] private float wordInterval = .12f;
         [SerializeField, Range(0, 1)] private float wordSoundVolume = .2f;
@@ -52,11 +53,52 @@ namespace GameFoundation.Quests
             current = null; line = 0; window.SetActive(false);
             StopTyping();
             StopAllCoroutines();
+            rewardPresentation = null;
             if (presentationOverlay != null) Destroy(presentationOverlay);
             if (presentationDestination != null) presentationDestination.Refresh();
             presentationDestination = null; presenting = false;
         }
-        private void Start() => Evaluate();
+        private void Start() => ActivateIfNeeded();
+
+        internal void QueueRewards()
+        {
+            if (rewardPresentation != null || ReadyRewardPanel() == null) return;
+            gameObject.SetActive(true);
+            rewardPresentation = StartCoroutine(PresentReadyRewards());
+        }
+
+        private QuestPanel ReadyRewardPanel()
+        {
+            if (questPanel != null && questPanel.ReadyReward != null) return questPanel;
+            return parallelQuestPanel != null && parallelQuestPanel.ReadyReward != null ? parallelQuestPanel : null;
+        }
+
+        private IEnumerator PresentReadyRewards()
+        {
+            // Let the action that completed the quest start its feedback before covering the screen.
+            yield return null;
+            var constructionEffects = FindObjectsByType<GameFoundation.Base.BuildingConstructionEffect>();
+            while (ReadyRewardPanel() is { } panel)
+            {
+                if (GameFoundation.MetaProgression.PortalCloudTransition.IsLoading ||
+                    GameFoundation.Base.DayReportPopup.BlocksQuestDialogues ||
+                    GameFoundation.Base.FirstExpeditionRecovery.Pending || GameFoundation.Base.ResidentRecovery.Pending ||
+                    System.Array.Exists(constructionEffects, effect => effect != null && effect.IsPlaying))
+                {
+                    yield return null;
+                    continue;
+                }
+                Evaluate();
+                if (current != null || presenting)
+                {
+                    yield return null;
+                    continue;
+                }
+                yield return PresentQuest(panel, panel.ReadyReward);
+            }
+            rewardPresentation = null;
+        }
+
         public bool TryShowMessage(string name, string[] lines, System.Action closed, QuestDefinition rewardQuest = null)
         {
             if (current != null || presenting || GameFoundation.Base.DayReportPopup.BlocksQuestDialogues) return false;
@@ -87,13 +129,17 @@ namespace GameFoundation.Quests
             (d.prerequisite == null || (d.prerequisiteAccepted ? QuestProgress.IsAccepted(d.prerequisite) : QuestProgress.IsClaimed(d.prerequisite)));
         public void ActivateIfNeeded()
         {
-            if (current != null || presenting || GameFoundation.Base.FirstExpeditionRecovery.Pending || GameFoundation.Base.ResidentRecovery.Pending) return;
-            foreach (var d in conversations)
+            if (current == null && !presenting && !GameFoundation.Base.FirstExpeditionRecovery.Pending && !GameFoundation.Base.ResidentRecovery.Pending)
             {
-                if (!Available(d)) continue;
-                gameObject.SetActive(true);
-                Evaluate(); return;
+                foreach (var d in conversations)
+                {
+                    if (!Available(d)) continue;
+                    gameObject.SetActive(true);
+                    Evaluate();
+                    break;
+                }
             }
+            QueueRewards();
         }
         public void Evaluate()
         {
@@ -180,9 +226,11 @@ namespace GameFoundation.Quests
             panel.anchoredPosition = new Vector2(0, (buttonHeight + gap) * .5f);
             confirm.anchoredPosition = new Vector2(0, panel.anchoredPosition.y - panel.rect.height * scale * .5f - gap - buttonHeight * .5f);
         }
-        private IEnumerator PresentQuest(QuestPanel destinationPanel)
+        private IEnumerator PresentQuest(QuestPanel destinationPanel, QuestDefinition rewardQuest = null)
         {
             if (destinationPanel == null) { presenting = false; Evaluate(); yield break; }
+            presenting = true;
+            bool claimingReward = rewardQuest != null;
             destinationPanel.gameObject.SetActive(true); destinationPanel.Refresh();
             var target = (RectTransform)destinationPanel.transform;
             var canvas = target.GetComponentInParent<Canvas>().rootCanvas;
@@ -200,8 +248,9 @@ namespace GameFoundation.Quests
             dimmer.GetComponent<Image>().color = new Color(0, 0, 0, .74f);
             // An independent visual copy keeps HUD alignment and layout ownership intact.
             var copy = Instantiate(target.gameObject, overlayRect, false);
-            copy.name = "Accepted Quest Presentation";
-            Destroy(copy.GetComponent<QuestPanel>());
+            copy.name = claimingReward ? "Completed Quest Presentation" : "Accepted Quest Presentation";
+            var copyPanel = copy.GetComponent<QuestPanel>();
+            Destroy(copyPanel);
             var align = copy.GetComponent<GameFoundation.UI.BesideMilitaryPanel>(); if (align != null) align.enabled = false;
             var stack = copy.GetComponent<QuestPanelStackBelow>(); if (stack != null) stack.enabled = false;
             var expansion = copy.GetComponent<QuestPanelExpansion>(); if (expansion != null) expansion.SetExpanded(true, true);
@@ -209,15 +258,22 @@ namespace GameFoundation.Quests
             var rect = (RectTransform)copy.transform;
             rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f); rect.anchoredPosition = Vector2.zero; rect.localScale = Vector3.one * 1.35f;
             var group = copy.GetComponent<CanvasGroup>(); group.alpha = 1; group.blocksRaycasts = true; group.interactable = false;
-            var realGroup = target.GetComponent<CanvasGroup>(); realGroup.alpha = 0; realGroup.blocksRaycasts = false; realGroup.interactable = false;
+            if (!claimingReward)
+            {
+                var realGroup = target.GetComponent<CanvasGroup>();
+                realGroup.alpha = 0; realGroup.blocksRaycasts = false; realGroup.interactable = false;
+            }
             Canvas.ForceUpdateCanvases();
             // The cloned rows need a layout pass before their preferred height is known.
             if (expansion != null) expansion.SetExpanded(true, true);
             LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
             Canvas.ForceUpdateCanvases();
-            // Reuse the dialogue button's authored background, font and hover feedback.
-            var confirm = Instantiate(nextButton, overlayRect, false);
-            confirm.name = "Quest Presentation OK";
+            // Scale the layout parent so button hover owns the button's local scale.
+            var buttonSlot = new GameObject("Quest Action Slot", typeof(RectTransform)).GetComponent<RectTransform>();
+            buttonSlot.SetParent(overlayRect, false);
+            var confirm = claimingReward ? destinationPanel.CreateRewardButton(buttonSlot, rewardQuest)
+                : Instantiate(nextButton, buttonSlot, false);
+            confirm.name = claimingReward ? "Claim Return Reward" : "Quest Presentation OK";
             var clonedHold = confirm.GetComponent<DialogueHoldButton>();
             if (clonedHold != null) { clonedHold.enabled = false; Destroy(clonedHold); }
             foreach (string decoration in new[] { "Hold Progress", "Hold LMB Tooltip" })
@@ -228,15 +284,53 @@ namespace GameFoundation.Quests
             confirm.gameObject.SetActive(true); confirm.interactable = true;
             confirm.onClick = new Button.ButtonClickedEvent();
             var label = confirm.GetComponentInChildren<TMP_Text>(true);
-            if (label != null) { label.text = GameFoundation.Localization.GameText.Get("Закрыть"); if (buttonTheme != null) label.color = buttonTheme.neutralLabelColor; }
+            if (label != null && !claimingReward)
+            {
+                label.text = GameFoundation.Localization.GameText.Get("Закрыть");
+                if (buttonTheme != null) label.color = buttonTheme.neutralLabelColor;
+            }
             var confirmRect = (RectTransform)confirm.transform;
             confirmRect.anchorMin = confirmRect.anchorMax = confirmRect.pivot = new Vector2(.5f, .5f);
+            confirmRect.anchoredPosition = Vector2.zero;
             confirmRect.localScale = Vector3.one;
-            FitPresentation(rect, confirmRect, overlayRect);
+            buttonSlot.sizeDelta = confirmRect.rect.size;
+            FitPresentation(rect, buttonSlot, overlayRect);
             bool confirmed = false;
-            confirm.onClick.AddListener(() => { confirmed = true; confirm.interactable = false; });
-            while (!confirmed) { FitPresentation(rect, confirmRect, overlayRect); yield return null; }
+            confirm.onClick.AddListener(() =>
+            {
+                if (claimingReward && !destinationPanel.TryClaimReward(rewardQuest, confirmRect)) return;
+                confirmed = true;
+                confirm.interactable = false;
+            });
+            if (claimingReward)
+            {
+                var buttonGroup = buttonSlot.gameObject.AddComponent<CanvasGroup>();
+                buttonGroup.blocksRaycasts = false;
+                GameAudioController.PlayUI(GameAudioCue.QuestFly, .6f);
+                for (float t = 0; t < 1; t += Time.unscaledDeltaTime / .24f)
+                {
+                    FitPresentation(rect, buttonSlot, overlayRect);
+                    var offset = Vector2.down * (48 * (1 - t) * (1 - t));
+                    rect.anchoredPosition += offset;
+                    buttonSlot.anchoredPosition += offset;
+                    group.alpha = buttonGroup.alpha = t;
+                    yield return null;
+                }
+                group.alpha = buttonGroup.alpha = 1;
+                buttonGroup.blocksRaycasts = true;
+            }
+            while (!confirmed && (!claimingReward || destinationPanel.ReadyReward == rewardQuest))
+            {
+                FitPresentation(rect, buttonSlot, overlayRect);
+                yield return null;
+            }
             confirm.gameObject.SetActive(false);
+            if (claimingReward)
+            {
+                Destroy(presentationOverlay); presentationOverlay = null;
+                presentationDestination = null; presenting = false; Evaluate();
+                yield break;
+            }
             if (expansion != null) expansion.KeepExpanded(false);
             var start = rect.position;
             var presentationScale = rect.localScale;

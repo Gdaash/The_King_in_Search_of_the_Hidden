@@ -9,7 +9,7 @@ namespace GameFoundation.Base
         private const string Key = "foundation.forestForaging";
         [Serializable] public sealed class Result
         {
-            public int day, sent, survived, dead, food, humanDeaths, swordsmanDeaths, archerDeaths, spearmanDeaths;
+            public int day, sent, survived, dead, food, humanDeaths, swordsmanDeaths, archerDeaths, spearmanDeaths, slingerDeaths;
             public long readyTicks;
             public bool completed;
         }
@@ -35,7 +35,7 @@ namespace GameFoundation.Base
         {
             var day = DayCycleService.Instance;
             var resources = GlobalResourceManager.Instance;
-            return settings != null && settings.influence != null && settings.food != null &&
+            return CraftProduction.Morning && settings != null && settings.influence != null && settings.food != null &&
                 settings.humans != null && settings.swordsmen != null && settings.archers != null &&
                 day != null && resources != null && RoyalDecreeService.IsEnabled(RoyalDecreeService.ForestForaging) &&
                 !UsedToday && !IsPending && day.GetFoodForecast().Starving > 0 &&
@@ -47,15 +47,18 @@ namespace GameFoundation.Base
             var forecast = DayCycleService.Instance.GetFoodForecast();
             var result = new Result { day = DayCycleService.Instance.Day, sent = forecast.Starving,
                 readyTicks = DateTime.UtcNow.AddSeconds(Mathf.Max(.1f, settings.duration)).Ticks };
-            int humans = forecast.Humans, swordsmen = forecast.Swordsmen, archers = forecast.Archers, spearmen = forecast.Spearmen;
+            int humans = CraftProduction.FreeResidents(settings.humans), swordsmen = forecast.Swordsmen, archers = forecast.Archers, spearmen = forecast.Spearmen, slingers = forecast.Slingers;
+            result.sent = Mathf.Min(result.sent, humans + swordsmen + archers + spearmen + slingers);
+            if (result.sent == 0) return false;
             for (int i = 0; i < result.sent; i++)
             {
-                int group = UnityEngine.Random.Range(0, humans + swordsmen + archers + spearmen);
+                int group = UnityEngine.Random.Range(0, humans + swordsmen + archers + spearmen + slingers);
                 int type;
                 if (group < humans) { humans--; type = 0; }
                 else if (group < humans + swordsmen) { swordsmen--; type = 1; }
                 else if (group < humans + swordsmen + archers) { archers--; type = 2; }
-                else { spearmen--; type = 3; }
+                else if (group < humans + swordsmen + archers + spearmen) { spearmen--; type = 3; }
+                else { slingers--; type = 4; }
                 if (UnityEngine.Random.value < settings.survivalChance)
                 {
                     result.survived++;
@@ -68,7 +71,8 @@ namespace GameFoundation.Base
                     if (type == 0) result.humanDeaths++;
                     else if (type == 1) result.swordsmanDeaths++;
                     else if (type == 2) result.archerDeaths++;
-                    else result.spearmanDeaths++;
+                    else if (type == 3) result.spearmanDeaths++;
+                    else result.slingerDeaths++;
                 }
             }
             using var batch = SaveSlotPrefs.Batch();
@@ -97,6 +101,11 @@ namespace GameFoundation.Base
             for (int i = 0; i < result.swordsmanDeaths; i++) MilitaryExperienceService.RemoveStored(settings.swordsmen);
             for (int i = 0; i < result.archerDeaths; i++) MilitaryExperienceService.RemoveStored(settings.archers);
             for (int i = 0; i < result.spearmanDeaths; i++) MilitaryExperienceService.RemoveStored(spearman);
+            if (result.slingerDeaths > 0 && ResourceCatalog.Find("Slinger") is ResourceType slinger)
+            {
+                resources.TrySpendResource(slinger, result.slingerDeaths);
+                for (int i = 0; i < result.slingerDeaths; i++) MilitaryExperienceService.RemoveStored(slinger);
+            }
             if (result.food > 0) resources.AddResource(settings.food, result.food);
             SaveSlotPrefs.Save();
             ForagingInputLock.SetLocked(false);

@@ -19,8 +19,21 @@ namespace GameFoundation.Base
         private LocalizationService language;
         private void Awake()
         {
-            foreach (var row in rows) { var item = row; row.button.onClick.AddListener(() => { EquipmentUpgrades.TryBuy(item.equipment, item.resource); Refresh(); }); }
+            foreach (var row in rows) Bind(row);
         }
+        internal void AddRow(Row row)
+        {
+            System.Array.Resize(ref rows, rows.Length + 1);
+            rows[^1] = row;
+            Bind(row);
+        }
+
+        private void Bind(Row row) => row.button.onClick.AddListener(() =>
+        {
+            EquipmentUpgrades.TryBuy(row.equipment, row.resource);
+            Refresh();
+        });
+
         private void OnEnable()
         {
             GlobalResourceManager.OnResourceChanged += ResourceChanged;
@@ -47,9 +60,13 @@ namespace GameFoundation.Base
                 var actionColor = row.button.GetComponent<GameFoundation.UI.ActionButtonLabelColor>();
                 if (actionColor != null) actionColor.ActionAvailable = available;
                 row.label.text = LaboratoryUpgradeList.Tr(complete ? "blacksmith.maximum" : "blacksmith.upgrade", complete ? "Максимум" : "Улучшить");
-                string stat = LaboratoryUpgradeList.Tr(row.equipment == EquipmentKind.Cart ? "blacksmith.speed" : "blacksmith.damage",
-                    row.equipment == EquipmentKind.Cart ? "Скорость" : "Урон");
-                row.level.text = level + "/" + max + "  ·  " + stat + " +" + level * 10 + "%";
+                string stat = row.equipment switch
+                {
+                    EquipmentKind.Cart => LaboratoryUpgradeList.Tr("blacksmith.speed", "Скорость"),
+                    EquipmentKind.LeatherArmor or EquipmentKind.IronArmor => LaboratoryUpgradeList.Tr("unit.stat.Health", "Здоровье"),
+                    _ => LaboratoryUpgradeList.Tr("blacksmith.damage", "Урон")
+                };
+                row.level.text = level + "/" + max + "  ·  " + stat + " +" + level * EquipmentUpgrades.PercentPerLevel(row.equipment) + "%";
                 if (row.pips != null) row.pips.Display(level, max);
                 row.amount.text = complete ? "" : EquipmentUpgrades.Cost(row.equipment).ToString();
                 row.amount.color = available ? new Color(.55f,.85f,.35f) : new Color(.95f,.38f,.35f);

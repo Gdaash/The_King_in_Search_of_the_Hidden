@@ -24,7 +24,8 @@ namespace GameFoundation.Base
             int order = int.MinValue;
             foreach (var collider in Physics2D.OverlapPointAll(world, 1 << 2))
             {
-                if (!collider.TryGetComponent<WorldBuildingHitArea>(out var hit) || hit.Owner == null || !hit.Owner.isActiveAndEnabled) continue;
+                if (!collider.TryGetComponent<WorldBuildingHitArea>(out var hit) || hit.Owner == null || !hit.Owner.isActiveAndEnabled || !hit.Owner.AcceptsMapInput) continue;
+                if (!hit.Owner.PointerTarget.activeInHierarchy) continue;
                 var sprite = hit.GetComponent<SpriteRenderer>();
                 int candidate = sprite != null ? sprite.sortingOrder : 0;
                 if (best == null || candidate > order) { best = hit; order = candidate; }

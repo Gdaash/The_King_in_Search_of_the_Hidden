@@ -32,14 +32,20 @@ namespace GameFoundation.Base
             transform.SetAsLastSibling();
             gameObject.SetActive(true);
             Refresh();
+            GameFoundation.UI.PopupMotion.Show(gameObject, transform.Find("Window") as RectTransform, GetComponent<Image>());
         }
-        public void Cancel() { gameObject.SetActive(false); target = null; }
+        public void Cancel()
+        {
+            target = null;
+            GameFoundation.UI.PopupMotion.Hide(gameObject);
+        }
         public void Confirm()
         {
             // Clear the selection before spending: duplicate clicks cannot buy twice.
             var building = target;
-            Cancel();
-            if (building != null && building.CanAffordConstruction) building.ConfirmBuild();
+            if (building == null || !building.CanAffordConstruction) return;
+            target = null;
+            GameFoundation.UI.PopupMotion.Hide(gameObject, building.ConfirmBuild);
         }
         private void ResourceChanged(ResourceType _, int __) => Refresh();
         private void Refresh()

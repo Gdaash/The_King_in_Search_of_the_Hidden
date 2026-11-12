@@ -91,7 +91,7 @@ public static class PortalPopupSetup
     {
         var root = Rect("Portal Location Row", null, 428, 88);
         var row = root.gameObject.AddComponent<PortalLocationRow>();
-        row.border = Image(root, row.normalColor); row.border.raycastTarget = true;
+        row.border = Image(root, new(.105f, .087f, .12f)); row.border.raycastTarget = true;
         row.button = root.gameObject.AddComponent<Button>(); row.button.targetGraphic = row.border; row.button.transition = Selectable.Transition.None;
         var surface = Rect("Surface", root, 0, 0); Stretch(surface, 2); row.surface = Image(surface, new(.14f, .115f, .17f));
         row.selection = Image(Rect("Selected", root, 4, 72, -209, 0), Gold);
