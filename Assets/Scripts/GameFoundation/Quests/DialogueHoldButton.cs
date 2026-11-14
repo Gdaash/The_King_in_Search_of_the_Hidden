@@ -10,7 +10,7 @@ namespace GameFoundation.Quests
     public sealed class DialogueHoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerExitHandler, IPointerEnterHandler
     {
         [SerializeField] private Color holdFillColor = new Color(.84f, .74f, .38f, 1);
-        [SerializeField, Min(.1f)] private float holdDuration = .4f;
+        [SerializeField, Min(.1f)] private float holdDuration = .6f;
         [SerializeField] private Material holdTintMaterial;
         [SerializeField] private Sprite leftMouseSprite;
         [SerializeField] private Sprite tooltipBackground;
@@ -23,6 +23,7 @@ namespace GameFoundation.Quests
         private Func<bool> ready;
         private Action complete;
         private float duration, elapsed;
+        private double holdStartedAt;
         private bool holding;
         private bool consumeClick;
         public bool ConsumeClick() { bool value = consumeClick; consumeClick = false; return value; }
@@ -118,7 +119,7 @@ namespace GameFoundation.Quests
         {
             consumeClick = false;
             if (e.button != PointerEventData.InputButton.Left || button == null || !button.IsInteractable() || ready == null || !ready()) return;
-            ResetHold(); holding = true;
+            ResetHold(); holdStartedAt = Time.realtimeSinceStartupAsDouble; holding = true;
         }
         public void OnPointerUp(PointerEventData e) { if (e.button == PointerEventData.InputButton.Left) ResetHold(); }
         public void OnPointerExit(PointerEventData e) { hovered = false; RefreshTooltip(); ResetHold(); }
@@ -134,7 +135,7 @@ namespace GameFoundation.Quests
             RefreshTooltip();
             if (!holding) return;
             if (ready == null || !ready() || !button.IsInteractable()) { ResetHold(); return; }
-            elapsed = Mathf.Min(duration, elapsed + Time.unscaledDeltaTime);
+            elapsed = Mathf.Min(duration, (float)(Time.realtimeSinceStartupAsDouble - holdStartedAt));
             if (clip != null)
             {
                 clip.gameObject.SetActive(true);

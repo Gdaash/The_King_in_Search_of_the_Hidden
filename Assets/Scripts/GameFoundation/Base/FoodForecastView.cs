@@ -25,7 +25,7 @@ namespace GameFoundation.Base
         [SerializeField] private Color normalColor = new Color(0.94f, 0.91f, 0.82f, 1f);
         [SerializeField] private Color dangerColor = new Color(1f, 0.47f, 0.47f, 1f);
 
-        public void SetData(DayCycleService.FoodForecast forecast)
+        public void SetData(DayCycleService.FoodForecast forecast, bool showConsumption = false)
         {
             SetIcon(residentsIcon, human);
             SetIcon(berriesIcon, berries);
@@ -37,6 +37,7 @@ namespace GameFoundation.Base
             if (crownsLabel != null) crownsLabel.text = Tr("base.food_forecast.crowns", GameFoundation.Localization.GameText.Get("Влияние"));
             SetAmount(residentsAmount, forecast.Residents, normalColor);
             SetAmount(berriesAmount, forecast.Berries, normalColor);
+            if (showConsumption && berriesAmount != null) berriesAmount.text = forecast.Berries + " (-" + Mathf.Min(forecast.Residents, forecast.Food) + ")";
             SetAmount(starvationAmount, forecast.Starving,
                 forecast.Starving > 0 ? dangerColor : normalColor);
             if (crownsAmount != null)

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using GameFoundation.MetaProgression;
 using GameFoundation.Saves;
@@ -29,7 +29,7 @@ namespace GameFoundation.Base
         [Serializable] internal sealed class Order
         {
             public string resource;
-            public int amount, days;
+            public int amount, days, firstWorkDay;
             public string input, fuel;
             public int price, fuelCost;
         }
@@ -90,7 +90,7 @@ namespace GameFoundation.Base
         }
 
         internal static bool CanQueue(int shop, ResourceType input, int amount, ResourceType fuel = null, int fuelCost = 0) =>
-            Morning && BuildingUpgradeService.IsBuilt(BuildingIds[shop]) &&
+            BuildingUpgradeService.IsBuilt(BuildingIds[shop]) &&
             AvailableToday(Read(shop)) && FreeResidents(ResourceCatalog.Find("Human")) > 0 && input != null &&
             GlobalResourceManager.Instance != null && GlobalResourceManager.Instance.GetResourceAmount(input) >= amount &&
             (fuelCost == 0 || fuel != null && GlobalResourceManager.Instance.GetResourceAmount(fuel) >= fuelCost);
@@ -115,6 +115,7 @@ namespace GameFoundation.Base
                 state.shops[shop].orders.Add(new Order
                 {
                     resource = output.Id, amount = quantity, days = days,
+                    firstWorkDay = Morning ? CurrentDay : CurrentDay + 1,
                     input = input.Id, price = price, fuel = fuel?.Id, fuelCost = fuelCost
                 });
                 Save(state);
@@ -126,11 +127,11 @@ namespace GameFoundation.Base
 
         private static int CurrentDay => DayCycleService.Instance?.Day ?? 1;
         private static bool AvailableToday(Workshop workshop) =>
-            workshop.orders.Count == 0 && workshop.startedDay != CurrentDay;
+            workshop.orders.Count == 0;
 
         internal static bool Cancel(int shop)
         {
-            if (mutating || !Morning) return false;
+            if (mutating) return false;
             var state = Load();
             var workshop = state.shops[shop];
             if (workshop.orders.Count == 0) return false;
@@ -156,7 +157,6 @@ namespace GameFoundation.Base
 
         internal static string StartBlockReason(int shop)
         {
-            if (!Morning) return GameFoundation.Localization.GameText.Get("Доступно утром");
             var workshop = Read(shop);
             if (workshop.orders.Count > 0) return GameFoundation.Localization.GameText.Get("Мастерская занята");
             if (!AvailableToday(workshop)) return GameFoundation.Localization.GameText.Get("Сегодня заказ уже запускали");
@@ -175,6 +175,8 @@ namespace GameFoundation.Base
             {
                 var workshop = state.shops[i];
                 if (workshop.orders.Count == 0 || !BuildingUpgradeService.IsBuilt(BuildingIds[i])) continue;
+                var order = workshop.orders[0];
+                if (order.firstWorkDay > CurrentDay) continue;
                 if (!workshop.worker)
                 {
                     if (free == 0) continue;
@@ -182,7 +184,6 @@ namespace GameFoundation.Base
                     free--;
                 }
                 changed = true;
-                var order = workshop.orders[0];
                 if (--order.days > 0) continue;
                 var output = ResourceCatalog.Find(order.resource);
                 if (output != null)

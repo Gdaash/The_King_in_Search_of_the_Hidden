@@ -341,7 +341,7 @@ namespace GameFoundation.Base
                 bool needsBuild = !facility.IsBuilt;
                 names[i].text = i == 0 ? GameText.Get("Казарма") : facility.DisplayName;
                 (statuses[i].text, statuses[i].color) = PopupChoiceRowStyle.PurchaseStatus(
-                    !needsBuild, !facility.ConstructionUnlocked || !CraftProduction.Morning, facility.CanAffordConstruction, construction: true);
+                    !needsBuild, !facility.ConstructionUnlocked, facility.CanAffordConstruction, construction: true);
                 cards[i].SetSelected(i == selected);
                 SetPrice(prices[i, 0], prices[i, 1], facility, needsBuild);
                 float titleRight = !needsBuild ? 20 : facility.WoodCost > 0 && facility.StoneCost > 0 ? 166 : 90;
@@ -364,8 +364,7 @@ namespace GameFoundation.Base
             build.gameObject.SetActive(!active.IsBuilt && active.ConstructionUnlocked);
             build.interactable = active.CanAffordConstruction;
             buildLabel.color = build.interactable ? new Color(.55f, .85f, .54f) : new Color(.64f, .59f, .68f);
-            BaseDisabledButtonHint.Set(build, BaseDisabledButtonHint.Reason.Resources,
-                reasonText: !CraftProduction.Morning ? GameText.Get("Доступно утром") : null);
+            BaseDisabledButtonHint.Set(build, BaseDisabledButtonHint.Reason.Resources);
             SetPrice(buildPrices[0], buildPrices[1], active, !active.IsBuilt);
             lockedLabel.gameObject.SetActive(!active.IsBuilt && !active.ConstructionUnlocked);
             lockedLabel.text = GameText.Get("Заблокировано");

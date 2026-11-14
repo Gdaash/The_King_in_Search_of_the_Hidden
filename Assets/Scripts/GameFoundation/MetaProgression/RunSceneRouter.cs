@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace GameFoundation.MetaProgression
@@ -23,7 +23,7 @@ namespace GameFoundation.MetaProgression
             if (military != null) military.FinalizeSurvivors();
             Warehouse.SettlePorterCarts();
             ExpeditionTasks.Settle();
-            DayResourceLedger.EndRun(); GameFoundation.Saves.SaveSlotPrefs.CompleteRunCheckpoint(); PortalCloudTransition.Load(baseScene);
+            DayResourceLedger.EndRun(); DayCycleService.Instance?.CompleteProductionDay(); GameFoundation.Saves.SaveSlotPrefs.CompleteRunCheckpoint(); PortalCloudTransition.Load(baseScene);
         }
     }
 }

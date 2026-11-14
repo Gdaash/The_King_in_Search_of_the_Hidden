@@ -16,7 +16,7 @@ namespace GameFoundation.MetaProgression
             var stats = tower != null ? tower.GetStats() : null;
             var profile = p != null ? p.Profile(w.weapon) : PortalWeaponProfiles.Get(w.weapon, mode);
             float interval = p != null ? p.AttackInterval(w.weapon, stats?.bonusAttackSpeed ?? 0) :
-                Mathf.Max(PortalTowerBalance.MinimumInterval, w.cooldown * profile.Interval - (stats?.bonusAttackSpeed ?? 0));
+                Mathf.Max(PortalTowerBalance.MinimumInterval, w.cooldown * profile.Interval - (stats?.bonusAttackSpeed ?? 0) - PortalWeaponEnhancements.IntervalReduction(w.weapon));
             float range = p != null ? p.WeaponRange(w.weapon, stats?.bonusAttackRange ?? 0) :
                 Mathf.Max(0, w.range * profile.Range + (stats?.bonusAttackRange ?? 0));
             float tick = p != null ? p.TickInterval(w.weapon) : Mathf.Max(1, w.damageTickInterval);
@@ -27,7 +27,8 @@ namespace GameFoundation.MetaProgression
             bool showEnergy = p == null || p.UsesEnergyLoadout;
             if (w.IsSupport)
             {
-                float support = w.supportAmount * profile.Support;
+                float support = (w.supportAmount + PortalWeaponEnhancements.Support(w.weapon)) * profile.Support *
+                    (p?.RunMultiplier(w.weapon, CombatUpgradeCatalog.Stat.Support) ?? 1) + (p?.RunAdjustment(w.weapon, CombatUpgradeCatalog.Stat.Armor) ?? 0);
                 if (w.weapon == PortalTowerBalance.Weapon.HealingRay) Add("healing", "Лечение", support);
                 if (w.weapon == PortalTowerBalance.Weapon.MagicShield) Add("shield", "Прочность щита", support);
                 if (w.weapon == PortalTowerBalance.Weapon.DefenseField)
@@ -46,10 +47,10 @@ namespace GameFoundation.MetaProgression
                 Add("energyPerMinute", "Энергия в минуту", 60 * cost / interval);
                 return result;
             }
-            Add("damage", "Урон", (w.damage + (stats?.UnifiedBonusDamage ?? 0)) *
-                (p != null ? p.WeaponDamageMultiplier(w.weapon) : w.BaseDamageScale(true) * profile.Damage));
+            Add("damage", "Урон", p != null ? p.WeaponDamage(w.weapon, stats?.UnifiedBonusDamage ?? 0) :
+                ((w.damage + (stats?.UnifiedBonusDamage ?? 0)) * w.BaseDamageScale(true) + PortalWeaponEnhancements.Damage(w.weapon)) * profile.Damage);
             Add("range", "Дальность", range);
-            if (!w.continuous) Add("interval", "Интервал атак", interval);
+            if (!w.continuous) Add("interval", "Интервал между атаками", interval);
             if (w.HasTicks) Add("tick", "Интервал урона", tick);
             if (w.HasDuration) Add("duration", "Длительность области", w.duration * (p?.Multiplier(w.weapon, PortalTowerBalance.Effect.Duration) ?? profile.Duration));
             if (!w.continuous) Add(w.deliveryMethod == PortalTowerBalance.DeliveryMethod.InstantHit ? "targets" : w.deliveryMethod == PortalTowerBalance.DeliveryMethod.Projectile ? "projectiles" : "areas", w.deliveryMethod == PortalTowerBalance.DeliveryMethod.InstantHit ? "Целей за атаку" : "Объектов за атаку", count);
@@ -91,9 +92,9 @@ namespace GameFoundation.MetaProgression
                     Add("stunChance", "Шанс оглушения", CombatHitEffects.StunChance * 100, "%");
                     Add("stunDuration", "Оглушение, секунды", CombatHitEffects.StunSeconds); break;
                 case DamageType.Electric:
-                    Add("chainChance", "Шанс перескока", profile.ChainChance * 100, "%");
-                    Add("chainCount", "Максимум перескоков", CombatHitEffects.MaximumLightningJumps);
-                    Add("chainDamage", "Урон следующего перескока", CombatHitEffects.LightningDamageFraction * 100, "%"); break;
+                    Add("chainChance", "Шанс перескока", Mathf.Clamp(profile.ChainChance * 100 + (p?.RunAdjustment(w.weapon, CombatUpgradeCatalog.Stat.ChainChance) ?? 0), 0, 100), "%");
+                    Add("chainCount", "Максимум перескоков", CombatHitEffects.MaximumLightningJumps + (p?.RunAdjustment(w.weapon, CombatUpgradeCatalog.Stat.ChainLimit) ?? 0));
+                    Add("chainDamage", "Урон следующего перескока", Mathf.Clamp(CombatHitEffects.LightningDamageFraction * 100 + (p?.RunAdjustment(w.weapon, CombatUpgradeCatalog.Stat.ChainRetention) ?? 0), 0, 100), "%"); break;
                 default:
                     Add("echoChance", "Шанс эха", CombatHitEffects.EchoChance * 100, "%");
                     Add("echoDamage", "Урон эха от попадания", CombatHitEffects.EchoDamageFraction * 100, "%");

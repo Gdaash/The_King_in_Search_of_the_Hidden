@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using GameFoundation.Base;
 using GameFoundation.Localization;
 using GameFoundation.Quests;
@@ -70,6 +71,7 @@ public sealed class CheatResourcePopup : MonoBehaviour
         if (closeButton != null)
             closeButton.onClick.AddListener(Close);
 
+        CreateResourceList();
         foreach (ResourceRow row in rows)
         {
             if (row == null || row.resource == null) continue;
@@ -88,7 +90,11 @@ public sealed class CheatResourcePopup : MonoBehaviour
                 row.icon.enabled = row.resource.resourceIcon != null;
             }
             if (row.nameText != null)
+            {
                 row.nameText.text = row.resource.resourceName;
+                var label = row.nameText.rectTransform;
+                label.offsetMin += new Vector2(18f, 0);
+            }
         }
 
         refreshWarriorsButton?.onClick.AddListener(RefreshWarriors);
@@ -97,6 +103,60 @@ public sealed class CheatResourcePopup : MonoBehaviour
             window.SetActive(false);
         if (dimmer != null)
             dimmer.SetActive(false);
+    }
+
+    private void CreateResourceList()
+    {
+        var template = rows.FirstOrDefault(row => row?.amountText != null && row.resource != null);
+        if (template == null || template.amountText.transform.parent is not RectTransform templateRect ||
+            templateRect.parent is not RectTransform panel) return;
+
+        var size = templateRect.rect.size;
+        const float spacing = 2f;
+        const float scrollbarGutter = 18f;
+        float height = rows.Count * (size.y + spacing) - spacing;
+        var position = templateRect.anchoredPosition;
+        var scroll = PortalExpeditionPanel.CreateVerticalScroll(panel, "Cheat resource list",
+            size.x + scrollbarGutter, height, position.y + (size.y - height) * .5f);
+        ((RectTransform)scroll.transform).anchoredPosition = new Vector2(position.x + scrollbarGutter * .5f,
+            position.y + (size.y - height) * .5f);
+        scroll.viewport.offsetMax = new Vector2(-scrollbarGutter, 0);
+        var existing = new HashSet<ResourceType>(rows.Where(row => row?.resource != null).Select(row => row.resource));
+        foreach (var resource in ResourceCatalog.All)
+        {
+            if (resource == null || !existing.Add(resource)) continue;
+            var clone = Instantiate(templateRect, scroll.content);
+            clone.name = resource.Id;
+            T Copy<T>(T original) where T : Component =>
+                original == null ? null : clone.Find(original.transform.name)?.GetComponent<T>();
+            rows.Add(new ResourceRow
+            {
+                resource = resource,
+                icon = Copy(template.icon),
+                nameText = Copy(template.nameText),
+                amountText = Copy(template.amountText),
+                subtractHundred = Copy(template.subtractHundred),
+                subtractTen = Copy(template.subtractTen),
+                subtractFive = Copy(template.subtractFive),
+                subtractOne = Copy(template.subtractOne),
+                addOne = Copy(template.addOne),
+                addFive = Copy(template.addFive),
+                addTen = Copy(template.addTen),
+                addHundred = Copy(template.addHundred)
+            });
+        }
+        scroll.content.sizeDelta = new Vector2(0, rows.Count * (size.y + spacing) - spacing);
+        for (int i = 0; i < rows.Count; i++)
+        {
+            if (rows[i]?.amountText == null) continue;
+            var row = (RectTransform)rows[i].amountText.transform.parent;
+            row.SetParent(scroll.content, false);
+            row.anchorMin = row.anchorMax = new Vector2(.5f, 1);
+            row.pivot = new Vector2(.5f, .5f);
+            row.sizeDelta = size;
+            row.anchoredPosition = new Vector2(0, -size.y * .5f - i * (size.y + spacing));
+        }
+        scroll.verticalNormalizedPosition = 1;
     }
 
     private void OnEnable()
@@ -307,15 +367,14 @@ public sealed class CheatResourcePopup : MonoBehaviour
     {
         var manager = GlobalResourceManager.Instance;
         if (manager == null) return;
-        var changed = new HashSet<ResourceType>();
         changingAllResources = true;
         try
         {
-            foreach (var row in rows)
+            foreach (var resource in ResourceCatalog.All.Distinct())
             {
-                if (row?.resource == null || !changed.Add(row.resource)) continue;
-                int next = (int)Math.Max(0L, Math.Min(int.MaxValue, (long)manager.GetResourceAmount(row.resource) + delta));
-                manager.SetResourceAmount(row.resource, next);
+                if (resource == null || resource.isMilitaryUnit) continue;
+                int next = (int)Math.Max(0L, Math.Min(int.MaxValue, (long)manager.GetResourceAmount(resource) + delta));
+                manager.SetResourceAmount(resource, next);
             }
         }
         finally { changingAllResources = false; Refresh(); }

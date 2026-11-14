@@ -273,7 +273,30 @@ namespace GameFoundation.MetaProgression
                 card.title.horizontalOverflow = HorizontalWrapMode.Wrap;
                 card.title.rectTransform.anchoredPosition = new Vector2(0, 228);
                 card.title.rectTransform.sizeDelta = new Vector2(rect.rect.width - 44, 72);
-                card.icon.enabled = false;
+                var iconId = upgrade.bonus switch
+                {
+                    CombatUpgradeCatalog.Stat.Projectiles => "projectile_count",
+                    CombatUpgradeCatalog.Stat.Interval => "attack_interval",
+                    CombatUpgradeCatalog.Stat.Tick => "tick_interval",
+                    CombatUpgradeCatalog.Stat.Area => "area_size",
+                    CombatUpgradeCatalog.Stat.Duration => "area_duration",
+                    CombatUpgradeCatalog.Stat.Range => "all_range",
+                    CombatUpgradeCatalog.Stat.Speed => "projectile_speed",
+                    CombatUpgradeCatalog.Stat.Control => "weapon_FrostSeal",
+                    CombatUpgradeCatalog.Stat.Chain or CombatUpgradeCatalog.Stat.ChainChance or
+                        CombatUpgradeCatalog.Stat.ChainLimit or CombatUpgradeCatalog.Stat.ChainRetention => "weapon_Lightning",
+                    _ => "all_damage"
+                };
+                var icon = upgrade.bonus switch
+                {
+                    CombatUpgradeCatalog.Stat.Energy or CombatUpgradeCatalog.Stat.Drain => progression.ExperienceCrystalResource?.resourceIcon,
+                    CombatUpgradeCatalog.Stat.Support => progression.Balance.FindWeapon(PortalTowerBalance.Weapon.HealingRay)?.icon,
+                    CombatUpgradeCatalog.Stat.Armor => progression.Balance.FindWeapon(PortalTowerBalance.Weapon.DefenseField)?.icon,
+                    _ => progression.Balance.upgrades.Find(entry => entry.id == iconId)?.icon
+                };
+                ResourceIconSizing.Apply(card.icon, icon);
+                card.icon.enabled = icon != null;
+                card.icon.material = null;
                 card.description.rectTransform.anchoredPosition = cardDescriptionPositions[i] + new Vector2(0, 50);
                 card.description.fontSize = 22;
                 card.description.horizontalOverflow = HorizontalWrapMode.Wrap;

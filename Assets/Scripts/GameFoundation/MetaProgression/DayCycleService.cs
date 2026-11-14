@@ -1,4 +1,4 @@
-using PlayerPrefs = GameFoundation.Saves.SaveSlotPrefs;
+﻿using PlayerPrefs = GameFoundation.Saves.SaveSlotPrefs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,14 +38,14 @@ namespace GameFoundation.MetaProgression
             public int Starving => Mathf.Max(0, Residents - Food);
             public int CrownDelta => Starving > 0 ? (Crowns > 0 ? -1 : 0) : 1;
 
-            public FoodForecast(int humans, int swordsmen, int archers, int berries, int crowns, int spearmen = 0, int slingers = 0)
+            public FoodForecast(int humans, int swordsmen, int archers, int berries, int crowns, int spearmen = 0, int slingers = 0, int otherWarriors = 0)
             {
                 Humans = humans;
                 Swordsmen = swordsmen;
                 Archers = archers;
                 Spearmen = spearmen;
                 Slingers = slingers;
-                Residents = humans + swordsmen + archers + spearmen + slingers;
+                Residents = humans + swordsmen + archers + spearmen + slingers + otherWarriors;
                 Berries = berries;
                 Crowns = crowns;
             }
@@ -181,7 +181,6 @@ namespace GameFoundation.MetaProgression
             using var save = GameFoundation.Saves.SaveSlotPrefs.Batch();
             DayResourceLedger.EnterShelter();
             GameFoundation.Base.HousingDistrict.Produce();
-            GameFoundation.Base.CraftProduction.AdvanceDay();
             int starved = ConsumeFood();
             ApplyColdDeaths();
             GameFoundation.Base.CraftProduction.ReconcileWorkers();
@@ -198,7 +197,21 @@ namespace GameFoundation.MetaProgression
             GameFoundation.Base.BuildingUpgradeService.NotifyChanged();
             Changed?.Invoke();
         }
-        public bool AdmitRefugee(){if(EnteredToday || RefugeesAvailable<=0 || !GameFoundation.Base.BuildingUpgradeService.CanAdmitResident)return false;RefugeesAvailable--;Save();Changed?.Invoke();return true;}
+        // Only a settled expedition advances workshop time. The marker is part of
+        // the run checkpoint, so abandoning a run cannot consume a working day.
+        public void CompleteProductionDay()
+        {
+            const string key = "foundation.craft.completedDay";
+            if (!EnteredToday || PlayerPrefs.GetInt(key, 0) >= Day) return;
+            using var save = PlayerPrefs.Batch();
+            PlayerPrefs.SetInt(key, Day);
+            ResolvingProduction = true;
+            try { GameFoundation.Base.CraftProduction.AdvanceDay(); }
+            finally { ResolvingProduction = false; }
+            PlayerPrefs.Save();
+        }
+        internal bool ResolvingProduction { get; private set; }
+        public bool AdmitRefugee(){if(RefugeesAvailable<=0 || !GameFoundation.Base.BuildingUpgradeService.CanAdmitResident)return false;RefugeesAvailable--;Save();Changed?.Invoke();return true;}
         public void EnsureFirstRefugees()
         {
             if (PlayerPrefs.GetInt("foundation.refugees.firstArrival", 0) != 0) return;
@@ -224,7 +237,8 @@ namespace GameFoundation.MetaProgression
                     (includeProduction ? GameFoundation.Base.HousingDistrict.Forecast().Food : 0),
                 crowns == null ? 0 : resources.GetResourceAmount(crowns),
                 Find("Spearman") is ResourceType spearmen ? resources.GetResourceAmount(spearmen) : 0,
-                Find("Slinger") is ResourceType slingers ? resources.GetResourceAmount(slingers) : 0);
+                Find("Slinger") is ResourceType slingers ? resources.GetResourceAmount(slingers) : 0,
+                ResourceCatalog.All.Where(r => r.isMilitaryUnit && r.Id != "Swordsman" && r.Id != "Archer" && r.Id != "Spearman" && r.Id != "Slinger").Sum(resources.GetResourceAmount));
         }
 
         private int ConsumeFood()
@@ -276,70 +290,28 @@ namespace GameFoundation.MetaProgression
 
         private static int KillRandomResidents(GlobalResourceManager resources, FoodForecast forecast, int requestedDeaths)
         {
-            ResourceType humans = Find("Human");
-            ResourceType swordsmen = Find("Swordsman");
-            ResourceType archers = Find("Archer");
-            ResourceType swords = Find("Sword");
-            ResourceType bows = Find("Bow");
-            ResourceType spearmen = Find("Spearman");
-            ResourceType spears = Find("Spear");
-
-            int humanCount = forecast.Humans;
-            int swordsmanCount = forecast.Swordsmen;
-            int archerCount = forecast.Archers;
-            int spearmanCount = forecast.Spearmen, spearmanDeaths = 0;
-            int slingerCount = forecast.Slingers, slingerDeaths = 0;
-            int humanDeaths = 0;
-            int swordsmanDeaths = 0;
-            int archerDeaths = 0;
-            int deaths = Mathf.Min(requestedDeaths, humanCount + swordsmanCount + archerCount + spearmanCount + slingerCount);
-
+            var population = ResourceCatalog.All.Where(r => r.isHumanResource || r.isMilitaryUnit)
+                .Select(r => (Type: r, Count: resources.GetResourceAmount(r))).Where(r => r.Count > 0).ToList();
+            int deaths = Mathf.Min(requestedDeaths, population.Sum(r => r.Count));
             for (int i = 0; i < deaths; i++)
             {
-                int roll = UnityEngine.Random.Range(0, humanCount + swordsmanCount + archerCount + spearmanCount + slingerCount);
-                if (roll < humanCount)
+                int roll = UnityEngine.Random.Range(0, population.Sum(r => r.Count));
+                for (int j = 0; j < population.Count; j++)
                 {
-                    humanCount--;
-                    humanDeaths++;
+                    var entry = population[j];
+                    if (roll >= entry.Count) { roll -= entry.Count; continue; }
+                    resources.TrySpendResource(entry.Type, 1);
+                    population[j] = (entry.Type, entry.Count - 1);
+                    if (entry.Type.isMilitaryUnit)
+                    {
+                        MilitaryExperienceService.RemoveStored(entry.Type);
+                        string weapon = entry.Type.Id switch { "Swordsman" => "Sword", "Archer" => "Bow", "Spearman" => "Spear", "Crossbowman" => "Crossbow", _ => null };
+                        if (weapon != null) resources.AddResource(Find(weapon), 1);
+                        string armor = entry.Type.Id switch { "Swordsman" or "Crossbowman" => "IronArmor", "Archer" => "LeatherArmor", _ => null };
+                        if (armor != null) resources.AddResource(Find(armor), 1);
+                    }
+                    break;
                 }
-                else if (roll < humanCount + swordsmanCount)
-                {
-                    swordsmanCount--;
-                    swordsmanDeaths++;
-                }
-                else if (roll < humanCount + swordsmanCount + archerCount)
-                {
-                    archerCount--;
-                    archerDeaths++;
-                }
-                else if (roll < humanCount + swordsmanCount + archerCount + spearmanCount)
-                { spearmanCount--; spearmanDeaths++; }
-                else { slingerCount--; slingerDeaths++; }
-            }
-
-            if (humanDeaths > 0) resources.TrySpendResource(humans, humanDeaths);
-            if (swordsmanDeaths > 0)
-            {
-                resources.TrySpendResource(swordsmen, swordsmanDeaths);
-                if (swords != null) resources.AddResource(swords, swordsmanDeaths);
-                for (int i = 0; i < swordsmanDeaths; i++) MilitaryExperienceService.RemoveStored(swordsmen);
-            }
-            if (archerDeaths > 0)
-            {
-                resources.TrySpendResource(archers, archerDeaths);
-                if (bows != null) resources.AddResource(bows, archerDeaths);
-                for (int i = 0; i < archerDeaths; i++) MilitaryExperienceService.RemoveStored(archers);
-            }
-            if (spearmanDeaths > 0)
-            {
-                resources.TrySpendResource(spearmen, spearmanDeaths);
-                if (spears != null) resources.AddResource(spears, spearmanDeaths);
-                for (int i=0;i<spearmanDeaths;i++) MilitaryExperienceService.RemoveStored(spearmen);
-            }
-            if (slingerDeaths > 0 && Find("Slinger") is ResourceType slingers)
-            {
-                resources.TrySpendResource(slingers, slingerDeaths);
-                for (int i = 0; i < slingerDeaths; i++) MilitaryExperienceService.RemoveStored(slingers);
             }
             return deaths;
         }

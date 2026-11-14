@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using GameFoundation.Localization;
 using GameFoundation.MetaProgression;
 using TMPro;
@@ -39,7 +39,7 @@ namespace GameFoundation.Base
         private ScrollRect productionScroll;
         private BlacksmithProductionView productionView;
         private DayCycleService calendar;
-        private RectTransform swordRecipe, armorRecipe, tanneryRecipe, coalRecipe, ingotRecipe, ironArmorRecipe;
+        private RectTransform swordRecipe, armorRecipe, tanneryRecipe, coalRecipe, ingotRecipe, ironArmorRecipe, crossbowRecipe;
         private Font font;
         private LocalizationService language;
 
@@ -108,6 +108,9 @@ namespace GameFoundation.Base
             ironArmorRecipe = MakeRecipe(recipes[1], 1, 2, "Iron armor recipe", "Железная броня", "Сковать броню");
             ArrangeRecipe(swordRecipe, pages[1].transform, 1);
             production.BindForge(coalRecipe, ingotRecipe, ironArmorRecipe);
+            crossbowRecipe = MakeRecipe(recipes[1], CraftProduction.Smithy, 3, "Crossbow recipe", "Арбалет", "Сделать арбалет");
+            production.BindCrossbow(crossbowRecipe);
+            StretchProductionButton(crossbowRecipe);
             var upgrades = GetComponent<BlacksmithUpgradeView>();
             AddUpgrade(upgrades, recipes[1], EquipmentKind.Spear, "Wood", 1);
             AddUpgrade(upgrades, armorRecipe, EquipmentKind.LeatherArmor, "Leather", 0);
@@ -262,9 +265,9 @@ namespace GameFoundation.Base
                 productionStatuses[i].text = GameText.Format("Осталось времени: {0} дн.", order.days);
                 SetFormula(i, workshop.worker, order);
                 var cancel = cancelButtons[i];
-                cancel.interactable = CraftProduction.Morning;
+                cancel.interactable = true;
                 BaseDisabledButtonHint.Set(cancel, BaseDisabledButtonHint.Reason.Resources,
-                    reasonText: CraftProduction.Morning ? null : GameText.Get("Доступно утром"));
+                    reasonText: null);
                 if (workshop.worker) busy++;
             }
             busyAmount.text = busy.ToString();
@@ -335,6 +338,7 @@ namespace GameFoundation.Base
             coalRecipe.gameObject.SetActive(BuildingUpgradeService.IsBuilt(CharcoalPit));
             ingotRecipe.gameObject.SetActive(smithyBuilt);
             ironArmorRecipe.gameObject.SetActive(smithyBuilt);
+            crossbowRecipe.gameObject.SetActive(smithyBuilt);
             (statuses[0].text, statuses[0].color) = PopupChoiceRowStyle.PurchaseStatus(true, false, false, construction: true);
             PopupChoiceRowStyle.PlaceCaptions(workshopTitles[0], statuses[0], 20, 20, 20);
             for (int i = 1; i < WorkshopIds.Length; i++)
@@ -346,7 +350,7 @@ namespace GameFoundation.Base
                 construction[i].gameObject.SetActive(!built && cost != null);
                 construction[i].interactable = BuildingUpgradeService.CanBuildAnnex(id);
                 (statuses[i].text, statuses[i].color) = PopupChoiceRowStyle.PurchaseStatus(
-                    built, cost == null || !CraftProduction.Morning, construction[i].interactable, construction: true);
+                    built, cost == null, construction[i].interactable, construction: true);
                 float titleRight = cost == null ? 20 : cost.costB > 0 ? 176 : 90;
                 PopupChoiceRowStyle.PlaceCaptions(workshopTitles[i], statuses[i], 20, titleRight, 20);
                 cardPriceAreas[i].anchoredPosition = new Vector2(cost?.costB > 0 ? 0 : 86, 13);

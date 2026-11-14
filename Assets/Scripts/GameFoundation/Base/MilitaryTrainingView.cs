@@ -47,7 +47,7 @@ namespace GameFoundation.Base
         private static ResourceType ArmorFor(ResourceType unit) => unit?.Id switch
         {
             "Archer" => ResourceCatalog.Find("LeatherArmor"),
-            "Swordsman" => ResourceCatalog.Find("IronArmor"),
+            "Swordsman" or "Crossbowman" => ResourceCatalog.Find("IronArmor"),
             _ => null
         };
 
@@ -58,7 +58,7 @@ namespace GameFoundation.Base
         {
             var manager = GlobalResourceManager.Instance;
             var armor = ArmorFor(unit);
-            return CraftProduction.Morning && manager != null && human != null && unit != null &&
+            return manager != null && human != null && unit != null &&
                 CraftProduction.FreeResidents(human) > 0 && (equipment == null || manager.GetResourceAmount(equipment) > 0) &&
                 (armor == null || manager.GetResourceAmount(armor) > 0) &&
                 BuildingUpgradeService.GarrisonCount(manager) < BuildingUpgradeService.MilitaryCapacity(unit);
@@ -213,10 +213,12 @@ namespace GameFoundation.Base
             using var notification = GameNotifications.BeginAction();
             var manager = GlobalResourceManager.Instance;
             var resident = ResourceCatalog.Find("Human");
-            if (!CraftProduction.Morning || manager == null || unit == null || resident == null ||
+            if (manager == null || unit == null || resident == null ||
                 !manager.TrySpendResource(unit, 1)) return;
             manager.AddResource(resident, 1);
             if (equipment != null) manager.AddResource(equipment, 1);
+            var armor = ArmorFor(unit);
+            if (armor != null) manager.AddResource(armor, 1);
             if (profile != null) MilitaryExperienceService.Remove(profile);
             else MilitaryExperienceService.RemoveStored(unit);
             GameNotifications.Post(GameText.Get("Воин разоружён"), NotificationKind.Normal, unit.resourceIcon);
@@ -231,14 +233,13 @@ namespace GameFoundation.Base
             int weapons = manager != null && weapon != null ? manager.GetResourceAmount(weapon) : 0;
             int warriors = manager != null && warrior != null ? manager.GetResourceAmount(warrior) : 0;
             if (armButton != null) armButton.interactable = CanArmWarrior;
-            if (disarmButton != null) disarmButton.interactable = CraftProduction.Morning && manager != null && warriors > 0;
+            if (disarmButton != null) disarmButton.interactable = manager != null && warriors > 0;
             var armor = ArmorFor(warrior);
             bool hasArmor = armor == null || manager != null && manager.GetResourceAmount(armor) > 0;
             RefreshArmorPrice(armor, hasArmor);
             bool garrisonFull = BuildingUpgradeService.GarrisonCount(manager) >= BuildingUpgradeService.MilitaryCapacity(warrior);
             BaseDisabledButtonHint.Set(armButton, humans <= 0 ? BaseDisabledButtonHint.Reason.Residents : garrisonFull ? BaseDisabledButtonHint.Reason.MilitaryCapacity : BaseDisabledButtonHint.Reason.Weapons,
-                reasonText: !CraftProduction.Morning ? GameText.Get("Доступно утром") :
-                    garrisonFull && humans > 0 ? GameText.Get("Гарнизон заполнен") :
+                reasonText: garrisonFull && humans > 0 ? GameText.Get("Гарнизон заполнен") :
                     humans > 0 && !hasArmor ? GameText.Get("Недостаточно ресурсов") : null);
             BaseDisabledButtonHint.Set(disarmButton, BaseDisabledButtonHint.Reason.Warriors);
             if (humanAmount != null) humanAmount.text = humans.ToString();

@@ -262,8 +262,21 @@ namespace GameFoundation.MetaProgression
             return result;
         }
 
-        internal float RunMultiplier(PortalTowerBalance.Weapon weapon, RunStat stat) =>
-            Mathf.Max(.1f, 1 + RunAdjustment(weapon, stat) / 100f);
+        internal float RunMultiplier(PortalTowerBalance.Weapon weapon, RunStat stat)
+        {
+            var definition = balance.FindWeapon(weapon);
+            if (definition == null) return 1;
+            float multiplier = 1;
+            // Each percentage modifies the current value. Two speed cards must never add up to a free 90% reduction.
+            foreach (var entry in chosenCrystalUpgrades)
+            {
+                var upgrade = CombatUpgradeCatalog.All[entry.Key];
+                if (!upgrade.Applies(definition)) continue;
+                if (upgrade.bonus == stat) multiplier *= 1 + upgrade.benefit / 100f;
+                if (upgrade.drawback == stat) multiplier *= 1 + upgrade.Penalty(entry.Value) / 100f;
+            }
+            return Mathf.Max(stat is RunStat.Energy or RunStat.Drain ? 1 : .1f, multiplier);
+        }
 
         internal static PortalTowerProgression FromAttack(Transform attacker) =>
             attacker != null && attacker.TryGetComponent<ArcherTower>(out var tower) ? tower.PortalProgression : null;
@@ -383,13 +396,22 @@ namespace GameFoundation.MetaProgression
             : Mathf.Clamp(PermanentLightCount + Mathf.RoundToInt(EffectTotal(PortalTowerBalance.Effect.ExtraLight)), 1, WorldFlashlightAvailability.MaximumCount);
         public int ProjectileCount => Count(PortalTowerBalance.Weapon.Bolts);
         public float DamageMultiplier => Multiplier(PortalTowerBalance.Weapon.Bolts, PortalTowerBalance.Effect.Damage);
+        public float WeaponDamage(PortalTowerBalance.Weapon weapon, float bonusDamage = 0)
+        {
+            var definition = balance.FindWeapon(weapon);
+            if (definition == null) return 0;
+            // Add flat milestones directly. Division followed by multiplication made 13 damage become 12.999999.
+            float damage = (definition.damage + bonusDamage) * definition.BaseDamageScale(UsesEnergyLoadout);
+            if (UsesEnergyLoadout) damage += PortalWeaponEnhancements.Damage(weapon);
+            return damage * Multiplier(weapon, PortalTowerBalance.Effect.Damage);
+        }
         public float WeaponDamageMultiplier(PortalTowerBalance.Weapon weapon) => (balance.FindWeapon(weapon)?.BaseDamageScale(UsesEnergyLoadout) ?? .5f) * Multiplier(weapon, PortalTowerBalance.Effect.Damage);
         public float AttackSpeedMultiplier => (balance.FindWeapon(PortalTowerBalance.Weapon.Bolts)?.cooldown ?? 1) / AttackInterval(PortalTowerBalance.Weapon.Bolts);
         public float RangeMultiplier => 1;
         public float AddedRange(PortalTowerBalance.Weapon w) => EffectTotal(PortalTowerBalance.Effect.Range, w);
         public float WeaponRange(PortalTowerBalance.Weapon w, float bonus = 0) =>
             Mathf.Max(0, ((balance.FindWeapon(w)?.range ?? 0) * Profile(w).Range + bonus + AddedRange(w)) * RunMultiplier(w, RunStat.Range));
-        public float AttackInterval(PortalTowerBalance.Weapon w, float flatReduction = 0) => Mathf.Max(PortalTowerBalance.MinimumInterval, ((balance.FindWeapon(w)?.cooldown ?? 1) * Profile(w).Interval - flatReduction) * (1 - Mathf.Clamp01(EffectTotal(PortalTowerBalance.Effect.AttackInterval, w))) * RunMultiplier(w, RunStat.Interval));
+        public float AttackInterval(PortalTowerBalance.Weapon w, float flatReduction = 0) => Mathf.Max(PortalTowerBalance.MinimumInterval, ((balance.FindWeapon(w)?.cooldown ?? 1) * Profile(w).Interval - flatReduction - (UsesEnergyLoadout ? PortalWeaponEnhancements.IntervalReduction(w) : 0)) * (1 - Mathf.Clamp01(EffectTotal(PortalTowerBalance.Effect.AttackInterval, w))) * RunMultiplier(w, RunStat.Interval));
         public float TickInterval(PortalTowerBalance.Weapon w) => Mathf.Max(PortalTowerBalance.MinimumInterval, Mathf.Max(1, balance.FindWeapon(w)?.damageTickInterval ?? 1) * (1 - Mathf.Clamp01(EffectTotal(PortalTowerBalance.Effect.TickInterval, w))) * RunMultiplier(w, RunStat.Tick));
         public float Multiplier(PortalTowerBalance.Weapon weapon, PortalTowerBalance.Effect effect)
         {

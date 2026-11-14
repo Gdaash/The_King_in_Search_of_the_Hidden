@@ -38,21 +38,21 @@ namespace GameFoundation.Base
         private bool languageSubscribed;
         private CanvasGroup availabilityGroup;
         private string SaveKey => "foundation.building." + buildingId + ".built";
-        public bool IsBuilt => SaveSlotPrefs.GetInt(SaveKey, 0) != 0;
+        public bool IsBuilt => BuildingUpgradeService.IsBuilt(buildingId);
         public string BuildingId => buildingId;
         public string DisplayName => Tr(nameKey, fallbackName);
         public ResourceType Wood => wood;
         public ResourceType Stone => stone;
         public int WoodCost => woodCost;
         public int StoneCost => stoneCost;
-        public bool CanAffordConstruction => CraftProduction.Morning && !built && ConstructionUnlocked && CanAfford();
+        public bool CanAffordConstruction => !built && ConstructionUnlocked && CanAfford();
 
         private void Awake()
         {
             availabilityGroup = GetComponent<CanvasGroup>();
             if (availabilityGroup == null) availabilityGroup = gameObject.AddComponent<CanvasGroup>();
             if (buildingButton == null) buildingButton = GetComponent<Button>();
-            built = SaveSlotPrefs.GetInt(SaveKey, 0) != 0;
+            built = IsBuilt;
             if (buildButton != null) buildButton.onClick.AddListener(RequestConstruction);
             Refresh();
         }

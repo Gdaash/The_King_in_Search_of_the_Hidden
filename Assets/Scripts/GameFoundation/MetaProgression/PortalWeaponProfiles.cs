@@ -6,6 +6,8 @@ namespace GameFoundation.MetaProgression
 
     internal static class PortalWeaponProfiles
     {
+        // Profiles are retained for a future iteration, but currently disabled.
+        internal static bool Enabled => false;
         private const string Prefix = "foundation.arsenal.profile.";
 
         internal sealed class Profile
@@ -58,6 +60,7 @@ namespace GameFoundation.MetaProgression
 
         internal static Profile Get(PortalTowerBalance.Weapon weapon, PortalWeaponMode mode)
         {
+            if (!Enabled) return Balanced;
             int index = (int)weapon;
             if (index < 0 || index >= Variants.Length) return Balanced;
             return mode switch
@@ -70,12 +73,14 @@ namespace GameFoundation.MetaProgression
 
         internal static PortalWeaponMode Selected(PortalTowerBalance.Weapon weapon)
         {
+            if (!Enabled) return PortalWeaponMode.Balanced;
             int saved = SaveSlotPrefs.GetInt(Prefix + weapon, (int)PortalWeaponMode.Balanced);
             return saved is 0 or 2 ? (PortalWeaponMode)saved : PortalWeaponMode.Balanced;
         }
 
         internal static void Select(PortalTowerBalance.Weapon weapon, PortalWeaponMode mode)
         {
+            if (!Enabled) return;
             if (weapon == PortalTowerBalance.Weapon.None || !PortalArsenalProgress.IsUnlocked(weapon) || Selected(weapon) == mode) return;
             SaveSlotPrefs.SetInt(Prefix + weapon, (int)mode);
             SaveSlotPrefs.Save();

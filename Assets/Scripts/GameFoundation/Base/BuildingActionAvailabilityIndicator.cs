@@ -20,7 +20,11 @@ namespace GameFoundation.Base
         [SerializeField] private string upgradeBuildingId;
 
         private System.Func<bool> militaryDistrict;
-        internal void SetMilitaryDistrict(System.Func<bool> available) => militaryDistrict = available;
+        internal void SetMilitaryDistrict(System.Func<bool> available)
+        {
+            militaryDistrict = available;
+            Refresh();
+        }
 
         private bool daySubscribed;
         private RoyalDecreeRow[] royalDecrees;
@@ -60,6 +64,7 @@ namespace GameFoundation.Base
             RoyalDecreeService.Changed += OnDecreeChanged;
             BuildingUpgradeService.Changed += Refresh;
             CraftProduction.Changed += Refresh;
+            EquipmentUpgrades.Changed += Refresh;
             GameFoundation.Quests.ContentUnlocks.Changed += Refresh;
             SubscribeDay();
             Refresh();
@@ -80,6 +85,7 @@ namespace GameFoundation.Base
             RoyalDecreeService.Changed -= OnDecreeChanged;
             BuildingUpgradeService.Changed -= Refresh;
             CraftProduction.Changed -= Refresh;
+            EquipmentUpgrades.Changed -= Refresh;
             GameFoundation.Quests.ContentUnlocks.Changed -= Refresh;
             if (daySubscribed && DayCycleService.Instance != null) DayCycleService.Instance.Changed -= Refresh;
             daySubscribed = false;
@@ -100,7 +106,7 @@ namespace GameFoundation.Base
             bool actionAvailable = actionType switch
             {
                 ActionType.CartPurchase => warehouse != null && warehouse.CanBuyCart,
-                ActionType.BlacksmithProduction => (blacksmith != null && blacksmith.CanProduceAny) || (warehouse != null && warehouse.CanBuyCart),
+                ActionType.BlacksmithProduction => blacksmith != null && blacksmith.CanProduceAny,
                 ActionType.MilitaryTraining => training != null && (training.TryGetComponent<RangeTrainingTabs>(out var range) ? range.CanTrain : training.CanArmWarrior),
                 ActionType.BuildingConstruction => construction != null && construction.CanAffordConstruction,
                 ActionType.LaboratoryUpgrade => HasAvailableLaboratoryUpgrade(),

@@ -16,8 +16,8 @@ namespace GameFoundation.Quests
             resources = GetComponent<GlobalResourceManager>();
             if (GetComponent<GameFoundation.Base.CartRecoveryService>() == null) gameObject.AddComponent<GameFoundation.Base.CartRecoveryService>();
         }
-        private void OnEnable() { GlobalResourceManager.OnResourceChanged += OnResourceChanged; QuestProgress.Changed += Evaluate; GameFoundation.Base.BuildingUpgradeService.Changed += Evaluate; SceneManager.sceneLoaded += OnSceneLoaded; BindDay(); }
-        private void OnDisable() { GlobalResourceManager.OnResourceChanged -= OnResourceChanged; QuestProgress.Changed -= Evaluate; GameFoundation.Base.BuildingUpgradeService.Changed -= Evaluate; SceneManager.sceneLoaded -= OnSceneLoaded; if (observedDay != null) observedDay.Changed -= Evaluate; observedDay = null; }
+        private void OnEnable() { PopupMotion.AllClosed += OnPopupsClosed; GlobalResourceManager.OnResourceChanged += OnResourceChanged; QuestProgress.Changed += Evaluate; GameFoundation.Base.BuildingUpgradeService.Changed += Evaluate; SceneManager.sceneLoaded += OnSceneLoaded; BindDay(); }
+        private void OnDisable() { PopupMotion.AllClosed -= OnPopupsClosed; GlobalResourceManager.OnResourceChanged -= OnResourceChanged; QuestProgress.Changed -= Evaluate; GameFoundation.Base.BuildingUpgradeService.Changed -= Evaluate; SceneManager.sceneLoaded -= OnSceneLoaded; if (observedDay != null) observedDay.Changed -= Evaluate; observedDay = null; }
         private void OnSceneLoaded(Scene _, LoadSceneMode __) { BindDay(); Evaluate(); }
         private void BindDay()
         {
@@ -28,6 +28,12 @@ namespace GameFoundation.Quests
             if (observedDay != null) observedDay.Changed += Evaluate;
         }
         private void OnDestroy() { if (observedDay != null) observedDay.Changed -= Evaluate; }
+        private void OnPopupsClosed() => StartCoroutine(ResumeDialoguesAfterPopup());
+        private System.Collections.IEnumerator ResumeDialoguesAfterPopup()
+        {
+            yield return null;
+            ActivateDialogues();
+        }
         private void ActivateDialogues()
         {
             foreach (var view in Object.FindObjectsByType<QuestDialogueView>(FindObjectsInactive.Include, FindObjectsSortMode.None))

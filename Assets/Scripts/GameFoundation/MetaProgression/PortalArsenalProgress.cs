@@ -12,6 +12,7 @@ namespace GameFoundation.MetaProgression
         {
             foreach (PortalTowerBalance.Weapon weapon in System.Enum.GetValues(typeof(PortalTowerBalance.Weapon)))
                 SaveSlotPrefs.SetInt(UnlockKey(weapon), 0);
+            PortalWeaponEnhancements.Reset();
             PortalWeaponLoadout.ResetAssignments();
             UnlocksChanged?.Invoke();
         }
@@ -30,7 +31,27 @@ namespace GameFoundation.MetaProgression
                 _ => 0
             };
         }
-        public static bool CanUnlock(PortalArsenalCatalog.Entry entry) => GameFoundation.Base.CraftProduction.Morning && entry != null && !IsUnlocked(entry.weapon) && PortalProgression.Level >= entry.requiredPortalLevel && Progress(entry) >= entry.amount;
+        public static int RemainingEnhancements(PortalArsenalCatalog.Entry entry) => entry == null ? 0 : Mathf.Max(0, entry.requiredEnhancements - PortalWeaponEnhancements.Rank(entry.requiredWeapon));
+        public static bool MeetsPrerequisites(PortalArsenalCatalog.Entry entry) => entry != null &&
+            (PortalProgression.BalancePreviewAllLocations || PortalProgression.Level >= entry.requiredPortalLevel) && RemainingEnhancements(entry) == 0 &&
+            (entry.requiredKills == null || entry.requiredKills.TrueForAll(k => PortalWeaponEnhancements.Kills(k.enemyId) >= k.count));
+        public static string PrerequisiteHint(PortalArsenalCatalog.Entry entry)
+        {
+            if (entry == null) return "";
+            var lines = new System.Collections.Generic.List<string>();
+            if (entry.requiredEnhancements > 0)
+            {
+                var definition = Resources.Load<PortalTowerBalance>("World/PortalTowerBalance").FindWeapon(entry.requiredWeapon);
+                string title = PortalArsenalPopup.T("weapon." + entry.requiredWeapon, definition.title);
+                lines.Add(string.Format(PortalArsenalPopup.T("enhance.unlock", "РЈСЃРёР»РёС‚СЊ {0}: {1}/{2}"), title,
+                    Mathf.Min(entry.requiredEnhancements, PortalWeaponEnhancements.Rank(entry.requiredWeapon)), entry.requiredEnhancements));
+            }
+            if (!PortalProgression.BalancePreviewAllLocations && entry.requiredPortalLevel > PortalProgression.Level)
+                lines.Add(string.Format(GameFoundation.Base.PortalPopupView.Tr("base.portal.requires_level", "РЈР»СѓС‡С€РёС‚Рµ РїРѕСЂС‚Р°Р» РґРѕ СѓСЂ. {0}"), entry.requiredPortalLevel));
+            if (entry.requiredKills != null) foreach (var k in entry.requiredKills) lines.Add(PortalWeaponEnhancements.KillText(k));
+            return string.Join("\n", lines);
+        }
+        public static bool CanUnlock(PortalArsenalCatalog.Entry entry) => entry != null && !IsUnlocked(entry.weapon) && MeetsPrerequisites(entry) && Progress(entry) >= entry.amount;
         public static bool TryUnlock(PortalArsenalCatalog.Entry entry)
         {
             if (!CanUnlock(entry)) return false;

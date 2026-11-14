@@ -22,7 +22,7 @@ namespace GameFoundation.Quests
         public void Present(QuestDefinition.Requirement goal, int stock, bool completed, int requiredAmount = -1)
         {
             int required = requiredAmount >= 0 ? requiredAmount : goal.amount;
-            ResourceIconSizing.Apply(resourceIcon, !string.IsNullOrEmpty(goal.buildingId) ? goal.buildingIcon : goal.resource != null ? goal.resource.resourceIcon : null);
+            ResourceIconSizing.Apply(resourceIcon, (!string.IsNullOrEmpty(goal.buildingId) || goal.enhancedWeapon != GameFoundation.MetaProgression.PortalTowerBalance.Weapon.None) ? goal.buildingIcon : goal.resource != null ? goal.resource.resourceIcon : null);
             amount.text = $"{(completed ? required : Mathf.Clamp(stock, 0, required))} / {required}";
             amount.color = completed || stock >= required ? completeColor : incompleteColor;
             purpose.text = GameFoundation.Localization.GameText.Get(goal.purpose);

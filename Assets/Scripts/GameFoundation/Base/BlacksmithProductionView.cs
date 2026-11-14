@@ -25,12 +25,13 @@ namespace GameFoundation.Base
         [SerializeField] private RecipeView swordRecipe;
         [SerializeField] private RecipeView bowRecipe;
         [SerializeField] private RecipeView spearRecipe;
-        private RecipeView leatherArmorRecipe, tanneryRecipe, coalRecipe, ingotRecipe, ironArmorRecipe;
+        private RecipeView leatherArmorRecipe, tanneryRecipe, coalRecipe, ingotRecipe, ironArmorRecipe, crossbowRecipe;
         [SerializeField] private Color enoughColor = new Color(0.55f, 0.85f, 0.35f);
         [SerializeField] private Color notEnoughColor = new Color(0.95f, 0.38f, 0.35f);
         [SerializeField] private Color stockColor = new Color(0.94f, 0.91f, 0.82f);
 
-        public bool CanProduceAny => CanProduce(bowRecipe) || CanProduce(spearRecipe) ||
+        public bool CanProduceAny => CanImproveEquipment() || CraftProduction.CanQueue(CraftProduction.Carpentry, ResourceCatalog.Find("Wood"), WarehouseCartPurchaseView.DefaultWoodCost) ||
+            CanProduce(bowRecipe) || CanProduce(spearRecipe) ||
             (transform.Find("Window/Recipes Scroll") == null || BuildingUpgradeService.IsBuilt(CraftQuarterLayout.Smithy)) && CanProduce(swordRecipe) ||
             BuildingUpgradeService.CanBuildAnnex(CraftQuarterLayout.Smithy) ||
             BuildingUpgradeService.CanBuildAnnex(CraftQuarterLayout.LeatherShop) ||
@@ -41,6 +42,16 @@ namespace GameFoundation.Base
             CraftProduction.CanQueue(CraftProduction.CharcoalPit, ResourceCatalog.Find("Wood"), 1) ||
             CraftProduction.CanQueue(CraftProduction.Smithy, ResourceCatalog.Find("IronOre"), 1, ResourceCatalog.Find("Coal"), 1) ||
             CraftProduction.CanQueue(CraftProduction.Smithy, ResourceCatalog.Find("IronIngot"), 1);
+
+        private static bool CanImproveEquipment() =>
+            BuildingUpgradeService.IsBuilt("blacksmith") && (
+                EquipmentUpgrades.CanBuy(EquipmentKind.Cart, ResourceCatalog.Find("Wood")) ||
+                EquipmentUpgrades.CanBuy(EquipmentKind.Spear, ResourceCatalog.Find("Wood")) ||
+                EquipmentUpgrades.CanBuy(EquipmentKind.Bow, ResourceCatalog.Find("Wood")) ||
+                BuildingUpgradeService.IsBuilt(CraftQuarterLayout.LeatherShop) && EquipmentUpgrades.CanBuy(EquipmentKind.LeatherArmor, ResourceCatalog.Find("Leather")) ||
+                BuildingUpgradeService.IsBuilt(CraftQuarterLayout.Smithy) && (
+                    EquipmentUpgrades.CanBuy(EquipmentKind.Sword, ResourceCatalog.Find("Iron")) ||
+                    EquipmentUpgrades.CanBuy(EquipmentKind.IronArmor, ResourceCatalog.Find("IronIngot"))));
 
         private void Awake()
         {
@@ -84,6 +95,7 @@ namespace GameFoundation.Base
             Unbind(coalRecipe);
             Unbind(ingotRecipe);
             Unbind(ironArmorRecipe);
+            Unbind(crossbowRecipe);
         }
 
         internal void BindLeatherArmor(RectTransform row) =>
@@ -91,6 +103,9 @@ namespace GameFoundation.Base
 
         internal void BindTannery(RectTransform row) =>
             tanneryRecipe = BindRecipe(row, "Hide", "Leather");
+
+        internal void BindCrossbow(RectTransform row) =>
+            crossbowRecipe = BindRecipe(row, "IronIngot", "Crossbow");
 
         internal void BindForge(RectTransform coal, RectTransform ingot, RectTransform armor)
         {
@@ -144,13 +159,18 @@ namespace GameFoundation.Base
             if (recipe?.input == null || recipe.output == null) return;
             int quantity = BatchSize(recipe);
             CraftProduction.Queue(WorkshopOf(recipe), recipe.input, recipe.inputAmount * quantity,
-                recipe.output, recipe.outputAmount * quantity, 1, recipe.fuel, recipe.fuel != null ? 1 : 0);
+                recipe.output, recipe.outputAmount * quantity, 1, recipe.fuel, recipe.fuel != null ? quantity : 0);
         }
 
         private int BatchSize(RecipeView recipe)
         {
-            if (recipe == tanneryRecipe)
-                return Mathf.Clamp(GlobalResourceManager.Instance?.GetResourceAmount(recipe.input) ?? 0, 1, 3);
+            if (recipe == tanneryRecipe || recipe == coalRecipe || recipe == ingotRecipe)
+            {
+                var stock = GlobalResourceManager.Instance;
+                int available = (stock?.GetResourceAmount(recipe.input) ?? 0) / Mathf.Max(1, recipe.inputAmount);
+                if (recipe.fuel != null) available = Mathf.Min(available, stock?.GetResourceAmount(recipe.fuel) ?? 0);
+                return Mathf.Clamp(available, 1, 3);
+            }
             return 1;
         }
 
@@ -158,7 +178,7 @@ namespace GameFoundation.Base
             recipe == leatherArmorRecipe ? CraftProduction.LeatherShop :
             recipe == tanneryRecipe ? CraftProduction.Tannery :
             recipe == coalRecipe ? CraftProduction.CharcoalPit :
-            recipe == swordRecipe || recipe == ingotRecipe || recipe == ironArmorRecipe
+            recipe == swordRecipe || recipe == ingotRecipe || recipe == ironArmorRecipe || recipe == crossbowRecipe
                 ? CraftProduction.Smithy : CraftProduction.Carpentry;
 
         internal void RefreshProduction() => Refresh();
@@ -175,6 +195,7 @@ namespace GameFoundation.Base
             Refresh(coalRecipe);
             Refresh(ingotRecipe);
             Refresh(ironArmorRecipe);
+            Refresh(crossbowRecipe);
         }
 
         private void Refresh(RecipeView recipe)
@@ -199,13 +220,21 @@ namespace GameFoundation.Base
                 recipe.outputAmountText.color = stockColor;
             }
             if (recipe.fuelAmountText != null)
-                recipe.fuelAmountText.color = manager != null && manager.GetResourceAmount(recipe.fuel) >= 1 ? enoughColor : notEnoughColor;
+            {
+                recipe.fuelAmountText.text = BatchSize(recipe).ToString();
+                recipe.fuelAmountText.color = manager != null && manager.GetResourceAmount(recipe.fuel) >= BatchSize(recipe) ? enoughColor : notEnoughColor;
+            }
+            if ((recipe == coalRecipe || recipe == ingotRecipe) && recipe.produceButton != null)
+            {
+                var caption = recipe.produceButton.GetComponentInChildren<Text>(true);
+                if (caption != null) caption.text = GameFoundation.Localization.GameText.Get(recipe == ingotRecipe ? "Выплавить" : "Сделать") + " ×" + BatchSize(recipe);
+            }
             ApplyIcon(recipe.inputIcon, recipe.input);
             ApplyIcon(recipe.outputIcon, recipe.output);
         }
 
         private bool CanProduce(RecipeView recipe) => recipe?.output != null &&
-            CraftProduction.CanQueue(WorkshopOf(recipe), recipe.input, recipe.inputAmount * BatchSize(recipe), recipe.fuel, recipe.fuel != null ? 1 : 0);
+            CraftProduction.CanQueue(WorkshopOf(recipe), recipe.input, recipe.inputAmount * BatchSize(recipe), recipe.fuel, recipe.fuel != null ? BatchSize(recipe) : 0);
 
         private static void ApplyIcon(Image image, ResourceType resource)
         {

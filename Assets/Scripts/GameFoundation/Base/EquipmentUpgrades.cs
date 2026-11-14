@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 using PlayerPrefs = GameFoundation.Saves.SaveSlotPrefs;
 
@@ -25,7 +25,7 @@ namespace GameFoundation.Base
             EquipmentKind.Sword or EquipmentKind.Spear => 5 + 3 * Level(kind),
             EquipmentKind.LeatherArmor or EquipmentKind.IronArmor => 2 + Level(kind), EquipmentKind.Bow => 10 + 5 * Level(kind),
             EquipmentKind.Cart => Level(kind) == 0 ? 5 : 10 + 10 * Level(kind), _ => 0 };
-        public static bool CanBuy(EquipmentKind kind, ResourceType resource) => CraftProduction.Morning && kind != EquipmentKind.None && Level(kind) < Maximum(kind)
+        public static bool CanBuy(EquipmentKind kind, ResourceType resource) => kind != EquipmentKind.None && Level(kind) < Maximum(kind)
             && resource != null && GlobalResourceManager.Instance != null && GlobalResourceManager.Instance.GetResourceAmount(resource) >= Cost(kind);
         public static bool TryBuy(EquipmentKind kind, ResourceType resource)
         {

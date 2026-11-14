@@ -73,6 +73,13 @@ public class ResourceTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPoin
     private string LocalizedName()
     {
         var id = _resourceType != null ? _resourceType.Id : _resourceName;
+        if (id == "Human")
+        {
+            const string populationKey = "resource.Human.panel_hint";
+            var hint = LocalizationService.Instance?.Get(populationKey);
+            if (!string.IsNullOrEmpty(hint) && hint != populationKey) return hint;
+            return "Люди: всего жителей / мест в жилых домах (незанятые работой жители)";
+        }
         var key = "resource." + id + ".name";
         var translated = LocalizationService.Instance != null ? LocalizationService.Instance.Get(key) : key;
         return translated != key ? translated : GameText.Get(_resourceName);

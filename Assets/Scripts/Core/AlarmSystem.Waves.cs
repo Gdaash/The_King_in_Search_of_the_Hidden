@@ -128,6 +128,7 @@ public partial class AlarmSystem
             }
             RefreshDirectedGroups();
             CurrentWaveStage = WaveStage.Attacking;
+            GameSpeedControls.ResetForWave();
 #if UNITY_EDITOR
             editorPreparedWave = null;
             editorCountdownAdditions.Clear();
@@ -212,6 +213,9 @@ public partial class AlarmSystem
     private void RefreshDirectedGroups()
     {
         Vector2 center = GetMapCenter();
+        float minimumDistance = difficultyTable != null ? difficultyTable.GetMinimumWaveSpawnDistance(GameFoundation.MetaProgression.DayCycleService.CurrentPortalDifficulty) : 0;
+        var threshold = CurrentWaveThreshold();
+        if (threshold != null && threshold.minimumWaveSpawnDistance > 0) minimumDistance = threshold.minimumWaveSpawnDistance;
         foreach (var group in directedGroups)
         {
             HexBlocker best = null;
@@ -222,13 +226,13 @@ public partial class AlarmSystem
                 Vector2 delta = (Vector2)hex.transform.position - center;
                 float distance = delta.magnitude;
                 outerRadius = Mathf.Max(outerRadius, distance);
-                if (!hex.IsBlocked || distance < .1f || Vector2.Dot(delta / distance, group.direction) < .9f) continue;
+                if (!hex.IsBlocked || distance < Mathf.Max(.1f, minimumDistance) || Vector2.Dot(delta / distance, group.direction) < .9f) continue;
                 if (avoidPreviousSpawnPoints && WasPreviousSpawnPoint(hex.transform.position)) continue;
                 // Prefer the frontier in this same direction; never move the warning across the map.
                 float candidate = distance + (1 - Vector2.Dot(delta / distance, group.direction)) * 8;
                 if (candidate < score) { best = hex; score = candidate; }
             }
-            group.position = best != null ? best.transform.position : (Vector3)(center + group.direction * (outerRadius + 2));
+            group.position = best != null ? best.transform.position : (Vector3)(center + group.direction * Mathf.Max(minimumDistance, outerRadius + 2));
             if (group.visual != null) group.visual.transform.position = group.position;
         }
     }

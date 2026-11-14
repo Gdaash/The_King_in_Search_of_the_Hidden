@@ -1,4 +1,4 @@
-using GameFoundation.MetaProgression;
+﻿using GameFoundation.MetaProgression;
 using GameFoundation.Saves;
 using UnityEngine;
 
@@ -85,7 +85,7 @@ namespace GameFoundation.Base
 
         public static bool TryConvertHenToFood()
         {
-            if (!CraftProduction.Morning || !ExpeditionTasks.CoopBuilt) return false;
+            if (!ExpeditionTasks.CoopBuilt) return false;
             var chicken = ResourceCatalog.Find("Chicken");
             return GlobalResourceManager.Instance != null && GlobalResourceManager.Instance.TryExchangeResources(
                 chicken, 1, chicken, 0, ResourceCatalog.Find("Berry"), 1);

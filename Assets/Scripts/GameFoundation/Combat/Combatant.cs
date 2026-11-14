@@ -21,7 +21,7 @@ namespace GameFoundation.Combat
             (equipment switch
             {
                 EquipmentKind.Bow => EquipmentUpgrades.Multiplier(EquipmentKind.LeatherArmor),
-                EquipmentKind.Sword => EquipmentUpgrades.Multiplier(EquipmentKind.IronArmor),
+                EquipmentKind.Sword or EquipmentKind.IronArmor => EquipmentUpgrades.Multiplier(EquipmentKind.IronArmor),
                 _ => 1f
             });
         public float SpeedBeforeLevel => Mathf.Max(.1f,baseSpeed+(modifiers!=null?modifiers.bonusSpeed:0)) * (equipment == GameFoundation.Base.EquipmentKind.Cart ? GameFoundation.Base.EquipmentUpgrades.Multiplier(equipment) : 1);

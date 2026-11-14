@@ -18,6 +18,8 @@ public class AlarmEnemy
 [Serializable]
 public class AlarmThreshold
 {
+    [Tooltip("0 uses the location default. Enemies still appear on a closed hex.")]
+    [Min(0)] public float minimumWaveSpawnDistance;
     [Min(.1f)] public float waveCountdown = 35f;
     public List<AlarmWaveComposition> waves = new();
     [Min(0f)] public float alarmValue = 25f;
@@ -563,6 +565,7 @@ public partial class AlarmSystem : MonoBehaviour
 
         if (spawnEntries.Count == 0) yield break;
         yield return AnimateWarningsIn(warnings.Values);
+        GameSpeedControls.ResetForWave();
 
         foreach (SpawnEntry entry in spawnEntries)
         {

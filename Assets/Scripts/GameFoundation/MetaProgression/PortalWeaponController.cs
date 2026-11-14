@@ -53,7 +53,7 @@ namespace GameFoundation.MetaProgression
         private PortalTowerBalance.WeaponDefinition Def(PortalTowerBalance.Weapon w) => progression.Balance.FindWeapon(w);
         private float Range(PortalTowerBalance.Weapon w) => progression.WeaponRange(w, tower.GetStats()?.bonusAttackRange ?? 0);
         private float Radius(PortalTowerBalance.Weapon w) => Def(w).radius*progression.Multiplier(w,PortalTowerBalance.Effect.Area);
-        private float Damage(PortalTowerBalance.Weapon w) => (Def(w).damage+(tower.GetStats()?.UnifiedBonusDamage??0))*progression.WeaponDamageMultiplier(w);
+        private float Damage(PortalTowerBalance.Weapon w) => progression.WeaponDamage(w, tower.GetStats()?.UnifiedBonusDamage ?? 0);
         private float Cooldown(PortalTowerBalance.Weapon w) => progression.AttackInterval(w,tower.GetStats()?.bonusAttackSpeed??0);
         private Transform Source => tower.GetComponent<TowerVisuals>()?.ShootPoint ?? tower.transform;
         private void Update()

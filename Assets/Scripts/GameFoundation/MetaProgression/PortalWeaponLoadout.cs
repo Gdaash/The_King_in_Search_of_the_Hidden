@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using GameFoundation.Saves;
 using UnityEngine;
 namespace GameFoundation.MetaProgression
@@ -41,7 +41,7 @@ namespace GameFoundation.MetaProgression
         {
             var ore = SlotResource;
             var resources = GlobalResourceManager.Instance;
-            if (index != SlotCount || index >= MaximumSlotCount || !GameFoundation.Base.CraftProduction.Morning ||
+            if (index != SlotCount || index >= MaximumSlotCount ||
                 ore == null || resources == null) return false;
             using (SaveSlotPrefs.Batch())
             {

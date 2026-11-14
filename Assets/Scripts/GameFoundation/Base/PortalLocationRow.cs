@@ -41,7 +41,7 @@ namespace GameFoundation.Base
                 ConfigureDetails();
             }
             bool unlocked = PortalProgression.IsUnlocked(location);
-            bool next = PortalProgression.IsNextDestination(location);
+            bool next = !PortalProgression.IsDemoLocked(location) && PortalProgression.IsNextDestination(location);
             bool affordable = next && BuildingUpgradeService.CanUpgrade(PortalProgression.BuildingId);
             title.text = PortalProgression.Name(location);
             title.color = unlocked || next ? new Color(.94f, .91f, .82f) : new Color(.68f, .63f, .72f);
@@ -55,8 +55,40 @@ namespace GameFoundation.Base
             float rightInset = price == null ? 18 : 174;
             PopupChoiceRowStyle.PlaceCaptions(title, status, 64, rightInset, rightInset);
             if (button.TryGetComponent<BaseDisabledButtonHint>(out var hint)) hint.enabled = false;
-            if (demoOverlay != null) demoOverlay.SetActive(false);
+            if (PortalProgression.IsDemoLocked(location))
+                ShowComingSoon();
             rowStyle.SetSelected(current == location);
+        }
+
+        private void ShowComingSoon()
+        {
+            if (demoOverlay == null)
+            {
+                demoOverlay = new GameObject("Coming soon", typeof(RectTransform), typeof(Image));
+                demoOverlay.transform.SetParent(transform, false);
+            }
+            var rect = (RectTransform)demoOverlay.transform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+            var shade = demoOverlay.GetComponent<Image>();
+            shade.color = new Color(.06f, .045f, .075f, .82f);
+            shade.raycastTarget = false;
+            if (rect.Find("Coming soon label") == null)
+            {
+                foreach (Transform child in rect) child.gameObject.SetActive(false);
+                var caption = Instantiate(status, rect);
+                caption.name = "Coming soon label";
+                caption.alignment = TextAnchor.MiddleCenter;
+                caption.rectTransform.anchorMin = Vector2.zero;
+                caption.rectTransform.anchorMax = Vector2.one;
+                caption.rectTransform.offsetMin = caption.rectTransform.offsetMax = Vector2.zero;
+                caption.raycastTarget = false;
+                caption.color = new Color(.94f, .91f, .82f);
+            }
+            rect.Find("Coming soon label").GetComponent<Text>().text = PortalPopupView.Tr("base.portal.coming_soon", "Скоро");
+            rect.SetAsLastSibling();
+            demoOverlay.SetActive(true);
         }
 
         private void ConfigureDetails()

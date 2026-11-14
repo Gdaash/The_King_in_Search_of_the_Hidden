@@ -10,6 +10,8 @@ namespace GameFoundation.Base
         [SerializeField] private Button slingersTab, archersTab;
         [SerializeField] private ResourceType slinger, archer, bow;
         [SerializeField] private UnitDescriptionDefinition slingerDescription, archerDescription;
+        [SerializeField] private ResourceType crossbowman, crossbow;
+        [SerializeField] private UnitDescriptionDefinition crossbowmanDescription;
         private bool archersSelected;
         private bool districtRange;
         internal bool CanTrainSlinger(MilitaryTrainingView barracks) => barracks.CanArm(null, slinger);
@@ -19,12 +21,14 @@ namespace GameFoundation.Base
         {
             districtRange = true;
             slingersTab.onClick.RemoveAllListeners();
-            slingersTab.interactable = false;
+            slingersTab.onClick.AddListener(() => Select(false));
+            slingersTab.interactable = true;
+            archersSelected = true;
             var label = slingersTab.GetComponentInChildren<Text>(true);
             label.GetComponent<GameFoundation.Localization.LocalizedText>()?.SetKey("base.range.crossbowmen");
             if (slingersTab.TryGetComponent<BaseDisabledButtonHint>(out var hint)) hint.enabled = false;
         }
-        public bool CanTrain => GetComponent<MilitaryTrainingView>().CanArm(null, slinger) && !districtRange ||
+        public bool CanTrain => (districtRange ? GetComponent<MilitaryTrainingView>().CanArm(crossbow, crossbowman) : GetComponent<MilitaryTrainingView>().CanArm(null, slinger)) ||
             GetComponent<MilitaryTrainingView>().CanArm(bow, archer);
 
         private void Awake()
@@ -45,7 +49,8 @@ namespace GameFoundation.Base
         {
             archersSelected = archers && BuildingUpgradeService.IsBuilt("archery_range");
             var view = GetComponent<MilitaryTrainingView>();
-            if (archersSelected || districtRange) view.SelectUnit(bow, archer, archerDescription);
+            if (archersSelected) view.SelectUnit(bow, archer, archerDescription);
+            else if (districtRange) view.SelectUnit(crossbow, crossbowman, crossbowmanDescription);
             else view.SelectUnit(null, slinger, slingerDescription);
             archersTab.interactable = BuildingUpgradeService.IsBuilt("archery_range");
             if (archersTab.TryGetComponent<BaseDisabledButtonHint>(out var hint)) hint.enabled = false;
@@ -55,8 +60,8 @@ namespace GameFoundation.Base
         internal void RefreshIndicators()
         {
             var view = GetComponent<MilitaryTrainingView>();
-            Tint(slingersTab, !districtRange && !archersSelected, !districtRange && view.CanArm(null, slinger));
-            Tint(archersTab, districtRange || archersSelected, view.CanArm(bow, archer));
+            Tint(slingersTab, !archersSelected, districtRange ? view.CanArm(crossbow, crossbowman) : view.CanArm(null, slinger));
+            Tint(archersTab, archersSelected, view.CanArm(bow, archer));
         }
 
         internal static void Tint(Button tab, bool selected, bool canTrain)

@@ -11,10 +11,13 @@ public sealed class AlarmDifficultyTable : ScriptableObject
     {
         [Range(1, GameFoundation.MetaProgression.DayCycleService.MaxPortals)] public int level = 1;
         [Min(1)] public float maximumAlarm = 300f;
+        [Min(0)] public float minimumWaveSpawnDistance;
         public List<AlarmThreshold> thresholds = new();
     }
 
     public List<Difficulty> difficulties = new();
+    public float GetMinimumWaveSpawnDistance(int level) =>
+        difficulties.FirstOrDefault(item => item.level == level)?.minimumWaveSpawnDistance ?? 0;
 
     public IReadOnlyList<AlarmThreshold> GetThresholds(int level)
     {

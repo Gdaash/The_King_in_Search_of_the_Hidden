@@ -86,7 +86,7 @@ public class TowerVisuals : MonoBehaviour
                     if(progression!=null)
                     {
                         var weapon=progression.Balance.FindWeapon(GameFoundation.MetaProgression.PortalTowerBalance.Weapon.Bolts);
-                        p.SetupHit(worldDir,targetTag,(weapon.damage+(tower.GetStats()?.UnifiedBonusDamage??0))*progression.WeaponDamageMultiplier(weapon.weapon),weapon.damageType,tower.transform,
+                        p.SetupHit(worldDir,targetTag,progression.WeaponDamage(weapon.weapon, tower.GetStats()?.UnifiedBonusDamage ?? 0),weapon.damageType,tower.transform,
                             progression.Multiplier(weapon.weapon,GameFoundation.MetaProgression.PortalTowerBalance.Effect.ExpansionSpeed),tower.CurrentRange+1);
                     }
                     else if(combat!=null && combat.weapon!=null)

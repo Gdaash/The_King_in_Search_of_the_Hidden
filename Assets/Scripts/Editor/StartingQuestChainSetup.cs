@@ -51,15 +51,15 @@ public static class StartingQuestChainSetup
         var table = Load<LocalizationTable>("Assets/Resources/Localization/Base Localization.asset");
 
         materials.title = "Дерево для военного квартала";
-        materials.description = "Принеси десять связок дерева для военного квартала.";
-        materials.inProgressStatus = "Принеси десять связок дерева для военного квартала.";
+        materials.description = "Принеси десять единиц дерева для военного квартала.";
+        materials.inProgressStatus = "Принеси десять единиц дерева для военного квартала.";
         materials.requirements = new() { new QuestDefinition.Requirement { resource = wood, amount = 10, purpose = "Дерево для военного квартала", fulfilledByBuilding = "barracks" } };
-        materials.resourceRewards = new() { new QuestDefinition.ResourceReward { resource = wood, amount = 12 } };
+        materials.resourceRewards.Clear();
         materials.unlockRewards = new() { barracks };
         materials.unlockRewardsOnCompletion = false; materials.consumeRequirementsOnClaim = false;
 
         build.title = "Построй военный квартал";
-        build.description = "Построй военный квартал на карте базы за 12 дерева. Казарма откроется сразу.";
+        build.description = "Построй военный квартал.";
         build.inProgressStatus = "Построй военный квартал";
         build.requirements = new() { new QuestDefinition.Requirement { buildingId = "barracks", amount = 1, buildingIcon = barracks.icon, purpose = "Готовый военный квартал" } };
         build.resourceRewards.Clear();
@@ -73,28 +73,27 @@ public static class StartingQuestChainSetup
         archers.unlockRewards = new()
         {
             smith,
-            Load<ContentUnlockDefinition>("Assets/Resources/Quests/BuildingUnlocks/magic_library.asset"),
             range
         };
         archers.unlockRewardsOnCompletion = false;
 
         Localize(table, "quest.archery_materials.title", materials.title, "Wood for the Military Quarter");
-        Localize(table, "quest.archery_materials.description", materials.description, "Bring ten bundles of wood for the Military Quarter.");
-        Localize(table, "quest.archery_materials.status", materials.inProgressStatus, "Bring ten bundles of wood for the Military Quarter");
+        Localize(table, "quest.archery_materials.description", materials.description, "Bring ten units of wood for the Military Quarter.");
+        Localize(table, "quest.archery_materials.status", materials.inProgressStatus, "Bring ten units of wood for the Military Quarter");
         Localize(table, "quest.archery_materials.purpose", materials.requirements[0].purpose, "Wood for the Military Quarter");
         Localize(table, "quest.build_range.title", build.title, "A completed Military Quarter");
-        Localize(table, "quest.build_range.description", build.description, "Build the Military Quarter on the base map for 12 wood. Its barracks opens immediately.");
+        Localize(table, "quest.build_range.description", build.description, "Build the Military Quarter.");
         Localize(table, "quest.build_range.purpose", build.requirements[0].purpose, "A completed Military Quarter");
         Localize(table, "quest.recruit_archers.new_description", archers.description, "Open the Military Quarter, select Barracks and Slingers, then press Arm twice. Each slinger needs one free resident.");
         Dialogue("Assets/Prefabs/Quests/02 Smithy Materials.prefab", materials, first,
             "Ну вот, первая ночь позади. Уже похоже на хозяйство, а не на привал. Теперь позаботимся о страже.",
             "The first night is behind us. This is starting to look like a settlement rather than a campsite. Now let's see to the guard.", table, "quest.archery_materials.dialogue", true);
         Dialogue("Assets/Prefabs/Quests/02 Smithy And Bows.prefab", build, materials,
-            "Из этого дерева выйдет славная казарма. Всё готово, осталось взяться за дело.",
-            "This timber will make a fine barracks. Everything is ready to get to work.", table, "quest.build_range.dialogue");
+            "А теперь построй военный квартал. В нём ты сможешь нанять первых защитников.",
+            "Now build the Military Quarter. You can recruit your first defenders there.", table, "quest.build_range.dialogue");
         Dialogue("Assets/Prefabs/Quests/02 Two Archers.prefab", archers, build,
-            "Казарма готова! Начнём с пращников – они смогут прикрывать наших людей издалека.",
-            "The barracks are ready! Start with slingers. They can cover our people from afar.", table, "quest.recruit_archers.new_dialogue");
+            "Теперь найми пращников в военном квартале. Они нанимаются в казарме.",
+            "Now recruit slingers in the Military Quarter. You can hire them at the barracks.", table, "quest.recruit_archers.new_dialogue");
 
         // Update construction sources and variants, including authored overrides.
         foreach (string path in new[] {

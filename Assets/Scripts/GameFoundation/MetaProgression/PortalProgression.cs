@@ -11,7 +11,8 @@ namespace GameFoundation.MetaProgression
     public static class PortalProgression
     {
         public const string BuildingId = "portal";
-        public static bool DemoRestrictionsEnabled => false;
+        public static bool BalancePreviewAllLocations => Resources.Load<PortalTowerBalance>("World/PortalTowerBalance")?.openAllLocationsForBalanceTest == true;
+        public static bool DemoRestrictionsEnabled => !BalancePreviewAllLocations;
         public const string DemoLocationId = "forest";
         public static bool IsDemoLocked(PortalLocationDefinition location) => DemoRestrictionsEnabled && location != null && location.LocationId != DemoLocationId;
         private const string LevelKey = "foundation.building.portal.upgradeLevel";
@@ -25,7 +26,7 @@ namespace GameFoundation.MetaProgression
         }
         public static int Level => BuildingUpgradeService.Level(BuildingId);
         public static int MaxLevel => BuildingUpgradeService.Catalog?.Find(BuildingId)?.levels.Count ?? 0;
-        public static bool IsUnlocked(PortalLocationDefinition location) => location != null && !IsDemoLocked(location) && Level >= location.RequiredPortalLevel;
+        public static bool IsUnlocked(PortalLocationDefinition location) => location != null && (BalancePreviewAllLocations || !IsDemoLocked(location) && Level >= location.RequiredPortalLevel);
 
         public static BuildingUpgradeCatalog.Level AccessPrice(PortalLocationDefinition location)
         {

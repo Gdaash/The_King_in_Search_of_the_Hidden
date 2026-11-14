@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using GameFoundation.MetaProgression;
 using GameFoundation.Saves;
 using UnityEngine;
@@ -29,7 +29,7 @@ namespace GameFoundation.Base
         }
         public static int Capacity(string id) => id == "housing" ? HousingDistrict.Capacity : Catalog?.Find(id)?.Capacity(IsBuilt(id), Level(id)) ?? 0;
         internal static bool CanPurchaseDistrictCost(BuildingUpgradeCatalog.Level cost) =>
-            CraftProduction.Morning && !purchasing && cost != null && GlobalResourceManager.Instance is GlobalResourceManager manager &&
+            !purchasing && cost != null && GlobalResourceManager.Instance is GlobalResourceManager manager &&
             (cost.costA == 0 || cost.resourceA != null) && (cost.costB == 0 || cost.resourceB != null) && CanAfford(cost, manager);
 
         internal static bool TryPurchaseDistrictCost(BuildingUpgradeCatalog.Level cost, Action apply)
@@ -86,7 +86,7 @@ namespace GameFoundation.Base
             get
             {
                 var human = Catalog?.Find("housing")?.capacityResource;
-                return CraftProduction.Morning && human != null && GlobalResourceManager.Instance != null &&
+                return human != null && GlobalResourceManager.Instance != null &&
                     GlobalResourceManager.Instance.GetResourceAmount(human) < Capacity("housing");
             }
         }
@@ -101,7 +101,7 @@ namespace GameFoundation.Base
             if (id == GameFoundation.MetaProgression.PortalProgression.BuildingId && GameFoundation.MetaProgression.PortalProgression.DemoRestrictionsEnabled) return false;
             var cost = Next(id);
             var manager = GlobalResourceManager.Instance;
-            if (!CraftProduction.Morning || purchasing || !IsBuilt(id) || cost == null || manager == null) return false;
+            if (purchasing || !IsBuilt(id) || cost == null || manager == null) return false;
             if (cost.costA < 0 || cost.costB < 0 || cost.costA > 0 && cost.resourceA == null || cost.costB > 0 && cost.resourceB == null) return false;
             return CanAfford(cost, manager);
         }
@@ -149,7 +149,7 @@ namespace GameFoundation.Base
         {
             var cost = Catalog?.Find(id)?.constructionCost;
             var manager = GlobalResourceManager.Instance;
-            return id != ExpeditionTasks.Tannery && CraftProduction.Morning && !purchasing && IsBuilt(AnnexDistrict(id)) && !IsBuilt(id) && cost != null && manager != null &&
+            return id != ExpeditionTasks.Tannery && !purchasing && IsBuilt(AnnexDistrict(id)) && !IsBuilt(id) && cost != null && manager != null &&
                 (cost.costA == 0 || cost.resourceA != null) && (cost.costB == 0 || cost.resourceB != null) &&
                 CanAfford(cost, manager);
         }

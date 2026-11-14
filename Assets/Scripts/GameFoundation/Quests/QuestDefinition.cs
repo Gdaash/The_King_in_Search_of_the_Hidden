@@ -7,6 +7,10 @@ namespace GameFoundation.Quests
     [CreateAssetMenu(menuName = "Game/Quests/Resource quest")]
     public sealed class QuestDefinition : ScriptableObject
     {
+        [Tooltip("Явное исключение: разрешить показ задания и награды поверх открытого попапа.")]
+        public bool allowOverPopups;
+        [Tooltip("Не блокирует основную цепочку до принятия. Принятое обучение временно занимает основной журнал.")]
+        public bool opportunisticTutorial;
         [Serializable]
         public sealed class Requirement
         {
@@ -15,10 +19,12 @@ namespace GameFoundation.Quests
             public string purpose;
             [Tooltip("Для цели строительства укажите id здания, например blacksmith. Resource оставьте пустым.")]
             public string buildingId;
+            public GameFoundation.MetaProgression.PortalTowerBalance.Weapon enhancedWeapon;
             public Sprite buildingIcon;
             [Tooltip("Построенное здание засчитывает уже потраченные на него материалы этой цели.")]
             public string fulfilledByBuilding;
-            public int CurrentAmount(Func<ResourceType, int> stock) => !string.IsNullOrWhiteSpace(buildingId) ?
+            public int CurrentAmount(Func<ResourceType, int> stock) => enhancedWeapon != GameFoundation.MetaProgression.PortalTowerBalance.Weapon.None ?
+                GameFoundation.MetaProgression.PortalWeaponEnhancements.Rank(enhancedWeapon) : !string.IsNullOrWhiteSpace(buildingId) ?
                 GameFoundation.Saves.SaveSlotPrefs.GetInt("foundation.building." + buildingId + ".built", 0) :
                 !string.IsNullOrEmpty(fulfilledByBuilding) && GameFoundation.Base.BuildingUpgradeService.IsBuilt(fulfilledByBuilding) ? amount : resource != null && stock != null ? stock(resource) : 0;
         }

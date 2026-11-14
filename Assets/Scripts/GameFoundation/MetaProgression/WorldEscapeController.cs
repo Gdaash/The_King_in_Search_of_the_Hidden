@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
@@ -51,6 +51,7 @@ namespace GameFoundation.MetaProgression
         private readonly Dictionary<ResourceType, int> _lastStoredResources = new();
         private readonly HashSet<ResourceType> _changedResources = new();
         private int _startingHumans;
+        private int _startingCarts;
         private float _runStartedAt;
         private int _runDurationSeconds;
         private bool _escaping;
@@ -94,6 +95,7 @@ namespace GameFoundation.MetaProgression
             foreach (var item in CaptureResources())
                 _startingResources[item.Key] = item.Value;
             _startingHumans = GetTotalHumans();
+            _startingCarts = GetTotalCarts();
             if (GlobalResourceManager.Instance != null)
                 foreach (var item in GlobalResourceManager.Instance.GetAllResourcesData())
                     _lastStoredResources[item.Key] = item.Value;
@@ -166,8 +168,12 @@ namespace GameFoundation.MetaProgression
 
         private void TryShowEmergencyReturn()
         {
-            if (!_firstExpeditionEmergencyEligible || _emergencyShown || _escaping || _showingStatistics || _loading ||
-                _portalHealthNormalized > 0.5f || _portalHealthNormalized <= 0f || escapeButton == null) return;
+            if (_emergencyShown || _escaping || _showingStatistics || _loading ||
+                _portalHealthNormalized <= 0f || escapeButton == null || FirstRunLightTutorial.BlocksInput ||
+                PortalTowerProgression.IsChoosingUpgrade) return;
+            bool lostPeople = _startingHumans > 0 && GetTotalHumans() == 0;
+            bool lostCarts = _startingCarts > 0 && GetTotalCarts() == 0;
+            if (!lostPeople && !lostCarts && (!_firstExpeditionEmergencyEligible || _portalHealthNormalized > .5f)) return;
             _returnTutorial = UnityEngine.Object.FindAnyObjectByType<FirstRunLightTutorial>();
             if (_returnTutorial == null || !_returnTutorial.isActiveAndEnabled) return;
             _emergencyShown = true;
@@ -175,7 +181,22 @@ namespace GameFoundation.MetaProgression
             if (presentation != null) presentation.RevealForEmergencyReturn();
             escapeButton.gameObject.SetActive(true);
             escapeButton.interactable = true;
-            _returnTutorial.BeginEmergencyReturn(escapeButton);
+            _returnTutorial.BeginEmergencyReturn(escapeButton, lostPeople
+                ? PortalPopupText("world.tutorial.no_people", "Ты потерял всех людей. Нам больше нечего здесь делать. Скорее возвращайся!")
+                : lostCarts ? PortalPopupText("world.tutorial.no_carts", "Ты потерял все телеги. Нам больше нечего здесь делать. Скорее возвращайся!") : null);
+        }
+
+        private static string PortalPopupText(string key, string fallback) =>
+            GameFoundation.Base.PortalPopupView.Tr(key, fallback);
+
+        private static int GetTotalCarts()
+        {
+            var cart = ResourceCatalog.Find("Cart");
+            if (cart == null || GlobalResourceManager.Instance == null) return 0;
+            int total = GlobalResourceManager.Instance.GetResourceAmount(cart);
+            foreach (var porter in FindObjectsByType<Porter>())
+                if (porter.OwnsCart) total++;
+            return total;
         }
 
         private void UpdateEscapeButtonWarning()
@@ -355,7 +376,7 @@ namespace GameFoundation.MetaProgression
             ExpeditionTasks.Settle();
             DayResourceLedger.EndRun(seconds);
             RecordFirstExpeditionRecovery();
-            GameFoundation.Saves.SaveSlotPrefs.CompleteRunCheckpoint();
+            DayCycleService.Instance?.CompleteProductionDay(); GameFoundation.Saves.SaveSlotPrefs.CompleteRunCheckpoint();
             if (durationLabel != null)
                 durationLabel.text = GameFoundation.Localization.GameText.Format("Длительность забега: {0}", $"{seconds / 3600:00}:{seconds / 60 % 60:00}:{seconds % 60:00}");
 
@@ -420,10 +441,10 @@ namespace GameFoundation.MetaProgression
             if (group != null)
             {
                 group.alpha = 0f;
-                group.DOFade(1f, 0.28f).SetUpdate(true);
+                group.DOFade(1f, 0.28f).SetUpdate(true).SetLink(row.gameObject);
             }
             row.transform.localScale = Vector3.one * 0.94f;
-            row.transform.DOScale(1f, 0.28f).SetEase(Ease.OutBack).SetUpdate(true);
+            row.transform.DOScale(1f, 0.28f).SetEase(Ease.OutBack).SetUpdate(true).SetLink(row.gameObject);
             Canvas.ForceUpdateCanvases();
             if (scroll != null) scroll.verticalNormalizedPosition = 0f;
         }

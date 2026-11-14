@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using GameFoundation.Saves;
 using GameFoundation.MetaProgression;
 using UnityEngine;
@@ -35,7 +35,7 @@ namespace GameFoundation.Base
         {
             var day = DayCycleService.Instance;
             var resources = GlobalResourceManager.Instance;
-            return CraftProduction.Morning && settings != null && settings.influence != null && settings.food != null &&
+            return settings != null && settings.influence != null && settings.food != null &&
                 settings.humans != null && settings.swordsmen != null && settings.archers != null &&
                 day != null && resources != null && RoyalDecreeService.IsEnabled(RoyalDecreeService.ForestForaging) &&
                 !UsedToday && !IsPending && day.GetFoodForecast().Starving > 0 &&

@@ -37,6 +37,7 @@ namespace GameFoundation.Base
             forecastBlock.anchoredPosition = new Vector2(0,visible ? 134 : 8);
             confirm.anchoredPosition = new Vector2(-164,visible ? -246 : -120);
             cancel.anchoredPosition = new Vector2(164,visible ? -246 : -120);
+            GetComponent<NextDayEconomyView>()?.Layout(visible);
             offer.SetActive(visible && !used); timer.SetActive(visible && busy); results.SetActive(visible && used && !busy);
             send.interactable = ForestForagingService.CanStart(settings);
             BaseDisabledButtonHint.Set(send, busy ? BaseDisabledButtonHint.Reason.Busy : ForestForagingService.UsedToday ? BaseDisabledButtonHint.Reason.ForagingUsed : day.GetFoodForecast().Starving <= 0 ? BaseDisabledButtonHint.Reason.NoHunger : BaseDisabledButtonHint.Reason.Resources);
@@ -50,7 +51,7 @@ namespace GameFoundation.Base
             if (busy) timerLabel.text = GameFoundation.Localization.GameText.Get("Поиски еды… ") + ForestForagingService.Remaining.ToString("0.0") + GameFoundation.Localization.GameText.Get(" с");
             else
             {
-                forecast.SetData(day.GetFoodForecast());
+                forecast.SetData(day.GetFoodForecast(), true);
                 survivorsLabel.text = GameFoundation.Localization.GameText.Get("Выжило: ") + data.survived;
                 deathsLabel.text = GameFoundation.Localization.GameText.Get("Погибло: ") + data.dead;
                 foodAmount.text = data.food.ToString();

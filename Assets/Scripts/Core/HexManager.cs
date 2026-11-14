@@ -117,12 +117,15 @@ public class HexManager : MonoBehaviour
 
     private void EnsureGuaranteedMagicOre(HexBlocker[] hexes, IReadOnlyList<HexGroupSettings> activeGroups)
     {
+        // Base also has a HexManager, but the ore guarantee belongs to expeditions only.
+        if (gameObject.scene.name != "World") return;
         int ring = GameFoundation.MetaProgression.DayCycleService.GuaranteedMagicOreRing;
         if (ring == 0) return;
         var candidates = hexes.Where(hex => hex.GetComponentInParent<HexMapGenerator>() is HexMapGenerator generator &&
             generator.IsRingHex(hex.transform, ring)).ToList();
         if (candidates.Any(hex => IsMagicOreContent(hex.prefabToSpawn))) return;
-        var ore = activeGroups.SelectMany(group => group.prefabsForGroup).FirstOrDefault(data => IsMagicOreContent(data.prefab));
+        var ore = activeGroups.Concat(groups).SelectMany(group => group.prefabsForGroup)
+            .FirstOrDefault(data => IsMagicOreContent(data.prefab));
         if (ore == null || candidates.Count == 0)
         {
             Debug.LogError($"[HexManager] Cannot guarantee magical ore: missing ore prefab or ring {ring}.");

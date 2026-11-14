@@ -1,4 +1,4 @@
-using GameFoundation.Audio;
+﻿using GameFoundation.Audio;
 using GameFoundation.Localization;
 using GameFoundation.Saves;
 using GameFoundation.Settings;
@@ -22,7 +22,7 @@ namespace GameFoundation.MetaProgression
         public Sprite offIcon;
         public TMP_Text caption;
         public PortalArsenalPopup Owner { get; private set; }
-        public bool AllowsAssignment => context == Context.Assignment && Owner != null && Owner.IsBaseArsenal && GameFoundation.Base.CraftProduction.Morning;
+        public bool AllowsAssignment => context == Context.Assignment && Owner != null && Owner.IsBaseArsenal;
         public bool HasVisibleBattleSlots => context == Context.Battle && isActiveAndEnabled && visibleSlotCount > 0;
         private PortalTowerProgression progression;
         private GlobalStats researchStats;

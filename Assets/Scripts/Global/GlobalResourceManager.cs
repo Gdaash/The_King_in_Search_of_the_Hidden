@@ -119,12 +119,19 @@ public class GlobalResourceManager : MonoBehaviour
     private void InitializeResources()
     {
         _resourceAmounts.Clear();
+        // Scene lists can lag behind newly registered equipment. Load every
+        // catalog resource so a saved refund cannot disappear after reloading.
+        availableResources ??= new List<ResourceType>();
+        foreach (var resource in ResourceCatalog.All)
+            if (resource != null && !availableResources.Contains(resource)) availableResources.Add(resource);
         AddOptionalResource("Engineer");
         AddOptionalResource("Slinger");
         AddOptionalResource("Chicken");
         AddOptionalResource("Hide");
         AddOptionalResource("Leather");
         AddOptionalResource("LeatherArmor");
+        AddOptionalResource("Crossbow");
+        AddOptionalResource("Crossbowman");
         if (availableResources != null)
         {
             foreach (var res in availableResources)

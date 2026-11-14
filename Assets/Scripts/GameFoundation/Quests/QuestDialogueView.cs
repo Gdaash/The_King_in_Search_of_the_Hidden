@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using GameFoundation.Saves;
 using TMPro;
 using UnityEngine;
@@ -81,6 +81,7 @@ namespace GameFoundation.Quests
             while (ReadyRewardPanel() is { } panel)
             {
                 if (GameFoundation.MetaProgression.PortalCloudTransition.IsLoading ||
+                    (GameFoundation.UI.PopupMotion.AnyOpen && !panel.ReadyReward.allowOverPopups) ||
                     GameFoundation.Base.DayReportPopup.BlocksQuestDialogues ||
                     GameFoundation.Base.FirstExpeditionRecovery.Pending || GameFoundation.Base.ResidentRecovery.Pending ||
                     System.Array.Exists(constructionEffects, effect => effect != null && effect.IsPlaying))
@@ -99,12 +100,14 @@ namespace GameFoundation.Quests
             rewardPresentation = null;
         }
 
-        public bool TryShowMessage(string name, string[] lines, System.Action closed, QuestDefinition rewardQuest = null)
+        public bool TryShowMessage(string name, string[] lines, System.Action closed, QuestDefinition rewardQuest = null, bool allowOverPopups = false)
         {
-            if (current != null || presenting || GameFoundation.Base.DayReportPopup.BlocksQuestDialogues) return false;
+            if (current != null || presenting || GameFoundation.Base.DayReportPopup.BlocksQuestDialogues ||
+                (GameFoundation.UI.PopupMotion.AnyOpen && !allowOverPopups)) return false;
             gameObject.SetActive(true);
             var definition = new GameObject("Temporary dialogue").AddComponent<QuestDialogueDefinition>();
             definition.transform.SetParent(transform, false); definition.speakerName = name; definition.lines = lines; definition.quest = rewardQuest;
+            definition.allowOverPopups = allowOverPopups;
             foreach (var source in conversations)
                 if (source != null && source.speakerName == name) { definition.portrait = source.portrait; break; }
             externalClosed = closed; temporaryConversation = true; Begin(definition); return true;
@@ -121,9 +124,10 @@ namespace GameFoundation.Quests
             GameAudioController.PlayUI(GameAudioCue.DialogueOpen, .65f); ShowLine();
         }
         private bool Available(QuestDialogueDefinition d) => d != null && !string.IsNullOrWhiteSpace(d.id) &&
+            (!GameFoundation.UI.PopupMotion.AnyOpen || d.allowOverPopups) &&
             !PlaytestSettings.TutorialsAndQuestsDisabled &&
             !GameFoundation.Base.DayReportPopup.BlocksQuestDialogues &&
-            d.BuildingNightPassed && d.PrerequisiteNightPassed &&
+            d.BuildingNightPassed && d.PrerequisiteNightPassed && d.ChallengeAvailable &&
             d.lines != null && d.lines.Length > 0 &&
             (d.quest != null ? !QuestProgress.IsAccepted(d.quest) : SaveSlotPrefs.GetInt(DoneKey(d), 0) != 1) &&
             (d.prerequisite == null || (d.prerequisiteAccepted ? QuestProgress.IsAccepted(d.prerequisite) : QuestProgress.IsClaimed(d.prerequisite)));
@@ -187,7 +191,7 @@ namespace GameFoundation.Quests
             window.SetActive(false); current = null;
             var callback = externalClosed; externalClosed = null;
             if (temporaryConversation) { temporaryConversation = false; Destroy(finished.gameObject); callback?.Invoke(); }
-            if (finished.quest != null && QuestProgress.Accept(finished.quest)) StartCoroutine(PresentQuest(finished.quest.parallelQuest ? parallelQuestPanel : questPanel));
+            if (finished.quest != null && QuestProgress.Accept(finished.quest)) StartCoroutine(PresentQuest(finished.quest.parallelQuest ? parallelQuestPanel : questPanel, allowOverPopups: finished.allowOverPopups || finished.quest.allowOverPopups));
             else { presenting = false; Evaluate(); }
             if (finished.quest == null) GameAudioController.PlayUI(GameAudioCue.DialogueClose, .6f);
         }
@@ -226,10 +230,12 @@ namespace GameFoundation.Quests
             panel.anchoredPosition = new Vector2(0, (buttonHeight + gap) * .5f);
             confirm.anchoredPosition = new Vector2(0, panel.anchoredPosition.y - panel.rect.height * scale * .5f - gap - buttonHeight * .5f);
         }
-        private IEnumerator PresentQuest(QuestPanel destinationPanel, QuestDefinition rewardQuest = null)
+        private IEnumerator PresentQuest(QuestPanel destinationPanel, QuestDefinition rewardQuest = null, bool allowOverPopups = false)
         {
             if (destinationPanel == null) { presenting = false; Evaluate(); yield break; }
             presenting = true;
+            while (GameFoundation.UI.PopupMotion.AnyOpen && !allowOverPopups && !(rewardQuest != null && rewardQuest.allowOverPopups))
+                yield return null;
             bool claimingReward = rewardQuest != null;
             destinationPanel.gameObject.SetActive(true); destinationPanel.Refresh();
             var target = (RectTransform)destinationPanel.transform;

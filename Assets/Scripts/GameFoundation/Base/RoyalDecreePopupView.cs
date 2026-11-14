@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 namespace GameFoundation.Base
 {
@@ -41,7 +41,7 @@ namespace GameFoundation.Base
         public void CancelDisable() { selected = null; if(disableConfirmation)disableConfirmation.SetActive(false); }
         private void DisableSelected()
         {
-            if (selected != null && CraftProduction.Morning && !ForestForagingService.IsPending) RoyalDecreeService.SetEnabled(selected.decree.id, false);
+            if (selected != null && !ForestForagingService.IsPending) RoyalDecreeService.SetEnabled(selected.decree.id, false);
             CancelDisable();
         }
     }

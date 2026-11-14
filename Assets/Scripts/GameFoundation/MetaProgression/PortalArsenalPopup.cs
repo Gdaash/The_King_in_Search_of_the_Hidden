@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace GameFoundation.MetaProgression
 {
-    public sealed class PortalArsenalPopup : MonoBehaviour
+    public sealed partial class PortalArsenalPopup : MonoBehaviour
     {
         public TMP_Text heading, listHeading, detailHeading, description, requirement, actionLabel;
         public UnityEngine.UI.Button closeButton, actionButton;
@@ -152,6 +152,7 @@ namespace GameFoundation.MetaProgression
         public bool HasAffordableBaseUnlock(PortalTowerBalance config)
         {
             var catalog = BaseUnlocks(config);
+            if (PortalWeaponEnhancements.HasAvailable) return true;
             if (catalog == null) return false;
             foreach (var entry in catalog.entries)
                 if (PortalArsenalProgress.CanUnlock(entry)) return true;
@@ -165,7 +166,6 @@ namespace GameFoundation.MetaProgression
         {
             if (IsBaseArsenal)
             {
-                if (!GameFoundation.Base.CraftProduction.Morning) return;
                 if (PortalArsenalProgress.IsUnlocked(preview)) PortalWeaponProfiles.Select(preview, previewMode);
                 else if (PortalArsenalProgress.TryUnlock(UnlockEntry(preview))) GameFoundation.Audio.GameAudioController.PlayUI(GameFoundation.Audio.GameAudioCue.ContentUnlock);
                 Refresh(); return;
@@ -197,14 +197,14 @@ namespace GameFoundation.MetaProgression
                 }
                 row.SetSelected(IsBaseArsenal ? SelectedWeapon == entry.weapon : active);
             }
-            if (slotInstructions != null && IsBaseArsenal) slotInstructions.text = T("slots.instructions", "Перетащите оружие в ячейку или нажмите её номер. Клавиша 1 выключает оружие.");
+            if (slotInstructions != null && IsBaseArsenal) GameFoundation.UI.InlineKeycaps.SetText(slotInstructions, T("slots.instructions", "Перетащите оружие в ячейку или нажмите её номер. Клавиша {key:1} выключает оружие."));
             RefreshDetails();
         }
         private void RefreshDetails()
         {
             var weapon = Balance.FindWeapon(preview); if (weapon == null) return;
-            if (IsBaseArsenal && modeTabs == null) CreateModeTabs();
-            if (modeTabs != null) modeTabs.gameObject.SetActive(IsBaseArsenal);
+            if (IsBaseArsenal && PortalWeaponProfiles.Enabled && modeTabs == null) CreateModeTabs();
+            if (modeTabs != null) modeTabs.gameObject.SetActive(IsBaseArsenal && PortalWeaponProfiles.Enabled);
             var equippedMode = IsBaseArsenal ? PortalWeaponProfiles.Selected(preview) : PortalWeaponMode.Balanced;
             for (int i = 0; IsBaseArsenal && i < modeButtons.Count; i++)
             {
@@ -221,12 +221,12 @@ namespace GameFoundation.MetaProgression
             bool unlocked = IsBaseArsenal ? PortalArsenalProgress.IsUnlocked(preview) : progression.OwnsWeapon(preview);
             bool active = !IsBaseArsenal && progression.ActiveWeapon == preview;
             requirement.gameObject.SetActive(!IsBaseArsenal);
-            bool applyMode = IsBaseArsenal && unlocked && previewMode != equippedMode;
+            bool applyMode = IsBaseArsenal && PortalWeaponProfiles.Enabled && unlocked && previewMode != equippedMode;
             actionButton.gameObject.SetActive(!IsBaseArsenal || !unlocked || applyMode);
 
             float textHeight = Mathf.Clamp(description.GetPreferredValues(description.text, description.rectTransform.rect.width, 1000).y + 4, 48, 164);
             var detail = (RectTransform)statsScroll.transform.parent;
-            float descriptionTop = detail.rect.yMax - (IsBaseArsenal ? ProfileTabsTopInset + ProfileTabsHeight + 8 : 66);
+            float descriptionTop = detail.rect.yMax - (IsBaseArsenal ? ProfileTabsTopInset + (PortalWeaponProfiles.Enabled ? ProfileTabsHeight + 8 : 0) : 66);
             description.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, textHeight);
             description.rectTransform.anchoredPosition = new Vector2(0, descriptionTop - textHeight * .5f);
             float top = descriptionTop - textHeight - 10;
@@ -237,27 +237,28 @@ namespace GameFoundation.MetaProgression
             }
             var action = (RectTransform)actionButton.transform;
             float bottom = !IsBaseArsenal ? requirement.rectTransform.anchoredPosition.y + requirement.rectTransform.rect.height * .5f + 8
-                : unlocked && !applyMode ? detail.rect.yMin + 20 : action.anchoredPosition.y + action.rect.height * .5f + 12;
+                : unlocked && !applyMode && PortalWeaponEnhancements.Table?.Find(preview) == null ? detail.rect.yMin + 20 : action.anchoredPosition.y + action.rect.height * .5f + 12;
             var viewportRect = (RectTransform)statsScroll.transform;
             viewportRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, top - bottom);
             viewportRect.anchoredPosition = new Vector2(0, (top + bottom) * .5f);
             statsScroll.viewport.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, top - bottom);
+            RefreshEnhancements(unlocked);
             int current = PortalArsenalProgress.Progress(entry);
             if (!IsBaseArsenal) requirement.text = unlocked ? T("permanent", "Открыто навсегда для этого сохранения.") : RequirementText(entry, current);
             actionLabel.text = applyMode ? T("mode.apply", "Выбрать") : active ? T("active", "Активно") : string.Format(
                 unlocked ? T("equipNamed", "Выбрать: {0}") : T("unlockNamed", "Открыть: {0}"), WeaponTitle(weapon));
-            actionButton.interactable = !active && (!IsBaseArsenal || GameFoundation.Base.CraftProduction.Morning) &&
+            actionButton.interactable = !active &&
                 (unlocked || PortalArsenalProgress.CanUnlock(entry));
             bool paid = !unlocked && entry.requirement == PortalArsenalCatalog.Requirement.Resource;
             var hint = actionButton.GetComponent<GameFoundation.Base.BaseDisabledButtonHint>();
             if (paid)
             {
-                var reason = PortalProgression.Level < entry.requiredPortalLevel
+                var reason = !PortalArsenalProgress.MeetsPrerequisites(entry)
                     ? GameFoundation.Base.BaseDisabledButtonHint.Reason.PortalLevel
                     : GameFoundation.Base.BaseDisabledButtonHint.Reason.Resources;
                 GameFoundation.Base.BaseDisabledButtonHint.Set(actionButton, reason, reasonText:
                     reason == GameFoundation.Base.BaseDisabledButtonHint.Reason.PortalLevel
-                        ? string.Format(GameFoundation.Base.PortalPopupView.Tr("base.portal.requires_level", "Улучшите портал до ур. {0}"), entry.requiredPortalLevel)
+                        ? PortalArsenalProgress.PrerequisiteHint(entry)
                         : null);
                 actionButton.GetComponent<GameFoundation.Base.BaseDisabledButtonHint>().enabled = true;
             }
@@ -359,14 +360,14 @@ namespace GameFoundation.MetaProgression
         {
             PortalTowerBalance.Weapon.Bolts => 0,
             PortalTowerBalance.Weapon.FrostSeal => 1,
-            PortalTowerBalance.Weapon.Lightning => 2,
-            PortalTowerBalance.Weapon.Rings => 3,
-            PortalTowerBalance.Weapon.FireShot => 4,
-            PortalTowerBalance.Weapon.ElectricOrb => 5,
-            PortalTowerBalance.Weapon.Beam => 6,
-            PortalTowerBalance.Weapon.HealingRay => 7,
-            PortalTowerBalance.Weapon.MagicShield => 8,
-            _ => 9
+            PortalTowerBalance.Weapon.Lightning => 5,
+            PortalTowerBalance.Weapon.Rings => 6,
+            PortalTowerBalance.Weapon.FireShot => 3,
+            PortalTowerBalance.Weapon.ElectricOrb => 9,
+            PortalTowerBalance.Weapon.Beam => 8,
+            PortalTowerBalance.Weapon.HealingRay => 2,
+            PortalTowerBalance.Weapon.MagicShield => 4,
+            _ => 7
         };
         private Sprite StatIcon(string key, DamageType type)
         {

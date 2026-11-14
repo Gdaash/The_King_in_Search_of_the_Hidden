@@ -276,6 +276,7 @@ namespace GameFoundation.MetaProgression
             }
         }
         public bool EmergencyReturnActive => step == Step.EmergencyReturn;
+        public static bool EmergencyReturnRequired => active != null && active.EmergencyReturnActive;
         public bool TryShowCartRecovery(string text, System.Action closed)
             => TryShowPausedMessage(Step.FoodWarning, text, closed);
 
@@ -306,13 +307,13 @@ namespace GameFoundation.MetaProgression
         }
         private CanvasGroup emergencyButtonGroup;
         private bool emergencyIgnoreParentGroups;
-        public void BeginEmergencyReturn(Button returnButton)
+        public void BeginEmergencyReturn(Button returnButton, string message = null)
         {
             LockInput();
             AllowsLightDrag = false;
             step = Step.EmergencyReturn;
             Pause();
-            Show("Рыцарь, портал едва держится! Возвращайся немедленно, пока эти твари не разрушили башню. Соберём людей у портала и уйдём вместе – живыми мы ещё всё восстановим.");
+            Show(message ?? "Рыцарь, портал едва держится! Возвращайся немедленно, пока эти твари не разрушили башню. Соберём людей у портала и уйдём вместе – живыми мы ещё всё восстановим.");
             emergencyButtonGroup = returnButton.GetComponent<CanvasGroup>();
             if (emergencyButtonGroup == null) emergencyButtonGroup = returnButton.gameObject.AddComponent<CanvasGroup>();
             emergencyIgnoreParentGroups = emergencyButtonGroup.ignoreParentGroups;
@@ -341,7 +342,8 @@ namespace GameFoundation.MetaProgression
         private void Show(string text)
         {
             continueHint.SetActive(false);nextButton.gameObject.SetActive(false);
-            instruction.text=GameText.Get(text);window.SetActive(true);
+            GameFoundation.UI.InlineKeycaps.SetText(instruction, GameText.Get(text));
+            window.SetActive(true);
         }
         private void ShowNext()
         {
@@ -491,7 +493,7 @@ namespace GameFoundation.MetaProgression
                 energyTower.PrepareWeaponPractice();
                 practiceSlots.HighlightPracticeSlot(1);
                 Show(TutorialText("world.tutorial.weapon_select",
-                    "Пока оружие выключено. Нажми 2 или выбери вторую ячейку, чтобы вооружить башню. Тогда она начнёт стрелять по врагам."));
+                    "Пока оружие выключено. Нажми {key:2} или выбери вторую ячейку, чтобы вооружить башню. Тогда она начнёт стрелять по врагам."));
                 return;
             }
             if (step is Step.EnergyCrystalIntro or Step.WeaponReady or Step.EnergyDepleted or Step.SecondBeam or Step.SecondBeamLost)
@@ -566,7 +568,7 @@ namespace GameFoundation.MetaProgression
                 {
                     previousLanguage = language;
                     const string key = "world.tutorial.camera_hint";string format = LocalizationService.Instance?.Get(key);
-                    label.text = string.Format(string.IsNullOrEmpty(format) || format == key ? "Перемещать камеру: {0}" : format, "<b>WASD</b>");
+                    GameFoundation.UI.InlineKeycaps.SetText(label, string.Format(string.IsNullOrEmpty(format) || format == key ? "Перемещать камеру: {0}" : format, "{key:W} {key:A} {key:S} {key:D}"));
                     rect.sizeDelta = new Vector2(Mathf.Ceil(label.GetPreferredValues(label.text).x) + 48, 56);
                 }
                 bool blocked = BlocksInput || PortalTowerProgression.IsChoosingUpgrade;

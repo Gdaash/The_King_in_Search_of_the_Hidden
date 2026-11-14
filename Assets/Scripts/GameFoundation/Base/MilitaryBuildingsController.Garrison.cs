@@ -173,7 +173,7 @@ namespace GameFoundation.Base
             garrisonDetails.gameObject.SetActive(definition != null);
             if (definition != null) garrisonDetails.Show(definition, selection.Profile);
             garrisonDisarm.gameObject.SetActive(selection.Profile != null);
-            garrisonDisarm.interactable = CraftProduction.Morning;
+            garrisonDisarm.interactable = selection.Profile != null;
             disarmLabel.text = GameText.Get("Разоружить");
             disarmLabel.color = garrisonDisarm.interactable ? new Color(.55f, .85f, .54f) : new Color(.64f, .59f, .68f);
         }

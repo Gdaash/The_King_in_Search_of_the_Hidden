@@ -36,6 +36,10 @@ namespace GameFoundation.MetaProgression
         private void Awake()
         {
             RegisterEngineers();
+            var crossbowman = ResourceCatalog.Find("Crossbowman");
+            var crossbowmanPrefab = Resources.Load<GameObject>("Units/Crossbowman");
+            if (crossbowman != null && crossbowmanPrefab != null && !additionalUnitTypes.Exists(unit => unit?.resource == crossbowman))
+                additionalUnitTypes.Add(new UnitControl { resource = crossbowman, prefab = crossbowmanPrefab });
             var slinger = ResourceCatalog.Find("Slinger");
             var slingerPrefab = Resources.Load<GameObject>("Units/Slinger");
             if (slinger != null && slingerPrefab != null && !additionalUnitTypes.Exists(unit => unit?.resource == slinger))

@@ -53,7 +53,9 @@ namespace GameFoundation.UI
         {
             if (source == null || display == null) return;
             display.enabled = source.enabled;
-            if (display.text != source.text) display.text = source.text;
+            bool hasKeys = source.text.Contains("{key:");
+            if (hasKeys) InlineKeycaps.SetText(display, source.text);
+            else if (display.text != source.text) display.text = source.text;
             display.fontSize = source.fontSize;
             display.fontStyle = source.fontStyle switch { FontStyle.Bold => FontStyles.Bold, FontStyle.Italic => FontStyles.Italic, FontStyle.BoldAndItalic => FontStyles.Bold | FontStyles.Italic, _ => FontStyles.Normal };
             display.textWrappingMode = source.horizontalOverflow == HorizontalWrapMode.Wrap ? TextWrappingModes.Normal : TextWrappingModes.NoWrap;
@@ -62,7 +64,7 @@ namespace GameFoundation.UI
             if (source.resizeTextForBestFit) { display.fontSizeMin = source.resizeTextMinSize; display.fontSizeMax = source.resizeTextMaxSize; }
             display.color = source.color;
             display.raycastTarget = false;
-            display.richText = source.supportRichText;
+            display.richText = hasKeys || source.supportRichText;
             display.alignment = source.alignment switch
             {
                 TextAnchor.UpperCenter => TextAlignmentOptions.Top,

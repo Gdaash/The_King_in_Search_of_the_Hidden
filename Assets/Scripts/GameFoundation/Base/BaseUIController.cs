@@ -226,8 +226,9 @@ namespace GameFoundation.Base
             var day = DayCycleService.Instance;
             if (day == null) return;
             var forecast = day.GetFoodForecast();
-            nextDayForecast?.SetData(forecast);
+            nextDayForecast?.SetData(forecast, true);
             housingForecast?.SetData(forecast);
+            NextDayEconomyView.Refresh(nextDayConfirmation);
         }
         private void SelectPortal(PortalSite site)
         {

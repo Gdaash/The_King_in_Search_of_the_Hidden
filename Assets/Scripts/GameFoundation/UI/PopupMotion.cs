@@ -7,6 +7,12 @@ namespace GameFoundation.UI
     [DefaultExecutionOrder(1000)]
     public sealed class PopupMotion : MonoBehaviour
     {
+        private static readonly System.Collections.Generic.HashSet<PopupMotion> openPopups = new();
+        public static bool AnyOpen => openPopups.Count > 0;
+        public static event Action AllClosed;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetOpenPopups() { openPopups.Clear(); AllClosed = null; }
         [SerializeField] private float moveTime = .25f;
         [SerializeField] private float settleTime = .1f;
         [SerializeField] private float closeTime = .25f;
@@ -76,6 +82,7 @@ namespace GameFoundation.UI
 
         private void Open(RectTransform target, Graphic shade, CanvasGroup shadeGroup)
         {
+            openPopups.Add(this);
             Restore();
             window = target;
             fit = target.GetComponent<CanvasWindowFit>();
@@ -150,7 +157,13 @@ namespace GameFoundation.UI
             }
         }
 
-        private void OnDisable() => Restore();
+        private void OnDisable()
+        {
+            bool removed = openPopups.Remove(this);
+            Restore();
+            if (removed && !AnyOpen) AllClosed?.Invoke();
+        }
+        private void OnDestroy() => openPopups.Remove(this);
 
         private void Restore()
         {

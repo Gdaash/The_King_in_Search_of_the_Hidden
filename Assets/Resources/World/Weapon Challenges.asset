@@ -1,0 +1,493 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61a494e39e271254da36f57d5b34c4c7, type: 3}
+  m_Name: Weapon Challenges
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.MetaProgression.PortalWeaponChallengeTable
+  weapons:
+  - weapon: 1
+    ranks:
+    - damage: 2
+      intervalReduction: 0.3
+      support: 0
+      kills:
+      - enemyId: Octopus
+        count: 2
+    - damage: 4
+      intervalReduction: 0.6
+      support: 0
+      kills:
+      - enemyId: Octopus
+        count: 10
+    - damage: 6
+      intervalReduction: 0.9
+      support: 0
+      kills:
+      - enemyId: Octopus
+        count: 24
+    - damage: 12
+      intervalReduction: 1.25
+      support: 0
+      kills:
+      - enemyId: Octopus
+        count: 45
+      - enemyId: SkeletonSlime
+        count: 2
+    - damage: 20
+      intervalReduction: 1.55
+      support: 0
+      kills:
+      - enemyId: Octopus
+        count: 80
+      - enemyId: SkeletonSlime
+        count: 4
+      - enemyId: FlyingEye
+        count: 1
+    - damage: 24
+      intervalReduction: 1.55
+      support: 0
+      kills:
+      - enemyId: Octopus
+        count: 120
+      - enemyId: Skeleton
+        count: 10
+    - damage: 28
+      intervalReduction: 1.6
+      support: 0
+      kills:
+      - enemyId: Octopus
+        count: 180
+      - enemyId: FlyingEye
+        count: 8
+      - enemyId: Bat
+        count: 15
+    - damage: 32
+      intervalReduction: 1.6
+      support: 0
+      kills:
+      - enemyId: Octopus
+        count: 250
+      - enemyId: OctopusGuardian
+        count: 12
+  - weapon: 5
+    ranks:
+    - damage: 1
+      intervalReduction: 0.15
+      support: 0
+      kills:
+      - enemyId: Octopus
+        count: 5
+    - damage: 2
+      intervalReduction: 0.3
+      support: 0
+      kills:
+      - enemyId: Octopus
+        count: 15
+    - damage: 3
+      intervalReduction: 0.45000002
+      support: 0
+      kills:
+      - enemyId: Octopus
+        count: 30
+      - enemyId: SkeletonSlime
+        count: 3
+    - damage: 4
+      intervalReduction: 0.6
+      support: 0
+      kills:
+      - enemyId: Octopus
+        count: 55
+      - enemyId: SkeletonSlime
+        count: 8
+    - damage: 5
+      intervalReduction: 0.75
+      support: 0
+      kills:
+      - enemyId: Octopus
+        count: 90
+      - enemyId: SkeletonSlime
+        count: 15
+    - damage: 6
+      intervalReduction: 0.90000004
+      support: 0
+      kills:
+      - enemyId: Octopus
+        count: 140
+      - enemyId: SkeletonSlime
+        count: 25
+  - weapon: 6
+    ranks:
+    - damage: 2
+      intervalReduction: 0.08
+      support: 0
+      kills:
+      - enemyId: Skeleton
+        count: 5
+    - damage: 4
+      intervalReduction: 0.16
+      support: 0
+      kills:
+      - enemyId: Skeleton
+        count: 15
+    - damage: 6
+      intervalReduction: 0.24
+      support: 0
+      kills:
+      - enemyId: Skeleton
+        count: 30
+      - enemyId: OctopusGuardian
+        count: 3
+    - damage: 8
+      intervalReduction: 0.32
+      support: 0
+      kills:
+      - enemyId: Skeleton
+        count: 55
+      - enemyId: OctopusGuardian
+        count: 8
+    - damage: 10
+      intervalReduction: 0.39999998
+      support: 0
+      kills:
+      - enemyId: Skeleton
+        count: 90
+      - enemyId: OctopusGuardian
+        count: 15
+    - damage: 12
+      intervalReduction: 0.48
+      support: 0
+      kills:
+      - enemyId: Skeleton
+        count: 140
+      - enemyId: OctopusGuardian
+        count: 25
+  - weapon: 8
+    ranks:
+    - damage: 0
+      intervalReduction: 0.1
+      support: 3
+      kills:
+      - enemyId: SkeletonSlime
+        count: 5
+    - damage: 0
+      intervalReduction: 0.2
+      support: 6
+      kills:
+      - enemyId: SkeletonSlime
+        count: 15
+    - damage: 0
+      intervalReduction: 0.3
+      support: 9
+      kills:
+      - enemyId: SkeletonSlime
+        count: 30
+      - enemyId: Skeleton
+        count: 3
+    - damage: 0
+      intervalReduction: 0.4
+      support: 12
+      kills:
+      - enemyId: SkeletonSlime
+        count: 55
+      - enemyId: Skeleton
+        count: 8
+    - damage: 0
+      intervalReduction: 0.5
+      support: 15
+      kills:
+      - enemyId: SkeletonSlime
+        count: 90
+      - enemyId: Skeleton
+        count: 15
+    - damage: 0
+      intervalReduction: 0.6
+      support: 18
+      kills:
+      - enemyId: SkeletonSlime
+        count: 140
+      - enemyId: Skeleton
+        count: 25
+  - weapon: 9
+    ranks:
+    - damage: 0
+      intervalReduction: 0.3
+      support: 8
+      kills:
+      - enemyId: Skeleton
+        count: 5
+    - damage: 0
+      intervalReduction: 0.6
+      support: 16
+      kills:
+      - enemyId: Skeleton
+        count: 15
+    - damage: 0
+      intervalReduction: 0.90000004
+      support: 24
+      kills:
+      - enemyId: Skeleton
+        count: 30
+      - enemyId: CursedMage
+        count: 3
+    - damage: 0
+      intervalReduction: 1.2
+      support: 32
+      kills:
+      - enemyId: Skeleton
+        count: 55
+      - enemyId: CursedMage
+        count: 8
+    - damage: 0
+      intervalReduction: 1.5
+      support: 40
+      kills:
+      - enemyId: Skeleton
+        count: 90
+      - enemyId: CursedMage
+        count: 15
+    - damage: 0
+      intervalReduction: 1.8000001
+      support: 48
+      kills:
+      - enemyId: Skeleton
+        count: 140
+      - enemyId: CursedMage
+        count: 25
+  - weapon: 4
+    ranks:
+    - damage: 3
+      intervalReduction: 0.1
+      support: 0
+      kills:
+      - enemyId: OctopusGuardian
+        count: 5
+    - damage: 6
+      intervalReduction: 0.2
+      support: 0
+      kills:
+      - enemyId: OctopusGuardian
+        count: 15
+    - damage: 9
+      intervalReduction: 0.3
+      support: 0
+      kills:
+      - enemyId: OctopusGuardian
+        count: 30
+      - enemyId: OctopusWarrior
+        count: 3
+    - damage: 12
+      intervalReduction: 0.4
+      support: 0
+      kills:
+      - enemyId: OctopusGuardian
+        count: 55
+      - enemyId: CursedKnight
+        count: 8
+    - damage: 15
+      intervalReduction: 0.5
+      support: 0
+      kills:
+      - enemyId: OctopusGuardian
+        count: 90
+      - enemyId: CursedKnight
+        count: 15
+    - damage: 18
+      intervalReduction: 0.6
+      support: 0
+      kills:
+      - enemyId: OctopusGuardian
+        count: 140
+      - enemyId: CursedKnight
+        count: 25
+  - weapon: 3
+    ranks:
+    - damage: 2
+      intervalReduction: 0.1
+      support: 0
+      kills:
+      - enemyId: Bat
+        count: 5
+    - damage: 4
+      intervalReduction: 0.2
+      support: 0
+      kills:
+      - enemyId: Bat
+        count: 15
+    - damage: 6
+      intervalReduction: 0.3
+      support: 0
+      kills:
+      - enemyId: Bat
+        count: 30
+      - enemyId: OctopusRaider
+        count: 3
+    - damage: 8
+      intervalReduction: 0.4
+      support: 0
+      kills:
+      - enemyId: Bat
+        count: 55
+      - enemyId: OctopusRaider
+        count: 8
+    - damage: 10
+      intervalReduction: 0.5
+      support: 0
+      kills:
+      - enemyId: Bat
+        count: 90
+      - enemyId: OctopusRaider
+        count: 15
+    - damage: 12
+      intervalReduction: 0.6
+      support: 0
+      kills:
+      - enemyId: Bat
+        count: 140
+      - enemyId: OctopusRaider
+        count: 25
+  - weapon: 10
+    ranks:
+    - damage: 0
+      intervalReduction: 0
+      support: 1
+      kills:
+      - enemyId: SkeletonSlime
+        count: 5
+    - damage: 0
+      intervalReduction: 0
+      support: 2
+      kills:
+      - enemyId: SkeletonSlime
+        count: 15
+    - damage: 0
+      intervalReduction: 0
+      support: 3
+      kills:
+      - enemyId: SkeletonSlime
+        count: 30
+      - enemyId: ToxicDemon
+        count: 3
+    - damage: 0
+      intervalReduction: 0
+      support: 4
+      kills:
+      - enemyId: SkeletonSlime
+        count: 55
+      - enemyId: ToxicDemon
+        count: 8
+    - damage: 0
+      intervalReduction: 0
+      support: 5
+      kills:
+      - enemyId: SkeletonSlime
+        count: 90
+      - enemyId: ToxicDemon
+        count: 15
+    - damage: 0
+      intervalReduction: 0
+      support: 6
+      kills:
+      - enemyId: SkeletonSlime
+        count: 140
+      - enemyId: ToxicDemon
+        count: 25
+  - weapon: 2
+    ranks:
+    - damage: 3
+      intervalReduction: 0
+      support: 0
+      kills:
+      - enemyId: CursedKnight
+        count: 5
+    - damage: 6
+      intervalReduction: 0
+      support: 0
+      kills:
+      - enemyId: CursedKnight
+        count: 15
+    - damage: 9
+      intervalReduction: 0
+      support: 0
+      kills:
+      - enemyId: CursedKnight
+        count: 30
+      - enemyId: Demon
+        count: 3
+    - damage: 12
+      intervalReduction: 0
+      support: 0
+      kills:
+      - enemyId: CursedKnight
+        count: 55
+      - enemyId: Demon
+        count: 8
+    - damage: 15
+      intervalReduction: 0
+      support: 0
+      kills:
+      - enemyId: CursedKnight
+        count: 90
+      - enemyId: Demon
+        count: 15
+    - damage: 18
+      intervalReduction: 0
+      support: 0
+      kills:
+      - enemyId: CursedKnight
+        count: 140
+      - enemyId: Demon
+        count: 25
+  - weapon: 7
+    ranks:
+    - damage: 4
+      intervalReduction: 0.15
+      support: 0
+      kills:
+      - enemyId: Demon
+        count: 5
+    - damage: 8
+      intervalReduction: 0.3
+      support: 0
+      kills:
+      - enemyId: Demon
+        count: 15
+    - damage: 12
+      intervalReduction: 0.45000002
+      support: 0
+      kills:
+      - enemyId: Demon
+        count: 30
+      - enemyId: ToxicDemon
+        count: 3
+    - damage: 16
+      intervalReduction: 0.6
+      support: 0
+      kills:
+      - enemyId: Demon
+        count: 55
+      - enemyId: ToxicDemon
+        count: 8
+    - damage: 20
+      intervalReduction: 0.75
+      support: 0
+      kills:
+      - enemyId: Demon
+        count: 90
+      - enemyId: ToxicDemon
+        count: 15
+    - damage: 24
+      intervalReduction: 0.90000004
+      support: 0
+      kills:
+      - enemyId: Demon
+        count: 140
+      - enemyId: ToxicDemon
+        count: 25

@@ -17,6 +17,9 @@ namespace GameFoundation.MetaProgression
         private int lastDragFrame = -1;
         private PopupChoiceRowStyle rowStyle;
         private PopupChoicePrice price;
+        private UnityEngine.UI.Image challengeLock;
+        private TMP_Text challengeCount;
+        private bool shiftedForLock;
 
         internal void SetPurchase(PortalArsenalCatalog.Entry entry, bool unlocked)
         {
@@ -24,8 +27,42 @@ namespace GameFoundation.MetaProgression
             if (showPrice)
                 price ??= new PopupChoicePrice((RectTransform)button.transform, state.font, 20);
             price?.Set(showPrice ? entry.resource : null, showPrice ? entry.amount : 0);
-            (state.text, state.color) = PopupChoiceRowStyle.PurchaseStatus(unlocked, entry == null ||
-                PortalProgression.Level < entry.requiredPortalLevel, PortalArsenalProgress.CanUnlock(entry));
+            bool locked = !unlocked && !PortalArsenalProgress.MeetsPrerequisites(entry);
+            (state.text, state.color) = PopupChoiceRowStyle.PurchaseStatus(unlocked, locked, PortalArsenalProgress.CanUnlock(entry));
+            if (unlocked && PortalWeaponEnhancements.Table?.Find(weapon) != null)
+                state.text += "  " + PortalWeaponEnhancements.Rank(weapon) + "/" + PortalWeaponEnhancements.Table.Find(weapon).ranks.Count;
+            if (locked && challengeLock == null)
+            {
+                challengeLock = new GameObject("Challenge lock", typeof(RectTransform), typeof(UnityEngine.UI.Image)).GetComponent<UnityEngine.UI.Image>();
+                challengeLock.transform.SetParent(button.transform, false);
+                challengeLock.rectTransform.anchorMin = challengeLock.rectTransform.anchorMax = new Vector2(0, .5f);
+                challengeLock.rectTransform.anchoredPosition = new Vector2(30, 12);
+                ResourceIconSizing.Apply(challengeLock, Resources.Load<ButtonVisualTheme>("UI/ButtonVisualTheme").lockIconSprite);
+                challengeLock.raycastTarget = false;
+                challengeCount = new GameObject("Remaining enhancements", typeof(RectTransform), typeof(TextMeshProUGUI)).GetComponent<TMP_Text>();
+                challengeCount.transform.SetParent(button.transform, false);
+                challengeCount.rectTransform.anchorMin = challengeCount.rectTransform.anchorMax = new Vector2(0, .5f);
+                challengeCount.rectTransform.sizeDelta = new Vector2(42, 28);
+                challengeCount.rectTransform.anchoredPosition = new Vector2(30, -16);
+                challengeCount.font = state.font; challengeCount.fontSize = 22;
+                challengeCount.alignment = TextAlignmentOptions.Center; challengeCount.raycastTarget = false;
+            }
+            if (challengeLock != null)
+            {
+                challengeLock.gameObject.SetActive(locked);
+                challengeCount.gameObject.SetActive(locked && PortalArsenalProgress.RemainingEnhancements(entry) > 0);
+                challengeCount.text = PortalArsenalProgress.RemainingEnhancements(entry).ToString();
+            }
+            if (locked != shiftedForLock)
+            {
+                float shift = locked ? 40 : -40;
+                icon.rectTransform.anchoredPosition += new Vector2(shift, 0);
+                foreach (var label in new[] { title, state }) label.rectTransform.offsetMin += new Vector2(shift, 0);
+                shiftedForLock = locked;
+            }
+            var hint = PortalArsenalProgress.PrerequisiteHint(entry);
+            GameFoundation.Base.BaseDisabledButtonHint.Set(button, GameFoundation.Base.BaseDisabledButtonHint.Reason.Research,
+                actionDetail: locked ? hint : null);
         }
 
         internal void SetSelected(bool selected)

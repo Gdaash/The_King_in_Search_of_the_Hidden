@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using GameFoundation.Audio;
@@ -205,7 +205,7 @@ namespace GameFoundation.Base
             if (convertHen != null)
             {
                 convertHen.button.gameObject.SetActive(ExpeditionTasks.CoopBuilt);
-                convertHen.button.interactable = CraftProduction.Morning && production.Chickens > 0;
+                convertHen.button.interactable = production.Chickens > 0;
                 convertHen.action.text = T("hen_to_food", "Курицу в еду");
                 if (convertHen.stars != null) convertHen.stars.Emit = convertHen.button.interactable;
                 Price(convertHen, new BuildingUpgradeCatalog.Level

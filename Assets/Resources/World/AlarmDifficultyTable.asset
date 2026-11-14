@@ -14,1197 +14,1514 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AlarmDifficultyTable
   difficulties:
   - level: 1
-    maximumAlarm: 150
+    maximumAlarm: 260
+    minimumWaveSpawnDistance: 12
     thresholds:
-    - waveCountdown: 35
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 35
       waves:
-      - name: Danger 20 / 1
+      - name: Forest 1 / 1
         groups: 1
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
           count: 2
-      - name: Danger 20 / 2
+      - name: Forest 1 / 2
         groups: 1
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
           count: 3
-      - name: Danger 20 / 3
+      - name: Forest 1 / 3
         groups: 1
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 4
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
+          count: 3
       alarmValue: 20
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 2
-      maxEnemiesPerWave: 4
-      enemies:
-      - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-        weight: 9
-    - waveCountdown: 29
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 3
+      maxEnemiesPerWave: 3
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 31
       waves:
-      - name: Danger 40 / 1
+      - name: Forest 2 / 1
         groups: 1
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 7
-      - name: Danger 40 / 2
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
+          count: 5
+      - name: Forest 2 / 2
         groups: 1
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 8
-      - name: Danger 40 / 3
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
+          count: 5
+      - name: Forest 2 / 3
         groups: 1
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 9
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
+          count: 5
       alarmValue: 40
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 7
-      maxEnemiesPerWave: 9
-      enemies:
-      - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-        weight: 24
-    - waveCountdown: 25
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 5
+      maxEnemiesPerWave: 5
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 27
       waves:
-      - name: Danger 70 / 1
-        groups: 2
+      - name: Forest 3 / 1
+        groups: 1
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 12
-        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 1
-      - name: Danger 70 / 2
-        groups: 2
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
+          count: 10
+      - name: Forest 3 / 2
+        groups: 1
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 14
-        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 1
-      - name: Danger 70 / 3
-        groups: 2
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
+          count: 10
+      - name: Forest 3 / 3
+        groups: 1
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 15
-        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 1
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
+          count: 10
       alarmValue: 70
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 13
-      maxEnemiesPerWave: 16
-      enemies:
-      - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-        weight: 41
-      - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-        weight: 3
-    - waveCountdown: 22
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 10
+      maxEnemiesPerWave: 10
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 23
       waves:
-      - name: Danger 100 / 1
-        groups: 2
+      - name: Forest 4 / 1
+        groups: 1
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 20
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
+          count: 18
         - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
           count: 1
-      - name: Danger 100 / 2
-        groups: 2
+      - name: Forest 4 / 2
+        groups: 1
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 22
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
+          count: 18
         - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 2
-      - name: Danger 100 / 3
+          count: 1
+      - name: Forest 4 / 3
+        groups: 1
+        units:
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
+          count: 18
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 1
+      alarmValue: 100
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 19
+      maxEnemiesPerWave: 19
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 19
+      waves:
+      - name: Forest 5 / 1
         groups: 2
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
           count: 24
         - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
           count: 2
         - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
           count: 1
-      alarmValue: 100
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 21
-      maxEnemiesPerWave: 27
-      enemies:
-      - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-        weight: 66
-      - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-        weight: 5
-      - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-        weight: 1
-    - waveCountdown: 19
-      waves:
-      - name: Danger 150 / 1
+      - name: Forest 5 / 2
         groups: 2
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 30
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
+          count: 24
         - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
           count: 2
-      - name: Danger 150 / 2
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 1
+      - name: Forest 5 / 3
         groups: 2
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 32
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
+          count: 24
         - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
           count: 2
-      - name: Danger 150 / 3
-        groups: 2
-        units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 34
-        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 3
-      - name: Danger 150 / 4
-        groups: 2
-        units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 36
-        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 3
         - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
           count: 1
       alarmValue: 150
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 32
-      maxEnemiesPerWave: 40
-      enemies:
-      - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-        weight: 132
-      - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-        weight: 10
-      - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-        weight: 1
-  - level: 2
-    maximumAlarm: 170
-    thresholds:
-    - waveCountdown: 32
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 27
+      maxEnemiesPerWave: 27
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 15
       waves:
-      - name: Danger 24 / 1
-        groups: 1
+      - name: Forest 6 / 1
+        groups: 3
         units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 4
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 3
-      - name: Danger 24 / 2
-        groups: 1
-        units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 5
-        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-          count: 3
-      alarmValue: 24
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 7
-      maxEnemiesPerWave: 8
-      enemies:
-      - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-        weight: 5
-      - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-        weight: 3
-      - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-        weight: 3
-    - waveCountdown: 28
-      waves:
-      - name: Danger 52 / 1
-        groups: 1
-        units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
+          count: 36
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
           count: 6
-        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 3
-        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
           count: 1
-      - name: Danger 52 / 2
-        groups: 1
+      - name: Forest 6 / 2
+        groups: 3
         units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 5
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 3
-        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
+          count: 36
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 6
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
           count: 1
-      alarmValue: 52
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 9
-      maxEnemiesPerWave: 10
-      enemies:
-      - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-        weight: 6
-      - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-        weight: 3
-      - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-        weight: 1
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 3
-    - waveCountdown: 24
+      - name: Forest 6 / 3
+        groups: 3
+        units:
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
+          count: 36
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 6
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 1
+      alarmValue: 200
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 43
+      maxEnemiesPerWave: 43
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 14
       waves:
-      - name: Danger 84 / 1
-        groups: 2
+      - name: Forest 7 / 1
+        groups: 3
         units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 7
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
+          count: 52
         - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 3
-        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-          count: 2
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 1
-      - name: Danger 84 / 2
-        groups: 2
-        units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 7
-        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-          count: 2
+          count: 10
         - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
           count: 2
-      alarmValue: 84
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 11
-      maxEnemiesPerWave: 13
-      enemies:
-      - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-        weight: 7
-      - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-        weight: 3
-      - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-        weight: 2
-      - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-        weight: 1
-      - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-        weight: 2
-    - waveCountdown: 21
-      waves:
-      - name: Danger 120 / 1
-        groups: 2
+      - name: Forest 7 / 2
+        groups: 3
         units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 8
-        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-          count: 3
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
+          count: 52
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 10
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
           count: 2
-        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-          count: 1
-      - name: Danger 120 / 2
-        groups: 2
+      - name: Forest 7 / 3
+        groups: 3
         units:
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 6
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 5
-        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+        - prefab: {fileID: 8907144826403829506, guid: 2e461cd1de7fdf14e9c4cac8b135c0b8, type: 3}
+          count: 52
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 10
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
           count: 2
-        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-          count: 2
-      alarmValue: 120
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 14
-      maxEnemiesPerWave: 15
-      enemies:
-      - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-        weight: 8
-      - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-        weight: 3
-      - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-        weight: 2
-      - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-        weight: 2
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 6
-    - waveCountdown: 18
-      waves:
-      - name: Danger 170 / 1
-        groups: 2
-        units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 9
-        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-          count: 3
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 2
-        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-          count: 3
-      - name: Danger 170 / 2
-        groups: 2
-        units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 7
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 5
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 2
-        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-          count: 3
-        - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
-          count: 1
-      alarmValue: 170
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 17
-      maxEnemiesPerWave: 18
-      enemies:
-      - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-        weight: 9
-      - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-        weight: 3
-      - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-        weight: 2
-      - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-        weight: 3
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 5
-      - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
-        weight: 1
-  - level: 3
-    maximumAlarm: 185
+      alarmValue: 260
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 64
+      maxEnemiesPerWave: 64
+      enemies: []
+  - level: 2
+    maximumAlarm: 260
+    minimumWaveSpawnDistance: 12
     thresholds:
-    - waveCountdown: 30
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 36
       waves:
-      - name: Danger 26 / 1
-        groups: 1
-        units:
-        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-          count: 6
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 3
-      - name: Danger 26 / 2
+      - name: Region 2 / Alarm 1 / 1
         groups: 1
         units:
         - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 5
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 4
-      alarmValue: 26
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
+          count: 8
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 1
+      - name: Region 2 / Alarm 1 / 2
+        groups: 1
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 8
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 1
+      - name: Region 2 / Alarm 1 / 3
+        groups: 1
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 8
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 1
+      alarmValue: 20
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
       minEnemiesPerWave: 9
       maxEnemiesPerWave: 9
-      enemies:
-      - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-        weight: 6
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 4
-      - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-        weight: 5
-    - waveCountdown: 26
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 33
       waves:
-      - name: Danger 56 / 1
+      - name: Region 2 / Alarm 2 / 1
         groups: 1
         units:
-        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-          count: 8
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 5
-        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-          count: 1
-      - name: Danger 56 / 2
-        groups: 1
-        units:
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 7
-        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-          count: 5
-        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 2
-      alarmValue: 56
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 14
-      maxEnemiesPerWave: 14
-      enemies:
-      - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-        weight: 8
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 7
-      - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-        weight: 1
-      - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-        weight: 2
-    - waveCountdown: 23
-      waves:
-      - name: Danger 92 / 1
-        groups: 2
-        units:
-        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-          count: 9
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 6
-        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-          count: 2
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 2
-      - name: Danger 92 / 2
-        groups: 2
-        units:
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 8
-        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-          count: 7
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 2
-      alarmValue: 92
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 17
-      maxEnemiesPerWave: 19
-      enemies:
-      - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-        weight: 9
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 8
-      - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-        weight: 2
-      - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-        weight: 2
-      - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-        weight: 2
-    - waveCountdown: 20
-      waves:
-      - name: Danger 132 / 1
-        groups: 2
-        units:
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 10
-        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-          count: 8
-        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-          count: 2
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 2
-        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-          count: 1
-      - name: Danger 132 / 2
-        groups: 2
-        units:
-        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-          count: 11
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 8
-        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-          count: 2
-        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-          count: 1
-      alarmValue: 132
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 22
-      maxEnemiesPerWave: 23
-      enemies:
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 10
-      - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-        weight: 11
-      - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-        weight: 2
-      - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-        weight: 2
-      - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-        weight: 1
-      - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-        weight: 1
-    - waveCountdown: 17
-      waves:
-      - name: Danger 185 / 1
-        groups: 3
-        units:
-        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-          count: 12
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 10
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 3
-        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-          count: 2
-        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
-          count: 1
-      - name: Danger 185 / 2
-        groups: 3
-        units:
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 12
-        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-          count: 10
-        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-          count: 3
-        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-          count: 2
-        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
-          count: 1
-      alarmValue: 185
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 28
-      maxEnemiesPerWave: 28
-      enemies:
-      - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-        weight: 12
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 12
-      - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-        weight: 3
-      - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-        weight: 2
-      - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
-        weight: 1
-      - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-        weight: 3
-  - level: 4
-    maximumAlarm: 195
-    thresholds:
-    - waveCountdown: 29
-      waves:
-      - name: Danger 30 / 1
-        groups: 1
-        units:
-        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 5
         - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 5
-      - name: Danger 30 / 2
-        groups: 1
-        units:
-        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 4
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 4
-        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-          count: 3
-      alarmValue: 30
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 10
-      maxEnemiesPerWave: 11
-      enemies:
-      - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-        weight: 5
-      - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-        weight: 5
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 4
-      - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-        weight: 3
-    - waveCountdown: 25
-      waves:
-      - name: Danger 62 / 1
-        groups: 1
-        units:
-        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 6
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 4
-        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-          count: 2
-      - name: Danger 62 / 2
-        groups: 1
-        units:
-        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 6
-        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-          count: 6
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 2
-        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 12
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
           count: 1
-      alarmValue: 62
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 12
-      maxEnemiesPerWave: 15
-      enemies:
-      - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-        weight: 6
-      - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-        weight: 4
-      - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-        weight: 2
-      - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-        weight: 6
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 2
-    - waveCountdown: 22
+      - name: Region 2 / Alarm 2 / 2
+        groups: 1
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 12
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 1
+      - name: Region 2 / Alarm 2 / 3
+        groups: 1
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 12
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 1
+      alarmValue: 40
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 13
+      maxEnemiesPerWave: 13
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 30
       waves:
-      - name: Danger 100 / 1
+      - name: Region 2 / Alarm 3 / 1
         groups: 2
         units:
-        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 7
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 6
-        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 16
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
           count: 2
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 2
-      - name: Danger 100 / 2
+      - name: Region 2 / Alarm 3 / 2
         groups: 2
         units:
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 7
-        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 6
-        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-          count: 3
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 16
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
           count: 2
-      alarmValue: 100
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 17
-      maxEnemiesPerWave: 18
-      enemies:
-      - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-        weight: 7
-      - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-        weight: 6
-      - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-        weight: 3
-      - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-        weight: 2
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 7
-    - waveCountdown: 19
-      waves:
-      - name: Danger 142 / 1
+      - name: Region 2 / Alarm 3 / 3
         groups: 2
         units:
-        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 8
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 16
         - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-          count: 4
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 3
-        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-          count: 2
-        - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
-          count: 1
-      - name: Danger 142 / 2
-        groups: 2
-        units:
-        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 8
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 7
-        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-          count: 3
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 2
-        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
-          count: 1
-      alarmValue: 142
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 18
-      maxEnemiesPerWave: 21
-      enemies:
-      - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-        weight: 8
-      - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-        weight: 4
-      - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-        weight: 3
-      - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-        weight: 2
-      - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
-        weight: 1
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 7
-      - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-        weight: 3
-      - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
-        weight: 1
-    - waveCountdown: 16
-      waves:
-      - name: Danger 195 / 1
-        groups: 3
-        units:
-        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 9
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 8
-        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-          count: 3
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 3
-        - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
-          count: 2
-        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
-          count: 1
-      - name: Danger 195 / 2
-        groups: 3
-        units:
-        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-          count: 8
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 8
-        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-          count: 4
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 3
-        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-          count: 2
-        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
-          count: 2
-      alarmValue: 195
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 26
-      maxEnemiesPerWave: 27
-      enemies:
-      - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-        weight: 9
-      - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-        weight: 8
-      - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-        weight: 3
-      - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-        weight: 3
-      - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
-        weight: 2
-      - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
-        weight: 2
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 8
-      - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-        weight: 4
-      - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-        weight: 2
-  - level: 5
-    maximumAlarm: 210
-    thresholds:
-    - waveCountdown: 28
-      waves:
-      - name: Danger 34 / 1
-        groups: 1
-        units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 6
-        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-          count: 5
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 1
-      - name: Danger 34 / 2
-        groups: 1
-        units:
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 6
-        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-          count: 2
-        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-          count: 2
-      alarmValue: 34
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 10
-      maxEnemiesPerWave: 12
-      enemies:
-      - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-        weight: 6
-      - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-        weight: 5
-      - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-        weight: 1
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 6
-      - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-        weight: 2
-      - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-        weight: 2
-    - waveCountdown: 24
-      waves:
-      - name: Danger 70 / 1
-        groups: 1
-        units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 7
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 5
-        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-          count: 2
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 2
-      - name: Danger 70 / 2
-        groups: 1
-        units:
-        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-          count: 9
-        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-          count: 3
-        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-          count: 2
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
           count: 2
       alarmValue: 70
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 16
-      maxEnemiesPerWave: 16
-      enemies:
-      - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-        weight: 7
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 5
-      - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-        weight: 2
-      - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-        weight: 2
-      - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-        weight: 9
-      - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-        weight: 3
-      - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-        weight: 2
-    - waveCountdown: 21
-      waves:
-      - name: Danger 112 / 1
-        groups: 2
-        units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 8
-        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-          count: 4
-        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-          count: 3
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 2
-        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
-          count: 1
-      - name: Danger 112 / 2
-        groups: 2
-        units:
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 9
-        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-          count: 8
-        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-          count: 3
-        - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
-          count: 1
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 2
-      alarmValue: 112
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
       minEnemiesPerWave: 18
+      maxEnemiesPerWave: 18
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 27
+      waves:
+      - name: Region 2 / Alarm 4 / 1
+        groups: 2
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 20
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 3
+      - name: Region 2 / Alarm 4 / 2
+        groups: 2
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 20
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 3
+      - name: Region 2 / Alarm 4 / 3
+        groups: 2
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 20
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 3
+      alarmValue: 100
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 23
       maxEnemiesPerWave: 23
-      enemies:
-      - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-        weight: 8
-      - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-        weight: 4
-      - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-        weight: 3
-      - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-        weight: 2
-      - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
-        weight: 1
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 9
-      - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-        weight: 8
-      - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-        weight: 3
-      - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
-        weight: 1
-    - waveCountdown: 18
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 24
       waves:
-      - name: Danger 158 / 1
+      - name: Region 2 / Alarm 5 / 1
         groups: 2
         units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 10
-        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 26
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
           count: 4
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 3
-        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
-          count: 2
-        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+        - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
           count: 1
-      - name: Danger 158 / 2
+      - name: Region 2 / Alarm 5 / 2
         groups: 2
         units:
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 11
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 26
         - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-          count: 5
-        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-          count: 3
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 3
+          count: 4
         - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
-          count: 2
-        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
           count: 1
-      alarmValue: 158
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 20
-      maxEnemiesPerWave: 25
-      enemies:
-      - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-        weight: 10
-      - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-        weight: 4
-      - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-        weight: 3
-      - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
-        weight: 2
-      - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
-        weight: 1
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 11
-      - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-        weight: 5
-      - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-        weight: 3
-      - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
-        weight: 2
-    - waveCountdown: 15
-      waves:
-      - name: Danger 210 / 1
-        groups: 3
+      - name: Region 2 / Alarm 5 / 3
+        groups: 2
         units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 10
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 26
         - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-          count: 5
-        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-          count: 4
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
           count: 4
         - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
-          count: 2
-        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
-          count: 2
-        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
-          count: 2
-      - name: Danger 210 / 2
+          count: 1
+      alarmValue: 150
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 31
+      maxEnemiesPerWave: 31
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 21
+      waves:
+      - name: Region 2 / Alarm 6 / 1
         groups: 3
         units:
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 12
-        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-          count: 10
-        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-          count: 4
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 4
-        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-          count: 3
-        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 32
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 5
+        - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
+          count: 1
+      - name: Region 2 / Alarm 6 / 2
+        groups: 3
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 32
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 5
+        - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
+          count: 1
+      - name: Region 2 / Alarm 6 / 3
+        groups: 3
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 32
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 5
+        - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
+          count: 1
+      alarmValue: 200
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 38
+      maxEnemiesPerWave: 38
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 18
+      waves:
+      - name: Region 2 / Alarm 7 / 1
+        groups: 3
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 40
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 6
+        - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
           count: 2
-        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+      - name: Region 2 / Alarm 7 / 2
+        groups: 3
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 40
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 6
+        - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
           count: 2
-      alarmValue: 210
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 29
-      maxEnemiesPerWave: 37
-      enemies:
-      - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-        weight: 10
-      - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-        weight: 5
-      - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-        weight: 4
-      - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-        weight: 4
-      - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
-        weight: 2
-      - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
-        weight: 2
-      - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
-        weight: 2
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 12
-      - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-        weight: 10
-      - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-        weight: 4
-  - level: 6
-    maximumAlarm: 160
+      - name: Region 2 / Alarm 7 / 3
+        groups: 3
+        units:
+        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
+          count: 40
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 6
+        - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
+          count: 2
+      alarmValue: 260
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 48
+      maxEnemiesPerWave: 48
+      enemies: []
+  - level: 3
+    maximumAlarm: 260
+    minimumWaveSpawnDistance: 12
     thresholds:
-    - waveCountdown: 35
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 36
       waves:
-      - name: Danger 20 / 1
+      - name: Region 3 / Alarm 1 / 1
         groups: 1
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 2
-      - name: Danger 20 / 2
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 8
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 1
+      - name: Region 3 / Alarm 1 / 2
         groups: 1
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 3
-      - name: Danger 20 / 3
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 8
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 1
+      - name: Region 3 / Alarm 1 / 3
         groups: 1
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 4
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 8
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 1
       alarmValue: 20
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 2
-      maxEnemiesPerWave: 4
-      enemies:
-      - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-        weight: 4
-    - waveCountdown: 29
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 9
+      maxEnemiesPerWave: 9
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 33
       waves:
-      - name: Danger 40 / 1
+      - name: Region 3 / Alarm 2 / 1
         groups: 1
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 5
         - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 12
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
           count: 2
-      - name: Danger 40 / 2
+      - name: Region 3 / Alarm 2 / 2
         groups: 1
         units:
-        - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-          count: 4
         - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-          count: 4
+          count: 12
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 2
+      - name: Region 3 / Alarm 2 / 3
+        groups: 1
+        units:
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 12
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 2
       alarmValue: 40
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 7
-      maxEnemiesPerWave: 8
-      enemies:
-      - prefab: {fileID: 3082682973624649699, guid: c53fa572667497643b101c11416de0d4, type: 3}
-        weight: 5
-      - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
-        weight: 4
-    - waveCountdown: 24
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 14
+      maxEnemiesPerWave: 14
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 30
       waves:
-      - name: Danger 84 / 1
+      - name: Region 3 / Alarm 3 / 1
         groups: 2
         units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 7
-        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 16
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
           count: 3
-        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-          count: 2
         - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
           count: 1
-      - name: Danger 84 / 2
+      - name: Region 3 / Alarm 3 / 2
         groups: 2
         units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 7
-        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 16
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 3
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 1
+      - name: Region 3 / Alarm 3 / 3
+        groups: 2
+        units:
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 16
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 3
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 1
+      alarmValue: 70
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 20
+      maxEnemiesPerWave: 20
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 27
+      waves:
+      - name: Region 3 / Alarm 4 / 1
+        groups: 2
+        units:
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 20
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 4
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 1
+      - name: Region 3 / Alarm 4 / 2
+        groups: 2
+        units:
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 20
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 4
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 1
+      - name: Region 3 / Alarm 4 / 3
+        groups: 2
+        units:
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 20
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 4
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 1
+      alarmValue: 100
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 25
+      maxEnemiesPerWave: 25
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 24
+      waves:
+      - name: Region 3 / Alarm 5 / 1
+        groups: 2
+        units:
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 26
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 5
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
           count: 2
         - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-          count: 2
-      alarmValue: 84
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 11
-      maxEnemiesPerWave: 13
-      enemies:
-      - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-        weight: 7
-      - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
-        weight: 3
-      - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-        weight: 2
-      - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-        weight: 1
-      - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
-        weight: 2
-    - waveCountdown: 21
-      waves:
-      - name: Danger 120 / 1
+          count: 1
+      - name: Region 3 / Alarm 5 / 2
         groups: 2
         units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 8
-        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-          count: 3
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 26
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 5
         - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
           count: 2
-        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
           count: 1
-      - name: Danger 120 / 2
+      - name: Region 3 / Alarm 5 / 3
         groups: 2
         units:
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 26
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 5
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 2
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 1
+      alarmValue: 150
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 34
+      maxEnemiesPerWave: 34
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 21
+      waves:
+      - name: Region 3 / Alarm 6 / 1
+        groups: 3
+        units:
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 32
         - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
           count: 6
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 5
-        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-          count: 2
-        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-          count: 2
-      alarmValue: 120
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 14
-      maxEnemiesPerWave: 15
-      enemies:
-      - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-        weight: 8
-      - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-        weight: 3
-      - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-        weight: 2
-      - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-        weight: 2
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 6
-    - waveCountdown: 18
-      waves:
-      - name: Danger 160 / 1
-        groups: 2
-        units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 9
-        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-          count: 3
         - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 2
-        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
           count: 3
-      - name: Danger 160 / 2
-        groups: 2
-        units:
-        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-          count: 7
-        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-          count: 5
-        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-          count: 2
-        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-          count: 3
-        - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
           count: 1
-      alarmValue: 160
-      minSpawnInterval: 8
-      maxSpawnInterval: 12
-      minEnemiesPerWave: 17
+      - name: Region 3 / Alarm 6 / 2
+        groups: 3
+        units:
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 32
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 6
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 3
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 1
+      - name: Region 3 / Alarm 6 / 3
+        groups: 3
+        units:
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 32
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 6
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 3
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 1
+      alarmValue: 200
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 42
+      maxEnemiesPerWave: 42
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 18
+      waves:
+      - name: Region 3 / Alarm 7 / 1
+        groups: 3
+        units:
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 40
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 8
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 4
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 2
+      - name: Region 3 / Alarm 7 / 2
+        groups: 3
+        units:
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 40
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 8
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 4
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 2
+      - name: Region 3 / Alarm 7 / 3
+        groups: 3
+        units:
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 40
+        - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
+          count: 8
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 4
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 2
+      alarmValue: 260
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 54
+      maxEnemiesPerWave: 54
+      enemies: []
+  - level: 4
+    maximumAlarm: 260
+    minimumWaveSpawnDistance: 12
+    thresholds:
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 36
+      waves:
+      - name: Region 4 / Alarm 1 / 1
+        groups: 1
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 2
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 1
+      - name: Region 4 / Alarm 1 / 2
+        groups: 1
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 2
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 1
+      - name: Region 4 / Alarm 1 / 3
+        groups: 1
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 2
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 1
+      alarmValue: 20
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 3
+      maxEnemiesPerWave: 3
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 33
+      waves:
+      - name: Region 4 / Alarm 2 / 1
+        groups: 1
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 3
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 1
+      - name: Region 4 / Alarm 2 / 2
+        groups: 1
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 3
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 1
+      - name: Region 4 / Alarm 2 / 3
+        groups: 1
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 3
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 1
+      alarmValue: 40
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 4
+      maxEnemiesPerWave: 4
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 30
+      waves:
+      - name: Region 4 / Alarm 3 / 1
+        groups: 2
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 4
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 2
+      - name: Region 4 / Alarm 3 / 2
+        groups: 2
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 4
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 2
+      - name: Region 4 / Alarm 3 / 3
+        groups: 2
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 4
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 2
+      alarmValue: 70
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 6
+      maxEnemiesPerWave: 6
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 27
+      waves:
+      - name: Region 4 / Alarm 4 / 1
+        groups: 2
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 5
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 2
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 1
+      - name: Region 4 / Alarm 4 / 2
+        groups: 2
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 5
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 2
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 1
+      - name: Region 4 / Alarm 4 / 3
+        groups: 2
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 5
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 2
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 1
+      alarmValue: 100
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 8
+      maxEnemiesPerWave: 8
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 24
+      waves:
+      - name: Region 4 / Alarm 5 / 1
+        groups: 2
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 6
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 3
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 1
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 1
+      - name: Region 4 / Alarm 5 / 2
+        groups: 2
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 6
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 3
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 1
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 1
+      - name: Region 4 / Alarm 5 / 3
+        groups: 2
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 6
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 3
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 1
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 1
+      alarmValue: 150
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 11
+      maxEnemiesPerWave: 11
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 21
+      waves:
+      - name: Region 4 / Alarm 6 / 1
+        groups: 3
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 8
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 4
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 2
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 1
+      - name: Region 4 / Alarm 6 / 2
+        groups: 3
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 8
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 4
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 2
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 1
+      - name: Region 4 / Alarm 6 / 3
+        groups: 3
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 8
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 4
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 2
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 1
+      alarmValue: 200
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 15
+      maxEnemiesPerWave: 15
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 18
+      waves:
+      - name: Region 4 / Alarm 7 / 1
+        groups: 3
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 10
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 5
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 3
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 2
+      - name: Region 4 / Alarm 7 / 2
+        groups: 3
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 10
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 5
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 3
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 2
+      - name: Region 4 / Alarm 7 / 3
+        groups: 3
+        units:
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 10
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 5
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 3
+        - prefab: {fileID: 6817496671389091339, guid: 92fe466bfa92634489374aef4b5c229c, type: 3}
+          count: 2
+      alarmValue: 260
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 20
+      maxEnemiesPerWave: 20
+      enemies: []
+  - level: 5
+    maximumAlarm: 260
+    minimumWaveSpawnDistance: 12
+    thresholds:
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 36
+      waves:
+      - name: Region 5 / Alarm 1 / 1
+        groups: 1
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 1
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 1
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 1
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 4
+      - name: Region 5 / Alarm 1 / 2
+        groups: 1
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 1
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 1
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 1
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 4
+      - name: Region 5 / Alarm 1 / 3
+        groups: 1
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 1
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 1
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 1
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 4
+      alarmValue: 20
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 7
+      maxEnemiesPerWave: 7
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 33
+      waves:
+      - name: Region 5 / Alarm 2 / 1
+        groups: 1
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 1
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 2
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 1
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 6
+      - name: Region 5 / Alarm 2 / 2
+        groups: 1
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 1
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 2
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 1
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 6
+      - name: Region 5 / Alarm 2 / 3
+        groups: 1
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 1
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 2
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 1
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 6
+      alarmValue: 40
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 10
+      maxEnemiesPerWave: 10
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 30
+      waves:
+      - name: Region 5 / Alarm 3 / 1
+        groups: 2
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 2
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 2
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 2
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 8
+      - name: Region 5 / Alarm 3 / 2
+        groups: 2
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 2
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 2
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 2
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 8
+      - name: Region 5 / Alarm 3 / 3
+        groups: 2
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 2
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 2
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 2
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 8
+      alarmValue: 70
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 14
+      maxEnemiesPerWave: 14
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 27
+      waves:
+      - name: Region 5 / Alarm 4 / 1
+        groups: 2
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 2
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 3
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 2
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 10
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 1
+      - name: Region 5 / Alarm 4 / 2
+        groups: 2
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 2
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 3
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 2
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 10
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 1
+      - name: Region 5 / Alarm 4 / 3
+        groups: 2
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 2
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 3
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 2
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 10
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 1
+      alarmValue: 100
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 18
       maxEnemiesPerWave: 18
-      enemies:
-      - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
-        weight: 9
-      - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
-        weight: 3
-      - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
-        weight: 2
-      - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
-        weight: 3
-      - prefab: {fileID: 5708845872940498816, guid: a7cb8cca13678034f896556ca7f18941, type: 3}
-        weight: 5
-      - prefab: {fileID: 7405814665155350804, guid: 8d1520627aaf7f3428738abf176d5b98, type: 3}
-        weight: 1
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 24
+      waves:
+      - name: Region 5 / Alarm 5 / 1
+        groups: 2
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 3
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 4
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 3
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 12
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 1
+      - name: Region 5 / Alarm 5 / 2
+        groups: 2
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 3
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 4
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 3
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 12
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 1
+      - name: Region 5 / Alarm 5 / 3
+        groups: 2
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 3
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 4
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 3
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 12
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 1
+      alarmValue: 150
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 23
+      maxEnemiesPerWave: 23
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 21
+      waves:
+      - name: Region 5 / Alarm 6 / 1
+        groups: 3
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 4
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 5
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 4
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 16
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 2
+      - name: Region 5 / Alarm 6 / 2
+        groups: 3
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 4
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 5
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 4
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 16
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 2
+      - name: Region 5 / Alarm 6 / 3
+        groups: 3
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 4
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 5
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 4
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 16
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 2
+      alarmValue: 200
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 31
+      maxEnemiesPerWave: 31
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 18
+      waves:
+      - name: Region 5 / Alarm 7 / 1
+        groups: 3
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 5
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 6
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 5
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 20
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 3
+      - name: Region 5 / Alarm 7 / 2
+        groups: 3
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 5
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 6
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 5
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 20
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 3
+      - name: Region 5 / Alarm 7 / 3
+        groups: 3
+        units:
+        - prefab: {fileID: 910065802983271625, guid: e56b70bc16f946841b22e9347236ab4b, type: 3}
+          count: 5
+        - prefab: {fileID: 7778425866933791397, guid: 9ac17e72cb0e9b440af3d78585d967e2, type: 3}
+          count: 6
+        - prefab: {fileID: 4929410714400224446, guid: b10869d19fc1457478e50ee36794d3e3, type: 3}
+          count: 5
+        - prefab: {fileID: 4180602446764337740, guid: 2a4b74073dba6ec4f97748108039961c, type: 3}
+          count: 20
+        - prefab: {fileID: 7481403077416324071, guid: 67d6ceb2dcee72d408ef9dabc8942e77, type: 3}
+          count: 3
+      alarmValue: 260
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 39
+      maxEnemiesPerWave: 39
+      enemies: []
+  - level: 6
+    maximumAlarm: 260
+    minimumWaveSpawnDistance: 12
+    thresholds:
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 36
+      waves:
+      - name: Region 6 / Alarm 1 / 1
+        groups: 1
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 2
+      - name: Region 6 / Alarm 1 / 2
+        groups: 1
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 2
+      - name: Region 6 / Alarm 1 / 3
+        groups: 1
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 2
+      alarmValue: 20
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 2
+      maxEnemiesPerWave: 2
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 33
+      waves:
+      - name: Region 6 / Alarm 2 / 1
+        groups: 1
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 3
+      - name: Region 6 / Alarm 2 / 2
+        groups: 1
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 3
+      - name: Region 6 / Alarm 2 / 3
+        groups: 1
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 3
+      alarmValue: 40
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 3
+      maxEnemiesPerWave: 3
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 30
+      waves:
+      - name: Region 6 / Alarm 3 / 1
+        groups: 1
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 4
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 1
+      - name: Region 6 / Alarm 3 / 2
+        groups: 1
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 4
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 1
+      - name: Region 6 / Alarm 3 / 3
+        groups: 1
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 4
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 1
+      alarmValue: 70
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 5
+      maxEnemiesPerWave: 5
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 27
+      waves:
+      - name: Region 6 / Alarm 4 / 1
+        groups: 1
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 5
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 1
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 1
+      - name: Region 6 / Alarm 4 / 2
+        groups: 1
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 5
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 1
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 1
+      - name: Region 6 / Alarm 4 / 3
+        groups: 1
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 5
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 1
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 1
+      alarmValue: 100
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 7
+      maxEnemiesPerWave: 7
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 24
+      waves:
+      - name: Region 6 / Alarm 5 / 1
+        groups: 1
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 6
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 1
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 1
+      - name: Region 6 / Alarm 5 / 2
+        groups: 1
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 6
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 1
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 1
+      - name: Region 6 / Alarm 5 / 3
+        groups: 1
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 6
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 1
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 1
+      alarmValue: 150
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 8
+      maxEnemiesPerWave: 8
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 21
+      waves:
+      - name: Region 6 / Alarm 6 / 1
+        groups: 2
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 8
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 2
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 2
+      - name: Region 6 / Alarm 6 / 2
+        groups: 2
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 8
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 2
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 2
+      - name: Region 6 / Alarm 6 / 3
+        groups: 2
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 8
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 2
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 2
+      alarmValue: 200
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 12
+      maxEnemiesPerWave: 12
+      enemies: []
+    - minimumWaveSpawnDistance: 12
+      waveCountdown: 18
+      waves:
+      - name: Region 6 / Alarm 7 / 1
+        groups: 2
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 10
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 2
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 3
+      - name: Region 6 / Alarm 7 / 2
+        groups: 2
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 10
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 2
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 3
+      - name: Region 6 / Alarm 7 / 3
+        groups: 2
+        units:
+        - prefab: {fileID: 4640705101898790941, guid: dc1d3ecaf03744447a8efe98fe755dc9, type: 3}
+          count: 10
+        - prefab: {fileID: 6163455323084594790, guid: 5fdd28feae3c93c439aca6c6fc405601, type: 3}
+          count: 2
+        - prefab: {fileID: 2351670428627621129, guid: 575eb9114e58e4e4fa5b88a50da7a6b5, type: 3}
+          count: 3
+      alarmValue: 260
+      minSpawnInterval: 5
+      maxSpawnInterval: 10
+      minEnemiesPerWave: 15
+      maxEnemiesPerWave: 15
+      enemies: []

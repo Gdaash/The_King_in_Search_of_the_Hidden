@@ -115,7 +115,8 @@ namespace GameFoundation.MetaProgression
             if (type == null || change == 0) return;
             GameFoundation.UI.GameNotifications.Resource(type, change);
             if (GameFoundation.UI.GameNotifications.IsTransfer(type)) return;
-            bool atShelter = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Base";
+            bool atShelter = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Base" ||
+                DayCycleService.Instance?.ResolvingProduction == true;
             if (!atShelter && (_state == null || !_state.runActive)) return;
             EnsureDay(DayCycleService.Instance != null ? DayCycleService.Instance.Day : 1);
             if (atShelter) EndRun();

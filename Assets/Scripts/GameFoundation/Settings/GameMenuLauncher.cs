@@ -24,6 +24,7 @@ namespace GameFoundation.Settings
         }
         public void Open()
         {
+            if (GameFoundation.MetaProgression.FirstRunLightTutorial.EmergencyReturnRequired) return;
             if (GameFoundation.MetaProgression.PortalArsenalPopup.IsOpen) return;
             if (!menuPrefab) return;
             var canvas = GetComponentInParent<Canvas>().rootCanvas;

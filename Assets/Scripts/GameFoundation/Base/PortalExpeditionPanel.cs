@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Object = UnityEngine.Object;
 using GameFoundation.MetaProgression;
 using TMPro;
@@ -18,6 +19,8 @@ namespace GameFoundation.Base
         private readonly List<(RectTransform row, Image icon, TMP_Text name, TMP_Text count)> troopRows = new();
         private readonly TMP_Text partyTitle, troopTitle;
         private readonly ScrollRect troopScroll;
+        private readonly ScrollRect resourceScroll;
+        private readonly PortalPopupView.ResourceRow[] resourceRows;
         private const float TroopViewportHeight = 300f;
         private const float PartyRowHeight = 50f;
         private readonly Button configureLoadout;
@@ -88,9 +91,14 @@ namespace GameFoundation.Base
             ConfigureDanger(view, detail);
             if (detail.Find("Resources Caption") is RectTransform resourceHeading)
                 Place(resourceHeading, ColumnWidth - 48, 32, 0, 31);
+            resourceRows = view.resourceRows;
+            resourceScroll = CreateVerticalScroll(detail, "Location resources", ColumnWidth - 48, 250, -125);
             for (int i = 0; i < view.resourceRows.Length; i++)
             {
-                Place((RectTransform)view.resourceRows[i].root.transform, ColumnWidth - 48, 50, 0, -25 - i * 50);
+                var resourceRect = (RectTransform)view.resourceRows[i].root.transform;
+                resourceRect.SetParent(resourceScroll.content, false);
+                Place(resourceRect, ColumnWidth - 48, 50, 0, -25 - i * 50);
+                resourceRect.anchorMin = resourceRect.anchorMax = new Vector2(.5f, 1);
                 if (view.resourceRows[i].root.TryGetComponent<Image>(out var rowImage))
                     rowImage.color = i % 2 == 0 ? new Color(.17f, .14f, .195f) : new Color(.135f, .11f, .16f);
             }
@@ -156,6 +164,8 @@ namespace GameFoundation.Base
 
         public void Refresh()
         {
+            int visibleResources = resourceRows.Count(row => row.root.activeSelf);
+            resourceScroll.content.sizeDelta = new Vector2(0, visibleResources * 50);
             partyTitle.text = PortalPopupView.Tr("expedition.roster_heading", "Состав отряда").ToUpperInvariant();
             if (configureLoadout != null)
             {

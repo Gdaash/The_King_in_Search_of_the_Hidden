@@ -52,6 +52,10 @@ namespace GameFoundation.MetaProgression
         public void OnPointerEnter(PointerEventData eventData)
         {
             if (!progression.UsesEnergyLoadout || !progression.CrystalTechnologyAvailable) return;
+            // Pointer-enter also bubbles through the bar when a crystal is hovered.
+            // Keep the crystal's threshold tooltip instead of replacing it with the total.
+            if (eventData?.pointerCurrentRaycast.gameObject != null &&
+                eventData.pointerCurrentRaycast.gameObject.GetComponent<ResourceTooltipTrigger>() != null) return;
             var amount = string.Format(PortalArsenalPopup.T("energy.value", "Энергия: {0} / {1}"),
                 progression.Energy, progression.EnergyCapacity);
             TooltipManager.Instance?.Show(amount + "\n" + string.Format(
@@ -160,7 +164,8 @@ namespace GameFoundation.MetaProgression
                 {
                     var root = CreateEnergyTick("Light threshold " + (i + 1), true);
                     var crystal = new GameObject("Crystal", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
-                    crystal.transform.SetParent(root, false); crystal.raycastTarget = false;
+                    crystal.transform.SetParent(root, false); crystal.raycastTarget = true;
+                    crystal.gameObject.AddComponent<ResourceTooltipTrigger>();
                     ResourceIconSizing.Apply(crystal, icon); crystal.rectTransform.anchoredPosition = new Vector2(0,28);
                     energyTicks.Add(root); energyCrystals.Add(crystal);
                 }
@@ -169,6 +174,9 @@ namespace GameFoundation.MetaProgression
             for (int i = 0; i < energyTicks.Count; i++)
             {
                 int threshold = PortalEnergyRules.LightThreshold(progression.Balance, i, progression.CrystalEfficiencyRank);
+                var crystalRect = energyCrystals[i].rectTransform;
+                energyCrystals[i].GetComponent<ResourceTooltipTrigger>().Initialize(
+                    string.Format(PortalArsenalPopup.T("energy.threshold", "Энергия для зажигания: {0}"), threshold), crystalRect);
                 energyTicks[i].gameObject.SetActive(threshold <= progression.EnergyCapacity);
                 energyTicks[i].anchorMin = energyTicks[i].anchorMax = new Vector2((float)threshold / progression.EnergyCapacity,.5f);
                 energyTicks[i].anchoredPosition = Vector2.zero;

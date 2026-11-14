@@ -21,6 +21,8 @@ namespace GameFoundation.MetaProgression
         public GameObject arsenalPopupPrefab;
         [Tooltip("Арсенал на базе, постоянные слоты и расходуемая энергия вместо боевых улучшений.")]
         public bool useEnergyLoadout;
+        [Tooltip("Временный режим проверки баланса: все шесть направлений доступны без покупки портала.")]
+        public bool openAllLocationsForBalanceTest;
         public GameObject weaponSlotsPrefab;
         [Min(1)] public int crystalCapacity = 300;
         [Min(1)] public int energyPerCrystal = 10;

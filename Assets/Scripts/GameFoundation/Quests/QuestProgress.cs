@@ -1,4 +1,4 @@
-﻿using GameFoundation.Saves;
+using GameFoundation.Saves;
 
 namespace GameFoundation.Quests
 {
@@ -140,8 +140,10 @@ namespace GameFoundation.Quests
             if (PlaytestSettings.TutorialsAndQuestsDisabled) return null;
             if (catalog == null || catalog.quests == null) return null;
             foreach (var quest in catalog.quests)
+                if (quest != null && quest.opportunisticTutorial && quest.parallelQuest == parallel && IsAccepted(quest) && !IsClaimed(quest) && !IsFailed(quest)) return quest;
+            foreach (var quest in catalog.quests)
             {
-                if (quest == null || quest.parallelQuest != parallel || IsFailed(quest)) continue;
+                if (quest == null || quest.opportunisticTutorial || quest.parallelQuest != parallel || IsFailed(quest)) continue;
                 if (!IsClaimed(quest))
                 {
                     if (parallel && !IsAccepted(quest)) continue;

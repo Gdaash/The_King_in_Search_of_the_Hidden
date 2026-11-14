@@ -93,6 +93,14 @@ public sealed class GameSpeedControls : MonoBehaviour
         return SimulationSpeed;
     }
 
+    public static void ResetForWave()
+    {
+        if (SimulationSpeed <= 0f || Time.timeScale <= 0f) return;
+        var controls = Object.FindFirstObjectByType<GameSpeedControls>();
+        if (controls != null) controls.SetSpeed(1f);
+        else SetSimulationSpeed(1f);
+    }
+
     private void Bind(Button button, float speed)
     {
         if (button == null) return;

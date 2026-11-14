@@ -9,7 +9,7 @@ namespace GameFoundation.MetaProgression
 {
     public sealed partial class PortalWeaponController
     {
-        private float SupportAmount(Weapon weapon) => Def(weapon).supportAmount * progression.Profile(weapon).Support *
+        private float SupportAmount(Weapon weapon) => (Def(weapon).supportAmount + PortalWeaponEnhancements.Support(weapon)) * progression.Profile(weapon).Support *
             progression.RunMultiplier(weapon, CombatUpgradeCatalog.Stat.Support) +
             progression.RunAdjustment(weapon, CombatUpgradeCatalog.Stat.Armor);
         private readonly List<Health> supportTargets = new();
